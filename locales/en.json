@@ -3688,6 +3688,7 @@
     "launchStageRig": "Setting up your rig",
     "launchStageConnect": "Connecting",
     "launchQueueLabel": "IN QUEUE",
+    "detailUnknownTier": "Unknown tier",
     "builtInPalettes": "  ·  Built-in Cloudlight palettes",
     "gpuRestartHint": "Graphics card used to decode and show the stream. Takes effect after restarting Cloudlight.",
     "gpuFallbackHint": "The saved graphics card isn't available, so the first one that can decode video is used. Takes effect after restarting Cloudlight."

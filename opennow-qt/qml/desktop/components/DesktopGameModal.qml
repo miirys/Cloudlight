@@ -215,7 +215,7 @@ FocusScope {
     readonly property var summaryCards: [
         {label:qsTr("Stream"), title:resolutionText + " · " + fpsText, detail:codecText + " · " + colorText},
         {label:qsTr("Server"), title:regionLabel(), detail:qsTr("Region selected at launch")},
-        {label:qsTr("Membership"), title:membershipText || qsTr("Membership"), detail:ShellStore.subscription && ShellStore.subscription.remainingHours !== undefined
+        {label:qsTr("Membership"), title:membershipText || qsTr("Unknown tier"), detail:ShellStore.subscription && ShellStore.subscription.remainingHours !== undefined
             ? qsTr("%1 h remaining").arg(Math.max(0, Number(ShellStore.subscription.remainingHours)).toFixed(1)) : qsTr("Entitlements checked at launch")}
     ]
     function regionLabel() {
