@@ -98,8 +98,8 @@ FocusScope {
                 opacity: root.headerOverlay && !root.headerSolid ? 1 : 0
                 Behavior on opacity { NumberAnimation { duration: DesktopTokens.motionDuration } }
                 gradient: Gradient {
-                    GradientStop { position: 0; color: Qt.rgba(0, 0, 0, 0.7) }
-                    GradientStop { position: 1; color: Qt.rgba(0, 0, 0, 0) }
+                    GradientStop { position: 0; color: Qt.rgba(DesktopTokens.shell.r, DesktopTokens.shell.g, DesktopTokens.shell.b, 0.8) }
+                    GradientStop { position: 1; color: Qt.rgba(DesktopTokens.shell.r, DesktopTokens.shell.g, DesktopTokens.shell.b, 0) }
                 }
             }
 

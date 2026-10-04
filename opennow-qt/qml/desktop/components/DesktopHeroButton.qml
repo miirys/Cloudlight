@@ -11,8 +11,8 @@ Item {
     property bool selected: false
     readonly property bool keyboardFocus: selected && AppController.inputMode !== "pointer"
     readonly property color fill: primary ? DesktopTokens.focus
-        : (hover.hovered || keyboardFocus ? "#FFFFFF" : "#E8E8E8")
-    readonly property color ink: primary ? Theme.focusText : "#111111"
+        : (hover.hovered || keyboardFocus ? Qt.lighter(DesktopTokens.raisedStrong, Theme.lightMode ? 0.94 : 1.25) : DesktopTokens.raisedStrong)
+    readonly property color ink: primary ? Theme.focusText : DesktopTokens.textHigh
     signal activated()
     signal pointed()
     width: Math.max(DesktopTokens.px(150), label.implicitWidth + DesktopTokens.px(84))
@@ -28,7 +28,7 @@ Item {
         radius: DesktopTokens.radius + DesktopTokens.px(5)
         color: "transparent"
         border.width: DesktopTokens.focusOutline
-        border.color: "#FFFFFF"
+        border.color: Theme.label
         opacity: button.keyboardFocus ? 1 : 0
         Behavior on opacity { NumberAnimation { duration: DesktopTokens.quickDuration } }
     }

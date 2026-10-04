@@ -104,7 +104,7 @@ Item {
         Text {
             width: parent.width
             text: root.slide ? String(root.slide.title || "") : ""
-            color: "#FFFFFF"
+            color: DesktopTokens.textHigh
             font.family: DesktopTokens.displayFont
             font.pixelSize: DesktopTokens.displaySize
             font.weight: Font.Bold
@@ -118,7 +118,7 @@ Item {
             width: parent.width
             visible: text !== ""
             text: root.slide ? String(root.slide.body || "") : ""
-            color: "#D9D9D9"
+            color: DesktopTokens.textBody
             font.family: DesktopTokens.bodyFont
             font.pixelSize: DesktopTokens.bodySize
             font.weight: Font.Medium
@@ -167,7 +167,7 @@ Item {
                 width: current ? DesktopTokens.px(40) : DesktopTokens.px(20)
                 height: DesktopTokens.px(4)
                 radius: height / 2
-                color: current ? DesktopTokens.focus : "#80FFFFFF"
+                color: current ? DesktopTokens.focus : Qt.rgba(DesktopTokens.textHigh.r, DesktopTokens.textHigh.g, DesktopTokens.textHigh.b, 0.45)
                 Behavior on width { NumberAnimation { duration: DesktopTokens.motionDuration; easing.type: Easing.OutCubic } }
                 HoverHandler { cursorShape: Qt.PointingHandCursor }
                 TapHandler { onTapped: root.currentSlide = dash.index }

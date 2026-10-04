@@ -13,12 +13,17 @@ QtObject {
         {id:"bone", name:"Light", author:"OPENNOW", category:"Light", detail:"WARM", bg:"#F2F2F2", darkBg:"#141414", mid:"#D6D6D6", accent:"#8A5A0B", darkAccent:"#E8A33D"},
         {id:"cobalt", name:"Light Blue", author:"OPENNOW", category:"Light", detail:"BLUE", bg:"#F2F2F2", darkBg:"#141414", mid:"#D6D6D6", accent:"#1764C0", darkAccent:"#4C9EFF"},
         {id:"hibiscus", name:"Graphite Rose", author:"OPENNOW", category:"Dark", detail:"ROSE", bg:"#141414", lightBg:"#F2F2F2", mid:"#2A2A2A", accent:"#F0607F", lightAccent:"#A8243F"},
-        {id:"chapel", name:"Graphite Violet", author:"OPENNOW", category:"Dark", detail:"VIOLET", bg:"#141414", lightBg:"#F2F2F2", mid:"#2A2A2A", accent:"#9B7BFF", lightAccent:"#5B3FC0"}
+        {id:"chapel", name:"Graphite Violet", author:"OPENNOW", category:"Dark", detail:"VIOLET", bg:"#141414", lightBg:"#F2F2F2", mid:"#2A2A2A", accent:"#9B7BFF", lightAccent:"#5B3FC0"},
+        // Cloudlight's house theme: a black dress and white hair. Neutrals carry a faint
+        // lilac cast in both modes, and the accent is pearl on dark, ink on light.
+        {id:"echidna", name:"Echidna", author:"CLOUDLIGHT", category:"Dark", detail:"PEARL", bg:"#100E13", lightBg:"#F4F2F7", mid:"#2A2530", accent:"#ECE6F5", lightAccent:"#1D1823",
+         dark:{surface:"#18151C", raised:"#211D26", hover:"#2A252F", strong:"#352F3C", seam:"#2C2732", label:"#F4F1F8", muted:"#A39CAD"},
+         light:{surface:"#FFFFFF", raised:"#EBE7F0", hover:"#E2DDE9", strong:"#D4CEDD", seam:"#D9D3E1", label:"#17141B", muted:"#5E5768"}}
     ]
     readonly property string mode: String(ShellStore.settings.appTheme || "auto")
     readonly property string themePack: ShellStore.previewThemePack !== ""
                                         ? ShellStore.previewThemePack
-                                        : String(ShellStore.settings.themePack || "nocturne")
+                                        : String(ShellStore.settings.themePack || "echidna")
     readonly property var pack: packs.find(item => item.id === themePack) || packs[0]
     readonly property bool packLight: pack.category === "Light"
     readonly property bool systemLight: Qt.styleHints.colorScheme === Qt.Light
@@ -30,10 +35,11 @@ QtObject {
 
     // Surfaces, darkest to lightest. Everything is opaque.
     readonly property color shell: lightMode ? (pack.lightBg || pack.bg) : (pack.darkBg || pack.bg)
-    readonly property color surface: lightMode ? "#FFFFFF" : "#1C1C1C"
-    readonly property color surfaceRaised: lightMode ? "#E9E9E9" : "#252525"
-    readonly property color surfaceHover: lightMode ? "#E0E0E0" : "#2E2E2E"
-    readonly property color surfaceStrong: lightMode ? "#D4D4D4" : "#383838"
+    readonly property var tone: (lightMode ? pack.light : pack.dark) || ({})
+    readonly property color surface: tone.surface || (lightMode ? "#FFFFFF" : "#1C1C1C")
+    readonly property color surfaceRaised: tone.raised || (lightMode ? "#E9E9E9" : "#252525")
+    readonly property color surfaceHover: tone.hover || (lightMode ? "#E0E0E0" : "#2E2E2E")
+    readonly property color surfaceStrong: tone.strong || (lightMode ? "#D4D4D4" : "#383838")
 
     readonly property color face: lightMode ? "#141414" : "#FFFFFF"
     readonly property color faceText: lightMode ? "#FFFFFF" : "#141414"
@@ -42,9 +48,9 @@ QtObject {
     readonly property color mediaForeground: "#FFFFFF"
     readonly property color mediaMuted: "#B3B3B3"
     readonly property color mediaAccent: accentOverridden ? accentColor(accent, false) : (pack.darkAccent || pack.accent)
-    readonly property color seam: lightMode ? "#D0D0D0" : "#333333"
-    readonly property color label: lightMode ? "#141414" : "#F2F2F2"
-    readonly property color textMuted: lightMode ? "#5C5C5C" : "#A6A6A6"
+    readonly property color seam: tone.seam || (lightMode ? "#D0D0D0" : "#333333")
+    readonly property color label: tone.label || (lightMode ? "#141414" : "#F2F2F2")
+    readonly property color textMuted: tone.muted || (lightMode ? "#5C5C5C" : "#A6A6A6")
     readonly property var accentChoices: ["green", "blue", "violet", "rose", "coral", "amber", "white"]
     function accentColor(value, forLightMode = lightMode) {
         const dark = {green:"#76B900", blue:"#4C9EFF", violet:"#9B7BFF", rose:"#F0607F", coral:"#FF7A59", amber:"#E8A33D", white:"#F2F2F2"}

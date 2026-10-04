@@ -34,12 +34,12 @@ QtObject {
     readonly property color raisedStrong: Theme.surfaceStrong
     readonly property color hover: Theme.surfaceHover
     readonly property color seam: Theme.seam
-    readonly property color seamSoft: Theme.lightMode ? "#E0E0E0" : "#2A2A2A"
+    readonly property color seamSoft: Qt.tint(Theme.seam, Theme.lightMode ? "#40FFFFFF" : "#40000000")
     readonly property color text: Theme.label
     readonly property color textHigh: Theme.label
-    readonly property color textBody: Theme.lightMode ? "#3D3D3D" : "#C8C8C8"
+    readonly property color textBody: Qt.tint(Theme.label, Theme.lightMode ? "#38FFFFFF" : "#30000000")
     readonly property color textMuted: Theme.textMuted
-    readonly property color textFaint: Theme.lightMode ? "#8A8A8A" : "#6E6E6E"
+    readonly property color textFaint: Qt.tint(Theme.textMuted, Theme.lightMode ? "#50FFFFFF" : "#50000000")
     readonly property color focus: Theme.focus
     readonly property color green: Theme.mint
     readonly property color mint: Theme.mint

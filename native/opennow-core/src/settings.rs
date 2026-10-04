@@ -516,9 +516,9 @@ impl SettingsStore {
             "themePack",
             &[
                 "default", "nocturne", "aurora", "kraft", "phosphor", "bone", "cobalt", "hibiscus",
-                "chapel",
+                "chapel", "echidna",
             ],
-            "nocturne",
+            "echidna",
         );
         normalize_choice(
             &mut self.values,
@@ -1079,7 +1079,7 @@ fn defaults() -> Map<String, Value> {
         "statsShowBitrate":true, "statsShowJitter":true, "statsShowDrops":true,
         "statsShowPacketLoss":true, "statsShowDecode":true, "statsShowLatency":true,
         "statsShowVideo":true, "statsShowClock":true, "statsShowGraphs":true,
-        "appAccentColor":"green", "appTheme":"auto", "appLanguage":"system", "themePack":"nocturne", "translucentUI":false,
+        "appAccentColor":"green", "appTheme":"auto", "appLanguage":"system", "themePack":"echidna", "translucentUI":false,
         "showTileLabels":true,
         "controllerMode":true, "controllerModePromptDismissed":false,
         "controllerLeftStickDeadzone":5, "controllerRightStickDeadzone":5,
@@ -1777,6 +1777,7 @@ mod tests {
         let mut store = SettingsStore::load(Some(directory.clone())).unwrap();
         for pack in [
             "nocturne", "aurora", "kraft", "phosphor", "bone", "cobalt", "hibiscus", "chapel",
+            "echidna",
         ] {
             store.set("appAccentColor", json!("rose")).unwrap();
             assert_eq!(store.all()["themeAccentOverride"], json!(true));
@@ -2550,7 +2551,7 @@ mod tests {
         );
         assert_eq!(
             store.set("themePack", json!("unknown")).unwrap(),
-            json!("nocturne")
+            json!("echidna")
         );
         assert_eq!(store.set("appLanguage", json!("de")).unwrap(), json!("de"));
         assert_eq!(
