@@ -87,10 +87,10 @@ FocusScope {
             ? String(variant.store)
             : ((game && game.availableStores && game.availableStores[0]) || "")
         if (store && root.isOwned)
-            return qsTr("OWNED ON %1").arg(store.toUpperCase())
+            return qsTr("Owned on %1").arg(store.toUpperCase())
         if (store)
             return store.toUpperCase()
-        return root.isOwned ? qsTr("IN LIBRARY") : qsTr("NOT OWNED")
+        return root.isOwned ? qsTr("In library") : qsTr("Not owned")
     }
     readonly property string membershipText: {
         const sub = ShellStore.subscription
@@ -124,7 +124,7 @@ FocusScope {
     }
     readonly property string regionText: {
         const region = String(root.streamSettings.region || "")
-        return region ? region.toUpperCase() : qsTr("AUTOMATIC REGION")
+        return region ? region.toUpperCase() : qsTr("Automatic region")
     }
     readonly property string friendsNote: {
         const caps = ShellStore.socialCapabilities || ({})
@@ -147,7 +147,7 @@ FocusScope {
         if (!game)
             return labels
         if (root.gameAvailable)
-            add(qsTr("READY TO PLAY"))
+            add(qsTr("Ready to play"))
         else if (game.playabilityState)
             add(String(game.playabilityState).replace(/_/g, " "))
         const playType = String(game.playType || "").replace(/_/g, " ")
@@ -157,9 +157,9 @@ FocusScope {
         for (let i = 0; i < controls.length; ++i) {
             const control = String(controls[i] || "").toUpperCase()
             if (control === "GAMEPAD")
-                add(qsTr("CONTROLLER"))
+                add(qsTr("Controller"))
             else if (control === "KEYBOARD_MOUSE" || control === "KEYBOARD AND MOUSE")
-                add(qsTr("KEYBOARD"))
+                add(qsTr("Keyboard"))
             else if (control)
                 add(control.replace(/_/g, " "))
         }
@@ -171,13 +171,13 @@ FocusScope {
     }
     readonly property var factItems: {
         const game = root.game || ({})
-        const items = [{l: qsTr("LAST PLAYED"), v: root.lastPlayedText}]
+        const items = [{l: qsTr("Last played"), v: root.lastPlayedText}]
         if (game.hoursPlayed)
-            items.push({l: qsTr("HOURS PLAYED"), v: qsTr("%1 h").arg(game.hoursPlayed)})
+            items.push({l: qsTr("Hours played"), v: qsTr("%1 h").arg(game.hoursPlayed)})
         if (game.sessionCount)
-            items.push({l: qsTr("SESSIONS"), v: String(game.sessionCount)})
-        items.push({l: qsTr("STORES"), v: root.storesText})
-        items.push({l: qsTr("AVAILABLE"), v: root.gameAvailable ? qsTr("Yes") : qsTr("No")})
+            items.push({l: qsTr("Sessions"), v: String(game.sessionCount)})
+        items.push({l: qsTr("Stores"), v: root.storesText})
+        items.push({l: qsTr("Available"), v: root.gameAvailable ? qsTr("Yes") : qsTr("No")})
         return items
     }
     readonly property var streamRows: [
@@ -223,7 +223,7 @@ FocusScope {
         return value ? qsTr("Selected region") : qsTr("Automatic region")
     }
     Rectangle {
-        anchors.fill: parent; color: "#A6040D10"; opacity: reveal.progress
+        anchors.fill: parent; color: "#A6000000"; opacity: reveal.progress
         MouseArea {
             anchors.fill: parent; acceptedButtons: Qt.AllButtons
             hoverEnabled: true; preventStealing: true
@@ -239,7 +239,7 @@ FocusScope {
         transformOrigin: Item.Center
         anchors.centerIn: parent
         width: root.dialogWidth; height: root.dialogHeight
-        radius: DesktopTokens.px(24); color: Theme.shell; border.width: 1; border.color: Theme.seam
+        radius: DesktopTokens.radiusLarge; color: Theme.shell; border.width: 1; border.color: Theme.seam
         // Swallow blank-space clicks inside the modal, never activate its scrim.
         MouseArea { anchors.fill: parent; acceptedButtons: Qt.AllButtons; onWheel: wheel => wheel.accepted = true }
         Flickable {
@@ -279,14 +279,14 @@ FocusScope {
                         Text {
                             width: parent.width; text: root.game ? String(root.game.title || qsTr("Game")) : qsTr("Game")
                             color: Theme.label; font.family: Theme.displayFont
-                            font.pixelSize: DesktopTokens.px(34); font.weight: Font.Black
+                            font.pixelSize: DesktopTokens.px(34); font.weight: Font.Bold
                             wrapMode: Text.WordWrap; maximumLineCount: 2; elide: Text.ElideRight
                         }
                         Flow {
                             width: parent.width; spacing: DesktopTokens.px(10)
                             Rectangle {
                                 width: Math.min(parent.width, ownedText.implicitWidth + DesktopTokens.px(20))
-                                height: DesktopTokens.px(26); radius: DesktopTokens.px(13); color: DesktopTokens.raisedStrong
+                                height: DesktopTokens.px(26); radius: DesktopTokens.radius; color: DesktopTokens.raisedStrong
                                 Text { id: ownedText; anchors.centerIn: parent; width: parent.width - DesktopTokens.px(20); elide: Text.ElideRight; text: root.ownershipText; color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.captionSize; font.weight: Font.Bold }
                             }
                             Text {
@@ -324,11 +324,11 @@ FocusScope {
                             }
                             visible: storeVariants.count > 1 || readinessNoticeLabel.text !== ""
                             Text {
-                                text: qsTr("PLATFORM")
+                                text: qsTr("Platform")
                                 visible: storeVariants.count > 1
                                 color: Theme.textMuted
                                 font.family: Theme.bodyFont
-                                font.pixelSize: DesktopTokens.smallSize
+                                font.pixelSize: DesktopTokens.captionSize
                                 font.weight: Font.Bold
                             }
                             Flow {
@@ -383,7 +383,7 @@ FocusScope {
                                                 anchors.verticalCenter: parent.verticalCenter
                                                 text: platformButton.text
                                                 font: platformButton.font
-                                                color: platformButton.checked ? "#0A0D14" : Theme.label
+                                                color: platformButton.checked ? "#141414" : Theme.label
                                             }
                                         }
                                     }
@@ -401,7 +401,7 @@ FocusScope {
                                 Layout.fillWidth: true; Layout.minimumWidth: 0; Layout.preferredHeight: DesktopTokens.px(52)
                                 font.pixelSize: DesktopTokens.captionSize
                                 leftPadding: DesktopTokens.px(14); rightPadding: DesktopTokens.px(14)
-                                primary: true; glyph: "desktop-play.svg"; text: ShellStore.selectedGameActionLabel(); shortcutText: qsTr("ENTER"); shortcutSequence: "Enter"
+                                primary: true; glyph: "desktop-play.svg"; text: ShellStore.selectedGameActionLabel(); shortcutText: qsTr("Enter"); shortcutSequence: "Enter"
                                 enabled: root.game !== null && !ShellStore.cloudMutationBusy && ShellStore.launchInspectRequestId === ""
                                 onClicked: root.playRequested()
                             }
@@ -456,12 +456,12 @@ FocusScope {
                                     objectName: "gameDetailsSummaryCard"
                                     Layout.fillWidth: true; Layout.minimumWidth: 0; Layout.preferredHeight: DesktopTokens.px(68)
                                     Layout.preferredWidth: DesktopTokens.px(180)
-                                    radius: DesktopTokens.px(16); color: DesktopTokens.raised
+                                    radius: DesktopTokens.radiusLarge; color: DesktopTokens.raised
                                     RowLayout {
                                         anchors.fill: parent; anchors.margins: DesktopTokens.px(12); spacing: DesktopTokens.px(12)
                                         Rectangle {
                                             Layout.preferredWidth: DesktopTokens.px(36); Layout.preferredHeight: DesktopTokens.px(36)
-                                            radius: DesktopTokens.px(11); color: DesktopTokens.raised
+                                            radius: DesktopTokens.radius; color: DesktopTokens.raised
                                             // Paper's accent icons sit on their own tile. Never use
                                             // the fixed dark-ink settings SVGs on a dark surface.
                                             DesktopSettingsIcon {
@@ -473,7 +473,7 @@ FocusScope {
                                         ColumnLayout {
                                             Layout.fillWidth: true; Layout.minimumWidth: 0; spacing: DesktopTokens.px(2)
                                             Text { Layout.fillWidth: true; Layout.minimumWidth: 0; text: modelData.title; elide: Text.ElideRight; color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.captionSize; font.weight: Font.Bold }
-                                            Text { Layout.fillWidth: true; Layout.minimumWidth: 0; text: modelData.detail; elide: Text.ElideRight; color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.smallSize }
+                                            Text { Layout.fillWidth: true; Layout.minimumWidth: 0; text: modelData.detail; elide: Text.ElideRight; color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.captionSize }
                                         }
                                     }
                                 }

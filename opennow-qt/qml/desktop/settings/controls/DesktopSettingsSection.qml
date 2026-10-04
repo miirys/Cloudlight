@@ -1,28 +1,28 @@
 import QtQuick
 import OpenNOW
 
+// Group heading, e.g. "Streaming quality". Sentence case, no letter-spaced caps.
 Item {
     id: root
     property string text: ""
     property string description: ""
     default property alias actions: actionRow.data
     width: parent.width
-    implicitHeight: Math.max(heading.implicitHeight, actionRow.implicitHeight) + DesktopTokens.px(20)
+    implicitHeight: heading.y + Math.max(heading.implicitHeight, actionRow.implicitHeight) + DesktopTokens.px(8)
 
     Column {
         id: heading
-        x: DesktopTokens.settingsInset
-        y: DesktopTokens.px(10)
+        x: 0
+        y: DesktopTokens.px(28)
         width: Math.max(0, actionRow.x - x - DesktopTokens.px(16))
         spacing: DesktopTokens.px(4)
         Text {
             width: parent.width
             text: root.text
-            color: Theme.textMuted
+            color: Theme.label
             font.family: Theme.bodyFont
-            font.pixelSize: DesktopTokens.px(12)
-            font.weight: Font.ExtraBold
-            font.letterSpacing: 1.2
+            font.pixelSize: DesktopTokens.headingSize
+            font.weight: Font.DemiBold
             wrapMode: Text.WordWrap
         }
         Text {
@@ -38,8 +38,8 @@ Item {
     Row {
         id: actionRow
         anchors.right: parent.right
-        anchors.rightMargin: DesktopTokens.settingsInset
-        anchors.verticalCenter: parent.verticalCenter
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: DesktopTokens.px(8)
         spacing: DesktopTokens.px(8)
     }
 }

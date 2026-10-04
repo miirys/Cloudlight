@@ -12,32 +12,35 @@ Button {
     property string glyph: ""
     property string themedGlyph: ""
     property int glyphSize: 16
-    property int cornerRadius: 10
-    height: 36
-    implicitWidth: Math.max(68, contentRow.implicitWidth + leftPadding + rightPadding)
-    leftPadding: 14
-    rightPadding: 14
+    property int cornerRadius: DesktopTokens.radius
+    height: DesktopTokens.px(40)
+    implicitWidth: Math.max(DesktopTokens.px(80), contentRow.implicitWidth + leftPadding + rightPadding)
+    leftPadding: DesktopTokens.px(18)
+    rightPadding: DesktopTokens.px(18)
     focusPolicy: Qt.StrongFocus
     font.family: DesktopTokens.bodyFont
-    font.pixelSize: 12
-    font.weight: Font.ExtraBold
+    font.pixelSize: DesktopTokens.px(14)
+    font.weight: Font.DemiBold
+    // Solid fills only: accent for the primary action, neutral grey otherwise.
+    readonly property color fill: root.primary ? root.accentFill
+        : root.danger ? (root.hovered ? Qt.darker(DesktopTokens.danger, 1.1) : DesktopTokens.danger)
+        : root.onMediaBackground ? (root.hovered ? "#454545" : "#333333")
+        : (root.hovered ? Qt.lighter(DesktopTokens.raisedStrong, Theme.lightMode ? 0.94 : 1.2) : DesktopTokens.raisedStrong)
+    readonly property color accentFill: root.onMediaBackground ? Theme.mediaAccent : DesktopTokens.focus
+    readonly property color ink: Theme.contrastText(fill)
     background: Rectangle {
         radius: root.cornerRadius
-        color: root.primary ? (root.down ? "#D9D9D9" : "#FFFFFFFF")
-             : root.danger ? (root.hovered || root.activeFocus ? "#29FF8A80" : "#14FF8A80")
-             : (root.hovered || root.activeFocus ? "#1FFFFFFF" : "#0FFFFFFF")
-        border.width: root.primary ? 0 : 1
-        border.color: root.danger ? "#52FF8A80" : "#1FFFFFFF"
-        scale: root.down && !AppController.reducedMotion ? 0.985 : 1
+        color: root.down ? Qt.darker(root.fill, 1.15) : root.fill
+        opacity: root.enabled ? 1 : 0.5
         Behavior on color { ColorAnimation { duration: DesktopTokens.quickDuration } }
-        Behavior on scale { NumberAnimation { duration: DesktopTokens.quickDuration; easing.type: Easing.OutCubic } }
+        // Focus ring sits outside the button so it reads on any fill from a distance.
         Rectangle {
             anchors.fill: parent
-            anchors.margins: -2
-            radius: parent.radius + 2
+            anchors.margins: -DesktopTokens.px(4)
+            radius: parent.radius + DesktopTokens.px(3)
             color: "transparent"
-            border.width: 2
-            border.color: root.onMediaBackground ? Theme.mediaAccent : DesktopTokens.focus
+            border.width: DesktopTokens.px(3)
+            border.color: root.onMediaBackground ? Theme.mediaForeground : Theme.label
             visible: root.activeFocus
         }
     }
@@ -62,15 +65,14 @@ Button {
                 width: root.glyphSize; height: root.glyphSize
                 sourceComponent: DesktopSettingsIcon {
                     glyph: root.themedGlyph
-                    ink: root.primary ? "#0A0D14" : root.onMediaBackground ? Theme.mediaForeground : Theme.label
+                    ink: root.ink
                 }
             }
             Text {
                 visible: root.text !== ""
                 anchors.verticalCenter: parent.verticalCenter
                 text: root.text
-                color: root.primary ? "#0A0D14" : root.danger ? "#FFB4AE"
-                    : root.onMediaBackground ? Theme.mediaForeground : DesktopTokens.textHigh
+                color: root.ink
                 font: root.font
             }
             KeyboardGlyph {
@@ -79,7 +81,7 @@ Button {
                 shortcut: root.shortcutSequence
                 Accessible.name: root.shortcutText
                 keySize: 20
-                ink: root.primary ? "#0B0F1A" : root.onMediaBackground ? Theme.mediaMuted : DesktopTokens.textMuted
+                ink: root.ink
             }
         }
     }

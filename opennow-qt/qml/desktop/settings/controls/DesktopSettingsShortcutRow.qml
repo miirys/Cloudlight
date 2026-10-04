@@ -261,7 +261,7 @@ FocusScope {
             description: root.stateText
             rowHeight: DesktopTokens.px(56)
             showDivider: false
-            leadingColor: root.capturing ? Qt.rgba(root.toneColor.r, root.toneColor.g, root.toneColor.b, 0.18) : DesktopTokens.raised
+            leadingColor: root.capturing ? DesktopTokens.raised : DesktopTokens.raised
 
             Row {
                 spacing: DesktopTokens.px(8)
@@ -315,7 +315,7 @@ FocusScope {
                     }
 
                     background: Rectangle {
-                        radius: DesktopTokens.px(10)
+                        radius: DesktopTokens.radius
                         color: root.capturing ? Qt.rgba(0, 0, 0, Theme.lightMode ? 0.06 : 0.3)
                             : bindingButton.down || bindingButton.hovered ? DesktopTokens.raisedStrong : DesktopTokens.raised
                         border.width: root.capturing || bindingButton.activeFocus ? 2 : 1
@@ -342,7 +342,7 @@ FocusScope {
                             color: DesktopTokens.textBody
                             font.family: Theme.bodyFont
                             font.pixelSize: DesktopTokens.px(13)
-                            font.weight: Font.ExtraBold
+                            font.weight: Font.DemiBold
                         }
                         Row {
                             id: wellContent
@@ -377,7 +377,7 @@ FocusScope {
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: root.heldModifiers !== "" ? "+ …" : qsTr("Press a key combination…")
                                 color: DesktopTokens.textBody
-                                font.family: Theme.monoFont
+                                font.family: Theme.bodyFont
                                 font.pixelSize: DesktopTokens.monoSize
                                 font.weight: Font.DemiBold
                             }
@@ -401,7 +401,7 @@ FocusScope {
                     Keys.onPressed: event => root.handleNavigation(event)
                     Behavior on opacity { enabled: !AppController.reducedMotion; NumberAnimation { duration: DesktopTokens.quickDuration; easing.type: Easing.OutCubic } }
                     background: Rectangle {
-                        radius: DesktopTokens.px(10)
+                        radius: DesktopTokens.radius
                         color: parent.hovered || parent.down ? DesktopTokens.raisedStrong : DesktopTokens.raised
                         border.width: parent.activeFocus ? 2 : 0
                         border.color: DesktopTokens.focus
@@ -432,7 +432,7 @@ FocusScope {
                     Keys.onPressed: event => root.handleNavigation(event)
                     Behavior on opacity { enabled: !AppController.reducedMotion; NumberAnimation { duration: DesktopTokens.quickDuration; easing.type: Easing.OutCubic } }
                     background: Rectangle {
-                        radius: DesktopTokens.px(10)
+                        radius: DesktopTokens.radius
                         color: parent.hovered || parent.down ? DesktopTokens.raisedStrong : DesktopTokens.raised
                         border.width: parent.activeFocus ? 2 : 0
                         border.color: DesktopTokens.focus

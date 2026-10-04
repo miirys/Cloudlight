@@ -47,7 +47,7 @@ Dialog {
     }
     onClosed: if (selector.opened) selector.dismiss()
     background: Rectangle {
-        radius: DesktopTokens.px(18)
+        radius: DesktopTokens.radiusLarge
         color: Theme.shell
         border.color: DesktopTokens.seam
     }
@@ -108,12 +108,12 @@ Dialog {
             Text {
                 Layout.fillWidth: true
                 text: root.selector.loading ? qsTr("Checking queues and latency…")
-                    : qsTr("SERVER LOCATIONS")
+                    : qsTr("Server locations")
                 color: DesktopTokens.textMuted
                 font.family: DesktopTokens.bodyFont
-                font.pixelSize: DesktopTokens.smallSize
+                font.pixelSize: DesktopTokens.captionSize
                 font.weight: Font.Bold
-                font.letterSpacing: 1
+                font.letterSpacing: 0
             }
             DesktopSettingsButton {
                 objectName: "queueSelectorRefresh"
@@ -172,7 +172,7 @@ Dialog {
                         + ", " + (modelData.pingMs === null ? qsTr("Latency unavailable") : qsTr("%1 ms").arg(modelData.pingMs))
                     onClicked: root.selectedZoneId = modelData.zoneId
                     background: Rectangle {
-                        radius: DesktopTokens.px(12)
+                        radius: DesktopTokens.radius
                         color: option.highlighted ? DesktopTokens.raisedStrong : option.hovered ? DesktopTokens.raised : "transparent"
                         border.color: option.highlighted || option.activeFocus ? DesktopTokens.focus : DesktopTokens.seam
                         border.width: option.activeFocus ? 2 : 1
@@ -201,14 +201,14 @@ Dialog {
                                 elide: Text.ElideRight
                                 color: DesktopTokens.textMuted
                                 font.family: DesktopTokens.bodyFont
-                                font.pixelSize: DesktopTokens.smallSize
+                                font.pixelSize: DesktopTokens.captionSize
                             }
                             Text {
                                 visible: option.modelData.zoneId === root.selector.recommendedZoneId
                                 text: qsTr("Recommended")
                                 color: DesktopTokens.focus
                                 font.family: DesktopTokens.bodyFont
-                                font.pixelSize: DesktopTokens.smallSize
+                                font.pixelSize: DesktopTokens.captionSize
                                 font.weight: Font.Bold
                             }
                         }
@@ -227,7 +227,7 @@ Dialog {
                                 text: root.waitLabel(option.modelData.etaMs)
                                 color: DesktopTokens.textMuted
                                 font.family: DesktopTokens.bodyFont
-                                font.pixelSize: DesktopTokens.smallSize
+                                font.pixelSize: DesktopTokens.captionSize
                             }
                         }
                         Text {
@@ -235,7 +235,7 @@ Dialog {
                             horizontalAlignment: Text.AlignRight
                             text: option.modelData.pingMs === null ? qsTr("No ping") : qsTr("%1 ms").arg(option.modelData.pingMs)
                             color: DesktopTokens.textHigh
-                            font.family: DesktopTokens.monoFont
+                            font.family: DesktopTokens.bodyFont
                             font.pixelSize: DesktopTokens.monoSize
                         }
                     }
@@ -258,7 +258,7 @@ Dialog {
             text: qsTr("Queue estimates can change. Your selection applies to this launch only.")
             color: DesktopTokens.textMuted
             font.family: DesktopTokens.bodyFont
-            font.pixelSize: DesktopTokens.smallSize
+            font.pixelSize: DesktopTokens.captionSize
             wrapMode: Text.WordWrap
         }
         CheckBox {
@@ -301,7 +301,7 @@ Dialog {
                 text: qsTr("Powered by")
                 color: DesktopTokens.textMuted
                 font.family: DesktopTokens.bodyFont
-                font.pixelSize: DesktopTokens.microSize
+                font.pixelSize: DesktopTokens.captionSize
             }
             Button {
                 objectName: "queueSelectorCredit"
@@ -317,7 +317,7 @@ Dialog {
                     text: parent.text
                     color: DesktopTokens.textMuted
                     font.family: DesktopTokens.bodyFont
-                    font.pixelSize: DesktopTokens.microSize
+                    font.pixelSize: DesktopTokens.captionSize
                     font.underline: true
                 }
                 onClicked: Qt.openUrlExternally("https://printedwaste.com/gfn")

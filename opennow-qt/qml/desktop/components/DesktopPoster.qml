@@ -33,18 +33,18 @@ ItemDelegate {
             id: art
             x: root.artGutter; y: root.artGutter; width: root.artWidth; height: root.artHeight
             artwork: DesktopTokens.artworkUrl(root.game, false)
-            cornerRadius: 12
+            cornerRadius: DesktopTokens.radius
             scrimStart: root.cardLifted || root.showPlay ? 0.48 : 1
-            fallbackColor: "#1A2232"
+            fallbackColor: "#252525"
         }
         Rectangle {
             x: art.x - DesktopTokens.cardOutlinePad
             y: art.y - DesktopTokens.cardOutlinePad
             width: art.width + DesktopTokens.cardOutlinePad * 2
             height: art.height + DesktopTokens.cardOutlinePad * 2
-            radius: 14
+            radius: DesktopTokens.radius + DesktopTokens.cardOutlinePad
             color: "transparent"
-            border.width: root.cardLifted ? 2 : 1
+            border.width: root.cardLifted ? 3 : 1
             border.color: root.cardLifted ? DesktopTokens.focus : DesktopTokens.cardOutlineIdle
             Behavior on border.color {
                 ColorAnimation { duration: Theme.focusDuration }
@@ -62,7 +62,7 @@ ItemDelegate {
             x: root.artGutter; y: root.artGutter + root.artHeight + 6; width: root.artWidth; spacing: 5
             visible: root.showTitle
             Text { width: parent.width; text: root.game ? String(root.game.title || qsTr("Game")) : qsTr("Game"); color: DesktopTokens.textHigh; elide: Text.ElideRight; font.family: DesktopTokens.bodyFont; font.pixelSize: 12; font.weight: Font.Bold }
-            Text { width: parent.width; text: root.game && root.game.price ? String(root.game.price) : qsTr("Available"); color: DesktopTokens.textMuted; elide: Text.ElideRight; font.family: DesktopTokens.monoFont; font.pixelSize: 10; font.weight: Font.DemiBold }
+            Text { width: parent.width; text: root.game && root.game.price ? String(root.game.price) : qsTr("Available"); color: DesktopTokens.textMuted; elide: Text.ElideRight; font.family: DesktopTokens.bodyFont; font.pixelSize: 10; font.weight: Font.DemiBold }
         }
     }
     TapHandler {

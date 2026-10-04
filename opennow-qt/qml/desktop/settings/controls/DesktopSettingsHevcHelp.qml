@@ -67,7 +67,7 @@ Item {
                     color: Theme.label
                     selectionColor: Theme.focus
                     selectedTextColor: Theme.focusText
-                    font.family: Theme.monoFont
+                    font.family: Theme.bodyFont
                     font.pixelSize: DesktopTokens.px(13)
                     font.weight: Font.Medium
                     topPadding: DesktopTokens.px(10)

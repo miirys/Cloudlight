@@ -55,7 +55,7 @@ Item {
     Rectangle {
         visible: reveal.present; opacity: reveal.progress
         x: 8; y: 0; width: parent.width-16; height: parent.height
-        radius: 16; color: DesktopTokens.raised; border.width: 1; border.color: Theme.focus
+        radius: DesktopTokens.radius; color: Theme.surface; border.width: 1; border.color: Theme.seam
     }
     DesktopSettingsRow {
         id: header
@@ -101,8 +101,8 @@ Item {
                     Row {
                         spacing: 8
                         Rectangle { width: 20; height: 11; y: 2; radius: 2; color: "transparent"; border.width: 1; border.color: Theme.textMuted }
-                        Text { text: modelData.label; color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 11; font.weight: Font.ExtraBold; font.letterSpacing: 1.1 }
-                        Text { text: "· " + modelData.items.length; color: Theme.textMuted; font.family: Theme.monoFont; font.pixelSize: 11 }
+                        Text { text: modelData.label; color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 11; font.weight: Font.DemiBold; font.letterSpacing: 0 }
+                        Text { text: "· " + modelData.items.length; color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 11 }
                     }
                     Flow {
                         width: parent.width; spacing: 8
@@ -118,13 +118,13 @@ Item {
                                 Accessible.name: modelData.label + " " + modelData.detail
                                 onClicked: { root.selected(modelData.value); root.expanded = false }
                                 background: Rectangle {
-                                    radius: 12; color: tile.selected ? Theme.focus : tile.hovered ? DesktopTokens.raisedStrong : DesktopTokens.raised
+                                    radius: DesktopTokens.radius; color: tile.selected ? Theme.focus : tile.hovered ? DesktopTokens.hover : Theme.surfaceRaised
                                     border.width: 1; border.color: tile.activeFocus ? Theme.focus : DesktopTokens.seamSoft
                                 }
                                 Column {
                                     anchors.centerIn: parent; spacing: 0
-                                    Text { anchors.horizontalCenter: parent.horizontalCenter; text: tile.modelData.label; color: tile.selected ? Theme.focusText : Theme.label; font.family: Theme.bodyFont; font.pixelSize: 14; font.weight: Font.ExtraBold }
-                                    Text { anchors.horizontalCenter: parent.horizontalCenter; text: tile.modelData.detail; color: tile.selected ? Qt.rgba(Theme.focusText.r,Theme.focusText.g,Theme.focusText.b,0.64) : Theme.textMuted; font.family: Theme.monoFont; font.pixelSize: DesktopTokens.px(10.5) }
+                                    Text { anchors.horizontalCenter: parent.horizontalCenter; text: tile.modelData.label; color: tile.selected ? Theme.focusText : Theme.label; font.family: Theme.bodyFont; font.pixelSize: 14; font.weight: Font.DemiBold }
+                                    Text { anchors.horizontalCenter: parent.horizontalCenter; text: tile.modelData.detail; color: tile.selected ? Theme.focusText : Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.px(10.5) }
                                 }
                             }
                         }
@@ -149,7 +149,7 @@ Item {
             width: moreLabel.implicitWidth + 28; height: 26
             onClicked: gridFlick.contentY = Math.min(gridFlick.contentHeight - gridFlick.height,
                 gridFlick.contentY + gridFlick.height * 0.8)
-            background: Rectangle { radius: 13; color: Theme.shell; border.width: 1; border.color: parent.activeFocus ? Theme.focus : DesktopTokens.seamSoft }
+            background: Rectangle { radius: DesktopTokens.radius; color: Theme.surfaceRaised; border.width: 1; border.color: parent.activeFocus ? Theme.focus : DesktopTokens.seamSoft }
             Text { id: moreLabel; anchors.centerIn: parent; text: qsTr("Scroll for more"); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 11; font.weight: Font.Bold }
         }
     }

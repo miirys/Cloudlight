@@ -44,9 +44,9 @@ Row {
             x: slider.leftPadding
             y: slider.topPadding + slider.availableHeight / 2 - height / 2
             width: slider.availableWidth
-            height: DesktopTokens.px(8)
-            radius: DesktopTokens.px(3)
-            color: DesktopTokens.raisedStrong
+            height: DesktopTokens.px(4)
+            radius: DesktopTokens.px(2)
+            color: Theme.surfaceStrong
             Rectangle {
                 width: slider.visualPosition * parent.width
                 height: parent.height
@@ -57,11 +57,11 @@ Row {
         handle: Rectangle {
             x: slider.leftPadding + slider.visualPosition * (slider.availableWidth - width)
             y: slider.topPadding + slider.availableHeight / 2 - height / 2
-            width: DesktopTokens.px(22)
-            height: DesktopTokens.px(22)
-            radius: DesktopTokens.px(11)
+            width: DesktopTokens.px(16)
+            height: DesktopTokens.px(16)
+            radius: width / 2
             color: Theme.label
-            border.width: slider.activeFocus ? 2 : 0
+            border.width: slider.activeFocus ? 3 : 0
             border.color: DesktopTokens.focus
         }
     }
@@ -71,8 +71,8 @@ Row {
         height: DesktopTokens.px(28)
         text: Number(slider.value).toFixed(root.decimals) + root.suffix
         color: Theme.label
-        font.family: Theme.monoFont
-        font.pixelSize: DesktopTokens.px(14)
+        font.family: Theme.bodyFont
+        font.pixelSize: DesktopTokens.px(13)
         font.weight: Font.Bold
         horizontalAlignment: Text.AlignRight
         verticalAlignment: Text.AlignVCenter

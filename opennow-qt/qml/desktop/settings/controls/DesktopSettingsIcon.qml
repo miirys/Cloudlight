@@ -41,7 +41,7 @@ Image {
         ? InputPromptIcons.sourceFor(glyph, ink)
         : "data:image/svg+xml;utf8," + encodeURIComponent(
         String(shapes[glyph] || shapes.monitor).replace("<svg ",
-            '<svg color="' + Qt.rgba(ink.r, ink.g, ink.b, 1) + '" '))
+            '<svg color="' + ink + '" '))
     // QColor serializes translucent colors as #AARRGGBB, which SVG does not
     // interpret as Qt does. Apply alpha to the image, not the SVG color string.
     opacity: ink.a

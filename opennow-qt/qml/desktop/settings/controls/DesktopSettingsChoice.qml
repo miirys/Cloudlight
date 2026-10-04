@@ -44,9 +44,9 @@ Item {
     Rectangle {
         visible: reveal.present
         opacity: reveal.progress
-        x: DesktopTokens.px(8); width: parent.width-DesktopTokens.px(16); height: parent.height
-        radius: DesktopTokens.px(16); color: DesktopTokens.raised
-        border.width: 1; border.color: Theme.focus
+        x: 0; y: header.height; width: parent.width; height: parent.height - header.height
+        radius: DesktopTokens.radius; color: Theme.surface
+        border.width: 1; border.color: Theme.seam
     }
     DesktopSettingsRow {
         id: header
@@ -65,10 +65,11 @@ Item {
     }
     DesktopSettingsField {
         id: search
-        visible: reveal.present
         enabled: root.expanded
         opacity: reveal.progress
-        x: DesktopTokens.settingsInset; y: header.height; width: parent.width - DesktopTokens.settingsInset * 2
+        x: DesktopTokens.px(12); y: header.height + DesktopTokens.px(12); width: parent.width - DesktopTokens.px(24)
+        visible: reveal.present && root.items.length > 8
+        height: visible ? implicitHeight : 0
         placeholderText: root.filterPlaceholder
         onTextChanged: scroll.contentY = 0
         Accessible.name: root.title + ": " + placeholderText
@@ -79,7 +80,7 @@ Item {
         visible: reveal.present
         enabled: root.expanded
         opacity: reveal.progress
-        x: DesktopTokens.settingsInset; y: search.y + search.height + DesktopTokens.px(12); width: parent.width-DesktopTokens.settingsInset * 2
+        x: DesktopTokens.px(4); y: search.y + search.height + DesktopTokens.px(4); width: parent.width - DesktopTokens.px(8)
         height: root.optionsHeight
         contentWidth: width; contentHeight: grid.implicitHeight
         clip: true; boundsBehavior: Flickable.StopAtBounds
@@ -87,21 +88,22 @@ Item {
         Keys.onEscapePressed: event => { root.expanded = false; event.accepted = true }
         Column {
             id: grid
-            width: parent.width - 12; spacing: 14
+            width: parent.width - 12; spacing: DesktopTokens.px(6)
             Repeater {
                 model: root.groups
                 delegate: Column {
                     required property var modelData
-                    width: grid.width; spacing: 8
+                    width: grid.width; spacing: 0
                     Text {
                         visible: modelData.label !== ""
+                        leftPadding: DesktopTokens.px(12); topPadding: DesktopTokens.px(6); bottomPadding: DesktopTokens.px(4)
                         text: modelData.label; color: Theme.textMuted
-                        font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.px(11)
-                        font.weight: Font.ExtraBold; font.letterSpacing: 1
+                        font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.px(12)
+                        font.weight: Font.DemiBold; font.capitalization: Font.Capitalize
                     }
                     Flow {
-                        width: parent.width; spacing: 8
-                        readonly property int columns: Math.max(1, Math.min(root.maximumColumns || 1000, Math.floor((width+8)/(DesktopTokens.px(200)+8))))
+                        width: parent.width; spacing: 0
+                        readonly property int columns: 1
                         Repeater {
                             model: modelData.items
                             delegate: AbstractButton {
@@ -109,8 +111,8 @@ Item {
                                 required property var modelData
                                 readonly property bool chosen: enabled && String(modelData.value) === String(root.value)
                                 objectName: "settingsChoice-" + String(modelData.value)
-                                width: Math.floor((parent.width-(parent.columns-1)*8)/parent.columns)
-                                height: DesktopTokens.px(56)
+                                width: parent.width
+                                height: DesktopTokens.px(tile.modelData.detail ? 48 : 38)
                                 enabled: !modelData.disabled; opacity: enabled ? 1 : 0.45
                                 hoverEnabled: true
                                 Accessible.name: String(modelData.label) + " " + String(modelData.detail || "")
@@ -119,10 +121,15 @@ Item {
                                 Keys.onEnterPressed: event => { tile.clicked(); event.accepted = true }
                                 Keys.onEscapePressed: event => { root.expanded = false; event.accepted = true }
                                 background: Rectangle {
-                                    radius: 12
-                                    color: tile.chosen ? Theme.focus : tile.hovered ? DesktopTokens.raisedStrong : DesktopTokens.raised
-                                    border.width: tile.activeFocus ? 2 : 1
-                                    border.color: tile.activeFocus ? Theme.focus : DesktopTokens.seamSoft
+                                    radius: DesktopTokens.radius
+                                    color: tile.hovered || tile.activeFocus ? DesktopTokens.hover : "transparent"
+                                    border.width: tile.activeFocus ? 2 : 0
+                                    border.color: Theme.focus
+                                    Rectangle {
+                                        visible: tile.chosen
+                                        x: 0; y: DesktopTokens.px(8); width: DesktopTokens.px(3); height: parent.height - DesktopTokens.px(16)
+                                        color: Theme.focus
+                                    }
                                 }
                                 DesktopSettingsIcon {
                                     id: optionIcon
@@ -131,14 +138,14 @@ Item {
                                     anchors.verticalCenter: parent.verticalCenter
                                     width: 20; height: 20
                                     glyph: tile.modelData.glyph || "controller"
-                                    ink: tile.chosen ? Theme.focusText : Theme.label
+                                    ink: Theme.label
                                 }
                                 Column {
                                     anchors.verticalCenter: parent.verticalCenter
-                                    x: optionIcon.visible ? 42 : 12
+                                    x: optionIcon.visible ? 42 : DesktopTokens.px(14)
                                     width: parent.width - x - 12; spacing: 2
-                                    Text { width: parent.width; text: tile.modelData.label; color: tile.chosen ? Theme.focusText : Theme.label; font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.px(13); font.weight: Font.ExtraBold; elide: Text.ElideRight }
-                                    Text { visible: text !== ""; width: parent.width; text: tile.modelData.detail || ""; color: tile.chosen ? Theme.focusText : tile.modelData.detailColor || Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.px(12); elide: Text.ElideRight }
+                                    Text { width: parent.width; text: tile.modelData.label; color: tile.chosen ? Theme.focus : Theme.label; font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.px(14); font.weight: tile.chosen ? Font.DemiBold : Font.Normal; elide: Text.ElideRight }
+                                    Text { visible: text !== ""; width: parent.width; text: tile.modelData.detail || ""; color: tile.modelData.detailColor || Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.px(12); elide: Text.ElideRight }
                                 }
                             }
                         }

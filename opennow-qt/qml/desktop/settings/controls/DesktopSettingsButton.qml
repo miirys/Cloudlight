@@ -11,7 +11,7 @@ Button {
     property string suffix: ""
     property string keySequence: ""
 
-    implicitHeight: menu ? DesktopTokens.px(40) : compact ? DesktopTokens.px(30) : DesktopTokens.controlHeight
+    implicitHeight: compact ? DesktopTokens.px(28) : DesktopTokens.px(32)
     implicitWidth: Math.max(DesktopTokens.px(compact ? 68 : 84), (keySequence !== "" ? bindingGlyph.implicitWidth : label.implicitWidth) + leftPadding + rightPadding
         + (menu ? DesktopTokens.px(22) : 0) + (suffix !== "" ? suffixGlyph.implicitWidth + DesktopTokens.px(8) : 0))
     hoverEnabled: true
@@ -22,14 +22,12 @@ Button {
     bottomPadding: 0
 
     background: Rectangle {
-        radius: control.menu ? height / 2 : DesktopTokens.px(compact ? 9 : 10)
-        color: control.primary ? Theme.focus
-             : control.danger ? Qt.rgba(1, 0.32, 0.32, control.down ? 0.18 : 0.09)
-             : control.menu ? (Theme.lightMode ? Qt.rgba(0,0,0,0.04) : Qt.rgba(0,0,0,0.35))
-             : control.down || control.hovered ? DesktopTokens.raisedStrong : DesktopTokens.raised
-        border.width: control.activeFocus ? 2 : 1
-        border.color: control.activeFocus ? DesktopTokens.focus
-                    : control.danger ? Qt.rgba(1, 0.48, 0.48, 0.28)
+        radius: DesktopTokens.radius
+        color: control.primary ? (control.down ? Qt.darker(Theme.focus, 1.15) : control.hovered ? Qt.lighter(Theme.focus, 1.08) : Theme.focus)
+             : control.down || control.hovered ? Theme.surfaceHover : Theme.surfaceRaised
+        border.width: control.activeFocus ? 2 : control.primary ? 0 : 1
+        border.color: control.activeFocus ? Theme.label
+                    : control.danger ? Theme.coral
                     : Theme.seam
         Behavior on color { ColorAnimation { duration: Theme.focusDuration } }
     }
@@ -49,10 +47,10 @@ Button {
                 width: Math.max(0, Math.min(implicitWidth, control.availableWidth
                     - (control.menu ? DesktopTokens.px(22) : 0) - (control.suffix !== "" ? suffixGlyph.implicitWidth + DesktopTokens.px(8) : 0)))
                 elide: Text.ElideRight
-                color: control.primary ? Theme.focusText : control.danger ? (Theme.lightMode ? "#9F1239" : "#FFC2C2") : Theme.label
+                color: control.primary ? Theme.focusText : control.danger ? Theme.coral : Theme.label
                 font.family: Theme.bodyFont
                 font.pixelSize: DesktopTokens.px(13)
-                font.weight: Font.Bold
+                font.weight: control.primary ? Font.DemiBold : Font.Medium
                 anchors.verticalCenter: parent.verticalCenter
             }
             KeyboardGlyph {

@@ -36,7 +36,7 @@ Item {
         color: root.ink
         font.family: DesktopTokens.displayFont
         font.pixelSize: root.fontPixelSize
-        font.weight: Font.Black
-        font.letterSpacing: -root.fontPixelSize * 0.02
+        font.weight: Font.Bold
+        font.letterSpacing: 0
     }
 }

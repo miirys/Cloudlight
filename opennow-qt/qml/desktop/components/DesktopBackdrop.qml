@@ -52,9 +52,9 @@ Item {
         visible: root.signIn
         anchors.fill: parent
         gradient: Gradient {
-            GradientStop { position: 0; color: "#B80B0F1A" }
-            GradientStop { position: 0.4; color: "#990B0F1A" }
-            GradientStop { position: 1; color: "#D60B0F1A" }
+            GradientStop { position: 0; color: Qt.rgba(Theme.shell.r, Theme.shell.g, Theme.shell.b, 0.72) }
+            GradientStop { position: 0.4; color: Qt.rgba(Theme.shell.r, Theme.shell.g, Theme.shell.b, 0.6) }
+            GradientStop { position: 1; color: Qt.rgba(Theme.shell.r, Theme.shell.g, Theme.shell.b, 0.84) }
         }
     }
     Rectangle {
@@ -62,21 +62,20 @@ Item {
         anchors.fill: parent
         gradient: Gradient {
             orientation: Gradient.Horizontal
-            GradientStop { position: 0; color: "#F2070A11" }
-            GradientStop { position: 0.5; color: "#00000000" }
-            GradientStop { position: 1; color: "#F2070A11" }
+            GradientStop { position: 0; color: Qt.rgba(Theme.shell.r, Theme.shell.g, Theme.shell.b, 0.95) }
+            GradientStop { position: 0.5; color: Qt.rgba(Theme.shell.r, Theme.shell.g, Theme.shell.b, 0) }
+            GradientStop { position: 1; color: Qt.rgba(Theme.shell.r, Theme.shell.g, Theme.shell.b, 0.95) }
         }
     }
 
     Rectangle {
         anchors.fill: parent
-        visible: !root.signIn && !root.customBackground && String(ShellStore.settings.desktopBackground || "art") !== "solid"
-        // A gradient-only background must remain visible above the darkening
-        // layers used for artwork. Solid mode has neither artwork nor tint.
-        z: String(ShellStore.settings.desktopBackground || "art") === "gradient" ? 1 : 0
+        // Only the explicit "gradient" background gets an accent wash; it sits
+        // above the darkening layers used for artwork.
+        visible: !root.signIn && !root.customBackground && String(ShellStore.settings.desktopBackground || "art") === "gradient"
+        z: 1
         gradient: Gradient {
-            GradientStop { position: 0; color: Qt.rgba(Theme.focus.r,Theme.focus.g,Theme.focus.b,
-                String(ShellStore.settings.desktopBackground || "art") === "gradient" ? 0.22 : 0.07) }
+            GradientStop { position: 0; color: Qt.rgba(Theme.focus.r, Theme.focus.g, Theme.focus.b, 0.22) }
             GradientStop { position: 0.4; color: "transparent" }
         }
     }

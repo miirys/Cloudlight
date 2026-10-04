@@ -15,8 +15,8 @@ Item {
     property var disabledHint: ""
     signal selected(int index, var value)
 
-    implicitWidth: options.reduce((total, option) => total + root.widthFor(option), DesktopTokens.px(8))
-    implicitHeight: DesktopTokens.px(40)
+    implicitWidth: options.reduce((total, option) => total + root.widthFor(option), 0)
+    implicitHeight: DesktopTokens.px(32)
 
     function optionValue(option) {
         return (typeof option === "object" && option !== null && option.value !== undefined)
@@ -62,9 +62,16 @@ Item {
         return false
     }
 
-    Rectangle { anchors.fill: parent; radius: height / 2; color: Theme.lightMode ? Qt.rgba(0,0,0,0.04) : Qt.rgba(0,0,0,0.35); border.width: 1; border.color: Theme.seam }
+    // Flat button group: one outlined box, hairline separators, selected = accent fill.
+    Rectangle {
+        anchors.fill: parent
+        radius: DesktopTokens.radius
+        color: Theme.surfaceRaised
+        border.width: 1
+        border.color: Theme.seam
+    }
     Row {
-        x: DesktopTokens.px(4); y: DesktopTokens.px(4)
+        x: 1; y: 1
         spacing: 0
         Repeater {
             id: optionsRepeater
@@ -77,27 +84,33 @@ Item {
                 readonly property bool locked: root.isDisabled(modelData)
                 objectName: "settingsOption-" + String(root.optionValue(modelData))
                 readonly property string label: root.optionLabel(modelData)
-                width: root.widthFor(modelData)
-                height: root.height - DesktopTokens.px(8)
+                width: root.widthFor(modelData) - (index === optionsRepeater.count - 1 ? 2 : 0)
+                height: root.height - 2
                 hoverEnabled: true
                 enabled: !locked
                 onClicked: root.selected(chip.index, chip.modelData)
                 background: Rectangle {
-                    radius: height / 2
-                    color: chip.on ? Theme.focus : chip.hovered ? DesktopTokens.raised : "transparent"
+                    radius: DesktopTokens.radius - 1
+                    color: chip.on ? Theme.focus : chip.hovered ? Theme.surfaceHover : "transparent"
                     border.width: chip.activeFocus ? 2 : 0
-                    border.color: Theme.focus
+                    border.color: Theme.label
+                    Rectangle {
+                        visible: chip.index > 0 && !chip.on
+                        x: 0; y: DesktopTokens.px(6)
+                        width: 1; height: parent.height - DesktopTokens.px(12)
+                        color: Theme.seam
+                    }
                 }
-                opacity: chip.locked ? 0.45 : 1
+                opacity: chip.locked ? 0.4 : 1
 
                 Text {
                     anchors.centerIn: parent
                     width: parent.width - DesktopTokens.px(8)
                     text: chip.label
-                    color: chip.on ? Theme.focusText : DesktopTokens.textBody
+                    color: chip.on ? Theme.focusText : Theme.label
                     font.family: Theme.bodyFont
                     font.pixelSize: DesktopTokens.px(13)
-                    font.weight: chip.on ? Font.ExtraBold : Font.Bold
+                    font.weight: chip.on ? Font.DemiBold : Font.Normal
                     horizontalAlignment: Text.AlignHCenter
                     elide: Text.ElideRight
                 }

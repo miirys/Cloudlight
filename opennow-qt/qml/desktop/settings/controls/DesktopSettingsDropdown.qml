@@ -23,8 +23,8 @@ Item {
     readonly property int menuWidth: Math.max(DesktopTokens.px(320), Math.min(root.width - DesktopTokens.px(24), DesktopTokens.px(400)))
     readonly property int menuMaxHeight: DesktopTokens.px(640)
     readonly property int menuMargin: DesktopTokens.px(8)
-    readonly property int menuRadius: DesktopTokens.px(14)
-    readonly property int rowRadius: DesktopTokens.px(8)
+    readonly property int menuRadius: DesktopTokens.radius
+    readonly property int rowRadius: DesktopTokens.px(3)
 
     readonly property int menuContentHeight: {
         let height = 0
@@ -87,7 +87,7 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        color: Qt.rgba(0, 0, 0, 0.12 * reveal.progress)
+        color: "transparent"
         MouseArea { anchors.fill: parent; onClicked: root.dismiss() }
     }
 
@@ -137,10 +137,10 @@ Item {
                             anchors.verticalCenter: parent.verticalCenter
                             text: modelData.label
                             color: Theme.textMuted
-                            font.family: DesktopTokens.monoFont
-                            font.pixelSize: DesktopTokens.tinySize
+                            font.family: DesktopTokens.bodyFont
+                            font.pixelSize: DesktopTokens.captionSize
                             font.weight: Font.DemiBold
-                            font.letterSpacing: 0.8
+                            font.letterSpacing: 0
                         }
 
                         Rectangle {
@@ -148,7 +148,7 @@ Item {
                             opacity: parent.unavailable ? 0.42 : 1
                             anchors.fill: parent
                             radius: root.rowRadius
-                            color: rowHover.hovered || index === root.keyboardIndex ? DesktopTokens.raisedStrong : (on ? DesktopTokens.raised : "transparent")
+                            color: rowHover.hovered || index === root.keyboardIndex ? DesktopTokens.hover : "transparent"
                             border.width: on ? 1 : 0
                             border.color: DesktopTokens.focus
 
@@ -187,8 +187,8 @@ Item {
                                     height: parent.height
                                     text: modelData.detail || ""
                                     color: modelData.detailColor || DesktopTokens.textMuted
-                                    font.family: DesktopTokens.monoFont
-                                    font.pixelSize: DesktopTokens.tinySize
+                                    font.family: DesktopTokens.bodyFont
+                                    font.pixelSize: DesktopTokens.captionSize
                                     font.weight: Font.DemiBold
                                     verticalAlignment: Text.AlignVCenter
                                 }
@@ -224,8 +224,8 @@ Item {
                         anchors.verticalCenter: parent.verticalCenter
                         text: root.footer
                         color: Theme.textMuted
-                        font.family: DesktopTokens.monoFont
-                        font.pixelSize: DesktopTokens.tinySize
+                        font.family: DesktopTokens.bodyFont
+                        font.pixelSize: DesktopTokens.captionSize
                         font.weight: Font.DemiBold
                     }
 
@@ -237,15 +237,15 @@ Item {
                         Text {
                             text: qsTr("ENTER  Pick")
                             color: Theme.textMuted
-                            font.family: DesktopTokens.monoFont
-                            font.pixelSize: DesktopTokens.tinySize
+                            font.family: DesktopTokens.bodyFont
+                            font.pixelSize: DesktopTokens.captionSize
                             font.weight: Font.DemiBold
                         }
                         Text {
                             text: qsTr("ESC  Cancel")
                             color: Theme.textMuted
-                            font.family: DesktopTokens.monoFont
-                            font.pixelSize: DesktopTokens.tinySize
+                            font.family: DesktopTokens.bodyFont
+                            font.pixelSize: DesktopTokens.captionSize
                             font.weight: Font.DemiBold
                         }
                     }
