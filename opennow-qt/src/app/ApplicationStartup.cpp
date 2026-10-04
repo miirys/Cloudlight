@@ -99,6 +99,7 @@ static int runApplicationSession(int argc, char *argv[], QString &restartExecuta
     qSetMessagePattern(u"%{time yyyy-MM-ddTHH:mm:ss.zzz} %{type} %{category}: %{message}"_s);
     const QStringList bundledFonts = {
         u":/qt/qml/OpenNOW/res/fonts/Nunito-Variable.ttf"_s,
+        u":/qt/qml/OpenNOW/res/fonts/InterVariable.ttf"_s,
         u":/qt/qml/OpenNOW/res/fonts/IBMPlexMono-Regular.ttf"_s,
         u":/qt/qml/OpenNOW/res/fonts/IBMPlexMono-Medium.ttf"_s,
         u":/qt/qml/OpenNOW/res/fonts/IBMPlexMono-Bold.ttf"_s,
@@ -107,7 +108,7 @@ static int runApplicationSession(int argc, char *argv[], QString &restartExecuta
         if (QFontDatabase::addApplicationFont(fontPath) == -1)
             qWarning("Could not load bundled font %s", qUtf8Printable(fontPath));
     }
-    QFont applicationFont(QStringLiteral("Nunito"));
+    QFont applicationFont(QStringLiteral("Inter Variable"));
     applicationFont.setHintingPreference(QFont::PreferNoHinting);
     applicationFont.setStyleStrategy(QFont::PreferAntialias);
     application.setFont(applicationFont);

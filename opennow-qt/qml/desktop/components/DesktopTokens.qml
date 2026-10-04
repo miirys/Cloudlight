@@ -25,25 +25,29 @@ QtObject {
     }
 
     readonly property color shell: Theme.shell
-    readonly property color rail: Qt.rgba(Theme.shell.r, Theme.shell.g, Theme.shell.b, 0.90)
-    readonly property color topBar: Qt.rgba(Theme.shell.r, Theme.shell.g, Theme.shell.b, 0.66)
-    readonly property color statusBar: Qt.rgba(Theme.shell.r, Theme.shell.g, Theme.shell.b, 0.78)
-    readonly property color surface: Theme.glass
-    readonly property color raised: Theme.lightMode ? Qt.rgba(0.04, 0.06, 0.10, 0.08) : "#14FFFFFF"
-    readonly property color raisedStrong: Theme.lightMode ? Qt.rgba(0.04, 0.06, 0.10, 0.12) : "#1FFFFFFF"
+    // All chrome is opaque: the rail, top bar and status bar sit on solid surfaces.
+    readonly property color rail: Theme.surface
+    readonly property color topBar: Theme.shell
+    readonly property color statusBar: Theme.surface
+    readonly property color surface: Theme.surface
+    readonly property color raised: Theme.surfaceRaised
+    readonly property color raisedStrong: Theme.surfaceStrong
+    readonly property color hover: Theme.surfaceHover
     readonly property color seam: Theme.seam
-    readonly property color seamSoft: Theme.lightMode ? Qt.rgba(0.04, 0.06, 0.10, 0.06) : "#0FFFFFFF"
+    readonly property color seamSoft: Theme.lightMode ? "#E0E0E0" : "#2A2A2A"
     readonly property color text: Theme.label
     readonly property color textHigh: Theme.label
-    readonly property color textBody: Theme.textMuted
+    readonly property color textBody: Theme.lightMode ? "#3D3D3D" : "#C8C8C8"
     readonly property color textMuted: Theme.textMuted
-    readonly property color textFaint: Theme.lightMode ? Qt.rgba(0.04, 0.06, 0.10, 0.32) : "#52FFFFFF"
+    readonly property color textFaint: Theme.lightMode ? "#8A8A8A" : "#6E6E6E"
     readonly property color focus: Theme.focus
-    readonly property color green: "#1DB954"
-    readonly property color mint: "#56E6A5"
-    readonly property color amber: "#FFD166"
-    readonly property color ledAmber: "#F5A623"
-    readonly property color danger: "#FF8A80"
+    readonly property color green: Theme.mint
+    readonly property color mint: Theme.mint
+    readonly property color amber: Theme.yellow
+    readonly property color ledAmber: Theme.yellow
+    readonly property color danger: Theme.coral
+    readonly property int radius: px(Theme.radius)
+    readonly property int radiusLarge: px(Theme.radiusLarge)
     readonly property string displayFont: Theme.displayFont
     readonly property string bodyFont: Theme.bodyFont
     readonly property string monoFont: Theme.monoFont
