@@ -12,6 +12,8 @@ FocusScope {
     property string subtitle: qsTr("Your library")
     property bool searchVisible: route !== "settings" && route.indexOf("settings-") !== 0 && route !== "friends" && route !== "updates"
     property string searchText: ""
+    property bool headerOverlay: false
+    property bool headerSolid: true
     property date now: new Date()
     readonly property bool friendsAvailable: Boolean(ShellStore.socialCapabilities && ShellStore.socialCapabilities.friendsAvailable)
     readonly property var navItems: {
@@ -74,7 +76,27 @@ FocusScope {
             objectName: "desktopTopBar"
             width: parent.width; height: root.headerHeight
             z: 2
-            color: DesktopTokens.topBar
+            color: "transparent"
+
+            // Solid bar on every page; over the home hero it starts as a scrim
+            // and fills in once the hero scrolls away.
+            Rectangle {
+                anchors.fill: parent
+                color: DesktopTokens.topBar
+                opacity: !root.headerOverlay || root.headerSolid ? 1 : 0
+                Behavior on opacity { NumberAnimation { duration: DesktopTokens.motionDuration } }
+            }
+            Rectangle {
+                anchors.left: parent.left; anchors.right: parent.right; anchors.top: parent.top
+                height: parent.height * 1.6
+                visible: opacity > 0
+                opacity: root.headerOverlay && !root.headerSolid ? 1 : 0
+                Behavior on opacity { NumberAnimation { duration: DesktopTokens.motionDuration } }
+                gradient: Gradient {
+                    GradientStop { position: 0; color: Qt.rgba(0, 0, 0, 0.7) }
+                    GradientStop { position: 1; color: Qt.rgba(0, 0, 0, 0) }
+                }
+            }
 
             DesktopBrandLockup {
                 id: brand
@@ -271,9 +293,9 @@ FocusScope {
 
         Item {
             id: contentHost
-            x: 0; y: root.headerHeight
+            x: 0; y: root.headerOverlay ? 0 : root.headerHeight
             width: parent.width
-            height: parent.height - root.headerHeight
+            height: parent.height - y
             clip: true
         }
     }

@@ -69,7 +69,7 @@ QtObject {
     readonly property int displaySize: px(44)
     // Horizontal safe margin: 96px at 1080p, the 10-foot overscan guide.
     readonly property int safeX: px(72)
-    readonly property int focusOutline: Math.max(3, px(2))
+    readonly property int focusOutline: Math.max(3, px(3))
     readonly property int statusBarHeight: px(52)
     readonly property int rowHeight: px(60)
     readonly property int controlHeight: px(38)

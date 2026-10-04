@@ -1,11 +1,14 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Effects
 import OpenNOW
 
+// GeForce NOW home: a full-bleed rotating hero for recently played games,
+// then landscape rails. Everything is opaque; art fades into the shell colour
+// instead of sitting in translucent cards.
 FocusScope {
     id: root
+    objectName: "desktopHomeScreen"
 
     readonly property string pageTitle: qsTr("Home")
     readonly property string pageSubtitle: ShellStore.catalogTotalCount
@@ -15,6 +18,10 @@ FocusScope {
     property int focusIndex: 0
     property bool active: true
     property double lastPlayedNowMs: Date.now()
+    property int heroIndex: 0
+    property real reveal: AppController.reducedMotion ? 1 : 0
+    // Read by the shell: the top bar stays a scrim over the hero, solid below it.
+    readonly property bool headerSolid: contentFlick.contentY > root.heroHeight - DesktopTokens.topBarHeight * 2
 
     Timer {
         interval: 1000
@@ -39,28 +46,38 @@ FocusScope {
         list.sort((left, right) => String(right.lastPlayed || "").localeCompare(String(left.lastPlayed || "")))
         return list
     }
-    readonly property var heroGame: root.sortedRecent.length ? root.sortedRecent[0] : null
-    readonly property string heroArtwork: DesktopTokens.decodeArtworkUrl(
-        DesktopTokens.artworkUrl(root.heroGame, true))
-    readonly property var jumpGames: root.takeGames(root.sortedRecent, 1, 12)
+    readonly property var heroGames: root.takeGames(root.sortedRecent, 0, 5)
+    readonly property var heroGame: root.heroGames.length
+        ? root.heroGames[Math.min(root.heroIndex, root.heroGames.length - 1)] : null
+    readonly property var jumpGames: root.takeGames(root.sortedRecent, 1, 20)
     readonly property var favoriteGames: {
         const list = []
         for (let i = 0; i < root.games.length; ++i) {
             if (ShellStore.isFavorite(root.games[i]))
                 list.push(root.games[i])
         }
-        return list.length ? list : root.takeGames(root.games, 0, 12)
+        return list.length ? list : root.takeGames(root.games, 0, 20)
     }
-    readonly property var newGames: root.takeGames(root.games, Math.max(0, root.games.length - 12), 12)
-    readonly property bool friendsAvailable: Boolean(ShellStore.socialCapabilities && ShellStore.socialCapabilities.friendsAvailable)
-    readonly property int railGap: 14
-    readonly property int railInnerWidth: Math.max(200, contentFlick.width - 48)
-    readonly property int homeTileCount: {
-        const fit = Math.max(5, Math.floor((root.railInnerWidth + root.railGap) / (112 + root.railGap)))
-        return Math.max(1, Math.min(fit, 10))
+    readonly property var newGames: root.takeGames(root.games, Math.max(0, root.games.length - 20), 20).reverse()
+    readonly property var rails: [
+        { title: qsTr("Jump back in"), games: root.jumpGames },
+        { title: qsTr("Favourites"), games: root.favoriteGames },
+        { title: qsTr("New in your library"), games: root.newGames }
+    ]
+
+    readonly property int safeX: DesktopTokens.safeX
+    readonly property int railGap: DesktopTokens.px(16)
+    // Five landscape tiles across, with the sixth peeking in to show the rail scrolls.
+    readonly property int tileWidth: Math.floor((root.width - root.safeX * 2 - root.railGap * 4) / 5.3)
+    readonly property int tileHeight: Math.round(root.tileWidth * 9 / 16)
+    readonly property int heroHeight: Math.max(DesktopTokens.px(380), Math.round(root.height * 0.7))
+
+    // reveal runs linearly over revealSpan ms; each element eases its own slice.
+    readonly property int revealSpan: 1100
+    function revealAt(delay, duration) {
+        const t = Math.max(0, Math.min(1, (root.reveal * root.revealSpan - delay) / duration))
+        return 1 - Math.pow(1 - t, 4)
     }
-    readonly property int homeTileWidth: Math.max(112, Math.floor((root.railInnerWidth - root.railGap * (root.homeTileCount - 1)) / root.homeTileCount))
-    readonly property int homeTileHeight: Math.round(root.homeTileWidth * 168 / 112)
 
     function takeGames(source, start, limit) {
         const list = source || []
@@ -70,12 +87,6 @@ FocusScope {
         return result
     }
 
-    ArtworkSource {
-        id: heroArtworkSource
-        sourceUrl: root.heroArtwork
-        active: root.active
-    }
-
     function heroMeta() {
         const game = root.heroGame
         if (!game)
@@ -83,7 +94,7 @@ FocusScope {
         const last = DesktopTokens.relativeLastPlayed(game.lastPlayed, root.lastPlayedNowMs)
         const hours = game.hoursPlayed ? qsTr("%1 h played").arg(game.hoursPlayed) : ""
         if (last !== "" && hours !== "")
-            return last + " · " + hours
+            return last + "  ·  " + hours
         if (last !== "")
             return last
         if (hours !== "")
@@ -91,66 +102,58 @@ FocusScope {
         return qsTr("Ready to stream from your library")
     }
 
-    function streamChip() {
-        const res = String(ShellStore.settings.resolution || "")
-        const fps = Number(ShellStore.settings.fps || 0)
-        const codec = String(ShellStore.settings.codec || "auto").toUpperCase()
-        const parts = []
-        if (res.indexOf("x") > 0)
-            parts.push(res.split("x")[1] + "p")
-        if (fps > 0)
-            parts.push(fps + " fps")
-        if (codec !== "")
-            parts.push(codec)
-        return parts.length ? parts.join(" · ") : qsTr("Stream ready")
+    function zoneGames(zone) {
+        return zone >= 1 && zone <= root.rails.length ? root.rails[zone - 1].games : []
     }
 
-    function zoneGames(zone) {
-        if (zone === 1) return root.jumpGames
-        if (zone === 2) return root.favoriteGames
-        return root.newGames
+    function zoneCount(zone) {
+        return zone === 0 ? 2 : root.zoneGames(zone).length
     }
 
     function setSelection(zone, index) {
-        root.focusZone = Math.max(0, Math.min(3, zone))
-        const count = root.focusZone === 0 ? 2 : root.zoneGames(root.focusZone).length
+        root.focusZone = Math.max(0, Math.min(root.rails.length, zone))
+        const count = root.zoneCount(root.focusZone)
         root.focusIndex = Math.max(0, Math.min(Math.max(0, count - 1), index))
+        const rail = root.focusZone > 0 ? railRepeater.itemAt(root.focusZone - 1) : null
+        if (rail)
+            rail.currentIndex = root.focusIndex
         root.ensureSelectionVisible()
     }
 
     function ensureSelectionVisible() {
-        if (root.focusZone <= 1) {
-            if (contentFlick.contentY > 32)
-                contentFlick.contentY = 0
-            return
+        let target = 0
+        if (root.focusZone > 0) {
+            const rail = railRepeater.itemAt(root.focusZone - 1)
+            if (!rail)
+                return
+            // Keep the focused rail high on screen with the hero edge peeking above.
+            target = Math.max(0, Math.min(contentFlick.contentHeight - contentFlick.height,
+                                          rail.y - DesktopTokens.topBarHeight - DesktopTokens.px(40)))
         }
-        const zoneTop = root.focusZone === 2
-            ? (heroRow.height + 18 + jumpRail.height + 18)
-            : (heroRow.height + 18 + jumpRail.height + 18 + playingRail.height + 18)
-        const zoneBottom = zoneTop + 30 + root.homeTileHeight
-        if (zoneBottom > contentFlick.contentY + contentFlick.height - 12)
-            contentFlick.contentY = Math.min(contentFlick.contentHeight - contentFlick.height,
-                                             zoneBottom - contentFlick.height + 12)
-        else if (zoneTop < contentFlick.contentY + 12)
-            contentFlick.contentY = Math.max(0, zoneTop - 12)
+        if (Math.abs(target - contentFlick.contentY) < 1)
+            return
+        scrollAnimation.to = target
+        scrollAnimation.restart()
     }
 
     function moveHorizontal(delta) {
-        const count = root.focusZone === 0 ? 2 : root.zoneGames(root.focusZone).length
+        const count = root.zoneCount(root.focusZone)
         if (count <= 0)
             return
         root.setSelection(root.focusZone, Math.max(0, Math.min(count - 1, root.focusIndex + delta)))
     }
 
     function moveVertical(delta) {
-        const nextZone = Math.max(0, Math.min(3, root.focusZone + delta))
-        if (nextZone === root.focusZone)
+        let nextZone = root.focusZone + delta
+        while (nextZone > 0 && nextZone <= root.rails.length && root.zoneCount(nextZone) === 0)
+            nextZone += delta
+        if (nextZone < 0 || nextZone > root.rails.length)
             return
-        let nextIndex = root.focusIndex
-        if (nextZone === 0)
-            nextIndex = Math.min(1, Math.round(root.focusIndex / 4))
-        else if (root.focusZone === 0)
-            nextIndex = Math.min(8, root.focusIndex * 2)
+        let nextIndex = 0
+        if (nextZone > 0) {
+            const rail = railRepeater.itemAt(nextZone - 1)
+            nextIndex = rail ? Math.max(0, rail.currentIndex) : 0
+        }
         root.setSelection(nextZone, nextIndex)
     }
 
@@ -170,15 +173,11 @@ FocusScope {
             AppController.navigate("sign-in")
     }
 
-    function openFriends() {
-        AppController.showOverlay("friends")
-    }
-
     function activateSelection() {
         if (root.focusZone === 0) {
             if (root.focusIndex === 0)
                 root.startHero()
-            else if (root.focusIndex === 1)
+            else
                 root.openGame(root.heroGame)
             return
         }
@@ -204,13 +203,30 @@ FocusScope {
         event.accepted = true
     }
 
+    Timer {
+        id: heroRotation
+        interval: 9000
+        repeat: true
+        running: root.active && root.visible && root.heroGames.length > 1
+            && !heroHover.hovered && !AppController.reducedMotion
+        onTriggered: root.heroIndex = (root.heroIndex + 1) % root.heroGames.length
+    }
+
+    NumberAnimation {
+        id: scrollAnimation
+        target: contentFlick
+        property: "contentY"
+        duration: DesktopTokens.motionDuration
+        easing.type: Easing.BezierSpline
+        easing.bezierCurve: [0.2, 0, 0, 1, 1, 1]
+    }
+
     Flickable {
         id: contentFlick
         anchors.fill: parent
         contentWidth: width
-        contentHeight: Math.max(height, homeColumn.implicitHeight + 28)
+        contentHeight: Math.max(height, homeColumn.implicitHeight + DesktopTokens.px(64))
         clip: true
-        interactive: true
         boundsBehavior: Flickable.StopAtBounds
         flickDeceleration: 5200
         maximumFlickVelocity: 2200
@@ -218,235 +234,333 @@ FocusScope {
 
         Column {
             id: homeColumn
-            x: 24
-            y: 18
-            width: contentFlick.width - 48
-            spacing: 18
+            width: contentFlick.width
+            spacing: DesktopTokens.px(28)
 
             Item {
                 id: heroRow
+                objectName: "desktopHomeHero"
                 width: parent.width
-                height: 262
+                height: root.heroHeight
+                clip: true
 
+                HoverHandler { id: heroHover }
+
+                Rectangle { anchors.fill: parent; color: DesktopTokens.shell }
+
+                Repeater {
+                    model: root.heroGames
+                    delegate: Item {
+                        id: heroLayer
+                        required property var modelData
+                        required property int index
+                        readonly property bool shown: index === Math.min(root.heroIndex, root.heroGames.length - 1)
+                        anchors.fill: parent
+                        opacity: shown ? 1 : 0
+                        visible: opacity > 0
+                        Behavior on opacity {
+                            NumberAnimation { duration: AppController.reducedMotion ? 0 : 700; easing.type: Easing.InOutQuad }
+                        }
+                        ArtworkSource {
+                            id: heroArt
+                            sourceUrl: DesktopTokens.decodeArtworkUrl(DesktopTokens.artworkUrl(heroLayer.modelData, true))
+                            active: root.active
+                        }
+                        Image {
+                            anchors.fill: parent
+                            source: heroArt.resolvedUrl
+                            fillMode: Image.PreserveAspectCrop
+                            sourceSize: Qt.size(1920, 1080)
+                            asynchronous: true
+                            cache: true
+                            // Gentle settle on reveal and on each new slide.
+                            scale: heroLayer.shown ? 1 + 0.06 * (1 - root.revealAt(0, 1100)) : 1.04
+                            Behavior on scale {
+                                NumberAnimation { duration: AppController.reducedMotion ? 0 : 1200; easing.type: Easing.OutCubic }
+                            }
+                        }
+                    }
+                }
+
+                // Legibility: darken the left side for text, then melt the
+                // bottom edge into the page so the rails sit on solid colour.
                 Rectangle {
-                    id: heroMask
-                    anchors.fill: heroCard
-                    radius: DesktopTokens.radiusLarge
-                    color: "white"
-                    visible: false
-                    layer.enabled: true
+                    anchors.fill: parent
+                    gradient: Gradient {
+                        orientation: Gradient.Horizontal
+                        GradientStop { position: 0; color: Qt.rgba(DesktopTokens.shell.r, DesktopTokens.shell.g, DesktopTokens.shell.b, 0.9) }
+                        GradientStop { position: 0.4; color: Qt.rgba(DesktopTokens.shell.r, DesktopTokens.shell.g, DesktopTokens.shell.b, 0.5) }
+                        GradientStop { position: 0.72; color: Qt.rgba(DesktopTokens.shell.r, DesktopTokens.shell.g, DesktopTokens.shell.b, 0) }
+                    }
+                }
+                Rectangle {
+                    anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom
+                    height: parent.height * 0.5
+                    gradient: Gradient {
+                        GradientStop { position: 0; color: Qt.rgba(DesktopTokens.shell.r, DesktopTokens.shell.g, DesktopTokens.shell.b, 0) }
+                        GradientStop { position: 1; color: DesktopTokens.shell }
+                    }
                 }
 
-                Item {
-                    id: heroCard
-                    anchors.left: parent.left
-                    anchors.top: parent.top
+                Column {
+                    id: heroText
+                    x: root.safeX
+                    anchors.bottom: parent.bottom
+                    anchors.bottomMargin: DesktopTokens.px(44)
+                    width: Math.min(parent.width * 0.5, DesktopTokens.px(760))
+                    spacing: DesktopTokens.px(12)
+                    readonly property real shown: root.revealAt(120, 520)
+                    opacity: shown
+                    transform: Translate { y: DesktopTokens.px(28) * (1 - heroText.shown) }
+
+                    Text {
+                        text: root.heroGame ? qsTr("CONTINUE PLAYING") : qsTr("WELCOME")
+                        color: DesktopTokens.focus
+                        font.family: DesktopTokens.bodyFont
+                        font.pixelSize: DesktopTokens.captionSize
+                        font.weight: Font.Bold
+                        font.letterSpacing: DesktopTokens.px(2)
+                    }
+                    Text {
+                        objectName: "desktopHomeHeroTitle"
+                        width: parent.width
+                        text: root.heroGame ? String(root.heroGame.title || qsTr("Game")) : qsTr("No games yet")
+                        color: "#FFFFFF"
+                        font.family: DesktopTokens.displayFont
+                        font.pixelSize: DesktopTokens.displaySize
+                        font.weight: Font.Bold
+                        font.letterSpacing: -DesktopTokens.px(0.5)
+                        wrapMode: Text.WordWrap
+                        maximumLineCount: 2
+                        elide: Text.ElideRight
+                        lineHeight: 1.05
+                    }
+                    Text {
+                        width: parent.width
+                        text: root.heroMeta()
+                        color: "#D9D9D9"
+                        font.family: DesktopTokens.bodyFont
+                        font.pixelSize: DesktopTokens.bodySize
+                        font.weight: Font.Medium
+                        elide: Text.ElideRight
+                    }
+                    Item { width: 1; height: DesktopTokens.px(8) }
+                    Row {
+                        spacing: DesktopTokens.px(16)
+                        HeroButton {
+                            objectName: "desktopHomePlay"
+                            primary: true
+                            glyph: "play"
+                            text: qsTr("Play")
+                            selected: root.focusZone === 0 && root.focusIndex === 0
+                            onPointed: root.setSelection(0, 0)
+                            onActivated: root.startHero()
+                        }
+                        HeroButton {
+                            objectName: "desktopHomeDetails"
+                            glyph: "info"
+                            text: qsTr("Details")
+                            selected: root.focusZone === 0 && root.focusIndex === 1
+                            onPointed: root.setSelection(0, 1)
+                            onActivated: root.openGame(root.heroGame)
+                        }
+                    }
+                }
+
+                Row {
+                    id: heroPager
+                    visible: root.heroGames.length > 1
                     anchors.right: parent.right
-                    height: 262
-                    layer.enabled: true
-                    layer.smooth: true
-                    layer.effect: MultiEffect {
-                        maskEnabled: true
-                        maskSource: heroMask
-                        maskThresholdMin: 0.25
-                        maskSpreadAtMin: 0.2
-                    }
-
-                    Rectangle { anchors.fill: parent; color: "#0A0A0A" }
-                    Image {
-                        anchors.fill: parent
-                        source: heroArtworkSource.resolvedUrl
-                        fillMode: Image.PreserveAspectCrop
-                        sourceSize: Qt.size(Math.ceil(width), Math.ceil(height))
-                        asynchronous: true
-                        cache: true
-                    }
-                    Rectangle {
-                        anchors.fill: parent
-                        gradient: Gradient {
-                            orientation: Gradient.Horizontal
-                            GradientStop { position: 0; color: "#F00A0A0A" }
-                            GradientStop { position: 0.62; color: "#4D0A0A0A" }
-                            GradientStop { position: 1; color: "#1A0A0A0A" }
-                        }
-                    }
-
-                    Column {
-                        x: 22
-                        anchors.bottom: parent.bottom
-                        anchors.bottomMargin: 22
-                        spacing: 14
-
-                        Text {
-                            text: qsTr("Continue playing")
-                            color: Theme.mediaMuted
-                            font.family: Theme.bodyFont
-                            font.pixelSize: DesktopTokens.captionSize
-                            font.weight: Font.DemiBold
-                        }
-
-                        Column {
-                            spacing: 6
-                            Text {
-                                text: root.heroGame ? String(root.heroGame.title || qsTr("Game")) : qsTr("No games yet")
-                                color: "#FFFFFF"
-                                font.family: Theme.displayFont
-                                font.pixelSize: 34
-                                font.weight: Font.Bold
-                                font.letterSpacing: 0
-                            }
-                            Text {
-                                text: root.heroMeta()
-                                color: Theme.mediaMuted
-                                font.family: Theme.bodyFont
-                                font.pixelSize: DesktopTokens.captionSize
-                                font.weight: Font.DemiBold
-                            }
-                        }
-
-                        Row {
-                            spacing: 9
-
-                            Rectangle {
-                                id: startButton
-                                width: 158
-                                height: 38
-                                radius: DesktopTokens.radius
-                                color: startTap.pressed ? Qt.darker(Theme.mediaAccent, 1.15) : Theme.mediaAccent
-                                border.width: root.focusZone === 0 && root.focusIndex === 0 && AppController.inputMode !== "pointer" ? 3 : 0
-                                border.color: "#FFFFFF"
-
-                                Row {
-                                    anchors.centerIn: parent
-                                    spacing: 8
-                                    DesktopGlyph { width: 10; height: 12; icon: "desktop-play.svg" }
-                                    Text { text: qsTr("Start"); color: Theme.contrastText(Theme.mediaAccent); font.family: Theme.bodyFont; font.pixelSize: 14; font.weight: Font.DemiBold }
-                                    KeyboardGlyph { shortcut: "Enter"; keySize: 20; ink: Theme.contrastText(Theme.mediaAccent); Accessible.name: qsTr("Enter") }
-                                }
-                                HoverHandler { id: startHover; cursorShape: Qt.PointingHandCursor; onHoveredChanged: if (hovered) root.setSelection(0, 0) }
-                                TapHandler { id: startTap; onTapped: root.startHero() }
-                            }
-
-                            Rectangle {
-                                id: detailsButton
-                                width: 81
-                                height: 38
-                                radius: DesktopTokens.radius
-                                color: detailsHover.hovered ? "#454545" : "#333333"
-                                border.width: root.focusZone === 0 && root.focusIndex === 1 && AppController.inputMode !== "pointer" ? 3 : 0
-                                border.color: "#FFFFFF"
-                                Text { anchors.centerIn: parent; text: qsTr("Details"); color: "#FFFFFF"; font.family: Theme.bodyFont; font.pixelSize: 14; font.weight: Font.DemiBold }
-                                HoverHandler { id: detailsHover; cursorShape: Qt.PointingHandCursor; onHoveredChanged: if (hovered) root.setSelection(0, 1) }
-                                TapHandler { onTapped: root.openGame(root.heroGame) }
-                                Behavior on color { ColorAnimation { duration: AppController.reducedMotion ? 0 : 90 } }
-                            }
-
-                            Text {
-                                height: 38
-                                verticalAlignment: Text.AlignVCenter
-                                text: root.streamChip()
-                                color: Theme.mediaMuted
-                                font.family: Theme.bodyFont
-                                font.pixelSize: DesktopTokens.px(12)
-                            }
-                        }
-                    }
-                }
-
-
-            }
-
-            Item {
-                id: jumpRail
-                width: parent.width
-                height: 30 + root.homeTileHeight
-                Text { text: qsTr("Jump back in"); color: DesktopTokens.text; font.family: Theme.displayFont; font.pixelSize: DesktopTokens.headingSize; font.weight: Font.Bold }
-                Text {
-                    anchors.right: parent.right; y: 1
-                    text: root.games.length > 0 ? qsTr("See all %1  ›").arg(root.games.length) : qsTr("See all  ›")
-                    color: seeJump.hovered ? DesktopTokens.text : DesktopTokens.textMuted
-                    font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.captionSize; font.weight: Font.DemiBold
-                    HoverHandler { id: seeJump; cursorShape: Qt.PointingHandCursor }
-                    TapHandler { onTapped: root.routeRequested("library") }
-                }
-                Row {
-                    y: 30; width: parent.width; spacing: root.railGap
+                    anchors.rightMargin: root.safeX
+                    anchors.bottom: parent.bottom
+                    anchors.bottomMargin: DesktopTokens.px(66)
+                    spacing: DesktopTokens.px(8)
+                    opacity: root.revealAt(400, 400)
                     Repeater {
-                        model: root.takeGames(root.jumpGames, 0, root.homeTileCount)
-                        DesktopHomePoster {
-                            required property var modelData
+                        model: root.heroGames.length
+                        delegate: Rectangle {
+                            id: dash
                             required property int index
-                            game: modelData
-                            tileWidth: root.homeTileWidth
-                            tileHeight: root.homeTileHeight
-                            current: root.focusZone === 1 && root.focusIndex === index
-                            onPointed: root.setSelection(1, index)
-                            onActivated: root.openGame(modelData)
+                            readonly property bool current: index === root.heroIndex
+                            width: current ? DesktopTokens.px(40) : DesktopTokens.px(20)
+                            height: DesktopTokens.px(4)
+                            radius: height / 2
+                            color: current ? DesktopTokens.focus : "#80FFFFFF"
+                            Behavior on width { NumberAnimation { duration: DesktopTokens.motionDuration; easing.type: Easing.OutCubic } }
+                            TapHandler { onTapped: root.heroIndex = dash.index }
                         }
                     }
                 }
             }
 
-            Item {
-                id: playingRail
-                width: parent.width
-                height: 30 + root.homeTileHeight
-                Text { text: qsTr("Favourites"); color: DesktopTokens.text; font.family: Theme.displayFont; font.pixelSize: DesktopTokens.headingSize; font.weight: Font.Bold }
-                Text {
-                    anchors.right: parent.right; y: 1
-                    text: qsTr("See all  ›")
-                    color: seeFriends.hovered ? DesktopTokens.text : DesktopTokens.textMuted
-                    font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.captionSize; font.weight: Font.DemiBold
-                    HoverHandler { id: seeFriends; cursorShape: Qt.PointingHandCursor }
-                    TapHandler { onTapped: root.routeRequested("library") }
-                }
-                Row {
-                    y: 30; width: parent.width; spacing: root.railGap
-                    Repeater {
-                        model: root.takeGames(root.favoriteGames, 0, root.homeTileCount)
-                        DesktopHomePoster {
-                            required property var modelData
-                            required property int index
-                            game: modelData
-                            tileWidth: root.homeTileWidth
-                            tileHeight: root.homeTileHeight
-                            current: root.focusZone === 2 && root.focusIndex === index
-                            onPointed: root.setSelection(2, index)
-                            onActivated: root.openGame(modelData)
-                        }
-                    }
-                }
+            Repeater {
+                id: railRepeater
+                model: root.rails
+                delegate: HomeRail {}
             }
+        }
+    }
 
-            Item {
-                id: newRail
-                width: parent.width
-                height: 30 + root.homeTileHeight
-                Text { text: qsTr("New in your library"); color: DesktopTokens.text; font.family: Theme.displayFont; font.pixelSize: DesktopTokens.headingSize; font.weight: Font.Bold }
-                Text {
-                    anchors.right: parent.right; y: 1
-                    text: qsTr("See all  ›")
-                    color: seeNew.hovered ? DesktopTokens.text : DesktopTokens.textMuted
-                    font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.captionSize; font.weight: Font.DemiBold
-                    HoverHandler { id: seeNew; cursorShape: Qt.PointingHandCursor }
-                    TapHandler { onTapped: root.routeRequested("library") }
-                }
-                Row {
-                    y: 30; width: parent.width; spacing: root.railGap
-                    Repeater {
-                        model: root.takeGames(root.newGames, 0, root.homeTileCount)
-                        DesktopHomePoster {
-                            required property var modelData
-                            required property int index
-                            game: modelData
-                            tileWidth: root.homeTileWidth
-                            tileHeight: root.homeTileHeight
-                            current: root.focusZone === 3 && root.focusIndex === index
-                            onPointed: root.setSelection(3, index)
-                            onActivated: root.openGame(modelData)
-                        }
-                    }
-                }
+    // Staggered page reveal: hero first, then each rail a beat later.
+    NumberAnimation {
+        id: revealAnimation
+        target: root
+        property: "reveal"
+        from: 0; to: 1
+        duration: root.revealSpan
+    }
+
+    component HeroButton: Item {
+        id: button
+        property bool primary: false
+        property string glyph: ""
+        property string text: ""
+        property bool selected: false
+        readonly property bool keyboardFocus: selected && AppController.inputMode !== "pointer"
+        readonly property color fill: primary ? DesktopTokens.focus
+            : (hover.hovered || keyboardFocus ? "#FFFFFF" : "#E8E8E8")
+        readonly property color ink: primary ? Theme.focusText : "#111111"
+        signal activated()
+        signal pointed()
+        width: Math.max(DesktopTokens.px(150), label.implicitWidth + DesktopTokens.px(84))
+        height: DesktopTokens.px(56)
+        scale: keyboardFocus && !AppController.reducedMotion ? 1.06 : 1
+        Behavior on scale { NumberAnimation { duration: DesktopTokens.quickDuration; easing.type: Easing.OutCubic } }
+        Accessible.role: Accessible.Button
+        Accessible.name: text
+
+        Rectangle {
+            anchors.fill: parent
+            anchors.margins: -DesktopTokens.px(5)
+            radius: DesktopTokens.radius + DesktopTokens.px(5)
+            color: "transparent"
+            border.width: DesktopTokens.focusOutline
+            border.color: "#FFFFFF"
+            opacity: button.keyboardFocus ? 1 : 0
+            Behavior on opacity { NumberAnimation { duration: DesktopTokens.quickDuration } }
+        }
+        Rectangle {
+            anchors.fill: parent
+            radius: DesktopTokens.radius
+            color: tap.pressed ? Qt.darker(button.fill, 1.15) : button.fill
+            Behavior on color { ColorAnimation { duration: DesktopTokens.quickDuration } }
+        }
+        Row {
+            anchors.centerIn: parent
+            spacing: DesktopTokens.px(12)
+            DesktopSettingsIcon {
+                anchors.verticalCenter: parent.verticalCenter
+                width: DesktopTokens.px(22); height: width
+                glyph: button.glyph
+                ink: button.ink
+            }
+            Text {
+                id: label
+                anchors.verticalCenter: parent.verticalCenter
+                text: button.text
+                color: button.ink
+                font.family: DesktopTokens.bodyFont
+                font.pixelSize: DesktopTokens.bodySize
+                font.weight: Font.Bold
+            }
+        }
+        HoverHandler { id: hover; cursorShape: Qt.PointingHandCursor; onHoveredChanged: if (hovered) button.pointed() }
+        TapHandler { id: tap; onTapped: button.activated() }
+    }
+
+    component HomeRail: Item {
+        id: rail
+        required property var modelData
+        required property int index
+        readonly property int zone: index + 1
+        property alias currentIndex: list.currentIndex
+        onCurrentIndexChanged: rail.reveal(currentIndex)
+
+        // Scroll only as far as needed to keep the focused tile inside the safe area.
+        function reveal(i) {
+            if (i < 0)
+                return
+            const x = i * (root.tileWidth + root.railGap)
+            const minX = -list.leftMargin
+            const maxX = Math.max(minX, list.contentWidth + list.rightMargin - list.width)
+            let target = list.contentX
+            if (x < list.contentX + root.safeX)
+                target = x - root.safeX
+            else if (x + root.tileWidth > list.contentX + list.width - root.safeX)
+                target = x + root.tileWidth - list.width + root.safeX
+            target = Math.max(minX, Math.min(maxX, target))
+            if (Math.abs(target - list.contentX) < 1)
+                return
+            railScroll.to = target
+            railScroll.restart()
+        }
+        NumberAnimation {
+            id: railScroll
+            target: list
+            property: "contentX"
+            duration: DesktopTokens.motionDuration
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: [0.2, 0, 0, 1, 1, 1]
+        }
+        readonly property real railReveal: root.revealAt(260 + 110 * index, 520)
+        width: homeColumn.width
+        height: visible ? header.height + DesktopTokens.px(14) + list.height : 0
+        visible: (modelData.games || []).length > 0
+        opacity: railReveal
+        transform: Translate { y: DesktopTokens.px(32) * (1 - rail.railReveal) }
+
+        Item {
+            id: header
+            x: root.safeX
+            width: parent.width - root.safeX * 2
+            height: DesktopTokens.px(34)
+            Text {
+                anchors.verticalCenter: parent.verticalCenter
+                text: rail.modelData.title
+                color: DesktopTokens.textHigh
+                font.family: DesktopTokens.displayFont
+                font.pixelSize: DesktopTokens.headingSize
+                font.weight: Font.Bold
+            }
+            Text {
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                text: qsTr("SEE ALL")
+                color: seeAll.hovered ? DesktopTokens.textHigh : DesktopTokens.textMuted
+                font.family: DesktopTokens.bodyFont
+                font.pixelSize: DesktopTokens.captionSize
+                font.weight: Font.Bold
+                font.letterSpacing: DesktopTokens.px(1.2)
+                HoverHandler { id: seeAll; cursorShape: Qt.PointingHandCursor }
+                TapHandler { onTapped: root.routeRequested("library") }
+            }
+        }
+
+        ListView {
+            id: list
+            y: header.height + DesktopTokens.px(14)
+            width: parent.width
+            // Room below the art for the title line.
+            height: root.tileHeight + DesktopTokens.px(52)
+            orientation: ListView.Horizontal
+            spacing: root.railGap
+            leftMargin: root.safeX
+            rightMargin: root.safeX
+            clip: false
+            boundsBehavior: Flickable.StopAtBounds
+            model: rail.modelData.games
+            currentIndex: 0
+            highlightFollowsCurrentItem: false
+            delegate: DesktopHomePoster {
+                required property var modelData
+                required property int index
+                game: modelData
+                landscape: true
+                tileWidth: root.tileWidth
+                tileHeight: root.tileHeight
+                current: root.focusZone === rail.zone && root.focusIndex === index
+                onPointed: root.setSelection(rail.zone, index)
+                onActivated: root.openGame(modelData)
             }
         }
     }
@@ -454,6 +568,8 @@ FocusScope {
     Component.onCompleted: {
         root.focusZone = 0
         root.focusIndex = Math.max(0, Math.min(1, ShellStore.focusIndex("desktop-home")))
+        if (!AppController.reducedMotion)
+            revealAnimation.start()
         if (root.active)
             Qt.callLater(root.forceActiveFocus)
     }

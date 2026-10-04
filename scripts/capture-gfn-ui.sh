@@ -14,18 +14,35 @@ mkdir -p "$2"
 output=$(realpath "$2")
 failed=0
 
-capture() {
-    local name=$1
-    shift
-    if xvfb-run -a -s '-screen 0 1920x1080x24' env QT_QPA_PLATFORM=xcb QSG_RHI_BACKEND=opengl \
-        timeout 60 "$app" --smoke-test --allow-multiple-instances --desktop --reduced-motion \
-        --smoke-width 1920 --smoke-height 1080 --screenshot "$output/$name.png" "$@" \
-        >"$output/$name.log" 2>&1 && test -s "$output/$name.png"; then
-        printf 'ok   %s\n' "$name"
+run_app() {
+    local platform=$1 name=$2
+    shift 2
+    if [[ $platform == xcb ]]; then
+        xvfb-run -a -s '-screen 0 1920x1080x24' env QT_QPA_PLATFORM=xcb QSG_RHI_BACKEND=opengl \
+            timeout 60 "$app" --smoke-test --allow-multiple-instances --desktop --reduced-motion \
+            --smoke-width 1920 --smoke-height 1080 --screenshot "$output/$name.png" "$@"
     else
-        printf 'FAIL %s (see %s.log)\n' "$name" "$name"
-        failed=$((failed + 1))
+        env QT_QPA_PLATFORM=offscreen timeout 60 "$app" --smoke-test --allow-multiple-instances \
+            --desktop --reduced-motion --smoke-width 1920 --smoke-height 1080 \
+            --screenshot "$output/$name.png" "$@"
     fi
+}
+
+capture() {
+    local name=$1 platform status
+    shift
+    for platform in xcb offscreen; do
+        rm -f "$output/$name.png"
+        run_app "$platform" "$name" "$@" >"$output/$name.$platform.log" 2>&1
+        status=$?
+        printf 'exit status %s\n' "$status" >>"$output/$name.$platform.log"
+        if [[ -s $output/$name.png ]]; then
+            printf 'ok   %s (%s, exit %s)\n' "$name" "$platform" "$status"
+            return
+        fi
+    done
+    printf 'FAIL %s (exit %s, see %s.*.log)\n' "$name" "$status" "$name"
+    failed=$((failed + 1))
 }
 
 capture home --route home --smoke-paper-design
