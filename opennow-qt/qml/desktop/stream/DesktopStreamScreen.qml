@@ -43,14 +43,14 @@ FocusScope {
         anchors.right: parent.right; anchors.top: parent.top; anchors.margins: 24
         layer.enabled: HdrOutput.chromeRequired
         layer.effect: HdrChromeEffect {}
-        width: sessionClock.implicitWidth + 24; height: 36; radius: 18; z: 4
-        color: Qt.rgba(Theme.shell.r,Theme.shell.g,Theme.shell.b,0.85)
+        width: sessionClock.implicitWidth + 28; height: 40; radius: DesktopTokens.radius; z: 4
+        color: Theme.shell
         visible: root.streaming && ShellStore.settings.sessionCounterEnabled === true
             && AppController.overlay.indexOf("stats") < 0
         Text {
             id: sessionClock; anchors.centerIn: parent
             text: Math.floor(root.clockSeconds / 3600) + ":" + String(Math.floor(root.clockSeconds / 60) % 60).padStart(2,"0") + ":" + String(root.clockSeconds % 60).padStart(2,"0")
-            color: Theme.label; font.family: Theme.monoFont; font.pixelSize: 12
+            color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 16; font.features: { "tnum": 1 }
         }
     }
     function publishCaptureRect() {

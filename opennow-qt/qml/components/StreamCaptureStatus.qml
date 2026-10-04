@@ -40,27 +40,25 @@ Column {
         anchors.horizontalCenter: parent.horizontalCenter
         visible: ShellStore.streamRecordingActive
         width: Math.min(root.width, recordingText.implicitWidth + 48)
-        height: 36
-        radius: 18
-        color: "#E610141C"
-        border.color: "#805F2932"
-        border.width: 1
+        height: 40
+        radius: 4
+        color: "#1C1C1C"
         Accessible.role: Accessible.StaticText
         Accessible.name: recordingText.text
 
         Rectangle {
             x: 14; anchors.verticalCenter: parent.verticalCenter
             width: 8; height: 8; radius: 4
-            color: "#FF6573"
+            color: "#F2665B"
         }
         Text {
             id: recordingText
             x: 30; anchors.verticalCenter: parent.verticalCenter
             width: parent.width - 44
             text: qsTr("Recording · %1").arg(root.elapsedText)
-            color: "#FFE5E8"
-            font.family: Theme.monoFont
-            font.pixelSize: 13
+            color: "#F2F2F2"
+            font.family: Theme.bodyFont
+            font.pixelSize: 16
             font.weight: Font.DemiBold
             elide: Text.ElideRight
         }
@@ -72,9 +70,9 @@ Column {
         visible: root.notice !== ""
         width: Math.min(root.width, noticeText.implicitWidth + 32)
         height: noticeText.implicitHeight + 24
-        radius: 12
-        color: "#F010141C"
-        border.color: "#38FFFFFF"
+        radius: 4
+        color: "#1C1C1C"
+        border.color: "#333333"
         border.width: 1
         Accessible.role: Accessible.StaticText
         Accessible.name: root.notice
@@ -84,9 +82,9 @@ Column {
             x: 16; y: 12
             width: parent.width - 32
             text: root.notice
-            color: "#F0F3FA"
+            color: "#F2F2F2"
             font.family: Theme.bodyFont
-            font.pixelSize: 14
+            font.pixelSize: 16
             font.weight: Font.DemiBold
             wrapMode: Text.Wrap
             maximumLineCount: 3

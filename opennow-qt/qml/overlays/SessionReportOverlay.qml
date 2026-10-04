@@ -43,8 +43,8 @@ FocusScope {
             Column {
                 id: reportContents
                 width: parent.width; spacing: 18
-                Text { text: qsTr("SESSION COMPLETE"); color: Theme.mint; font.family: Theme.monoFont; font.pixelSize: 13; font.weight: Font.Black; font.letterSpacing: 1.5 }
-                Text { width: parent.width; text: root.report.gameTitle || qsTr("GeForce NOW"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 36; font.weight: Font.Black; elide: Text.ElideRight }
+                Text { text: qsTr("Session complete"); color: Theme.mint; font.family: Theme.bodyFont; font.pixelSize: 13; font.weight: Font.Bold; font.letterSpacing: 0 }
+                Text { width: parent.width; text: root.report.gameTitle || qsTr("GeForce NOW"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 36; font.weight: Font.Bold; elide: Text.ElideRight }
                 Text { text: qsTr("Played for %1").arg(root.duration(root.report.durationMs)); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 18 }
                 Grid {
                     id: reportGrid
@@ -68,7 +68,7 @@ FocusScope {
                             Column {
                                 anchors.centerIn: parent; spacing: 5
                                 Text { anchors.horizontalCenter: parent.horizontalCenter; text: reportCard.modelData.label; color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 12 }
-                                Text { anchors.horizontalCenter: parent.horizontalCenter; text: reportCard.modelData.value; color: Theme.label; font.family: Theme.monoFont; font.pixelSize: 18; font.weight: Font.Bold }
+                                Text { anchors.horizontalCenter: parent.horizontalCenter; text: reportCard.modelData.value; color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 18; font.weight: Font.Bold }
                             }
                         }
                     }

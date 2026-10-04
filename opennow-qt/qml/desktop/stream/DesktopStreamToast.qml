@@ -12,12 +12,12 @@ Rectangle {
     property int batteryPercent: -1
     property var history: []
     property real lifetimeFraction: 1
-    readonly property color accent: warning ? "#F5A623" : "#1DB954"
+    readonly property color accent: warning ? Theme.yellow : Theme.focus
     width: 384
     height: formatNotice ? Math.max(68, textColumn.height + 28) : 68
-    radius: 20
-    color: "#F00E1018"
-    border.color: "#24FFFFFF"
+    radius: 4
+    color: "#1C1C1C"
+    border.color: "#333333"
     border.width: 1
     Accessible.role: Accessible.AlertMessage
     Accessible.name: title + ". " + subtitle + (battery.visible ? ". " + battery.text : "")
@@ -25,9 +25,9 @@ Rectangle {
     Rectangle {
         x: 16
         anchors.verticalCenter: parent.verticalCenter
-        width: 38; height: 38; radius: 12
-        color: root.warning ? "#26F5A623" : "#241DB954"
-        border.color: root.warning ? "#4DF5A623" : "#471DB954"
+        width: 38; height: 38; radius: 4
+        color: "#2A2A2A"
+        border.width: 0
         Image {
             anchors.centerIn: parent
             width: 22; height: 22
@@ -64,15 +64,15 @@ Rectangle {
             text: root.title
             color: "white"
             font.family: Theme.bodyFont
-            font.pointSize: 14.5 * 72 / (Screen.logicalPixelDensity * 25.4)
-            font.weight: Font.ExtraBold
+            font.pointSize: 14 * 72 / (Screen.logicalPixelDensity * 25.4)
+            font.weight: Font.DemiBold
             elide: Text.ElideRight
         }
         Text {
             width: parent.width
             text: root.subtitle
             wrapMode: root.formatNotice ? Text.WordWrap : Text.NoWrap
-            color: "#A8FFFFFF"
+            color: "#A6A6A6"
             font.family: Theme.bodyFont
             font.pixelSize: 13
             elide: Text.ElideRight
@@ -94,8 +94,8 @@ Rectangle {
             visible: !root.warning && root.batteryPercent >= 0 && root.batteryPercent <= 100
             text: root.batteryPercent + "%"
             color: "white"
-            font.family: Theme.monoFont
-            font.pixelSize: 12
+            font.family: Theme.bodyFont
+            font.pixelSize: 13
             font.weight: Font.Medium
         }
         Image {
@@ -116,7 +116,7 @@ Rectangle {
             onPaint: {
                 const ctx = getContext("2d")
                 ctx.reset()
-                ctx.strokeStyle = "#1AFFFFFF"
+                ctx.strokeStyle = "#333333"
                 ctx.lineWidth = 1
                 ctx.beginPath()
                 ctx.moveTo(0, height - 1)
@@ -145,7 +145,7 @@ Rectangle {
     Item {
         x: 12; y: parent.height - 2
         width: parent.width - 24; height: 2
-        Rectangle { anchors.fill: parent; color: "#14FFFFFF" }
+        Rectangle { anchors.fill: parent; color: "#2A2A2A" }
         Rectangle {
             width: parent.width * Math.max(0, Math.min(1, root.lifetimeFraction))
             height: 2

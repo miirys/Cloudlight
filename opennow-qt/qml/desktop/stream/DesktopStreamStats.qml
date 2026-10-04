@@ -26,13 +26,13 @@ Item {
         : expanded ? (panel.x + panel.width > width - 408 ? panel.y + panel.height + 12 : inset)
         : Math.max(compact.x + compact.width > width - 408 ? compact.y + compact.height + 12 : inset,
             clockPill.visible && clockPill.x + clockPill.width > width - 408 ? clockPill.y + clockPill.height + 12 : inset)
-    readonly property color surface: Qt.rgba(14 / 255, 16 / 255, 24 / 255,
+    readonly property color surface: Qt.rgba(0.07, 0.07, 0.07,
         Math.max(0.4, Math.min(1, Number(ShellStore.settings.statsOverlayOpacity || 85) / 100)))
     readonly property bool degraded: telemetryActive && ShellStore.connectionHealth.status === "unstable"
     readonly property bool healthKnown: telemetryActive && ShellStore.connectionHealth.status !== "unknown"
-    readonly property color accent: degraded ? "#F5A623" : "#6EE7B7"
-    readonly property color statusColor: !healthKnown || degraded ? "#F5A623" : "#1DB954"
-    readonly property color metricColor: degraded ? accent : "white"
+    readonly property color accent: degraded ? Theme.yellow : Theme.mint
+    readonly property color statusColor: degraded ? Theme.yellow : "#FFFFFF"
+    readonly property color metricColor: degraded ? Theme.yellow : "#FFFFFF"
     readonly property string healthText: !telemetryActive ? qsTr("Waiting for stream")
         : degraded ? qsTr("Connection unstable") : healthKnown ? qsTr("Stream healthy") : qsTr("Stream statistics")
     readonly property real allocatedBitrateMbps: Math.max(0, numeric(ShellStore.runtimeStreamProfile.maxBitrateMbps)
@@ -46,9 +46,9 @@ Item {
         && (card.key !== "Drops" || card.field === "videoDropCount" || card.value > 0))
     readonly property var featureBadges: {
         const badges = []
-        if (shown("Video") && (profile.enableHdr === true || profile.hdr === true)) badges.push({text:"HDR", ink:"#C6A46A"})
-        if (frameGenerationEnabled) badges.push({text:qsTr("FRAME GEN 2×"), ink:"#F5A623"})
-        if (shown("Video") && Qt.platform.os === "osx" && ShellStore.settings.upscaling === "metalfx") badges.push({text:"METALFX", ink:"#7FD4FF"})
+        if (shown("Video") && (profile.enableHdr === true || profile.hdr === true)) badges.push({text:"HDR"})
+        if (frameGenerationEnabled) badges.push({text:qsTr("Frame generation 2×")})
+        if (shown("Video") && Qt.platform.os === "osx" && ShellStore.settings.upscaling === "metalfx") badges.push({text:"MetalFX"})
         return badges
     }
     readonly property bool telemetryActive: live.status === "streaming"
@@ -128,25 +128,25 @@ Item {
     }
     function metricCards() {
         const cards = [
-            {key:"Ping", label:qsTr("PING"), value:read("pingMs"), unit:"ms", field:"pingMs"},
-            {key:"Fps", label:qsTr("STREAM FPS"), value:read("framesPerSecond"), unit:"fps", field:"framesPerSecond"},
-            {key:"Bitrate", label:qsTr("VIDEO BITRATE"), value:read("bitrateMbps"), unit:"Mbps", field:"bitrateMbps", decimals:1},
-            {key:"Receive", label:qsTr("STREAM UDP RECEIVE"), value:read("receiveBitrateMbps"), unit:"Mbps", field:"receiveBitrateMbps", decimals:1},
-            {key:"Jitter", label:qsTr("JITTER"), value:read("jitterMs"), unit:"ms", field:"jitterMs", decimals:1},
-            {key:"Drops", label:qsTr("VIDEO DROPS"), value:read("videoDropCount"), unit:qsTr("frames"), field:"videoDropCount"},
-            {key:"Drops", label:qsTr("AUDIO DISCARDED"), value:read("audioDiscardedMs"), unit:"ms", field:"audioDiscardedMs", decimals:1},
-            {key:"Drops", label:qsTr("AUDIO QUEUE DROPS"), value:read("audioPacketDropCount"), unit:qsTr("packets / blocks"), field:"audioPacketDropCount"},
-            {key:"Drops", label:qsTr("CALLBACK DROPS"), value:read("callbackDropCount"), unit:qsTr("callbacks"), field:"callbackDropCount"},
-            {key:"PacketLoss", label:qsTr("PACKET LOSS"), value:read("packetLossPercent"), unit:"%", field:"packetLossPercent", decimals:1},
-            {key:"Decode", label:qsTr("DECODE"), value:read("decodeTimeMs"), unit:"ms", field:"decodeTimeMs", decimals:1},
-            {key:"Residence", label:qsTr("DECODER RESIDENCE"), value:read("decoderResidenceMs"), unit:"ms", field:"decoderResidenceMs", decimals:1},
-            {key:"Swap", label:qsTr("QT SUBMIT TO SWAP"), value:qtSubmitToSwapP50Ms(), unit:"ms", field:"qtSubmitToSwapMs", decimals:1},
-            {key:"Latency", label:qsTr("LATENCY"), value:read("latencyMs"), unit:"ms", field:"latencyMs"}
+            {key:"Ping", label:qsTr("Ping"), value:read("pingMs"), unit:"ms", field:"pingMs"},
+            {key:"Fps", label:qsTr("Frame rate"), value:read("framesPerSecond"), unit:"fps", field:"framesPerSecond"},
+            {key:"Bitrate", label:qsTr("Bit rate"), value:read("bitrateMbps"), unit:"Mbps", field:"bitrateMbps", decimals:1},
+            {key:"Receive", label:qsTr("Network receive"), value:read("receiveBitrateMbps"), unit:"Mbps", field:"receiveBitrateMbps", decimals:1},
+            {key:"Jitter", label:qsTr("Jitter"), value:read("jitterMs"), unit:"ms", field:"jitterMs", decimals:1},
+            {key:"Drops", label:qsTr("Dropped frames"), value:read("videoDropCount"), unit:qsTr("frames"), field:"videoDropCount"},
+            {key:"Drops", label:qsTr("Audio discarded"), value:read("audioDiscardedMs"), unit:"ms", field:"audioDiscardedMs", decimals:1},
+            {key:"Drops", label:qsTr("Audio queue drops"), value:read("audioPacketDropCount"), unit:qsTr("packets / blocks"), field:"audioPacketDropCount"},
+            {key:"Drops", label:qsTr("Callback drops"), value:read("callbackDropCount"), unit:qsTr("callbacks"), field:"callbackDropCount"},
+            {key:"PacketLoss", label:qsTr("Packet loss"), value:read("packetLossPercent"), unit:"%", field:"packetLossPercent", decimals:1},
+            {key:"Decode", label:qsTr("Decode time"), value:read("decodeTimeMs"), unit:"ms", field:"decodeTimeMs", decimals:1},
+            {key:"Residence", label:qsTr("Decoder queue"), value:read("decoderResidenceMs"), unit:"ms", field:"decoderResidenceMs", decimals:1},
+            {key:"Swap", label:qsTr("Present time"), value:qtSubmitToSwapP50Ms(), unit:"ms", field:"qtSubmitToSwapMs", decimals:1},
+            {key:"Latency", label:qsTr("Latency"), value:read("latencyMs"), unit:"ms", field:"latencyMs"}
         ]
         if (read("otherQueueDropCount") > 0)
-            cards.push({key:"Drops", label:qsTr("UNCLASSIFIED DROPS"), value:read("otherQueueDropCount"), unit:qsTr("items"), field:"otherQueueDropCount"})
+            cards.push({key:"Drops", label:qsTr("Other drops"), value:read("otherQueueDropCount"), unit:qsTr("items"), field:"otherQueueDropCount"})
         if (frameGenerationEnabled)
-            cards.push({key:"LocalOutputFps", label:qsTr("LOCAL OUTPUT FPS"), value:frameGenerationOutputFps(), unit:"fps", field:"frameGenerationOutputFps"})
+            cards.push({key:"LocalOutputFps", label:qsTr("Displayed frame rate"), value:frameGenerationOutputFps(), unit:"fps", field:"frameGenerationOutputFps"})
         return cards.filter(item => shown(item.key === "Receive" ? "Bitrate" : item.key)
             && (!unmeasuredKeys.includes(item.key) || item.value !== null
                 || (item.key === "Swap" && swapGated)))
@@ -154,7 +154,7 @@ Item {
     function compactItems() {
         const items = cards.map(item => ({text:item.label + " " + format(item.value, item.decimals) + " " + item.unit}))
         if (frameGenerationEnabled)
-            items.push({text:qsTr("FRAME GENERATION") + " " + frameGenerationState()})
+            items.push({text:qsTr("Frame generation") + " " + frameGenerationState()})
         if (shown("Video")) items.push({text:videoText})
         if (shown("Region")) items.push({text:region})
         return items
@@ -162,9 +162,9 @@ Item {
     function report() {
         const lines = cards.map(item => item.label + ": " + format(item.value, item.decimals) + " " + item.unit)
         if (frameGenerationEnabled)
-            lines.push(qsTr("FRAME GENERATION") + ": " + frameGenerationState())
+            lines.push(qsTr("Frame generation") + ": " + frameGenerationState())
         if (swapGated)
-            lines.push(qsTr("SWAP GATE") + ": " + swapGateText())
+            lines.push(qsTr("Present gate") + ": " + swapGateText())
         if (shown("Region")) lines.unshift(region + (rig ? " · " + rig : ""))
         if (shown("Video")) lines.push(videoText)
         if (shown("Clock")) lines.push(qsTr("Session: ") + elapsedText())
@@ -203,12 +203,13 @@ Item {
     }
     component Mono: Text {
         color: "white"
-        font.family: Theme.monoFont
+        font.family: Theme.bodyFont
         font.pixelSize: 13
-        font.weight: Font.DemiBold
+        font.weight: Font.Medium
+        font.features: { "tnum": 1 }
         elide: Text.ElideRight
     }
-    component Rule: Rectangle { height: 1; color: "#0FFFFFFF" }
+    component Rule: Rectangle { height: 1; color: "#2A2A2A" }
     component Clock: Row {
         spacing: 6
         Image {
@@ -252,24 +253,23 @@ Item {
         height: 36 * contentScale
         x: root.rightAligned ? root.width - width - root.inset : root.inset
         y: root.bottomAligned ? root.height - height - root.inset : root.inset
-        radius: height / 2; color: root.surface
-        border.color: Qt.rgba(root.accent.r, root.accent.g, root.accent.b, 0.22)
+        radius: 4; color: root.surface
+        border.width: 0
         Row {
             id: compactRow
             x: 13 * compact.contentScale; y: 7 * compact.contentScale
             scale: compact.contentScale; transformOrigin: Item.TopLeft
             height: 22; spacing: 10
-            Rectangle { anchors.verticalCenter: parent.verticalCenter; width: 7; height: 7; radius: 4; color: root.statusColor }
             Repeater {
                 model: {
                     const metrics = []
                     if (root.shown("Fps")) metrics.push({value:root.format(root.read("framesPerSecond")), unit:"fps"})
                     if (root.shown("Ping")) metrics.push({value:root.format(root.read("pingMs")), unit:"ms"})
-                    if (root.shown("Bitrate")) metrics.push({value:qsTr("UDP RX") + " " + root.format(root.read("receiveBitrateMbps"), 1), unit:"Mbps", socketReceive:true})
+                    if (root.shown("Bitrate")) metrics.push({value:root.format(root.read("receiveBitrateMbps"), 1), unit:"Mbps", socketReceive:true})
                     if (root.shown("Region")) metrics.push({value:root.region, unit:"", region:true})
                     if (root.shown("Video")) {
                         const h = Number(root.profile.height || String(root.profile.resolution || "").split("x")[1] || root.live.outputHeight || 0)
-                        metrics.push({value:String(root.live.codec || root.profile.codec || root.format(null)).toUpperCase(), unit:h ? h + "p" : ""})
+                        metrics.push({value:h ? h + "p" : root.format(null), unit:String(root.live.codec || root.profile.codec || "").toUpperCase()})
                     }
                     return metrics
                 }
@@ -279,37 +279,36 @@ Item {
                     required property int index
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: 10
-                    Rectangle { visible: compactMetric.index > 0; width: 1; height: 14; anchors.verticalCenter: parent.verticalCenter; color: "#1AFFFFFF" }
+                    Text { visible: compactMetric.index > 0; anchors.verticalCenter: parent.verticalCenter; text: "·"; color: "#808080"; font.family: Theme.bodyFont; font.pixelSize: 13 }
                     Row {
                         spacing: 4
-                        Image { visible: compactMetric.modelData.region === true; anchors.verticalCenter: parent.verticalCenter; width: 11; height: 11; sourceSize: Qt.size(22, 22); source: "qrc:/qt/qml/OpenNOW/res/icons/stats-globe.svg" }
-                        Mono {
+                                                Mono {
                             id: compactValue
                             objectName: compactMetric.modelData.socketReceive === true ? "compactSocketReceive" : ""
                             text: compactMetric.modelData.value
                             width: Math.min(implicitWidth, compactMetric.modelData.region ? 180 : 100)
-                            font.pixelSize: compactMetric.modelData.region ? 10.5 : 12.5
-                            color: compactMetric.modelData.region ? "#B3FFFFFF" : root.metricColor
+                            font.pixelSize: 13
+                            color: compactMetric.modelData.region ? "#B3B3B3" : root.metricColor
                         }
-                        Mono { anchors.baseline: compactValue.baseline; text: compactMetric.modelData.unit; font.pixelSize: 10; color: "#80FFFFFF"; font.weight: Font.Medium }
+                        Mono { anchors.baseline: compactValue.baseline; text: compactMetric.modelData.unit; font.pixelSize: 12; color: "#B3B3B3"; font.weight: Font.Normal }
                     }
                 }
             }
             Repeater {
                 model: root.featureBadges
-                delegate: Rectangle {
+                delegate: Row {
                     id: featureBadge
                     required property var modelData
-                    width: badge.implicitWidth + 16; height: 22; radius: 6
-                    color: Qt.rgba(badge.color.r, badge.color.g, badge.color.b, 0.14)
-                    Mono { id: badge; anchors.centerIn: parent; text: featureBadge.modelData.text; color: featureBadge.modelData.ink; font.pixelSize: 10; font.weight: Font.Bold; font.letterSpacing: 0.8 }
+                    anchors.verticalCenter: parent.verticalCenter
+                    spacing: 10
+                    Text { anchors.verticalCenter: parent.verticalCenter; text: "·"; color: "#808080"; font.family: Theme.bodyFont; font.pixelSize: 13 }
+                    Mono { id: badge; text: featureBadge.modelData.text; color: "#B3B3B3"; font.pixelSize: 13 }
                 }
             }
             Row {
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: 6
-                KeyboardGlyph { visible: root.toggleShortcut !== ""; shortcut: root.toggleShortcut; keySize: 20; ink: "white" }
-                Text { anchors.verticalCenter: parent.verticalCenter; text: qsTr("more"); color: "#8CFFFFFF"; font.family: Theme.bodyFont; font.pixelSize: 11; font.weight: Font.DemiBold }
+                visible: false
             }
         }
         HoverHandler { cursorShape: Qt.PointingHandCursor }
@@ -326,8 +325,8 @@ Item {
         height: Math.min(root.height - root.inset * 2, (panelContents.implicitHeight + 2) * root.overlayScale)
         x: root.rightAligned ? root.width - width - root.inset : root.inset
         y: root.bottomAligned ? root.height - height - root.inset : root.inset
-        radius: 20 * root.overlayScale; color: root.surface
-        border.color: Qt.rgba(root.accent.r, root.accent.g, root.accent.b, 0.18)
+        radius: 4 * root.overlayScale; color: root.surface
+        border.width: 0
         Flickable {
             x: root.overlayScale; y: root.overlayScale
             width: panel.width / root.overlayScale - 2
@@ -344,11 +343,10 @@ Item {
                         anchors.fill: parent
                         anchors.leftMargin: 16; anchors.rightMargin: 16; anchors.topMargin: 14; anchors.bottomMargin: 10
                         spacing: 10
-                        Rectangle { implicitWidth: 9; implicitHeight: 9; radius: 5; color: root.statusColor }
                         Column {
                             Layout.fillWidth: true; spacing: 2
-                            Text { width: parent.width; text: root.healthText; elide: Text.ElideRight; color: root.degraded ? root.accent : "white"; font.family: Theme.bodyFont; font.pixelSize: 15; font.weight: Font.ExtraBold }
-                            Mono { visible: root.shown("Region"); width: parent.width; text: root.sessionDescription; color: "#73FFFFFF"; font.pixelSize: 11; font.weight: Font.Medium }
+                            Text { width: parent.width; text: root.healthText; elide: Text.ElideRight; color: root.degraded ? Theme.yellow : "white"; font.family: Theme.bodyFont; font.pixelSize: 15; font.weight: Font.DemiBold }
+                            Mono { visible: root.shown("Region"); width: parent.width; text: root.sessionDescription; color: "#A6A6A6"; font.pixelSize: 12; font.weight: Font.Normal }
                         }
                         Clock { visible: root.shown("Clock") }
                     }
@@ -364,13 +362,13 @@ Item {
                             required property var modelData
                             required property int index
                             Layout.fillWidth: true; Layout.preferredWidth: 111; Layout.fillHeight: true
-                            Rectangle { visible: hero.index > 0; x: -14; y: 8; width: 1; height: 45; color: "#14FFFFFF" }
+                            Rectangle { visible: hero.index > 0; x: -14; y: 8; width: 1; height: 45; color: "#2A2A2A" }
                             Row {
                                 y: 6; spacing: 4
-                                Mono { id: heroValue; text: root.format(hero.modelData.value); color: root.metricColor; font.pixelSize: 26 }
-                                Mono { anchors.baseline: heroValue.baseline; text: hero.modelData.unit; color: "#80FFFFFF"; font.pixelSize: 11; font.weight: Font.Medium }
+                                Mono { id: heroValue; text: root.format(hero.modelData.value); color: root.metricColor; font.pixelSize: 24; font.weight: Font.DemiBold }
+                                Mono { anchors.baseline: heroValue.baseline; text: hero.modelData.unit; color: "#A6A6A6"; font.pixelSize: 12; font.weight: Font.Normal }
                             }
-                            Mono { y: 43; text: hero.modelData.key === "Fps" ? qsTr("FPS") : hero.modelData.label; font.pixelSize: 10; font.letterSpacing: 0.95; color: "#80FFFFFF" }
+                            Mono { y: 43; text: hero.modelData.label; font.pixelSize: 12; font.weight: Font.Normal; color: "#A6A6A6" }
                             Sparkline { x: parent.width - width; y: 43; samples: root.history[hero.modelData.field] || [] }
                         }
                     }
@@ -378,15 +376,15 @@ Item {
                 Item {
                     visible: root.shown("Bitrate")
                     width: parent.width; height: 41
-                    Mono { x: 16; y: 2; text: qsTr("VIDEO BITRATE"); font.pixelSize: 10; font.letterSpacing: 0.95; color: "#80FFFFFF" }
+                    Mono { x: 16; y: 2; text: qsTr("Bit rate"); font.pixelSize: 12; font.weight: Font.Normal; color: "#A6A6A6" }
                     Row {
                         anchors.right: parent.right; anchors.rightMargin: 16; spacing: 4
                         Mono { id: bitrateValue; text: root.format(root.read("bitrateMbps"), 1); font.pixelSize: 12; color: root.metricColor }
-                        Mono { anchors.baseline: bitrateValue.baseline; text: "/ " + (root.allocatedBitrateMbps > 0 ? root.format(root.allocatedBitrateMbps) : root.format(null)) + " Mbps"; font.pixelSize: 10; font.weight: Font.Medium; color: "#73FFFFFF" }
+                        Mono { anchors.baseline: bitrateValue.baseline; text: "/ " + (root.allocatedBitrateMbps > 0 ? root.format(root.allocatedBitrateMbps) : root.format(null)) + " Mbps"; font.pixelSize: 12; font.weight: Font.Normal; color: "#A6A6A6" }
                     }
                     Rectangle {
                         objectName: "statsBitrateTrack"
-                        x: 16; y: 23; width: parent.width - 32; height: 4; radius: 2; color: "#1AFFFFFF"
+                        x: 16; y: 23; width: parent.width - 32; height: 4; radius: 2; color: "#333333"
                         Rectangle { objectName: "statsBitrateFill"; width: parent.width * root.bitrateUsage; height: parent.height; radius: 2; color: root.accent }
                         Accessible.role: Accessible.ProgressBar
                         Accessible.name: qsTr("Allocated bitrate usage")
@@ -402,12 +400,12 @@ Item {
                         Rule { width: parent.width }
                         RowLayout {
                             anchors.fill: parent; anchors.leftMargin: 16; anchors.rightMargin: 16; spacing: 10
-                            Mono { text: ledger.modelData.field === "videoDropCount" ? qsTr("FRAME DROPS") : ledger.modelData.label; font.pixelSize: 10; font.letterSpacing: 0.8; color: "#8CFFFFFF" }
-                            Mono { Layout.fillWidth: true; text: root.ledgerDetail(ledger.modelData); font.pixelSize: 10; color: "#73FFFFFF"; font.weight: Font.Medium }
+                            Mono { text: ledger.modelData.label; font.pixelSize: 13; font.weight: Font.Normal; color: "#A6A6A6" }
+                            Mono { Layout.fillWidth: true; text: root.ledgerDetail(ledger.modelData); font.pixelSize: 12; color: "#6E6E6E"; font.weight: Font.Normal }
                             Mono {
                                 text: root.format(ledger.modelData.value, ledger.modelData.decimals)
                                     + (ledger.modelData.field === "videoDropCount" ? "" : ledger.modelData.unit === "%" ? "%" : " " + ledger.modelData.unit)
-                                color: root.degraded && ledger.modelData.key === "PacketLoss" ? "#D15A2C"
+                                color: root.degraded && ledger.modelData.key === "PacketLoss" ? Theme.coral
                                     : ledger.modelData.key === "Decode" || ledger.modelData.key === "Residence"
                                         || ledger.modelData.key === "Swap" ? "white" : root.metricColor
                             }
@@ -418,7 +416,7 @@ Item {
                     visible: root.frameGenerationEnabled
                     width: parent.width; height: 33
                     Rule { width: parent.width }
-                    Mono { objectName: "expandedFrameGenerationState"; x: 16; anchors.verticalCenter: parent.verticalCenter; width: parent.width - 32; text: qsTr("FRAME GENERATION") + " · " + root.frameGenerationState(); font.pixelSize: 10; color: "#8CFFFFFF" }
+                    Mono { objectName: "expandedFrameGenerationState"; x: 16; anchors.verticalCenter: parent.verticalCenter; width: parent.width - 32; text: qsTr("Frame generation") + " · " + root.frameGenerationState(); font.pixelSize: 13; font.weight: Font.Normal; color: "#A6A6A6" }
                 }
                 Item {
                     width: parent.width; height: Math.max(41, footer.implicitHeight + 22)
@@ -427,7 +425,7 @@ Item {
                         id: footer
                         anchors.fill: parent; anchors.leftMargin: 16; anchors.rightMargin: 16; anchors.topMargin: 10; anchors.bottomMargin: 12
                         spacing: 10
-                        Mono { Layout.fillWidth: true; text: root.shown("Video") ? root.videoText : ""; font.pixelSize: 10; color: "#8CFFFFFF"; font.weight: Font.Medium; wrapMode: Text.Wrap }
+                        Mono { Layout.fillWidth: true; text: root.shown("Video") ? root.videoText : ""; font.pixelSize: 12; color: "#A6A6A6"; font.weight: Font.Normal; wrapMode: Text.Wrap }
                         Item {
                             implicitWidth: cycleKey.implicitWidth; implicitHeight: 18
                             KeyboardGlyph { id: cycleKey; shortcut: root.toggleShortcut; keySize: 18; ink: "white" }
@@ -448,11 +446,11 @@ Item {
     Rectangle {
         id: clockPill
         visible: !root.expanded && root.shown("Clock")
-        width: (clock.implicitWidth + 36) * root.overlayScale; height: 40 * root.overlayScale; radius: height / 2
+        width: (clock.implicitWidth + 24) * root.overlayScale; height: 36 * root.overlayScale; radius: 4
         x: root.rightAligned ? root.inset : root.width - width - root.inset
         y: (root.bottomAligned ? root.height - height - root.inset : root.inset)
             + (root.width < compact.width + width + root.inset * 3 ? (root.bottomAligned ? -compact.height - 8 : compact.height + 8) : 0)
-        color: root.surface; border.color: "#24FFFFFF"
+        color: root.surface; border.width: 0
         Clock { id: clock; anchors.centerIn: parent; scale: root.overlayScale }
     }
 }

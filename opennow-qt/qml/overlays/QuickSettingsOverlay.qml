@@ -6,8 +6,8 @@ import OpenNOW
 
 FocusScope {
     id: root
-    width: 520
-    height: 687
+    width: 560
+    height: 900
     focus: true
     Accessible.role: Accessible.Pane
     Accessible.name: qsTr("Quick settings")
@@ -15,7 +15,7 @@ FocusScope {
     readonly property var bitrates: [25, 50, 75, 100, 150, 200]
     readonly property var controllers: ControllerInput.controllers || []
     readonly property string tier: String(ShellStore.subscription
-        && ShellStore.subscription.membershipTier || qsTr("Ready"))
+        && ShellStore.subscription.membershipTier || "")
 
     function nextBitrate() {
         const current = Number(ShellStore.settings.maxBitrateMbps || 75)
@@ -28,58 +28,45 @@ FocusScope {
         AppController.navigate("settings-streaming")
     }
 
+    // One list row: label left, value or control right, hairline divider below.
+    // Focus shows as a raised fill with an accent bar, as in the in-stream menu.
     component QuickRow: Rectangle {
         id: row
         required property string title
         property string value: ""
-        property bool statusDot: false
         property bool toggleVisible: false
         property bool checked: false
         property bool sliderVisible: false
         property real sliderProgress: 0
         signal triggered()
 
-        width: 476
-        height: 62
-        radius: 24
-        color: activeFocus ? "#FFFFFF" : "#14FFFFFF"
+        width: root.contentWidth
+        height: 68
+        color: activeFocus ? Theme.surfaceHover : "transparent"
         activeFocusOnTab: enabled
-        opacity: enabled ? 1 : 0.56
+        opacity: enabled ? 1 : 0.45
         Accessible.role: Accessible.Button
         Accessible.name: title
 
-        Rectangle {
-            anchors.fill: parent
-            anchors.margins: -4
-            radius: parent.radius + 4
-            color: "transparent"
-            border.width: 4
-            border.color: DesktopTokens.focus
-            visible: row.activeFocus
-        }
-        Rectangle {
-            x: 18
-            anchors.verticalCenter: parent.verticalCenter
-            width: 8; height: 8; radius: 4
-            visible: row.statusDot
-            color: DesktopTokens.green
-        }
+        Rectangle { visible: row.activeFocus; width: 4; height: parent.height; color: Theme.focus }
+        Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: Theme.seam }
         Text {
-            x: row.statusDot ? 36 : 18
-            width: 180
+            x: 24
+            width: parent.width - controlArea.width - 72
             anchors.verticalCenter: parent.verticalCenter
             text: row.title
-            color: row.activeFocus ? DesktopTokens.shell : DesktopTokens.textHigh
-            font.family: DesktopTokens.bodyFont
-            font.pixelSize: 17
-            font.weight: Font.ExtraBold
+            color: Theme.label
+            font.family: Theme.bodyFont
+            font.pixelSize: 19
+            font.weight: row.activeFocus ? Font.DemiBold : Font.Medium
             elide: Text.ElideRight
         }
         Item {
+            id: controlArea
             anchors.right: parent.right
-            anchors.rightMargin: 18
+            anchors.rightMargin: 24
             anchors.verticalCenter: parent.verticalCenter
-            width: 230
+            width: 220
             height: 36
 
             Row {
@@ -88,37 +75,36 @@ FocusScope {
                 spacing: 14
                 visible: row.sliderVisible
                 Rectangle {
-                    width: 150; height: 10; radius: 5
+                    width: 110; height: 4; radius: 2
                     anchors.verticalCenter: parent.verticalCenter
-                    color: row.activeFocus ? "#240B0F1A" : "#1FFFFFFF"
+                    color: Theme.surfaceStrong
                     Rectangle {
-                        width: Math.max(10, parent.width * Math.max(0, Math.min(1, row.sliderProgress)))
+                        width: parent.width * Math.max(0, Math.min(1, row.sliderProgress))
                         height: parent.height; radius: parent.radius
-                        color: DesktopTokens.focus
+                        color: Theme.focus
                     }
                 }
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
                     text: row.value
-                    color: row.activeFocus ? "#990B0F1A" : DesktopTokens.textMuted
-                    font.family: DesktopTokens.bodyFont
-                    font.pixelSize: 14
-                    font.weight: Font.Bold
+                    color: Theme.textMuted
+                    font.family: Theme.bodyFont
+                    font.pixelSize: 17
+                    font.features: { "tnum": 1 }
                 }
             }
             Rectangle {
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
-                width: 56; height: 32; radius: 16
+                width: 48; height: 26; radius: height / 2
                 visible: row.toggleVisible
-                color: row.checked ? DesktopTokens.mint
-                    : row.activeFocus ? "#2E0B0F1A" : "#2EFFFFFF"
+                color: row.checked ? Theme.focus : Theme.surfaceStrong
                 Rectangle {
                     x: row.checked ? parent.width - width - 4 : 4
                     anchors.verticalCenter: parent.verticalCenter
-                    width: 24; height: 24; radius: 12
-                    color: row.checked || row.activeFocus ? "#FFFFFF" : "#B8FFFFFF"
-                    Behavior on x { NumberAnimation { duration: AppController.reducedMotion ? 0 : 120; easing.type: Easing.OutCubic } }
+                    width: 18; height: 18; radius: 9
+                    color: row.checked ? Theme.focusText : Theme.label
+                    Behavior on x { NumberAnimation { duration: AppController.reducedMotion ? 0 : 110; easing.type: Easing.OutCubic } }
                 }
             }
             Text {
@@ -128,10 +114,9 @@ FocusScope {
                 width: parent.width
                 horizontalAlignment: Text.AlignRight
                 text: row.value
-                color: row.activeFocus ? "#990B0F1A" : DesktopTokens.textMuted
-                font.family: DesktopTokens.bodyFont
-                font.pixelSize: 14
-                font.weight: Font.Bold
+                color: Theme.textMuted
+                font.family: Theme.bodyFont
+                font.pixelSize: 17
                 elide: Text.ElideRight
             }
         }
@@ -146,93 +131,90 @@ FocusScope {
         }
     }
 
-    component ControllerRow: Rectangle {
+    component ControllerRow: Item {
         id: controllerRow
         required property var controller
-        width: 476
-        height: 52
-        radius: 20
-        color: "#14FFFFFF"
+        width: root.contentWidth
+        height: 60
         readonly property int battery: Number(controller.batteryPercent === undefined
             ? -1 : controller.batteryPercent)
 
-        Rectangle {
-            x: 14; anchors.verticalCenter: parent.verticalCenter
-            width: 30; height: 30; radius: 15; color: "#FFFFFF"
-            Text { anchors.centerIn: parent; text: "P" + Number(controllerRow.controller.slot || 1); color: DesktopTokens.shell; font.family: DesktopTokens.monoFont; font.pixelSize: 11; font.weight: Font.Black }
+        Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: Theme.seam }
+        Text {
+            x: 24; width: 56; anchors.verticalCenter: parent.verticalCenter
+            text: qsTr("P%1").arg(Number(controllerRow.controller.slot || 1))
+            color: Theme.textMuted
+            font.family: Theme.bodyFont
+            font.pixelSize: 17
+            font.weight: Font.DemiBold
         }
         Text {
-            x: 56; width: 265; anchors.verticalCenter: parent.verticalCenter
+            x: 80; width: parent.width - x - 150; anchors.verticalCenter: parent.verticalCenter
             text: String(controllerRow.controller.name || qsTr("Game controller"))
-            color: DesktopTokens.textHigh
-            font.family: DesktopTokens.bodyFont
-            font.pixelSize: 15
-            font.weight: Font.ExtraBold
+            color: Theme.label
+            font.family: Theme.bodyFont
+            font.pixelSize: 17
             elide: Text.ElideRight
         }
         Text {
-            anchors.right: parent.right; anchors.rightMargin: 48
+            anchors.right: parent.right; anchors.rightMargin: 24
             anchors.verticalCenter: parent.verticalCenter
-            text: controllerRow.battery >= 0 ? controllerRow.battery + "%" : qsTr("Ready")
-            color: DesktopTokens.textMuted
-            font.family: DesktopTokens.bodyFont
-            font.pixelSize: 13
-            font.weight: Font.Bold
-        }
-        Rectangle {
-            anchors.right: parent.right; anchors.rightMargin: 14
-            anchors.verticalCenter: parent.verticalCenter
-            width: 26; height: 14; radius: 4
-            color: "transparent"; border.width: 2; border.color: DesktopTokens.textHigh
-            Rectangle {
-                x: 3; anchors.verticalCenter: parent.verticalCenter
-                width: controllerRow.battery < 0 ? 14
-                    : Math.max(2, Math.round(16 * controllerRow.battery / 100))
-                height: 6; radius: 1
-                color: controllerRow.battery >= 0 && controllerRow.battery < 30
-                    ? DesktopTokens.yellow : DesktopTokens.mint
-            }
+            text: controllerRow.battery >= 0 ? qsTr("Battery %1%").arg(controllerRow.battery) : qsTr("Connected")
+            color: controllerRow.battery >= 0 && controllerRow.battery < 30 ? Theme.yellow : Theme.textMuted
+            font.family: Theme.bodyFont
+            font.pixelSize: 16
         }
     }
 
+    component SectionLabel: Item {
+        property alias text: label.text
+        width: root.contentWidth
+        height: 52
+        Text {
+            id: label
+            x: 24
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: 10
+            color: Theme.textMuted
+            font.family: Theme.bodyFont
+            font.pixelSize: 16
+            font.weight: Font.DemiBold
+        }
+        Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: Theme.seam }
+    }
+
+    readonly property int contentWidth: width
+
     Rectangle {
         anchors.fill: parent
-        radius: 36
-        color: "#F50E1018"
-        border.width: 1
-        border.color: DesktopTokens.seam
+        color: Theme.surface
+        Rectangle { width: 1; height: parent.height; color: Theme.seam }
 
         Column {
-            x: 22; y: 22; width: 476; spacing: 14
+            width: parent.width
 
             Item {
-                width: parent.width; height: 46
+                width: parent.width; height: 112
                 Column {
-                    anchors.left: parent.left; anchors.verticalCenter: parent.verticalCenter
-                    spacing: 2
-                    Text { text: qsTr("Quick settings"); color: DesktopTokens.textHigh; font.family: DesktopTokens.displayFont; font.pixelSize: 24; font.weight: Font.Black }
-                    Text { text: qsTr("Applies to your next launch"); color: DesktopTokens.textMuted; font.family: DesktopTokens.bodyFont; font.pixelSize: 13; font.weight: Font.Bold }
+                    x: 24; anchors.verticalCenter: parent.verticalCenter
+                    spacing: 6
+                    Text { text: qsTr("Quick settings"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 26; font.weight: Font.Bold }
+                    Text { text: root.tier !== "" ? qsTr("%1 · applies to your next launch").arg(root.tier) : qsTr("Applies to your next launch"); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 16 }
                 }
-                Rectangle {
-                    anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter
-                    width: tierText.implicitWidth + 28; height: 32; radius: 16
-                    color: "#14FFFFFF"; border.width: 1; border.color: DesktopTokens.seam
-                    Text { id: tierText; anchors.centerIn: parent; text: root.tier; color: DesktopTokens.textHigh; font.family: DesktopTokens.bodyFont; font.pixelSize: 13; font.weight: Font.ExtraBold }
-                }
+                Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: Theme.seam }
             }
 
             QuickRow {
                 id: regionRow
-                title: qsTr("Region")
+                title: qsTr("Server location")
                 value: String(ShellStore.selectedRegion || qsTr("Automatic"))
-                statusDot: true
                 KeyNavigation.down: bitrateRow
                 onTriggered: { AppController.showOverlay(""); AppController.navigate("settings-network") }
             }
             QuickRow {
                 id: bitrateRow
-                title: qsTr("Max bitrate")
-                value: Number(ShellStore.settings.maxBitrateMbps || 75) + " Mbps"
+                title: qsTr("Maximum bit rate")
+                value: Math.round(Number(ShellStore.settings.maxBitrateMbps || 75)) + " Mbps"
                 sliderVisible: true
                 sliderProgress: Number(ShellStore.settings.maxBitrateMbps || 75) / 200
                 KeyNavigation.up: regionRow; KeyNavigation.down: statsRow
@@ -240,7 +222,7 @@ FocusScope {
             }
             QuickRow {
                 id: statsRow
-                title: qsTr("Stats overlay")
+                title: qsTr("Statistics overlay")
                 toggleVisible: true
                 checked: Boolean(ShellStore.settings.showNativeStreamerStats)
                 KeyNavigation.up: bitrateRow; KeyNavigation.down: syncRow
@@ -248,7 +230,7 @@ FocusScope {
             }
             QuickRow {
                 id: syncRow
-                title: qsTr("Cloud G-Sync")
+                title: qsTr("Cloud G-SYNC")
                 toggleVisible: true
                 checked: Boolean(ShellStore.settings.enableCloudGsync)
                 KeyNavigation.up: statsRow; KeyNavigation.down: micRow
@@ -260,53 +242,41 @@ FocusScope {
                 value: ShellStore.microphoneLabel
                 enabled: ShellStore.microphoneCanToggle
                 KeyNavigation.up: syncRow
+                KeyNavigation.down: controllerButton.visible ? controllerButton : null
                 onTriggered: ShellStore.toggleMicrophone()
             }
 
-            Item {
-                width: parent.width; height: 20
-                Text {
-                    x: 14; anchors.verticalCenter: parent.verticalCenter
-                    text: qsTr("CONTROLLERS · %1 CONNECTED").arg(AppController.controllerCount)
-                    color: DesktopTokens.textMuted
-                    font.family: DesktopTokens.monoFont
-                    font.pixelSize: 11
-                    font.weight: Font.Bold
-                    font.letterSpacing: 0.8
-                }
-            }
+            SectionLabel { text: qsTr("Controllers (%1 connected)").arg(AppController.controllerCount) }
             Repeater {
                 model: root.controllers.slice(0, 2)
                 delegate: ControllerRow { required property var modelData; controller: modelData }
             }
-            Rectangle {
+            QuickRow {
                 id: controllerButton
-                width: parent.width; height: 52; radius: 20
                 visible: root.controllers.length === 0
-                color: activeFocus ? "#FFFFFF" : "#14FFFFFF"
-                activeFocusOnTab: visible
-                ControllerGlyph { x: 14; anchors.verticalCenter: parent.verticalCenter; glyph: "A"; label: ""; glyphSize: 30; glyphColor: controllerButton.activeFocus ? DesktopTokens.shell : "#FFFFFF" }
-                Text { x: 56; anchors.verticalCenter: parent.verticalCenter; text: qsTr("Connect player two"); color: controllerButton.activeFocus ? DesktopTokens.shell : DesktopTokens.textHigh; font.family: DesktopTokens.bodyFont; font.pixelSize: 15; font.weight: Font.ExtraBold }
-                TapHandler { onTapped: { AppController.showOverlay(""); AppController.navigate("joining") } }
+                title: qsTr("Connect player two")
+                KeyNavigation.up: micRow
+                onTriggered: { AppController.showOverlay(""); AppController.navigate("joining") }
             }
+        }
 
-            Item {
-                width: parent.width; height: 35
-                Rectangle { width: parent.width; height: 1; color: DesktopTokens.seam }
-                Row {
-                    y: 9; spacing: 18
-                    Repeater {
-                        model: [
-                            { key: "A", label: qsTr("Adjust") },
-                            { key: "Y", label: qsTr("All settings") },
-                            { key: "RT", label: qsTr("Close") }
-                        ]
-                        delegate: Row {
-                            required property var modelData
-                            spacing: 8
-                            ControllerGlyph { glyph: modelData.key; label: ""; glyphSize: 26; glyphColor: "#FFFFFF" }
-                            Text { anchors.verticalCenter: parent.verticalCenter; text: modelData.label; color: DesktopTokens.textMuted; font.family: DesktopTokens.bodyFont; font.pixelSize: 14; font.weight: Font.Bold }
-                        }
+        Item {
+            anchors.bottom: parent.bottom
+            width: parent.width; height: 72
+            Rectangle { width: parent.width; height: 1; color: Theme.seam }
+            Row {
+                x: 24; anchors.verticalCenter: parent.verticalCenter; spacing: 28
+                Repeater {
+                    model: [
+                        { key: "A", label: qsTr("Change") },
+                        { key: "Y", label: qsTr("All settings") },
+                        { key: "RT", label: qsTr("Close") }
+                    ]
+                    delegate: Row {
+                        required property var modelData
+                        spacing: 10
+                        ControllerGlyph { glyph: modelData.key; label: ""; glyphSize: 28; glyphColor: Theme.label }
+                        Text { anchors.verticalCenter: parent.verticalCenter; text: modelData.label; color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 16 }
                     }
                 }
             }

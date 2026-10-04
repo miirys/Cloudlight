@@ -81,9 +81,9 @@ FocusScope {
     Rectangle {
         anchors.fill: parent
         gradient: Gradient {
-            GradientStop { position: 0; color: "#C004060A" }
-            GradientStop { position: 0.5; color: "#AC04060A" }
-            GradientStop { position: 1; color: "#F204060A" }
+            GradientStop { position: 0; color: "#C00A0A0A" }
+            GradientStop { position: 0.5; color: "#AC0A0A0A" }
+            GradientStop { position: 1; color: "#F20A0A0A" }
         }
     }
 
@@ -107,13 +107,12 @@ FocusScope {
         spacing: 0
 
         Text {
-            text: root.stopping ? qsTr("ENDING SESSION")
-                : root.failed ? qsTr("SESSION INTERRUPTED") : qsTr("STARTING SESSION")
-            color: root.failed ? DesktopTokens.danger : Theme.mediaAccent
-            font.family: DesktopTokens.monoFont
-            font.pixelSize: 11
-            font.weight: Font.Bold
-            font.letterSpacing: 1.8
+            text: root.stopping ? qsTr("Ending session")
+                : root.failed ? qsTr("Session interrupted") : qsTr("Starting session")
+            color: root.failed ? DesktopTokens.danger : Theme.mediaMuted
+            font.family: DesktopTokens.bodyFont
+            font.pixelSize: 14
+            font.weight: Font.Medium
         }
         Text {
             width: parent.width
@@ -121,9 +120,8 @@ FocusScope {
             text: String(root.game.title || qsTr("GeForce NOW"))
             color: Theme.mediaForeground
             font.family: DesktopTokens.displayFont
-            font.pixelSize: root.width < 800 ? 34 : 44
-            font.weight: Font.Black
-            font.letterSpacing: -1.2
+            font.pixelSize: root.width < 800 ? 30 : 38
+            font.weight: Font.DemiBold
             maximumLineCount: 2
             wrapMode: Text.WordWrap
             elide: Text.ElideRight
@@ -135,22 +133,11 @@ FocusScope {
             Item {
                 width: 20; height: 26
                 visible: !root.failed
-                Rectangle {
+                BusyIndicator {
                     anchors.centerIn: parent
-                    width: 18; height: 18; radius: 9
-                    color: "transparent"
-                    border.width: 2
-                    border.color: "#35FFFFFF"
-                    Rectangle {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        y: -1
-                        width: 6; height: 6; radius: 3
-                        color: Theme.mediaAccent
-                    }
-                    RotationAnimation on rotation {
-                        from: 0; to: 360; duration: 1400; loops: Animation.Infinite
-                        running: root.visible && !root.failed && !AppController.reducedMotion
-                    }
+                    width: 22; height: 22
+                    running: root.visible && !root.failed
+                    palette.dark: Theme.mediaForeground
                 }
             }
             Text {
@@ -159,8 +146,8 @@ FocusScope {
                 text: root.statusText
                 color: root.failed ? DesktopTokens.danger : Theme.mediaForeground
                 font.family: DesktopTokens.bodyFont
-                font.pixelSize: 19
-                font.weight: Font.DemiBold
+                font.pixelSize: 17
+                font.weight: Font.Medium
                 wrapMode: Text.WordWrap
             }
         }

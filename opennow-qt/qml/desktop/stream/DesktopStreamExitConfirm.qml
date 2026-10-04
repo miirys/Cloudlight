@@ -37,38 +37,30 @@ FocusScope {
         opacity: reveal.progress
         scale: reveal.zoom
         anchors.centerIn: parent
-        width: Math.min(520, root.width - 48)
-        height: 268
-        radius: 28
-        color: "#F50E1018"
+        width: Math.min(560, root.width - 48)
+        height: dialogColumn.implicitHeight + 64
+        radius: DesktopTokens.radiusLarge
+        color: Theme.surface
         border.width: 1
         border.color: DesktopTokens.seam
 
         Column {
-            anchors.fill: parent
-            anchors.margins: 28
+            id: dialogColumn
+            x: 32; y: 32
+            width: parent.width - 64
             spacing: 0
 
             Text {
-                text: root.quittingApplication ? qsTr("QUIT OPENNOW") : qsTr("END SESSION")
-                color: DesktopTokens.danger
-                font.family: DesktopTokens.monoFont
-                font.pixelSize: 10
-                font.weight: Font.Bold
-                font.letterSpacing: 1.4
-            }
-            Text {
                 width: parent.width
-                topPadding: 10
                 text: root.quittingApplication ? qsTr("Quit OpenNOW?") : qsTr("End this cloud session?")
                 color: DesktopTokens.text
                 font.family: DesktopTokens.displayFont
-                font.pixelSize: 28
-                font.weight: Font.Black
+                font.pixelSize: 26
+                font.weight: Font.Bold
             }
             Text {
                 width: parent.width
-                topPadding: 10
+                topPadding: 12
                 text: root.quittingApplication
                     ? qsTr("OpenNOW will close and disconnect from any active cloud session.")
                     : AppController.route === "inserting"
@@ -76,13 +68,12 @@ FocusScope {
                     : qsTr("Your game will close on the remote rig. This session cannot be resumed after it ends.")
                 color: DesktopTokens.textBody
                 font.family: DesktopTokens.bodyFont
-                font.pixelSize: 14
-                font.weight: Font.Medium
+                font.pixelSize: 17
                 wrapMode: Text.WordWrap
                 lineHeight: 1.25
             }
 
-            Item { width: 1; height: 22 }
+            Item { width: 1; height: 28 }
             Row {
                 anchors.right: parent.right
                 spacing: 10

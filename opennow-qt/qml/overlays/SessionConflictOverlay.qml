@@ -39,12 +39,12 @@ FocusScope {
             spacing: 18
 
             Text {
-                text: qsTr("YOUR GAME IS STILL RUNNING")
+                text: qsTr("Your game is still running")
                 color: Theme.mint
-                font.family: Theme.monoFont
+                font.family: Theme.bodyFont
                 font.pixelSize: 13
                 font.weight: Font.Bold
-                font.letterSpacing: 1.5
+                font.letterSpacing: 0
             }
             Text {
                 width: parent.width
@@ -52,7 +52,7 @@ FocusScope {
                 color: Theme.label
                 font.family: Theme.displayFont
                 font.pixelSize: 34
-                font.weight: Font.Black
+                font.weight: Font.Bold
                 wrapMode: Text.WordWrap
             }
             Text {

@@ -10,9 +10,9 @@ Rectangle {
     anchors.bottomMargin: 96
     width: Math.min(680, parent.width - 48)
     height: copy.implicitHeight + 32
-    radius: 12
-    color: "#F0222936"
-    border.color: "#BC9554"
+    radius: 4
+    color: "#1C1C1C"
+    border.color: "#E8A33D"
     border.width: 1
     Accessible.role: Accessible.AlertMessage
     Accessible.name: heading.text + ". " + detail.text
@@ -31,15 +31,15 @@ Rectangle {
             text: qsTr("Relative mouse input unavailable")
             font.pixelSize: 17
             font.weight: Font.DemiBold
-            color: "#FFE0A6"
+            color: "#E8A33D"
             wrapMode: Text.Wrap
         }
         Text {
             id: detail
             width: parent.width
             text: root.message + "\n" + qsTr("Video and audio are still running.")
-            font.pixelSize: 14
-            color: "#E3E7EF"
+            font.pixelSize: 16
+            color: "#C8C8C8"
             wrapMode: Text.Wrap
         }
     }

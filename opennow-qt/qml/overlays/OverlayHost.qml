@@ -51,7 +51,7 @@ FocusScope {
 
     Loader {
         anchors.fill: parent
-        scale: root.presentedOverlay.startsWith("guide-") ? 1 : reveal.zoom
+        scale: root.presentedOverlay.startsWith("guide-") || root.presentedOverlay === "quick-settings" ? 1 : reveal.zoom
         sourceComponent: root.presentedOverlay.startsWith("guide-") ? guideComponent
                        : root.presentedOverlay === "friends" || root.presentedOverlay === "friend-actions" ? friendsComponent
                        : root.presentedOverlay === "quick-settings" ? quickSettingsComponent
@@ -73,7 +73,8 @@ FocusScope {
     }
     Component {
         id: quickSettingsComponent
-        Item { QuickSettingsOverlay { x: parent.width - width - 40; y: 98 } }
+        // Docked to the right edge at full height, like GeForce NOW's side panels.
+        Item { QuickSettingsOverlay { anchors.right: parent.right; height: parent.height; width: Math.min(560, parent.width) } }
     }
     Component { id: sessionConflictComponent; SessionConflictOverlay {} }
     Component { id: sessionReportComponent; SessionReportOverlay {} }

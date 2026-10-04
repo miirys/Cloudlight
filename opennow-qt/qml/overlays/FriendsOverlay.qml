@@ -42,12 +42,12 @@ GlassPanel {
                 height: 75
                 spacing: 14
                 Rectangle {
-                    width: 56; height: 56; radius: 14
+                    width: 56; height: 56; radius: DesktopTokens.radiusLarge
                     gradient: Gradient {
                         GradientStop { position: 0; color: Theme.violet }
                         GradientStop { position: 1; color: Theme.shell }
                     }
-                    Text { anchors.centerIn: parent; text: qsTr("GFN"); color: Theme.mediaForeground; font.family: Theme.displayFont; font.pixelSize: 12; font.weight: Font.Black }
+                    Text { anchors.centerIn: parent; text: qsTr("GFN"); color: Theme.mediaForeground; font.family: Theme.displayFont; font.pixelSize: 12; font.weight: Font.Bold }
                 }
                 Column {
                     anchors.verticalCenter: parent.verticalCenter
@@ -112,7 +112,7 @@ GlassPanel {
                 color: Theme.label
                 font.family: Theme.displayFont
                 font.pixelSize: 24
-                font.weight: Font.Black
+                font.weight: Font.Bold
             }
             GlassPanel {
                 anchors.verticalCenter: parent.verticalCenter
@@ -121,12 +121,12 @@ GlassPanel {
                 Text {
                     id: comingSoon
                     anchors.centerIn: parent
-                    text: qsTr("COMING SOON")
+                    text: qsTr("Coming soon")
                     color: Theme.mint
                     font.family: Theme.bodyFont
                     font.pixelSize: 11
-                    font.weight: Font.Black
-                    font.letterSpacing: 0.8
+                    font.weight: Font.Bold
+                    font.letterSpacing: 0
                 }
             }
         }
@@ -143,7 +143,7 @@ GlassPanel {
                 Rectangle {
                     width: 48; height: 48; radius: 24
                     color: Theme.glassStrong
-                    Text { anchors.centerIn: parent; text: qsTr("◎"); color: Theme.focus; font.pixelSize: 24; font.weight: Font.Black }
+                    Text { anchors.centerIn: parent; text: qsTr("◎"); color: Theme.focus; font.pixelSize: 24; font.weight: Font.Bold }
                 }
                 Text {
                     text: qsTr("GeForce NOW friends are unavailable")
@@ -165,11 +165,11 @@ GlassPanel {
         }
 
         Text {
-            text: qsTr("LOCAL CONTROLLERS")
+            text: qsTr("Local controllers")
             color: Theme.textMuted
-            font.family: Theme.monoFont
+            font.family: Theme.bodyFont
             font.pixelSize: 12
-            font.letterSpacing: 1.2
+            font.letterSpacing: 0
         }
 
         ListView {
@@ -189,7 +189,7 @@ GlassPanel {
                     spacing: 14
                     Rectangle {
                         width: 34; height: 34; radius: 17; color: Theme.mint
-                        Text { anchors.centerIn: parent; text: qsTr("P") + modelData.slot; color: Theme.contrastText(Theme.mint); font.weight: Font.Black }
+                        Text { anchors.centerIn: parent; text: qsTr("P") + modelData.slot; color: Theme.contrastText(Theme.mint); font.weight: Font.Bold }
                     }
                     Text {
                         anchors.verticalCenter: parent.verticalCenter
