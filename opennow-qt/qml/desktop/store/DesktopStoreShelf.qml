@@ -79,7 +79,7 @@ Item {
     signal seeAllRequested()
 
     readonly property int railGap: DesktopTokens.px(20)
-    readonly property int columnCount: Math.max(1, Math.floor((width + railGap) / (DesktopTokens.px(160) + railGap)))
+    readonly property int columnCount: Math.max(1, Math.floor((width + railGap) / (DesktopTokens.libraryArtWidth + railGap)))
     readonly property int tileCount: Math.max(1, Math.min(60, (root.categoryId ? root.totalCount : root.games.length) || 1, columnCount))
     // A short final page keeps the same poster size as a full row.
     readonly property int tileWidth: Math.max(DesktopTokens.libraryArtWidth, Math.floor((width - railGap * (columnCount - 1)) / columnCount))
