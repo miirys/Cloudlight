@@ -138,8 +138,8 @@ FocusScope {
         enabled: root.shellVisible
         route: root.contentRoute
         title: root.titleForRoute(root.contentRoute)
-        // Home lets its hero art run under the top bar until it scrolls away.
-        headerOverlay: root.contentRoute === "home"
+        // Home and the store let their hero art run under the top bar until it scrolls away.
+        headerOverlay: root.contentRoute === "home" || root.contentRoute === "store"
         headerSolid: !(pageLoader.item && pageLoader.item.headerSolid === false)
         subtitle: root.subtitleForRoute(root.contentRoute)
         searchText: root.searchText

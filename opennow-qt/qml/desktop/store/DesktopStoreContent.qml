@@ -31,7 +31,9 @@ FocusScope {
     signal searchRequested()
     signal messageRequested(string message)
 
-    readonly property int railInnerWidth: Math.max(200, content.width - 48)
+    readonly property int railInnerWidth: Math.max(200, content.width - DesktopTokens.safeX * 2)
+    // Read by the shell: the top bar stays a scrim over the marquee, solid below it.
+    readonly property bool headerSolid: !hero.visible || content.contentY > hero.height - DesktopTokens.topBarHeight * 2
     readonly property int railCount: Math.max(1, Math.floor((root.railInnerWidth + DesktopTokens.px(14)) / (DesktopTokens.libraryArtWidth + DesktopTokens.px(14))))
     readonly property var filteredCatalog: ShellStore.storeUsesLocalIndex ? root.storeGames : root.buildFiltered(root.storeGames, root.searchText, root.activeGenre, root.activeStore, root.activeCategoryId)
     readonly property var heroGames: root.buildHero(root.filteredCatalog)
@@ -617,10 +619,10 @@ FocusScope {
 
         DesktopStoreHero {
             id: hero
-            x: 24
-            y: 18
-            width: root.railInnerWidth
-            height: 260
+            x: 0
+            y: 0
+            width: content.width
+            height: Math.max(DesktopTokens.px(380), Math.round(root.height * 0.62))
             visible: slides.length > 0
             slides: root.marqueeSlides()
             selectedAction: root.focusZone === "hero" ? root.focusIndex : -1
@@ -631,10 +633,10 @@ FocusScope {
 
         Flow {
             id: chips
-            x: 24
-            y: hero.visible ? 292 : 18
+            x: DesktopTokens.safeX
+            y: hero.visible ? hero.height + DesktopTokens.px(8) : DesktopTokens.topBarHeight + DesktopTokens.px(28)
             width: root.railInnerWidth
-            spacing: 8
+            spacing: DesktopTokens.px(10)
 
             Repeater {
                 model: root.categories
@@ -698,7 +700,7 @@ FocusScope {
         Rectangle {
             id: storeStatus
             objectName: "storePageStatus"
-            x: 24; y: chips.y + chips.height + 16; width: root.railInnerWidth
+            x: DesktopTokens.safeX; y: chips.y + chips.height + DesktopTokens.px(20); width: root.railInnerWidth
             visible: root.storeGames.length > 0 && (ShellStore.storeLoading || ShellStore.storeHasMore
                 || root.catalogError !== "" || ShellStore.storeWarning !== "")
             height: visible ? Math.max(48, statusText.implicitHeight + 24) : 0
@@ -726,10 +728,10 @@ FocusScope {
 
         Column {
             id: shelvesColumn
-            x: 24
-            y: storeStatus.y + (storeStatus.visible ? storeStatus.height + 16 : 0)
+            x: DesktopTokens.safeX
+            y: storeStatus.y + (storeStatus.visible ? storeStatus.height + DesktopTokens.px(20) : DesktopTokens.px(12))
             width: root.railInnerWidth
-            spacing: 16
+            spacing: DesktopTokens.px(32)
             Repeater {
                 id: shelfRepeater
                 model: root.shelfModels

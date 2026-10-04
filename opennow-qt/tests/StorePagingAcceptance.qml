@@ -193,23 +193,25 @@ QtObject {
 
         const originalSettings = ShellStore.settings
         const originalRemotes = ShellStore.remoteSessions
-        ShellStore.applySetting("desktopRailCollapsed", false)
         ShellStore.remoteSessions = [{status:2, appName:"A very long game name: Complete Edition"}]
         const originalScale = DesktopTokens.uiScale
         DesktopTokens.uiScale = 1.4
         const headerHost = hostComponent.createObject(screen, {width:960, height:540})
         const shell = shellComponent.createObject(headerHost, {title:"A long translated library heading", subtitle:"A long translated subtitle"})
-        const heading = namedChild(shell, "desktopHeaderHeading")
+        const tabs = namedChild(shell, "desktopTopTabs")
         const searchField = namedChild(shell, "desktopHeaderSearch")
         const resumeButton = namedChild(shell, "desktopHeaderResume")
-        check(resumeButton.visible && heading.x + heading.width <= searchField.x
-            && searchField.x + searchField.width <= resumeButton.x
-            && resumeButton.x + resumeButton.width <= resumeButton.parent.width,
-            "header controls overlap with a pinned sidebar and resumable session")
+        const headerFits = function() {
+            const tabsRight = tabs.mapToItem(shell, tabs.width, 0).x
+            const resume = resumeButton.mapToItem(shell, 0, 0)
+            const search = searchField.mapToItem(shell, 0, 0)
+            return resumeButton.visible && tabsRight <= resume.x
+                && (!searchField.visible || (tabsRight <= search.x && search.x + searchField.width <= resume.x))
+                && resume.x + resumeButton.width <= shell.width
+        }
+        check(headerFits(), "top bar controls overlap with a resumable session")
         headerHost.width = 800
-        check(heading.width > 0 && heading.x + heading.width <= searchField.x
-            && searchField.x + searchField.width <= resumeButton.x,
-            "header did not adapt to a narrower viewport")
+        check(headerFits(), "top bar did not adapt to a narrower viewport")
         shell.destroy()
         headerHost.destroy()
         ShellStore.settings = originalSettings
@@ -316,7 +318,6 @@ QtObject {
         ShellStore.storeHasMore = false
         ShellStore.storeError = ""
         ShellStore.storeWarning = ""
-        ShellStore.applySetting("desktopRailCollapsed", false)
         ShellStore.authSession = {user:{userId:"store-fixture", displayName:"A very long account display name"}}
         check(screen.storeOptions.length === 10, "store choices were truncated")
         screen.openMenu = genreMenu ? "genre" : "store"

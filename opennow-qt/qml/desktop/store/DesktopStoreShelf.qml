@@ -78,36 +78,38 @@ Item {
     signal gamePointed(int index)
     signal seeAllRequested()
 
-    readonly property int railGap: DesktopTokens.px(14)
-    readonly property int columnCount: Math.max(1, Math.floor((width + railGap) / (DesktopTokens.libraryArtWidth + railGap)))
+    readonly property int railGap: DesktopTokens.px(20)
+    readonly property int columnCount: Math.max(1, Math.floor((width + railGap) / (DesktopTokens.px(160) + railGap)))
     readonly property int tileCount: Math.max(1, Math.min(60, (root.categoryId ? root.totalCount : root.games.length) || 1, columnCount))
     // A short final page keeps the same poster size as a full row.
     readonly property int tileWidth: Math.max(DesktopTokens.libraryArtWidth, Math.floor((width - railGap * (columnCount - 1)) / columnCount))
-    readonly property int tileHeight: Math.round(tileWidth * 198 / 132) + DesktopTokens.storeCardInfoHeight
+    readonly property int tileHeight: Math.round(tileWidth * 3 / 2) + DesktopTokens.storeCardInfoHeight
+    readonly property int headerHeight: DesktopTokens.px(48)
 
-    height: root.empty ? 0 : DesktopTokens.px(31) + tileHeight
+    height: root.empty ? 0 : headerHeight + tileHeight
 
     Row {
         x: 0
         y: 0
         width: Math.max(0, headerActions.visible ? headerActions.x - DesktopTokens.px(12) : parent.width)
-        height: DesktopTokens.px(20)
-        spacing: DesktopTokens.px(9)
+        height: DesktopTokens.px(34)
+        spacing: DesktopTokens.px(12)
 
         Text {
             width: Math.max(0, parent.width - (sectionEyebrow.visible ? sectionEyebrow.implicitWidth + parent.spacing : 0))
             elide: Text.ElideRight
-            anchors.baseline: sectionEyebrow.baseline
+            anchors.verticalCenter: parent.verticalCenter
             text: root.title
-            color: DesktopTokens.text
-            font.family: Theme.displayFont
-            font.pixelSize: DesktopTokens.px(16)
+            color: DesktopTokens.textHigh
+            font.family: DesktopTokens.displayFont
+            font.pixelSize: DesktopTokens.headingSize
             font.weight: Font.Bold
             font.letterSpacing: 0
         }
 
         Text {
             id: sectionEyebrow
+            anchors.verticalCenter: parent.verticalCenter
             visible: root.eyebrow.length > 0
             text: root.eyebrow
             color: DesktopTokens.textMuted
@@ -122,32 +124,26 @@ Item {
         id: headerActions
         visible: root.showSeeAll
         anchors.right: parent.right
-        y: 1
-        height: DesktopTokens.px(18)
+        y: 0
+        height: DesktopTokens.px(34)
         spacing: DesktopTokens.px(5)
 
         Text {
             anchors.verticalCenter: parent.verticalCenter
-            text: root.seeAllText
-            color: DesktopTokens.textMuted
-            font.family: Theme.bodyFont
+            text: root.seeAllText.toLocaleUpperCase()
+            color: seeAllHover.hovered ? DesktopTokens.textHigh : DesktopTokens.textMuted
+            font.family: DesktopTokens.bodyFont
             font.pixelSize: DesktopTokens.captionSize
             font.weight: Font.Bold
-        }
-        Text {
-            anchors.verticalCenter: parent.verticalCenter
-            text: "›"
-            color: DesktopTokens.textMuted
-            font.family: Theme.bodyFont
-            font.pixelSize: DesktopTokens.bodySize
-            font.weight: Font.Bold
+            font.letterSpacing: DesktopTokens.px(1.2)
         }
 
+        HoverHandler { id: seeAllHover; cursorShape: Qt.PointingHandCursor }
         TapHandler { onTapped: root.seeAllRequested() }
     }
 
     Row {
-        y: DesktopTokens.px(31)
+        y: root.headerHeight
         width: parent.width
         spacing: root.railGap
 

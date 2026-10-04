@@ -1,8 +1,9 @@
 import QtQuick
-import QtQuick.Controls
-import QtQuick.Effects
 import OpenNOW
 
+// Full-bleed store marquee, matching the home hero: art across the whole
+// width, a left and bottom scrim into the page colour, and the title block
+// on the safe margin.
 Item {
     id: root
 
@@ -18,6 +19,7 @@ Item {
 
     width: 1160
     height: 260
+    clip: true
 
     readonly property var slide: slides.length ? slides[Math.max(0, Math.min(currentSlide, slides.length - 1))] : null
     readonly property var slideGame: slide && slide.game ? slide.game : null
@@ -31,196 +33,144 @@ Item {
 
     Timer {
         id: advanceTimer
-        interval: 6000
+        interval: 8000
         repeat: true
         running: root.visible && slides.length > 1 && !AppController.reducedMotion && !heroHover.hovered
         onTriggered: root.nextSlide()
     }
 
-    // Keep the text's contrast backing outside the effect layer. Qt's software
-    // renderer cannot draw MultiEffect masks, but must still show a readable hero.
-    Rectangle {
-        anchors.fill: parent
-        radius: DesktopTokens.radiusLarge
-        color: "#0A0A0A"
-    }
+    Rectangle { anchors.fill: parent; color: DesktopTokens.shell }
 
-    Rectangle {
-        id: heroMask
-        anchors.fill: parent
-        radius: DesktopTokens.radiusLarge
-        color: "white"
-        visible: false
-        layer.enabled: true
-    }
-
-    Item {
-        anchors.fill: parent
-        layer.enabled: true
-        layer.smooth: true
-        layer.effect: MultiEffect {
-            maskEnabled: true
-            maskSource: heroMask
-            maskThresholdMin: 0.25
-            maskSpreadAtMin: 0.2
-        }
-
-        Repeater {
-            model: root.slides
-            Item {
-                required property var modelData
-                required property int index
-                anchors.fill: parent
-                visible: opacity > 0
-                opacity: index === root.currentSlide ? 1 : 0
-                Behavior on opacity { NumberAnimation { duration: AppController.reducedMotion ? 0 : 450; easing.type: Easing.OutCubic } }
-
-                Image {
-                    x: Math.round(parent.width * 0.28)
-                    width: parent.width - x
-                    height: parent.height
-                    source: DesktopTokens.decodeArtworkUrl(String(modelData.image || ""))
-                    fillMode: Image.PreserveAspectCrop
-                    asynchronous: true
-                    cache: true
-                    sourceSize: Qt.size(Math.ceil(width), Math.ceil(height))
-                }
-            }
-        }
-
-        Rectangle {
+    Repeater {
+        model: root.slides
+        Item {
+            id: slideLayer
+            required property var modelData
+            required property int index
+            readonly property bool shown: index === root.currentSlide
             anchors.fill: parent
-            gradient: Gradient {
-                orientation: Gradient.Horizontal
-                // Legibility scrim: solid behind the text, clearing over the artwork.
-                GradientStop { position: 0; color: "#0A0A0A" }
-                GradientStop { position: 0.3; color: "#0A0A0A" }
-                GradientStop { position: 0.6; color: "#000A0A0A" }
+            visible: opacity > 0
+            opacity: shown ? 1 : 0
+            Behavior on opacity { NumberAnimation { duration: AppController.reducedMotion ? 0 : 700; easing.type: Easing.InOutQuad } }
+
+            Image {
+                anchors.fill: parent
+                source: DesktopTokens.decodeArtworkUrl(String(slideLayer.modelData.image || ""))
+                fillMode: Image.PreserveAspectCrop
+                asynchronous: true
+                cache: true
+                sourceSize: Qt.size(1920, 1080)
+                scale: slideLayer.shown ? 1 : 1.04
+                Behavior on scale { NumberAnimation { duration: AppController.reducedMotion ? 0 : 1200; easing.type: Easing.OutCubic } }
             }
+        }
+    }
+
+    Rectangle {
+        anchors.fill: parent
+        gradient: Gradient {
+            orientation: Gradient.Horizontal
+            GradientStop { position: 0; color: Qt.rgba(DesktopTokens.shell.r, DesktopTokens.shell.g, DesktopTokens.shell.b, 0.9) }
+            GradientStop { position: 0.4; color: Qt.rgba(DesktopTokens.shell.r, DesktopTokens.shell.g, DesktopTokens.shell.b, 0.5) }
+            GradientStop { position: 0.72; color: Qt.rgba(DesktopTokens.shell.r, DesktopTokens.shell.g, DesktopTokens.shell.b, 0) }
+        }
+    }
+    Rectangle {
+        anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom
+        height: parent.height * 0.5
+        gradient: Gradient {
+            GradientStop { position: 0; color: Qt.rgba(DesktopTokens.shell.r, DesktopTokens.shell.g, DesktopTokens.shell.b, 0) }
+            GradientStop { position: 1; color: DesktopTokens.shell }
         }
     }
 
     HoverHandler { id: heroHover }
 
     Column {
-        x: 24
-        y: 24
-        width: Math.min(520, Math.max(300, root.width * 0.42))
-        spacing: 10
+        x: DesktopTokens.safeX
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: DesktopTokens.px(44)
+        width: Math.min(root.width * 0.5, DesktopTokens.px(760))
+        spacing: DesktopTokens.px(12)
 
         Text {
-            text: root.slide && root.slide.kind === "marketing" ? qsTr("GeForce NOW") : qsTr("Featured")
-            color: Theme.mediaMuted
-            font.family: Theme.bodyFont
+            text: root.slide && root.slide.kind === "marketing" ? qsTr("GEFORCE NOW") : qsTr("FEATURED")
+            color: DesktopTokens.focus
+            font.family: DesktopTokens.bodyFont
             font.pixelSize: DesktopTokens.captionSize
-            font.weight: Font.DemiBold
+            font.weight: Font.Bold
+            font.letterSpacing: DesktopTokens.px(2)
         }
-
         Text {
             width: parent.width
             text: root.slide ? String(root.slide.title || "") : ""
             color: "#FFFFFF"
-            font.family: Theme.displayFont
-            font.pixelSize: DesktopTokens.px(30)
+            font.family: DesktopTokens.displayFont
+            font.pixelSize: DesktopTokens.displaySize
             font.weight: Font.Bold
-            font.letterSpacing: 0
+            font.letterSpacing: -DesktopTokens.px(0.5)
             elide: Text.ElideRight
             maximumLineCount: 2
             wrapMode: Text.WordWrap
+            lineHeight: 1.05
         }
-
         Text {
             width: parent.width
             visible: text !== ""
             text: root.slide ? String(root.slide.body || "") : ""
-            color: Theme.mediaMuted
-            font.family: Theme.bodyFont
+            color: "#D9D9D9"
+            font.family: DesktopTokens.bodyFont
             font.pixelSize: DesktopTokens.bodySize
-            font.weight: Font.Normal
+            font.weight: Font.Medium
             maximumLineCount: 2
             elide: Text.ElideRight
             wrapMode: Text.WordWrap
         }
-    }
-
-    Row {
-        x: 24
-        y: parent.height - 58
-        height: 36
-        spacing: 9
-        visible: root.slideGame !== null
-
-        Button {
-            id: playButton
-            width: 121
-            height: 36
-            padding: 0
-            focusPolicy: Qt.NoFocus
-            hoverEnabled: true
-            Accessible.name: text
-            text: qsTr("Play")
-            onHoveredChanged: if (hovered) root.actionPointed(0)
-            onClicked: if (root.slideGame) root.playRequested(root.slideGame)
-            background: Rectangle {
-                radius: DesktopTokens.radius
-                color: playButton.down ? Qt.darker(Theme.mediaAccent, 1.15) : Theme.mediaAccent
-                border.width: root.selectedAction === 0 ? 3 : 0
-                border.color: "#FFFFFF"
+        Item { width: 1; height: DesktopTokens.px(8); visible: actions.visible }
+        Row {
+            id: actions
+            spacing: DesktopTokens.px(16)
+            visible: root.slideGame !== null
+            DesktopHeroButton {
+                objectName: "storeHeroPlay"
+                primary: true
+                glyph: "play"
+                text: qsTr("Play")
+                selected: root.selectedAction === 0
+                onPointed: root.actionPointed(0)
+                onActivated: if (root.slideGame) root.playRequested(root.slideGame)
             }
-            contentItem: Text {
-                text: playButton.text
-                color: Theme.contrastText(Theme.mediaAccent)
-                font.family: Theme.bodyFont
-                font.pixelSize: DesktopTokens.captionSize
-                font.weight: Font.DemiBold
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-            }
-        }
-
-        Button {
-            id: detailsButton
-            width: 153
-            height: 36
-            padding: 0
-            focusPolicy: Qt.NoFocus
-            hoverEnabled: true
-            Accessible.name: text
-            text: qsTr("View details")
-            onHoveredChanged: if (hovered) root.actionPointed(1)
-            onClicked: if (root.slideGame) root.detailsRequested(root.slideGame)
-            background: Rectangle {
-                radius: DesktopTokens.radius
-                color: detailsButton.down ? "#454545" : "#333333"
-                border.width: root.selectedAction === 1 ? 3 : 0
-                border.color: "#FFFFFF"
-            }
-            contentItem: Text {
-                text: detailsButton.text
-                color: Theme.mediaForeground
-                font.family: Theme.bodyFont
-                font.pixelSize: DesktopTokens.captionSize
-                font.weight: Font.DemiBold
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
+            DesktopHeroButton {
+                objectName: "storeHeroDetails"
+                glyph: "info"
+                text: qsTr("View details")
+                selected: root.selectedAction === 1
+                onPointed: root.actionPointed(1)
+                onActivated: if (root.slideGame) root.detailsRequested(root.slideGame)
             }
         }
     }
 
     Row {
-        x: 24
-        y: parent.height - 20
-        spacing: 6
+        anchors.right: parent.right
+        anchors.rightMargin: DesktopTokens.safeX
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: DesktopTokens.px(66)
+        spacing: DesktopTokens.px(8)
         visible: root.slides.length > 1
         Repeater {
             model: root.slides.length
             Rectangle {
+                id: dash
                 required property int index
-                width: 24
-                height: 3
-                color: index === root.currentSlide ? Theme.mediaForeground : "#5C5C5C"
+                readonly property bool current: index === root.currentSlide
+                width: current ? DesktopTokens.px(40) : DesktopTokens.px(20)
+                height: DesktopTokens.px(4)
+                radius: height / 2
+                color: current ? DesktopTokens.focus : "#80FFFFFF"
+                Behavior on width { NumberAnimation { duration: DesktopTokens.motionDuration; easing.type: Easing.OutCubic } }
                 HoverHandler { cursorShape: Qt.PointingHandCursor }
-                TapHandler { onTapped: root.currentSlide = index }
+                TapHandler { onTapped: root.currentSlide = dash.index }
             }
         }
     }

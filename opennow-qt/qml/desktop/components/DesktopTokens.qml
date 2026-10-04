@@ -85,10 +85,10 @@ QtObject {
     readonly property int libraryArtHeight: px(198)
     property FontMetrics storeTitleMetrics: FontMetrics {
         font.family: Theme.bodyFont
-        font.pixelSize: tokens.monoSize
-        font.weight: Font.Bold
+        font.pixelSize: tokens.bodySize
+        font.weight: Font.DemiBold
     }
-    readonly property int storeCardInfoHeight: px(8) + Math.ceil(storeTitleMetrics.height) * 2 + px(4) + px(17) + px(4)
+    readonly property int storeCardInfoHeight: px(12) + Math.ceil(storeTitleMetrics.height) * 2 + px(4) + px(24) + px(8)
     readonly property int quickDuration: AppController.reducedMotion ? 0 : 150
     readonly property int motionDuration: AppController.reducedMotion ? 0 : 250
     readonly property int revealDuration: AppController.reducedMotion ? 0 : 320

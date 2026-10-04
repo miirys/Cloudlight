@@ -10,7 +10,7 @@ Item {
     property color ink: DesktopTokens.text
     property real textReveal: 1
     readonly property real markAspect: 362 / 208
-    implicitWidth: mark.width + root.spacing + label.implicitWidth
+    implicitWidth: mark.width + (root.textReveal > 0 ? root.spacing + label.implicitWidth * root.textReveal : 0)
     implicitHeight: Math.max(mark.height, label.implicitHeight)
     width: implicitWidth
     height: implicitHeight

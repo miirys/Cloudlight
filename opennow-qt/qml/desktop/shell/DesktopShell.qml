@@ -13,6 +13,11 @@ FocusScope {
     property bool searchVisible: route !== "settings" && route.indexOf("settings-") !== 0 && route !== "friends" && route !== "updates"
     property string searchText: ""
     property bool headerOverlay: false
+    // Narrow or heavily scaled windows drop the clock and wordmark and pull
+    // the bar in from the 10-foot safe margin rather than letting items collide.
+    readonly property bool headerTight: width < DesktopTokens.px(1280)
+    readonly property bool headerCompact: width < DesktopTokens.px(1100)
+    readonly property int headerEdge: headerCompact ? DesktopTokens.px(24) : DesktopTokens.safeX
     property bool headerSolid: true
     property date now: new Date()
     readonly property bool friendsAvailable: Boolean(ShellStore.socialCapabilities && ShellStore.socialCapabilities.friendsAvailable)
@@ -100,7 +105,8 @@ FocusScope {
 
             DesktopBrandLockup {
                 id: brand
-                x: DesktopTokens.safeX
+                x: root.headerEdge
+                textReveal: root.headerCompact ? 0 : 1
                 anchors.verticalCenter: parent.verticalCenter
                 markHeight: DesktopTokens.px(22)
                 fontPixelSize: DesktopTokens.px(21)
@@ -109,9 +115,9 @@ FocusScope {
             Row {
                 id: tabs
                 objectName: "desktopTopTabs"
-                x: brand.x + brand.width + DesktopTokens.px(44)
+                x: brand.x + brand.width + DesktopTokens.px(root.headerCompact ? 20 : 44)
                 height: parent.height
-                spacing: DesktopTokens.px(8)
+                spacing: DesktopTokens.px(root.headerCompact ? 0 : 8)
                 Repeater {
                     model: root.navItems
                     delegate: ItemDelegate {
@@ -122,7 +128,7 @@ FocusScope {
                         readonly property bool selected: root.routeSelected(modelData.route)
                         readonly property bool keyboardFocus: activeFocus && AppController.inputMode !== "pointer"
                         height: tabs.height
-                        leftPadding: DesktopTokens.px(16); rightPadding: DesktopTokens.px(16)
+                        leftPadding: DesktopTokens.px(root.headerCompact ? 12 : 16); rightPadding: leftPadding
                         topPadding: 0; bottomPadding: 0
                         focusPolicy: Qt.StrongFocus
                         Accessible.name: modelData.name
@@ -193,7 +199,7 @@ FocusScope {
             Row {
                 id: account
                 anchors.right: parent.right
-                anchors.rightMargin: DesktopTokens.safeX
+                anchors.rightMargin: root.headerEdge
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: DesktopTokens.px(12)
 
@@ -202,18 +208,19 @@ FocusScope {
                     objectName: "desktopHeaderResume"
                     visible: ShellStore.resumableSession !== null && root.route !== "stream"
                     anchors.verticalCenter: parent.verticalCenter
-                    width: Math.min(DesktopTokens.px(300), Math.max(DesktopTokens.px(160), implicitWidth))
+                    width: Math.min(DesktopTokens.px(root.headerTight ? 200 : 300), Math.max(DesktopTokens.px(140), implicitWidth))
                     height: DesktopTokens.px(44)
                     primary: true
-                    text: root.activeSessionPrompt()
+                    text: root.headerTight ? qsTr("Resume game") : root.activeSessionPrompt()
                     ToolTip.visible: hovered
-                    ToolTip.text: text
+                    ToolTip.text: root.activeSessionPrompt()
                     ToolTip.delay: 700
                     onClicked: ShellStore.resumeActiveSession()
                 }
 
                 Text {
                     id: clock
+                    visible: !root.headerTight
                     anchors.verticalCenter: parent.verticalCenter
                     text: Qt.formatTime(root.now, Qt.locale().timeFormat(Locale.ShortFormat))
                     color: DesktopTokens.textMuted

@@ -8,26 +8,21 @@ Button {
     property bool selected: false
     property bool hasMenu: false
 
-    implicitWidth: contentRow.implicitWidth + DesktopTokens.px(26)
-    implicitHeight: DesktopTokens.px(30)
+    implicitWidth: contentRow.implicitWidth + DesktopTokens.px(36)
+    implicitHeight: DesktopTokens.px(40)
     padding: 0
     focusPolicy: Qt.NoFocus
     hoverEnabled: true
     Accessible.role: Accessible.Button
     Accessible.name: text
 
+    // Pill filter, GeForce NOW style: selected is solid light on dark.
     background: Rectangle {
-        radius: DesktopTokens.radius
-        color: root.selected || root.down ? DesktopTokens.raisedStrong
-                                          : root.hovered ? DesktopTokens.raised : DesktopTokens.seamSoft
-        border.width: 1
-        border.color: root.selected || root.hovered ? DesktopTokens.seam : DesktopTokens.seamSoft
-
+        radius: height / 2
+        color: root.selected || root.down ? DesktopTokens.textHigh
+                                          : root.hovered ? DesktopTokens.hover : DesktopTokens.raised
         Behavior on color {
-            ColorAnimation { duration: Theme.focusDuration }
-        }
-        Behavior on border.color {
-            ColorAnimation { duration: Theme.focusDuration }
+            ColorAnimation { duration: DesktopTokens.quickDuration }
         }
     }
 
@@ -35,25 +30,25 @@ Button {
       Row {
         id: contentRow
         anchors.centerIn: parent
-        spacing: root.hasMenu ? DesktopTokens.px(7) : 0
+        spacing: root.hasMenu ? DesktopTokens.px(8) : 0
 
         Text {
             anchors.verticalCenter: parent.verticalCenter
             text: root.text
-            color: root.selected ? DesktopTokens.text : DesktopTokens.textMuted
-            font.family: Theme.bodyFont
-            font.pixelSize: DesktopTokens.monoSize
-            font.weight: root.selected ? Font.DemiBold : Font.DemiBold
+            color: root.selected || root.down ? DesktopTokens.shell : DesktopTokens.textBody
+            font.family: DesktopTokens.bodyFont
+            font.pixelSize: DesktopTokens.captionSize
+            font.weight: Font.DemiBold
         }
 
         DesktopSettingsIcon {
             anchors.verticalCenter: parent.verticalCenter
             visible: root.hasMenu
-            width: DesktopTokens.px(10)
+            width: DesktopTokens.px(12)
             height: width
             glyph: "chevron"
             rotation: 90
-            ink: DesktopTokens.textMuted
+            ink: root.selected || root.down ? DesktopTokens.shell : DesktopTokens.textMuted
         }
     }
     }
