@@ -43,6 +43,7 @@ Item {
         spacing: DesktopTokens.px(12)
         DesktopSettingsIcon {
             anchors.verticalCenter: parent.verticalCenter
+            visible: button.glyph !== ""
             width: DesktopTokens.px(22); height: width
             glyph: button.glyph
             ink: button.ink

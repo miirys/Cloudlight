@@ -208,10 +208,16 @@ FocusScope {
                     objectName: "desktopHeaderResume"
                     visible: ShellStore.resumableSession !== null && root.route !== "stream"
                     anchors.verticalCenter: parent.verticalCenter
-                    width: Math.min(DesktopTokens.px(root.headerTight ? 200 : 300), Math.max(DesktopTokens.px(140), implicitWidth))
+                    // Narrow windows keep the action as a play icon so the tabs never collide with it.
+                    width: root.headerCompact ? DesktopTokens.px(44)
+                        : Math.min(DesktopTokens.px(root.headerTight ? 200 : 300), Math.max(DesktopTokens.px(140), implicitWidth))
                     height: DesktopTokens.px(44)
+                    leftPadding: root.headerCompact ? 0 : DesktopTokens.px(20)
+                    rightPadding: leftPadding
                     primary: true
-                    text: root.headerTight ? qsTr("Resume game") : root.activeSessionPrompt()
+                    glyph: root.headerCompact ? "desktop-play.svg" : ""
+                    text: root.headerCompact ? "" : root.headerTight ? qsTr("Resume game") : root.activeSessionPrompt()
+                    Accessible.name: root.activeSessionPrompt()
                     ToolTip.visible: hovered
                     ToolTip.text: root.activeSessionPrompt()
                     ToolTip.delay: 700

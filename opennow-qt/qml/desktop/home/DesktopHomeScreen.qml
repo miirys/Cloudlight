@@ -107,7 +107,7 @@ FocusScope {
     }
 
     function zoneCount(zone) {
-        return zone === 0 ? 2 : root.zoneGames(zone).length
+        return zone === 0 ? (root.heroGame ? 2 : 1) : root.zoneGames(zone).length
     }
 
     function setSelection(zone, index) {
@@ -164,8 +164,11 @@ FocusScope {
     }
 
     function startHero() {
-        if (!root.heroGame)
+        if (!root.heroGame) {
+            // Empty library: the hero offers the next useful step instead.
+            AppController.navigate(ShellStore.signedIn ? "store" : "sign-in")
             return
+        }
         ShellStore.selectedGame = root.heroGame
         if (ShellStore.signedIn)
             ShellStore.launchSelectedGame(false)
@@ -350,14 +353,16 @@ FocusScope {
                         DesktopHeroButton {
                             objectName: "desktopHomePlay"
                             primary: true
-                            glyph: "play"
-                            text: qsTr("Play")
+                            glyph: root.heroGame ? "play" : ""
+                            text: root.heroGame ? qsTr("Play")
+                                : ShellStore.signedIn ? qsTr("Open Store") : qsTr("Sign in")
                             selected: root.focusZone === 0 && root.focusIndex === 0
                             onPointed: root.setSelection(0, 0)
                             onActivated: root.startHero()
                         }
                         DesktopHeroButton {
                             objectName: "desktopHomeDetails"
+                            visible: root.heroGame !== null
                             glyph: "info"
                             text: qsTr("Details")
                             selected: root.focusZone === 0 && root.focusIndex === 1
