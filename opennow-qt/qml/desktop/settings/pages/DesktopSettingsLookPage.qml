@@ -30,7 +30,7 @@ Column {
     Loader { width: parent.width; sourceComponent: page.interfacePageComponent }
     DesktopSettingsPanel {
         width: parent.width; paperStyle: true
-        DesktopSettingsSection { text: qsTr("THEME") }
+        DesktopSettingsSection { text: qsTr("Theme") }
         DesktopSettingsChoice {
             objectName: "renewThemeChoice"
             width: parent.width; glyph: "moon"; title: qsTr("Theme")
@@ -67,7 +67,7 @@ Column {
                         checked: Theme.accentOverridden && Theme.accent === modelData
                         onClicked: page.settingsScreen.setChoice("appAccentColor",modelData)
                         background: Rectangle {
-                            radius: DesktopTokens.px(14); color: Theme.accentColor(parent.modelData)
+                            radius: width / 2; color: Theme.accentColor(parent.modelData)
                             border.width: parent.activeFocus || parent.checked ? 3 : 0
                             border.color: Theme.label
                         }
@@ -83,7 +83,7 @@ Column {
     }
     DesktopSettingsPanel {
         width: parent.width; paperStyle: true
-        DesktopSettingsSection { text: qsTr("BACKGROUND") }
+        DesktopSettingsSection { text: qsTr("Background") }
         DesktopSettingsRow {
             width: parent.width; paperStyle: true; glyph: "image"; title: qsTr("Background"); description: qsTr("Game art, a custom image, gradient or solid color")
             DesktopSettingsSegmented {
@@ -147,7 +147,7 @@ Column {
     }
     DesktopSettingsPanel {
         width: parent.width; paperStyle: true
-        DesktopSettingsSection { text: qsTr("LAYOUT") }
+        DesktopSettingsSection { text: qsTr("Layout") }
         DesktopSettingsRow {
             width: parent.width; paperStyle: true; glyph: "grid"; title: qsTr("Library tiles"); description: qsTr("How much art you see per row")
             DesktopSettingsSegmented {

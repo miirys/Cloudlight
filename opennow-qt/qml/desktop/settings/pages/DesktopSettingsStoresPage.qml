@@ -14,7 +14,7 @@ DesktopSettingsPanel {
 
     width: page.availableWidth; paperStyle: true
     DesktopSettingsSection {
-        text: qsTr("GAME STORES")
+        text: qsTr("Game stores")
         description: qsTr("%1 stores from your NVIDIA account").arg(ShellStore.gameAccounts.length)
         DesktopSettingsButton { text: qsTr("Refresh status"); enabled: ShellStore.gameAccountsState !== "loading"; onClicked: ShellStore.refreshGameAccounts() }
     }
@@ -47,8 +47,7 @@ DesktopSettingsPanel {
             showDivider: index < page.orderedAccounts.length-1
             Item {
                 width: DesktopTokens.px(132); height: DesktopTokens.controlHeight
-                Rectangle { width: DesktopTokens.px(6); height: width; radius: width / 2; anchors.verticalCenter: parent.verticalCenter; color: status.color }
-                Text { x: DesktopTokens.px(12); width: parent.width - x; anchors.verticalCenter: parent.verticalCenter; text: status.text; color: status.color; font.family: Theme.monoFont; font.pixelSize: DesktopTokens.px(10); font.weight: Font.Bold; elide: Text.ElideRight }
+                Text { width: parent.width; anchors.verticalCenter: parent.verticalCenter; horizontalAlignment: Text.AlignRight; text: status.text; color: status.connected ? Theme.textMuted : status.color; font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.px(13); elide: Text.ElideRight }
             }
             DesktopSettingsButton { width: DesktopTokens.px(132); text: status.action; compact: true; primary: Boolean(status.primary); enabled: !ShellStore.syncOperation && ShellStore.gameAccountsState !== "loading" && (modelData.supportsLinking || modelData.supportsSync); onClicked: page.settingsScreen.runStoreAction(modelData) }
         }

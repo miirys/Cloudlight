@@ -11,7 +11,7 @@ Column {
     Component.onCompleted: ShellStore.refreshRegions()
     DesktopSettingsPanel {
         width: parent.width; paperStyle: true
-        DesktopSettingsSection { text: qsTr("CONNECTION") }
+        DesktopSettingsSection { text: qsTr("Connection") }
         DesktopSettingsChoice {
             objectName: "renewNetworkRegion"
             width: parent.width; glyph: "globe"; title: qsTr("Server region")
@@ -65,7 +65,7 @@ Column {
         width: parent.width; expanded: page.settingsScreen.advancedOpen
         sourceComponent: DesktopSettingsPanel {
             width: page.availableWidth; paperStyle: true
-            DesktopSettingsSection { text: qsTr("TRANSPORT") }
+            DesktopSettingsSection { text: qsTr("Streaming protocol") }
             DesktopSettingsRow {
                 width: parent.width; paperStyle: true; glyph: "bolt"; title: qsTr("L4S")
                 description: qsTr("Request scalable low-latency transport for the next session")
@@ -78,7 +78,7 @@ Column {
                 description: qsTr("Measure this zone's UDP payload reachability before streaming · selected zones only")
                 DesktopSettingsToggle { objectName: "renewNetworkTestToggle"; checked: page.settingsScreen.boolSetting("networkTest",false); onValueChangedByUser: value => page.settingsScreen.setSetting("networkTest",value) }
             }
-            DesktopSettingsSection { text: qsTr("API PROXY") }
+            DesktopSettingsSection { text: qsTr("API proxy") }
             DesktopSettingsRow {
                 width: parent.width; paperStyle: true; glyph: "globe"; title: qsTr("Use proxy")
                 description: qsTr("Applies to API calls only · the stream always goes direct")

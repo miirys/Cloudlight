@@ -11,7 +11,7 @@ Column {
     width: page.availableWidth; spacing: DesktopTokens.px(12)
     DesktopSettingsPanel {
         width: parent.width; paperStyle: true
-        DesktopSettingsSection { text: qsTr("STATISTICS OVERLAY") }
+        DesktopSettingsSection { text: qsTr("Statistics overlay") }
         DesktopSettingsRow {
             width: parent.width; paperStyle: true; glyph: "speed"; title: qsTr("Show on stream launch")
             description: qsTr("Cycle compact bar, extended panel and off with your statistics shortcut")
@@ -58,20 +58,20 @@ Column {
             width: page.availableWidth; paperStyle: true
             Repeater {
                 model: [
-                    {title:qsTr("PERFORMANCE"),metrics:[
+                    {title:qsTr("Performance"),metrics:[
                         {key:"statsShowFps",label:qsTr("Stream FPS"),glyph:"speed"},
                         {key:"statsShowDrops",label:qsTr("Frame drops"),glyph:"monitor"},
                         {key:"statsShowDecode",label:qsTr("Decode time"),glyph:"chip"},
                         {key:"statsShowLatency",label:qsTr("Latency"),glyph:"clock"},
                         {key:"statsShowGraphs",label:qsTr("Live graphs"),glyph:"wave"}
                     ]},
-                    {title:qsTr("NETWORK"),metrics:[
+                    {title:qsTr("Network"),metrics:[
                         {key:"statsShowPing",label:qsTr("Ping"),glyph:"wave"},
                         {key:"statsShowBitrate",label:qsTr("Bitrate"),glyph:"wave"},
                         {key:"statsShowJitter",label:qsTr("Jitter"),glyph:"wave"},
                         {key:"statsShowPacketLoss",label:qsTr("Packet loss"),glyph:"arrows"}
                     ]},
-                    {title:qsTr("SESSION"),metrics:[
+                    {title:qsTr("Session"),metrics:[
                         {key:"statsShowRegion",label:qsTr("Stream region and rig"),glyph:"globe"},
                         {key:"statsShowVideo",label:qsTr("Codec and video format"),glyph:"image"},
                         {key:"statsShowClock",label:qsTr("Timer in statistics overlay"),glyph:"clock"}

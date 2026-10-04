@@ -26,7 +26,7 @@ Column {
     Loader { width: parent.width; sourceComponent: page.storesPageComponent }
     DesktopSettingsPanel {
         width: parent.width; paperStyle: true
-        DesktopSettingsSection { text: qsTr("PRIVACY") }
+        DesktopSettingsSection { text: qsTr("Privacy") }
         DesktopSettingsRow { objectName: "accountActivitySharing"; width: parent.width; paperStyle: true; glyph: "person"; title: qsTr("Show what I am playing"); description: qsTr("Discord activity sharing")
             DesktopSettingsToggle { checked: page.settingsScreen.boolSetting("discordRichPresence",false); onValueChangedByUser: value => page.settingsScreen.setSetting("discordRichPresence",value) }
         }

@@ -22,13 +22,13 @@ Column {
         + fixedGroups.reduce((total, group) => total + group.rows.length, 0)
     readonly property var filterValues: ["all", "changed", "unset"]
     readonly property var fixedGroups: [
-        {h: qsTr("IN STREAM"), rows: [{l: qsTr("Session menu"), k: "Ctrl+G", locked: true}]},
+        {h: qsTr("In stream"), rows: [{l: qsTr("Session menu"), k: "Ctrl+G", locked: true}]},
         {h: qsTr("APP"), rows: [{l: qsTr("Command palette"), k: "Ctrl  K"}, {l: qsTr("Search this page"), k: "/"},
             {l: qsTr("Collapse or expand the sidebar"), k: "Ctrl  B"}, {l: qsTr("Switch to console mode"), k: "F10"},
             {l: qsTr("Settings"), k: "Ctrl  ,"}, {l: qsTr("Quit OpenNOW"), k: "Ctrl  Q"}]},
-        {h: qsTr("LIBRARY AND STORE"), rows: [{l: qsTr("Move through covers"), k: "Arrows"}, {l: qsTr("Play or resume"), k: "Enter"},
+        {h: qsTr("Library and store"), rows: [{l: qsTr("Move through covers"), k: "Arrows"}, {l: qsTr("Play or resume"), k: "Enter"},
             {l: qsTr("Game details"), k: "Space"}, {l: qsTr("Toggle favourite"), k: "F"}, {l: qsTr("Context menu"), k: "Shift  F10"}]},
-        {h: qsTr("GAMEPAD · CONSOLE MODE"), rows: [{l: qsTr("Select · back"), k: "A · B", gamepad: true},
+        {h: qsTr("Gamepad · console mode"), rows: [{l: qsTr("Select · back"), k: "A · B", gamepad: true},
             {l: qsTr("Details · favourite"), k: "X · Y", gamepad: true}, {l: qsTr("Switch tab"), k: "LB · RB", gamepad: true},
             {l: qsTr("Stats overlay"), k: "Guide", gamepad: true}]}
     ]
@@ -133,7 +133,7 @@ Column {
     DesktopSettingsPanel {
         width: parent.width; paperStyle: true
         DesktopSettingsSection {
-            text: qsTr("SHORTCUTS")
+            text: qsTr("Shortcuts")
             description: qsTr("Local shortcuts are handled before gameplay input. A cleared shortcut sends its key to the game.")
             DesktopSettingsButton {
                 id: resetAllButton
@@ -159,7 +159,7 @@ Column {
                     : shortcutsPageRoot.changedCount === 1 ? qsTr("Reset 1 shortcut to its default?")
                     : qsTr("Reset %1 shortcuts to their defaults?").arg(shortcutsPageRoot.changedCount)
                 color: shortcutsPageRoot.resetAllError !== "" ? (Theme.lightMode ? "#9F1239" : "#FFC2C2") : Theme.label
-                font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.px(14); font.weight: Font.ExtraBold
+                font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.px(14); font.weight: Font.DemiBold
                 wrapMode: Text.WordWrap
                 Accessible.role: Accessible.AlertMessage
                 Accessible.name: text
@@ -326,7 +326,7 @@ Column {
             text: shortcutsPageRoot.shortcutQuery !== ""
                 ? qsTr("No bindings match “%1”.").arg(shortcutsPageRoot.shortcutQuery)
                 : shortcutsPageRoot.filter === "changed" ? qsTr("Every shortcut uses its default.") : qsTr("Every shortcut is assigned.")
-            color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.bodySize; font.weight: Font.ExtraBold
+            color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.bodySize; font.weight: Font.DemiBold
             wrapMode: Text.WordWrap
         }
         DesktopSettingsButton {

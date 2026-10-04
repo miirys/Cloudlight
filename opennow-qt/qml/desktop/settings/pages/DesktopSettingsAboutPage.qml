@@ -15,7 +15,7 @@ Column {
     width: page.availableWidth; spacing: DesktopTokens.px(12)
     DesktopSettingsPanel {
         width: parent.width; paperStyle: true
-        DesktopSettingsSection { text: qsTr("OPENNOW") }
+        DesktopSettingsSection { text: qsTr("OpenNOW") }
         DesktopSettingsRow {
             width: parent.width; paperStyle: true
             leadingIcon: "qrc:/qt/qml/OpenNOW/res/brand/opennow-mark.png"
@@ -58,7 +58,7 @@ Column {
     }
     DesktopSettingsPanel {
         width: parent.width; paperStyle: true
-        DesktopSettingsSection { text: qsTr("PROJECT & DIAGNOSTICS") }
+        DesktopSettingsSection { text: qsTr("Help and diagnostics") }
         Repeater {
             model: page.settingsScreen.projectLinks()
             delegate: DesktopSettingsRow {
@@ -92,7 +92,7 @@ Column {
     }
     DesktopSettingsPanel {
         width: parent.width; paperStyle: true
-        DesktopSettingsSection { text: qsTr("LEGAL") }
+        DesktopSettingsSection { text: qsTr("Legal") }
         DesktopSettingsRow {
             width: parent.width; paperStyle: true; glyph: "info"; title: qsTr("Independent client")
             description: qsTr("OpenNOW is not affiliated with, endorsed by or supported by NVIDIA. GeForce NOW is a trademark of NVIDIA Corporation. You bring your own account and subscription.")
@@ -101,7 +101,7 @@ Column {
     }
     DesktopSettingsPanel {
         width: parent.width; paperStyle: true
-        DesktopSettingsSection { text: qsTr("MAINTENANCE") }
+        DesktopSettingsSection { text: qsTr("Maintenance") }
         DesktopSettingsRow {
             width: parent.width; paperStyle: true; glyph: "arrows"
             title: qsTr("Replay onboarding")
@@ -152,10 +152,10 @@ Column {
             color: Theme.label
             font.family: Theme.bodyFont
             font.pixelSize: DesktopTokens.px(20)
-            font.weight: Font.ExtraBold
+            font.weight: Font.DemiBold
             wrapMode: Text.WordWrap
         }
-        background: Rectangle { radius: DesktopTokens.px(16); color: Theme.shell; border.color: Theme.seam }
+        background: Rectangle { radius: DesktopTokens.radiusLarge; color: Theme.shell; border.color: Theme.seam }
         contentItem: Text {
             id: replayCopy
             width: replayConfirmation.contentWidth

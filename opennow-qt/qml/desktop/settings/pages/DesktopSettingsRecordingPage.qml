@@ -14,7 +14,7 @@ Column {
 
     DesktopSettingsPanel {
         width: parent.width; paperStyle: true
-        DesktopSettingsSection { text: qsTr("SAVE LOCATIONS") }
+        DesktopSettingsSection { text: qsTr("Save locations") }
         DesktopSettingsRow {
             width: parent.width; paperStyle: true; glyph: "folder"
             title: qsTr("Save location")
@@ -41,7 +41,7 @@ Column {
     }
     DesktopSettingsPanel {
         width: parent.width; paperStyle: true
-        DesktopSettingsSection { text: qsTr("REPLAY BUFFER") }
+        DesktopSettingsSection { text: qsTr("Replay") }
         DesktopSettingsRow {
             width: parent.width; paperStyle: true; glyph: "clock"
             title: qsTr("Enable replay buffer")
@@ -77,7 +77,7 @@ Column {
     }
     DesktopSettingsPanel {
         width: parent.width; paperStyle: true
-        DesktopSettingsSection { text: qsTr("CAPTURE SHORTCUTS") }
+        DesktopSettingsSection { text: qsTr("Capture shortcuts") }
         Column {
             x: DesktopTokens.px(20); width: parent.width - DesktopTokens.px(40)
             topPadding: DesktopTokens.px(8); bottomPadding: DesktopTokens.px(16)

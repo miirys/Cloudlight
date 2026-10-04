@@ -11,7 +11,7 @@ Column {
     width: page.availableWidth; spacing: DesktopTokens.px(12)
     DesktopSettingsPanel {
         width: parent.width; paperStyle: true
-        DesktopSettingsSection { text: qsTr("CONSOLE MODE") }
+        DesktopSettingsSection { text: qsTr("Console mode") }
         DesktopSettingsRow {
             width: parent.width; paperStyle: true; glyph: "controller"; title: qsTr("One app, two shells")
             description: qsTr("Same session, settings and themes · switching does not restart the stream"); showDivider: false
@@ -20,7 +20,7 @@ Column {
     }
     DesktopSettingsPanel {
         width: parent.width; paperStyle: true
-        DesktopSettingsSection { text: qsTr("STARTUP") }
+        DesktopSettingsSection { text: qsTr("Startup") }
         DesktopSettingsRow {
             width: parent.width; paperStyle: true; glyph: "controller"; title: qsTr("Start in console mode")
             description: qsTr("Remember this choice for the next time OpenNOW launches")
@@ -34,7 +34,7 @@ Column {
     }
     DesktopSettingsPanel {
         width: parent.width; paperStyle: true
-        DesktopSettingsSection { text: qsTr("AUTOMATIC SWITCHING") }
+        DesktopSettingsSection { text: qsTr("Automatic switching") }
         DesktopSettingsRow {
             width: parent.width; paperStyle: true; glyph: "controller"; title: qsTr("Enter console mode when a gamepad is the only input")
             description: qsTr("Ignored while a mouse has moved in the last 30 seconds")

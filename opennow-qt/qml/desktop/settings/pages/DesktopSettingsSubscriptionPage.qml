@@ -9,7 +9,7 @@ DesktopSettingsPanel {
     required property var settingsScreen
 
     width: page.availableWidth; paperStyle: true
-    DesktopSettingsSection { text: qsTr("SUBSCRIPTION") }
+    DesktopSettingsSection { text: qsTr("Membership") }
     DesktopSettingsRow {
         width: parent.width; paperStyle: true; glyph: "crown"
         title: page.settingsScreen.liveTierBadge() || qsTr("Membership unavailable")

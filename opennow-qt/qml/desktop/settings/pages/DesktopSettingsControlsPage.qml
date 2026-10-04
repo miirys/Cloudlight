@@ -16,7 +16,7 @@ Column {
     Loader { width: parent.width; sourceComponent: controlsRoot.controllersPageComponent }
     DesktopSettingsPanel {
         width: parent.width; paperStyle: true
-        DesktopSettingsSection { text: qsTr("MOUSE & KEYBOARD") }
+        DesktopSettingsSection { text: qsTr("Mouse and keyboard") }
         DesktopSettingsRow { width: parent.width; paperStyle: true; glyph: "arrows"; title: qsTr("Mouse sensitivity"); description: qsTr("Applied to native relative mouse input")
             Column {
                 width: DesktopTokens.settingsControlWidth
@@ -99,7 +99,7 @@ Column {
         width: parent.width; expanded: controlsRoot.settingsScreen.advancedOpen
         sourceComponent: DesktopSettingsPanel {
             width: controlsRoot.availableWidth; paperStyle: true
-            DesktopSettingsSection { text: qsTr("KEYBOARD & CURSOR") }
+            DesktopSettingsSection { text: qsTr("Keyboard and cursor") }
             DesktopSettingsRow { width: parent.width; paperStyle: true; glyph: "mouse"; title: qsTr("Cursor overlay"); showDivider: false
                 DesktopSettingsToggle { checked: controlsRoot.settingsScreen.boolSetting("nativeCursorOverlay",true); onValueChangedByUser: value => controlsRoot.settingsScreen.setSetting("nativeCursorOverlay",value) }
             }

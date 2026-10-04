@@ -9,7 +9,7 @@ DesktopSettingsPanel {
     required property var settingsScreen
 
     width: profilePanel.availableWidth; paperStyle: true
-    DesktopSettingsSection { text: qsTr("NVIDIA ACCOUNT") }
+    DesktopSettingsSection { text: qsTr("NVIDIA account") }
     DesktopSettingsRow {
         width: parent.width; paperStyle: true; title: profilePanel.settingsScreen.profileName(); description: profilePanel.settingsScreen.maskedEmail()
         leadingLetter: profilePanel.settingsScreen.profileInitial(); leadingColor: Theme.focus; rowHeight: DesktopTokens.px(76); showDivider: false

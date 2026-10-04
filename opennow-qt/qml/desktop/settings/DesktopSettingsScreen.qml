@@ -26,17 +26,17 @@ FocusScope {
     TenBitWarningDialog { id: tenBitWarning; settingsStore: ShellStore }
 
     readonly property var sections: [
-        {label: qsTr("Stream"), detail: qsTr("Picture, codec, bitrate"), icon: "monitor", page: 3, keywords: "resolution fps hdr color stats overlay timer bitrate codec reflex backend gpu directx vulkan steam big picture launch gamepad fullscreen session ready persistent in-game graphics settings background reminder afk taskbar"},
-        {label: qsTr("Network"), detail: qsTr("Region, ping, proxy"), icon: "globe", page: 6, keywords: "server region ping proxy l4s"},
-        {label: qsTr("Audio"), detail: qsTr("Output and stream audio"), icon: "wave", page: 4, keywords: "sound audio volume output microphone mute focus"},
-        {label: qsTr("Controls"), detail: qsTr("Pads, mouse, shortcuts"), icon: "controller", page: 5, keywords: "controller gyroscope steam sensitivity keyboard language shortcuts"},
-        {label: qsTr("Recording"), detail: qsTr("Capture, replay, shortcuts"), icon: "image", page: 12, keywords: "recording capture clip replay buffer memory duration folder resolution fps quality shortcuts F12"},
-        {label: qsTr("Appearance"), detail: qsTr("Theme, accent, layout"), icon: "palette", page: 8, keywords: "theme accent interface language scale motion console sidebar tiles"},
-        {label: qsTr("Console mode"), detail: qsTr("Gamepad-first interface"), icon: "controller", page: 9, keywords: "console fullscreen gamepad startup"},
-        {label: qsTr("Account"), detail: qsTr("NVIDIA, stores, privacy"), icon: "person", page: 0, keywords: "profile subscription stores steam epic xbox ubisoft battle gaijin privacy"},
-        {label: qsTr("About & support"), detail: qsTr("Updates, diagnostics"), icon: "info", page: 11, keywords: "version release update diagnostics onboarding introduction replay setup restart reset"}
+        {label: qsTr("Account"), detail: qsTr("Profile, membership, game stores"), icon: "person", page: 0, keywords: "profile subscription membership stores steam epic xbox ubisoft battle gaijin privacy connections"},
+        {label: qsTr("Streaming quality"), detail: qsTr("Resolution, frame rate, bit rate"), icon: "monitor", page: 3, keywords: "resolution fps frame rate hdr color precision stats overlay timer bitrate bit rate codec g-sync gsync vrr backend gpu directx vulkan steam big picture launch gamepad fullscreen session ready persistent in-game graphics settings background reminder afk taskbar upscaling"},
+        {label: qsTr("Server location"), detail: qsTr("Region, network test, proxy"), icon: "globe", page: 6, keywords: "server region location ping network test proxy l4s"},
+        {label: qsTr("Audio"), detail: qsTr("Output and microphone"), icon: "wave", page: 4, keywords: "sound audio volume output microphone mute focus"},
+        {label: qsTr("Controls"), detail: qsTr("Controllers, mouse, keyboard, shortcuts"), icon: "controller", page: 5, keywords: "controller gyroscope steam sensitivity mouse keyboard language shortcuts"},
+        {label: qsTr("Capture"), detail: qsTr("Screenshots, recording, replay"), icon: "image", page: 12, keywords: "recording capture clip replay buffer memory duration folder resolution fps quality shortcuts F12 screenshot"},
+        {label: qsTr("Interface"), detail: qsTr("Theme, accent colour, language"), icon: "palette", page: 8, keywords: "theme accent color colour interface language scale motion sidebar tiles appearance"},
+        {label: qsTr("Console mode"), detail: qsTr("Controller-first full-screen interface"), icon: "controller", page: 9, keywords: "console fullscreen gamepad startup big screen tv"},
+        {label: qsTr("About"), detail: qsTr("Version, updates, diagnostics"), icon: "info", page: 11, keywords: "version release update diagnostics onboarding introduction replay setup restart reset help support"}
     ]
-    readonly property var pageTitles: [qsTr("Account"), qsTr("Account"), qsTr("Account"), qsTr("Stream"), qsTr("Audio"), qsTr("Controls"), qsTr("Network"), qsTr("Appearance"), qsTr("Appearance"), qsTr("Console mode"), qsTr("Controls"), qsTr("About & support"), qsTr("Recording")]
+    readonly property var pageTitles: [qsTr("Account"), qsTr("Account"), qsTr("Account"), qsTr("Streaming quality"), qsTr("Audio"), qsTr("Controls"), qsTr("Server location"), qsTr("Interface"), qsTr("Interface"), qsTr("Console mode"), qsTr("Controls"), qsTr("About"), qsTr("Capture")]
     readonly property var pageComponents: [accountGroup, accountGroup, accountGroup, streamPage, audioPage, controlsGroup, networkPage, lookGroup, lookGroup, consolePage, controlsGroup, aboutPage, recordingPage]
 
     function matchesSection(section) {
@@ -127,24 +127,24 @@ FocusScope {
     function regionGroup(name) {
         const n = String(name || "").trim().toLowerCase()
         if (/^(us|ca)\b|\b(usa|canada|north america)\b/.test(n))
-            return qsTr("NORTH AMERICA")
+            return qsTr("North America")
         if (/^(eu|uk|tr)\b|\b(europe|united kingdom|sweden|netherlands|germany|france|poland|bulgaria|turkey|türkiye|london|frankfurt|amsterdam)\b/.test(n))
-            return qsTr("EUROPE")
+            return qsTr("Europe")
         if (/^(jp|kr|sg|au|tw|my|th)\b|\b(asia|japan|korea|taiwan|malaysia|thailand|australia|new zealand|tokyo|seoul|singapore|sydney|india)\b/.test(n))
-            return qsTr("ASIA PACIFIC")
+            return qsTr("Asia Pacific")
         if (/^br\b|\b(latam|south america|brazil|sao|são|chile|colombia|uruguay)\b/.test(n))
-            return qsTr("SOUTH AMERICA")
+            return qsTr("South America")
         if (/^me\b|\b(middle east|uae|saudi|riyadh)\b/.test(n))
-            return qsTr("MIDDLE EAST")
+            return qsTr("Middle East")
         if (/\b(africa|johannesburg)\b/.test(n))
-            return qsTr("AFRICA")
-        return qsTr("OTHER")
+            return qsTr("Africa")
+        return qsTr("Other")
     }
 
     function regionChoiceItems() {
         const items = [{ kind: "choice", label: qsTr("Automatic"), detail: qsTr("Lowest latency"), value: "" }]
-        const groups = [qsTr("EUROPE"), qsTr("NORTH AMERICA"), qsTr("ASIA PACIFIC"),
-                        qsTr("SOUTH AMERICA"), qsTr("MIDDLE EAST"), qsTr("AFRICA"), qsTr("OTHER")]
+        const groups = [qsTr("Europe"), qsTr("North America"), qsTr("Asia Pacific"),
+                        qsTr("South America"), qsTr("Middle East"), qsTr("Africa"), qsTr("Other")]
         const regions = (ShellStore.regions || []).slice().sort((a, b) => String(a.name).localeCompare(String(b.name)))
         for (const group of groups) {
             const members = regions.filter(region => root.regionGroup(region.name) === group)
@@ -261,11 +261,11 @@ FocusScope {
                 chips.push(height + "P" + (fps ? " · " + fps + " FPS" : ""))
         }
         if (sub.isUnlimited)
-            chips.push(qsTr("UNLIMITED"))
+            chips.push(qsTr("Unlimited"))
         else if (sub.remainingHours !== undefined && sub.remainingHours !== null)
             chips.push(qsTr("%1 h left").arg(Math.max(0, Math.round(Number(sub.remainingHours)))))
         if (chips.length === 0)
-            chips.push(String(sub.membershipTier || qsTr("Unavailable")).toUpperCase())
+            chips.push(sub.membershipTier ? String(sub.membershipTier).charAt(0).toUpperCase() + String(sub.membershipTier).slice(1).toLowerCase() : qsTr("Unavailable"))
         return chips
     }
 
@@ -340,18 +340,18 @@ FocusScope {
         if (provider.indexOf("xbox") >= 0) return Theme.cartXbox
         if (provider.indexOf("gog") >= 0) return Theme.cartGog
         if (provider.indexOf("battle") >= 0) return Theme.cartBattlenet
-        return Qt.rgba(1, 1, 1, 0.08)
+        return Theme.surfaceStrong
     }
 
     function storeStatus(account) {
         const action = ShellStore.gameAccountAction(account)
         if (account.status === "expired")
-            return { text: qsTr("EXPIRED"), color: Theme.yellow, action: qsTr("Reconnect"), connected: false, primary: true }
+            return { text: qsTr("Expired"), color: Theme.yellow, action: qsTr("Reconnect"), connected: false, primary: true }
         if (account.status === "sync_error")
-            return { text: qsTr("SYNC ISSUE"), color: Theme.coral, action: action === "link" ? qsTr("Reconnect") : qsTr("Sync library"), connected: true }
+            return { text: qsTr("Sync problem"), color: Theme.coral, action: action === "link" ? qsTr("Reconnect") : qsTr("Sync library"), connected: true }
         if (account.isConnected || account.status === "connected")
-            return { text: qsTr("LINKED"), color: DesktopTokens.green, action: account.supportsSync ? qsTr("Resync") : qsTr("Unlink"), connected: true }
-        return { text: qsTr("NOT LINKED"), color: Theme.textMuted, action: action === "sync" ? qsTr("Sync library") : qsTr("Link"), connected: false }
+            return { text: qsTr("Connected"), color: DesktopTokens.green, action: account.supportsSync ? qsTr("Sync") : qsTr("Disconnect"), connected: true }
+        return { text: qsTr("Not connected"), color: Theme.textMuted, action: action === "sync" ? qsTr("Sync library") : qsTr("Connect"), connected: false }
     }
 
     function storeDescription(account) {
@@ -407,28 +407,48 @@ FocusScope {
         return ShellStore.resolutionItems()
     }
 
+    Rectangle {
+        // Navigation column background, full height, like GeForce NOW's settings list.
+        visible: !root.compactNavigation
+        x: 0; y: 0
+        width: settingsRail.x + settingsRail.width + DesktopTokens.px(16)
+        height: root.height
+        color: Theme.surface
+        Rectangle { anchors.right: parent.right; width: 1; height: parent.height; color: DesktopTokens.seamSoft }
+    }
+
     Column {
         id: settingsRail
-        x: DesktopTokens.px(24)
-        y: DesktopTokens.px(18)
-        width: root.compactNavigation ? root.width - x * 2 : DesktopTokens.px(272)
-        spacing: DesktopTokens.px(14)
+        x: DesktopTokens.px(16)
+        y: DesktopTokens.px(20)
+        width: root.compactNavigation ? root.width - x * 2 : DesktopTokens.px(232)
+        spacing: DesktopTokens.px(12)
+
+        Text {
+            visible: !root.compactNavigation
+            leftPadding: DesktopTokens.px(12)
+            text: qsTr("Settings")
+            color: Theme.label
+            font.family: Theme.displayFont
+            font.pixelSize: DesktopTokens.px(22)
+            font.weight: Font.DemiBold
+        }
 
         TextField {
             id: settingsSearch
             objectName: "settingsSearch"
             width: parent.width
-            height: DesktopTokens.px(44)
+            height: DesktopTokens.px(34)
             placeholderText: qsTr("Search settings")
             text: root.searchQuery
             onTextEdited: root.searchQuery = text
             color: Theme.label
             placeholderTextColor: Theme.textMuted
             font.family: Theme.bodyFont
-            font.pixelSize: DesktopTokens.bodySize
-            leftPadding: 42
-            DesktopGlyph { x: 16; anchors.verticalCenter: parent.verticalCenter; width: 16; height: 16; icon: "desktop-search.svg" }
-            background: Rectangle { radius: 10; color: Theme.glass; border.width: 1; border.color: settingsSearch.activeFocus ? Theme.focus : Theme.seam }
+            font.pixelSize: DesktopTokens.px(13)
+            leftPadding: DesktopTokens.px(34)
+            DesktopGlyph { x: DesktopTokens.px(12); anchors.verticalCenter: parent.verticalCenter; width: DesktopTokens.px(14); height: width; icon: "desktop-search.svg" }
+            background: Rectangle { radius: DesktopTokens.radius; color: Theme.surfaceRaised; border.width: 1; border.color: settingsSearch.activeFocus ? Theme.focus : Theme.seam }
             onAccepted: {
                 for (let i = 0; i < root.sections.length; ++i) {
                     if (root.matchesSection(root.sections[i])) {
@@ -440,7 +460,7 @@ FocusScope {
         }
         Flickable {
             width: parent.width
-            height: root.compactNavigation ? navigation.implicitHeight : Math.max(0, root.height - settingsRail.y - settingsSearch.height - 36)
+            height: root.compactNavigation ? navigation.implicitHeight : Math.max(0, root.height - y - settingsRail.y - DesktopTokens.px(16))
             contentWidth: width
             contentHeight: navigation.implicitHeight
             clip: true
@@ -449,40 +469,45 @@ FocusScope {
                 id: navigation
                 width: parent.width
                 height: implicitHeight
-                spacing: DesktopTokens.px(6)
+                spacing: root.compactNavigation ? DesktopTokens.px(4) : 0
                 Repeater {
                     model: root.sections
                     delegate: Button {
+                        id: navItem
                         required property var modelData
                         required property int index
+                        readonly property bool current: root.selectedGroup === index
                         objectName: "settingsNavigation-" + modelData.page
                         Accessible.name: modelData.label
                         visible: root.matchesSection(modelData)
-                        width: root.compactNavigation ? Math.max(DesktopTokens.px(104), navLabel.implicitWidth + DesktopTokens.px(40)) : settingsRail.width
-                        height: DesktopTokens.px(root.compactNavigation ? 48 : 64)
-                        padding: 12
+                        width: root.compactNavigation ? navLabel.implicitWidth + DesktopTokens.px(28) : settingsRail.width
+                        height: DesktopTokens.px(38)
+                        padding: 0
                         hoverEnabled: true
                         onClicked: root.selectedSection = modelData.page
                         background: Rectangle {
-                            radius: 16
-                            color: root.selectedGroup === index ? DesktopTokens.raisedStrong : parent.hovered ? DesktopTokens.raised : "transparent"
-                            border.width: parent.activeFocus ? 2 : 0
+                            radius: DesktopTokens.radius
+                            color: navItem.current ? Theme.surfaceRaised : navItem.hovered ? DesktopTokens.hover : "transparent"
+                            border.width: navItem.activeFocus ? 2 : 0
                             border.color: Theme.focus
-                        }
-                        contentItem: RowLayout {
-                            spacing: 14
                             Rectangle {
-                                visible: !root.compactNavigation
-                                Layout.preferredWidth: 40; Layout.preferredHeight: 40
-                                radius: 12; color: root.selectedGroup === index ? Theme.focus : DesktopTokens.raised
-                                DesktopSettingsIcon { anchors.centerIn: parent; width: 20; height: 20; glyph: modelData.icon; ink: root.selectedGroup === index ? Theme.focusText : Theme.label }
+                                visible: navItem.current
+                                x: 0; y: DesktopTokens.px(8)
+                                width: DesktopTokens.px(3); height: parent.height - DesktopTokens.px(16)
+                                color: Theme.focus
                             }
-                            ColumnLayout {
-                                Layout.fillWidth: true
-                                spacing: 2
-                                Text { id: navLabel; Layout.fillWidth: true; text: modelData.label; color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.bodySize; font.weight: root.selectedGroup === index ? Font.ExtraBold : Font.Bold; elide: Text.ElideRight }
-                                Text { visible: !root.compactNavigation; Layout.fillWidth: true; text: modelData.detail; color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.captionSize; elide: Text.ElideRight }
-                            }
+                        }
+                        contentItem: Text {
+                            id: navLabel
+                            leftPadding: DesktopTokens.px(14)
+                            rightPadding: DesktopTokens.px(14)
+                            verticalAlignment: Text.AlignVCenter
+                            text: navItem.modelData.label
+                            color: navItem.current ? Theme.label : DesktopTokens.textBody
+                            font.family: Theme.bodyFont
+                            font.pixelSize: DesktopTokens.px(14)
+                            font.weight: navItem.current ? Font.DemiBold : Font.Normal
+                            elide: Text.ElideRight
                         }
                     }
                 }
@@ -492,16 +517,28 @@ FocusScope {
 
     Item {
         id: contentLane
-        x: root.compactNavigation ? settingsRail.x : settingsRail.x + settingsRail.width + DesktopTokens.px(20)
-        y: root.compactNavigation ? settingsRail.y + settingsRail.height + DesktopTokens.px(16) : settingsRail.y
-        width: root.width - x - DesktopTokens.px(24)
-        height: root.height - y - DesktopTokens.px(18)
+        x: root.compactNavigation ? settingsRail.x : settingsRail.x + settingsRail.width + DesktopTokens.px(48)
+        y: root.compactNavigation ? settingsRail.y + settingsRail.height + DesktopTokens.px(16) : DesktopTokens.px(20)
+        width: Math.min(DesktopTokens.px(860), root.width - x - DesktopTokens.px(32))
+        height: root.height - y
+        Text {
+            id: pageTitle
+            objectName: "settingsPageTitle"
+            visible: !root.compactNavigation
+            width: parent.width
+            text: root.pageTitles[root.selectedSection] || ""
+            color: Theme.label
+            font.family: Theme.displayFont
+            font.pixelSize: DesktopTokens.px(22)
+            font.weight: Font.DemiBold
+        }
         Flickable {
             id: contentFlick
             objectName: "desktopSettingsContent"
             anchors.fill: parent
+            anchors.topMargin: pageTitle.visible ? pageTitle.height + DesktopTokens.px(4) : 0
             contentWidth: width
-            contentHeight: pageLoader.height
+            contentHeight: pageLoader.height + DesktopTokens.px(48)
             clip: true
             boundsBehavior: Flickable.StopAtBounds
             ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
@@ -529,7 +566,7 @@ FocusScope {
     Component {
         id: accountGroup
         DesktopSettingsAccountPage {
-            availableWidth: contentFlick.width
+            availableWidth: contentFlick.width - DesktopTokens.px(16)
             settingsScreen: root
             profilePageComponent: profilePage
             subscriptionPageComponent: subscriptionPage
@@ -539,7 +576,7 @@ FocusScope {
     Component {
         id: controlsGroup
         DesktopSettingsControlsPage {
-            availableWidth: contentFlick.width
+            availableWidth: contentFlick.width - DesktopTokens.px(16)
             settingsScreen: root
             controllersPageComponent: controllersPage
             shortcutsPageComponent: shortcutsPage
@@ -549,7 +586,7 @@ FocusScope {
     Component {
         id: lookGroup
         DesktopSettingsLookPage {
-            availableWidth: contentFlick.width
+            availableWidth: contentFlick.width - DesktopTokens.px(16)
             settingsScreen: root
             interfacePageComponent: interfacePage
         }
@@ -558,7 +595,7 @@ FocusScope {
     Component {
         id: statsSettingsPage
         DesktopSettingsStatsPage {
-            availableWidth: contentFlick.width
+            availableWidth: contentFlick.width - DesktopTokens.px(16)
             settingsScreen: root
         }
     }
@@ -566,7 +603,7 @@ FocusScope {
     Component {
         id: profilePage
         DesktopSettingsProfilePage {
-            availableWidth: contentFlick.width
+            availableWidth: contentFlick.width - DesktopTokens.px(16)
             settingsScreen: root
         }
     }
@@ -574,7 +611,7 @@ FocusScope {
     Component {
         id: subscriptionPage
         DesktopSettingsSubscriptionPage {
-            availableWidth: contentFlick.width
+            availableWidth: contentFlick.width - DesktopTokens.px(16)
             settingsScreen: root
         }
     }
@@ -582,7 +619,7 @@ FocusScope {
     Component {
         id: storesPage
         DesktopSettingsStoresPage {
-            availableWidth: contentFlick.width
+            availableWidth: contentFlick.width - DesktopTokens.px(16)
             settingsScreen: root
         }
     }
@@ -590,7 +627,7 @@ FocusScope {
     Component {
         id: streamPage
         DesktopSettingsStreamPage {
-            availableWidth: contentFlick.width
+            availableWidth: contentFlick.width - DesktopTokens.px(16)
             settingsScreen: root
             statsSettingsPageComponent: statsSettingsPage
         }
@@ -599,7 +636,7 @@ FocusScope {
     Component {
         id: audioPage
         DesktopSettingsAudioPage {
-            availableWidth: contentFlick.width
+            availableWidth: contentFlick.width - DesktopTokens.px(16)
             settingsScreen: root
         }
     }
@@ -607,7 +644,7 @@ FocusScope {
     Component {
         id: controllersPage
         DesktopSettingsControllersPage {
-            availableWidth: contentFlick.width
+            availableWidth: contentFlick.width - DesktopTokens.px(16)
             settingsScreen: root
         }
     }
@@ -615,7 +652,7 @@ FocusScope {
     Component {
         id: networkPage
         DesktopSettingsNetworkPage {
-            availableWidth: contentFlick.width
+            availableWidth: contentFlick.width - DesktopTokens.px(16)
             settingsScreen: root
         }
     }
@@ -623,7 +660,7 @@ FocusScope {
     Component {
         id: interfacePage
         DesktopSettingsInterfacePage {
-            availableWidth: contentFlick.width
+            availableWidth: contentFlick.width - DesktopTokens.px(16)
             settingsScreen: root
         }
     }
@@ -632,7 +669,7 @@ FocusScope {
     Component {
         id: consolePage
         DesktopSettingsConsolePage {
-            availableWidth: contentFlick.width
+            availableWidth: contentFlick.width - DesktopTokens.px(16)
             settingsScreen: root
         }
     }
@@ -640,7 +677,7 @@ FocusScope {
     Component {
         id: shortcutsPage
         DesktopSettingsShortcutsPage {
-            availableWidth: contentFlick.width
+            availableWidth: contentFlick.width - DesktopTokens.px(16)
             settingsScreen: root
         }
     }
@@ -648,7 +685,7 @@ FocusScope {
     Component {
         id: recordingPage
         DesktopSettingsRecordingPage {
-            availableWidth: contentFlick.width
+            availableWidth: contentFlick.width - DesktopTokens.px(16)
             settingsScreen: root
         }
     }
@@ -656,7 +693,7 @@ FocusScope {
     Component {
         id: aboutPage
         DesktopSettingsAboutPage {
-            availableWidth: contentFlick.width
+            availableWidth: contentFlick.width - DesktopTokens.px(16)
             settingsScreen: root
         }
     }

@@ -9,13 +9,18 @@ Column {
     required property Component statsSettingsPageComponent
     property bool statisticsOpen: false
 
-    width: page.availableWidth; spacing: DesktopTokens.px(12)
+    width: page.availableWidth; spacing: 0
     DesktopSettingsPanel {
         width: parent.width; paperStyle: true
-        DesktopSettingsSection { text: qsTr("STREAM QUALITY") }
-        DesktopSettingsResolution {
-            width: parent.width; items: page.settingsScreen.resolutionItems()
+        DesktopSettingsSection { text: qsTr("Video"); description: qsTr("Applies to the next session you start.") }
+        DesktopSettingsChoice {
+            objectName: "resolutionChoice"
+            width: parent.width; title: qsTr("Resolution")
+            description: qsTr("Stream resolution. The picture is scaled to fit your display.")
+            filterPlaceholder: qsTr("Filter resolutions…")
+            items: page.settingsScreen.resolutionItems()
             value: page.settingsScreen.currentResolutionValue()
+            valueLabel: value.replace("x", " × ")
             onSelected: value => page.settingsScreen.setSetting("resolution", value)
         }
         DesktopSettingsRow {
@@ -32,20 +37,20 @@ Column {
             }
         }
         DesktopSettingsRow {
-            width: parent.width; paperStyle: true; glyph: "wave"; title: qsTr("Bitrate"); description: qsTr("Maximum requested bitrate")
+            width: parent.width; paperStyle: true; glyph: "wave"; title: qsTr("Max bit rate"); description: qsTr("Upper limit for the stream. Higher looks better but needs a faster connection.")
             DesktopSettingsSlider {
-                from: 0.22; to: 200; stepSize: 0.01; decimals: 2
+                from: 0.22; to: 200; stepSize: 0.01; decimals: 0
                 value: Number(page.settingsScreen.valueSetting("maxBitrateMbps",75)); suffix: " Mbps"
                 onCommitted: value => page.settingsScreen.setSetting("maxBitrateMbps", Math.round(value * 100) / 100)
             }
         }
         DesktopSettingsRow {
             objectName: "codecSettingsRow"
-            width: parent.width; paperStyle: true; glyph: "chip"; title: qsTr("Codec")
+            width: parent.width; paperStyle: true; glyph: "chip"; title: qsTr("Video codec")
             description: ShellStore.streamerDetectionMessage
             DesktopSettingsSegmented {
                 options: [{label:qsTr("Auto"),value:"auto"},{label:"AV1",value:"av1",enabled:ShellStore.codecAvailable("av1") && !ShellStore.codecDisabledByProfile("av1")},{label:"H.265",value:"h265",enabled:ShellStore.codecAvailable("h265") && !ShellStore.codecDisabledByProfile("h265")},{label:"H.264",value:"h264",enabled:ShellStore.codecAvailable("h264") && !ShellStore.codecDisabledByProfile("h264")}]
-                disabledHint: qsTr("Not supported by the detected decoder or the selected color quality")
+                disabledHint: qsTr("Not supported by your video decoder or colour precision setting")
                 optionWidth: 64; selectedIndex: options.findIndex(item => item.value === page.settingsScreen.valueSetting("codec","auto"))
                 onSelected: (index,item) => page.settingsScreen.setChoice("codec",item.value)
             }
@@ -62,8 +67,8 @@ Column {
             width: parent.width
             title: qsTr("Graphics processor")
             description: GraphicsDevices.savedDeviceUnavailable
-                ? qsTr("Saved GPU unavailable; using the first GPU that can hardware-decode. Changes apply after restarting OpenNOW.")
-                : qsTr("Automatic uses the first GPU that can hardware-decode and lists each GPU's codecs. The same GPU decodes and displays. Changes apply after restarting OpenNOW.")
+                ? qsTr("The saved graphics card isn't available, so the first one that can decode video is used. Takes effect after restarting OpenNOW.")
+                : qsTr("Graphics card used to decode and show the stream. Takes effect after restarting OpenNOW.")
             glyph: "monitor"
             items: GraphicsDevices.choices
             maximumColumns: 2
@@ -72,12 +77,12 @@ Column {
             onSelected: value => ShellStore.setSetting("windowsGpuDeviceId", value)
         }
         DesktopSettingsRow {
-            width: parent.width; paperStyle: true; glyph: "drop"; title: qsTr("Save bandwidth")
-            description: qsTr("Lets the server trade resolution and image quality for a steadier frame rate when your connection cannot sustain the selected profile. Off requests no dynamic adjustment. Applies to new sessions.")
+            width: parent.width; paperStyle: true; glyph: "drop"; title: qsTr("Adjust for poor network conditions")
+            description: qsTr("Lowers resolution and image quality to keep the frame rate steady when your connection can't keep up.")
             DesktopSettingsToggle {
                 objectName: "saveBandwidthToggle"
                 checked: page.settingsScreen.boolSetting("saveBandwidth", false)
-                Accessible.name: qsTr("Save bandwidth")
+                Accessible.name: qsTr("Adjust for poor network conditions")
                 onValueChangedByUser: value => page.settingsScreen.setSetting("saveBandwidth", value)
             }
         }
@@ -85,7 +90,7 @@ Column {
             width: parent.width; paperStyle: true; glyph: "sun"; title: qsTr("HDR")
             description: !ShellStore.tenBitAllowedByMembership() ? qsTr("HDR10 requires a Performance or Ultimate membership.")
                 : HdrOutput.supported && !ShellStore.hdrDecoderAvailable()
-                ? qsTr("HDR requires a supported 10-bit H.265 or AV1 hardware decoder.") : HdrOutput.status
+                ? qsTr("HDR needs a graphics card that can decode 10-bit H.265 or AV1.") : HdrOutput.status
             DesktopSettingsToggle {
                 objectName: "enableHdrToggle"
                 checked: page.settingsScreen.boolSetting("enableHdr", false)
@@ -97,7 +102,7 @@ Column {
         }
         DesktopSettingsChoice {
             objectName: "colorQualityChoice"
-            width: parent.width; glyph: "sun"; title: qsTr("Color quality")
+            width: parent.width; glyph: "sun"; title: qsTr("Color precision")
             description: page.settingsScreen.colorQualityFooter(); showDivider: false
             items: ShellStore.settingsOwnerState.colorQualityItems
             value: page.settingsScreen.valueSetting("colorQuality", "8bit_420")
@@ -106,13 +111,13 @@ Column {
     }
     DesktopSettingsPanel {
         width: parent.width; paperStyle: true
-        DesktopSettingsSection { text: qsTr("IMAGE PROCESSING") }
+        DesktopSettingsSection { text: qsTr("Display") }
         DesktopSettingsRow {
             objectName: "upscalingSettingsRow"
             width: parent.width; paperStyle: true; glyph: "monitor"; title: qsTr("Upscaling")
             description: Qt.platform.os === "osx"
-                ? qsTr("Spatial upscaling for enlarged video. Uses extra GPU time; falls back to normal scaling when MetalFX is unavailable.")
-                : qsTr("FSR 1 upscales enlarged SDR video on the GPU. Uses extra GPU time; HDR and unavailable effects use normal scaling.")
+                ? qsTr("Sharper upscaling when the stream is smaller than your display. Uses extra GPU time.")
+                : qsTr("Sharper upscaling (FSR 1) when the stream is smaller than your display. Uses extra GPU time; not used with HDR.")
             DesktopSettingsSegmented {
                 objectName: "upscalingSelector"
                 readonly property string mode: Qt.platform.os === "osx" ? "metalfx" : "fsr1"
@@ -165,29 +170,36 @@ Column {
     }
     DesktopSettingsPanel {
         width: parent.width; paperStyle: true
-        DesktopSettingsSection { text: qsTr("LATENCY") }
+        DesktopSettingsSection { text: qsTr("Latency") }
         DesktopSettingsRow {
-            width: parent.width; paperStyle: true; glyph: "bolt"; title: qsTr("Reflex low latency")
-            description: qsTr("When the game supports it"); showDivider: false
-            DesktopSettingsToggle { checked: page.settingsScreen.boolSetting("enableCloudGsync",false); onValueChangedByUser: value => page.settingsScreen.setSetting("enableCloudGsync",value) }
+            objectName: "cloudGsyncRow"
+            width: parent.width; paperStyle: true; glyph: "bolt"; title: qsTr("Cloud G-SYNC")
+            description: qsTr("Variable frame pacing with lower latency. Only turn this on if your display and graphics driver run variable refresh rate (G-SYNC or FreeSync); on a fixed-refresh display it causes stutter.")
+            showDivider: false
+            DesktopSettingsToggle {
+                objectName: "cloudGsyncToggle"
+                Accessible.name: qsTr("Cloud G-SYNC")
+                checked: page.settingsScreen.boolSetting("enableCloudGsync",false)
+                onValueChangedByUser: value => page.settingsScreen.setSetting("enableCloudGsync",value)
+            }
         }
     }
     DesktopSettingsPanel {
         width: parent.width; paperStyle: true
-        DesktopSettingsSection { text: qsTr("SESSION") }
+        DesktopSettingsSection { text: qsTr("Session") }
         DesktopSettingsRow {
-            width: parent.width; paperStyle: true; glyph: "monitor"; title: qsTr("Fullscreen when session is ready")
-            description: qsTr("Automatically enter fullscreen when your session is ready. F11 toggles fullscreen during play.")
+            width: parent.width; paperStyle: true; glyph: "monitor"; title: qsTr("Full screen when a game starts")
+            description: qsTr("Press F11 to switch between full screen and window while playing.")
             DesktopSettingsToggle {
                 objectName: "autoFullScreenToggle"
                 checked: page.settingsScreen.boolSetting("autoFullScreen", true)
-                Accessible.name: qsTr("Fullscreen when session is ready")
+                Accessible.name: qsTr("Full screen when a game starts")
                 onValueChangedByUser: value => page.settingsScreen.setSetting("autoFullScreen", value)
             }
         }
         DesktopSettingsRow {
             width: parent.width; paperStyle: true; glyph: "controller"; title: qsTr("Steam Big Picture mode")
-            description: qsTr("Request gamepad-friendly launchers such as Steam Big Picture. Applies to new GeForce NOW sessions only.")
+            description: qsTr("Open Steam games in Big Picture mode, for controller play.")
             DesktopSettingsToggle {
                 objectName: "steamBigPictureToggle"
                 checked: page.settingsScreen.boolSetting("steamBigPictureMode", false)
@@ -195,19 +207,19 @@ Column {
             }
         }
         DesktopSettingsRow {
-            width: parent.width; paperStyle: true; glyph: "controller"; title: qsTr("Persistent in-game settings")
-            description: qsTr("Keep your in-game graphics settings between sessions for supported games and memberships. Applies to new sessions.")
+            width: parent.width; paperStyle: true; glyph: "controller"; title: qsTr("Save in-game settings")
+            description: qsTr("Keep your in-game graphics settings between sessions, in supported games.")
             DesktopSettingsToggle {
                 objectName: "persistentInGameSettingsToggle"
                 checked: page.settingsScreen.boolSetting("enablePersistingInGameSettings", true)
-                Accessible.name: qsTr("Persistent in-game settings")
+                Accessible.name: qsTr("Save in-game settings")
                 onValueChangedByUser: value => page.settingsScreen.setSetting("enablePersistingInGameSettings", value)
             }
         }
         DesktopSettingsRow {
             width: parent.width; paperStyle: true; glyph: "info"
             title: qsTr("Background stream reminder")
-            description: qsTr("Request taskbar or dock attention every 5 minutes while a stream runs in the background. Availability depends on your desktop. Does not prevent AFK timeouts.")
+            description: qsTr("Flash the taskbar every 5 minutes while a game streams in the background. Doesn't prevent idle timeouts.")
             showDivider: false
             DesktopSettingsToggle {
                 objectName: "backgroundStreamReminderToggle"
@@ -218,9 +230,11 @@ Column {
     }
     DesktopSettingsPanel {
         width: parent.width; paperStyle: true
+        DesktopSettingsSection { text: qsTr("Statistics overlay") }
         DesktopSettingsRow {
             objectName: "statisticsOverlaySection"
-            width: parent.width; paperStyle: true; glyph: "speed"; title: qsTr("Statistics overlay")
+            width: parent.width; paperStyle: true; glyph: "speed"; title: qsTr("Overlay contents and position")
+            description: qsTr("Press Ctrl+N while playing to show or hide it.")
             expandable: true; expanded: page.statisticsOpen; showDivider: false
             onExpansionRequested: page.statisticsOpen = !page.statisticsOpen
         }
@@ -231,7 +245,7 @@ Column {
         sourceComponent: page.statsSettingsPageComponent
     }
     DesktopSettingsAdvanced {
-        detail: qsTr("Decoder · Steam Deck identity")
+        detail: qsTr("Video decoder, Steam Deck identity")
         expanded: page.settingsScreen.advancedOpen
         onClicked: page.settingsScreen.advancedOpen = !page.settingsScreen.advancedOpen
     }
@@ -241,16 +255,16 @@ Column {
             width: page.availableWidth; paperStyle: true
             DesktopSettingsChoice {
                 objectName: "streamBackendChoice"
-                width: parent.width; glyph: "chip"; title: qsTr("Video backend")
+                width: parent.width; glyph: "chip"; title: qsTr("Video decoder")
                 description: Qt.platform.os === "windows"
-                    ? qsTr("Auto uses DX11 hardware decoding. DX12 and Vulkan texture sharing are not supported by the Windows stream view yet. Applies to the next stream.")
-                    : qsTr("Choose a supported decoder. Auto never falls back to software. Applies to the next stream.")
+                    ? qsTr("How the stream is decoded. Auto uses DirectX 11 hardware decoding. Applies to the next session.")
+                    : qsTr("How the stream is decoded. Choose Software if hardware decoding is slow or stutters. Applies to the next session.")
                 items: ShellStore.videoBackendItems()
                 value: page.settingsScreen.valueSetting("nativeVideoBackend", "auto")
                 onSelected: value => page.settingsScreen.setSetting("nativeVideoBackend", value)
             }
             DesktopSettingsRow {
-                width: parent.width; paperStyle: true; glyph: "controller"; title: qsTr("Steam Deck identity"); description: qsTr("Unlock Deck resolutions and 90 FPS · refreshes entitlements")
+                width: parent.width; paperStyle: true; glyph: "controller"; title: qsTr("Steam Deck identity"); description: qsTr("Identify as a Steam Deck to unlock its resolutions and 90 FPS.")
                 DesktopSettingsToggle { checked: page.settingsScreen.boolSetting("identifyAsSteamDeck",false); onValueChangedByUser: value => page.settingsScreen.setSetting("identifyAsSteamDeck",value) }
             }
         }

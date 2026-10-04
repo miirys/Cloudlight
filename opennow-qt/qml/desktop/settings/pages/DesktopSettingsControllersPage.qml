@@ -27,10 +27,10 @@ DesktopSettingsPanel {
     }
 
     width: controlsRoot.availableWidth; paperStyle: true
-    DesktopSettingsSection { text: qsTr("CONTROLLERS") }
+    DesktopSettingsSection { text: qsTr("Controllers") }
     DesktopSettingsRow {
         width: parent.width; paperStyle: true; glyph: "controller"; title: qsTr("Controller input")
-        description: qsTr("%1 CONNECTED").arg(AppController.controllerCount)
+        description: qsTr("%1 connected").arg(AppController.controllerCount)
         DesktopSettingsToggle { checked: controlsRoot.settingsScreen.boolSetting("controllerMode",true); onValueChangedByUser: value => controlsRoot.settingsScreen.setSetting("controllerMode",value) }
     }
     DesktopSettingsChoice {
