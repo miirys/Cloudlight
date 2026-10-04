@@ -21,7 +21,7 @@ Image {
 
     source: root.icon === "desktop-gamepad.svg"
         ? InputPromptIcons.sourceFor("controller", DesktopTokens.textHigh)
-        : root.icon === "" ? "" : "qrc:/qt/qml/OpenNOW/res/icons/" + root.fileName
+        : root.icon === "" || root.fileName === "" ? "" : "qrc:/qt/qml/OpenNOW/res/icons/" + root.fileName
     sourceSize: Qt.size(Math.max(1, Math.round(width * dpr)), Math.max(1, Math.round(height * dpr)))
     fillMode: Image.PreserveAspectFit
     smooth: false

@@ -270,7 +270,7 @@ QtObject {
             "shelf cache was not bounded")
         ShellStore.resetStoreShelves()
         shelf.categoryId = ""
-        shelf.width = 600
+        shelf.width = DesktopTokens.px(600)
         shelf.games = [ranked]
         check(shelf.tileWidth < DesktopTokens.px(160), "short final row stretched its posters")
         shelf.destroy()

@@ -593,7 +593,9 @@ FocusScope {
                             DesktopButton {
                                 objectName: "gameDetailsTune"
                                 Layout.fillWidth: summaryGrid.columns === 2
-                                Layout.alignment: Qt.AlignVCenter
+                                // Bottom-aligned so the last control is also the bottom of the
+                                // page: focusing it always scrolls the footer into view.
+                                Layout.alignment: Qt.AlignBottom
                                 Layout.preferredWidth: implicitWidth
                                 font.pixelSize: DesktopTokens.captionSize
                                 text: qsTr("Stream settings"); themedGlyph: "sliders"

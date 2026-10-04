@@ -54,7 +54,7 @@ QtObject {
         ShellStore.applySetting("desktopBackground", "custom")
         removeButton.clicked()
         check(ShellStore.settings.desktopBackgroundImage === "", "remove clears the image")
-        check(ShellStore.settings.desktopBackground === "art", "remove restores game art")
+        check(ShellStore.settings.desktopBackground === "solid", "remove restores the solid background")
         check(!slider.enabled, "remove disables opacity")
         if (Qt.application.arguments.indexOf("--screenshot") >= 0) {
             dialog.selectedFile = imageUrl
