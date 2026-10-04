@@ -290,7 +290,7 @@ FocusScope {
                             anchors.centerIn: parent
                             width: DesktopTokens.px(22); height: width
                             icon: "desktop-nav-settings.svg"
-                            active: settingsButton.selected
+                            active: false
                         }
                     }
                     onClicked: root.routeRequested("settings")

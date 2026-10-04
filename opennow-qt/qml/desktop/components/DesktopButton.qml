@@ -13,13 +13,13 @@ Button {
     property string themedGlyph: ""
     property int glyphSize: 16
     property int cornerRadius: DesktopTokens.radius
-    height: DesktopTokens.px(40)
+    height: DesktopTokens.px(44)
     implicitWidth: Math.max(DesktopTokens.px(80), contentRow.implicitWidth + leftPadding + rightPadding)
-    leftPadding: DesktopTokens.px(18)
-    rightPadding: DesktopTokens.px(18)
+    leftPadding: DesktopTokens.px(20)
+    rightPadding: DesktopTokens.px(20)
     focusPolicy: Qt.StrongFocus
     font.family: DesktopTokens.bodyFont
-    font.pixelSize: DesktopTokens.px(14)
+    font.pixelSize: DesktopTokens.captionSize
     font.weight: Font.DemiBold
     // Solid fills only: accent for the primary action, neutral grey otherwise.
     readonly property color fill: root.primary ? root.accentFill

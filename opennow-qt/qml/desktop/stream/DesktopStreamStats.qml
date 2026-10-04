@@ -17,8 +17,10 @@ Item {
     readonly property var live: ShellStore.streamer || ({})
     readonly property var session: ShellStore.activeSession || ({})
     readonly property var profile: session.negotiatedStreamProfile || session.streamProfile || ShellStore.runtimeStreamProfile || ({})
-    readonly property real overlayScale: Math.max(0.85, Math.min(1.5, Number(ShellStore.settings.statsOverlayScale || 1)))
-    readonly property real inset: 24
+    // The user setting sits on top of the shell's UI scale so the panel stays
+    // legible on a 1080p TV or projector, not just a desk monitor.
+    readonly property real overlayScale: Math.max(0.85, Math.min(1.5, Number(ShellStore.settings.statsOverlayScale || 1))) * DesktopTokens.uiScale
+    readonly property real inset: DesktopTokens.px(24)
     readonly property string position: String(ShellStore.settings.statsOverlayPosition || "top-right")
     readonly property bool rightAligned: position.endsWith("right")
     readonly property bool bottomAligned: position.startsWith("bottom")

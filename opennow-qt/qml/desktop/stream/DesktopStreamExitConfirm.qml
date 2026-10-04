@@ -37,17 +37,15 @@ FocusScope {
         opacity: reveal.progress
         scale: reveal.zoom
         anchors.centerIn: parent
-        width: Math.min(560, root.width - 48)
-        height: dialogColumn.implicitHeight + 64
+        width: Math.min(DesktopTokens.px(600), root.width - DesktopTokens.px(48))
+        height: dialogColumn.implicitHeight + DesktopTokens.px(80)
         radius: DesktopTokens.radiusLarge
         color: Theme.surface
-        border.width: 1
-        border.color: DesktopTokens.seam
 
         Column {
             id: dialogColumn
-            x: 32; y: 32
-            width: parent.width - 64
+            x: DesktopTokens.px(40); y: DesktopTokens.px(40)
+            width: parent.width - DesktopTokens.px(80)
             spacing: 0
 
             Text {
@@ -55,12 +53,12 @@ FocusScope {
                 text: root.quittingApplication ? qsTr("Quit OpenNOW?") : qsTr("End this cloud session?")
                 color: DesktopTokens.text
                 font.family: DesktopTokens.displayFont
-                font.pixelSize: 26
+                font.pixelSize: DesktopTokens.titleSize
                 font.weight: Font.Bold
             }
             Text {
                 width: parent.width
-                topPadding: 12
+                topPadding: DesktopTokens.px(14)
                 text: root.quittingApplication
                     ? qsTr("OpenNOW will close and disconnect from any active cloud session.")
                     : AppController.route === "inserting"
@@ -68,15 +66,15 @@ FocusScope {
                     : qsTr("Your game will close on the remote rig. This session cannot be resumed after it ends.")
                 color: DesktopTokens.textBody
                 font.family: DesktopTokens.bodyFont
-                font.pixelSize: 17
+                font.pixelSize: DesktopTokens.bodySize
                 wrapMode: Text.WordWrap
                 lineHeight: 1.25
             }
 
-            Item { width: 1; height: 28 }
+            Item { width: 1; height: DesktopTokens.px(36) }
             Row {
                 anchors.right: parent.right
-                spacing: 10
+                spacing: DesktopTokens.px(12)
                 DesktopButton {
                     id: keepPlayingButton
                     objectName: root.quittingApplication ? "quitConfirmKeepOpen" : "streamExitKeepPlaying"

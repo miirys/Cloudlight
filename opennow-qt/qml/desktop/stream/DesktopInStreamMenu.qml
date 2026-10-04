@@ -152,7 +152,7 @@ FocusScope {
 
     Rectangle {
         id: panel
-        width: Math.min(DesktopTokens.px(380), root.width)
+        width: Math.min(DesktopTokens.px(400), root.width)
         height: root.height
         x: -width * (1 - reveal.progress)
         color: Theme.surface
@@ -161,30 +161,30 @@ FocusScope {
         // Game header.
         Item {
             id: header
-            x: DesktopTokens.px(24)
-            y: DesktopTokens.px(28)
-            width: parent.width - DesktopTokens.px(48)
-            height: DesktopTokens.px(72)
+            x: DesktopTokens.px(28)
+            y: DesktopTokens.px(36)
+            width: parent.width - DesktopTokens.px(56)
+            height: DesktopTokens.px(84)
             RoundedArtwork {
-                width: DesktopTokens.px(54)
-                height: DesktopTokens.px(72)
+                width: DesktopTokens.px(63)
+                height: DesktopTokens.px(84)
                 artwork: String(root.game.imageUrl || root.game.heroImageUrl || "")
                 cornerRadius: DesktopTokens.radius
                 scrimStart: 1
                 fallbackColor: Theme.surfaceRaised
             }
             Column {
-                x: DesktopTokens.px(70)
+                x: DesktopTokens.px(81)
                 width: parent.width - x
                 anchors.verticalCenter: parent.verticalCenter
-                spacing: DesktopTokens.px(4)
+                spacing: DesktopTokens.px(6)
                 Text {
                     width: parent.width
                     text: String(root.game.title || qsTr("GeForce NOW"))
                     color: Theme.label
                     font.family: Theme.displayFont
-                    font.pixelSize: DesktopTokens.px(18)
-                    font.weight: Font.DemiBold
+                    font.pixelSize: DesktopTokens.headingSize
+                    font.weight: Font.Bold
                     elide: Text.ElideRight
                     maximumLineCount: 2
                     wrapMode: Text.WordWrap
@@ -193,20 +193,20 @@ FocusScope {
                     text: qsTr("Session time %1").arg(root.clockText())
                     color: Theme.textMuted
                     font.family: Theme.bodyFont
-                    font.pixelSize: DesktopTokens.px(13)
+                    font.pixelSize: DesktopTokens.captionSize
                     font.features: { "tnum": 1 }
                 }
             }
         }
 
-        Rectangle { id: headerRule; x: 0; y: header.y + header.height + DesktopTokens.px(20); width: parent.width; height: 1; color: DesktopTokens.seamSoft }
+        Rectangle { id: headerRule; x: 0; y: header.y + header.height + DesktopTokens.px(24); width: parent.width; height: 1; color: DesktopTokens.seamSoft }
 
         // Actions.
         Column {
             id: actionList
-            x: DesktopTokens.px(12)
-            y: headerRule.y + DesktopTokens.px(12)
-            width: parent.width - DesktopTokens.px(24)
+            x: DesktopTokens.px(16)
+            y: headerRule.y + DesktopTokens.px(16)
+            width: parent.width - DesktopTokens.px(32)
             spacing: 0
             Repeater {
                 model: root.actionOrder
@@ -217,54 +217,55 @@ FocusScope {
                     readonly property bool selected: root.selectedIndex === modelData
                     readonly property bool exitAction: modelData === 4
                     width: actionList.width
-                    height: DesktopTokens.px(exitAction ? 57 : 44)
-                    opacity: action.enabled ? 1 : 0.45
+                    height: DesktopTokens.px(exitAction ? 73 : 56)
+                    opacity: action.enabled ? 1 : 0.4
                     Accessible.role: Accessible.Button
                     Accessible.name: action.title
                     Rectangle {
                         visible: actionRow.exitAction
-                        x: DesktopTokens.px(12); width: parent.width - DesktopTokens.px(24); height: 1
+                        x: DesktopTokens.px(12); y: DesktopTokens.px(8); width: parent.width - DesktopTokens.px(24); height: 1
                         color: DesktopTokens.seamSoft
                     }
                     Rectangle {
                         id: actionBackground
-                        y: actionRow.exitAction ? DesktopTokens.px(13) : 0
+                        y: actionRow.exitAction ? DesktopTokens.px(17) : 0
                         width: parent.width
-                        height: DesktopTokens.px(44)
+                        height: DesktopTokens.px(56)
                         radius: DesktopTokens.radius
                         color: actionRow.selected && actionRow.action.enabled ? Theme.surfaceHover : "transparent"
                         Rectangle {
                             visible: actionRow.selected && actionRow.action.enabled
-                            x: 0; y: DesktopTokens.px(10)
-                            width: DesktopTokens.px(3); height: parent.height - DesktopTokens.px(20)
+                            x: 0; y: DesktopTokens.px(12)
+                            width: DesktopTokens.px(4); height: parent.height - DesktopTokens.px(24)
+                            radius: width / 2
                             color: actionRow.exitAction ? Theme.coral : Theme.focus
                         }
                         DesktopGlyph {
-                            x: DesktopTokens.px(14)
+                            x: DesktopTokens.px(18)
                             anchors.verticalCenter: parent.verticalCenter
-                            width: DesktopTokens.px(18); height: width
+                            width: DesktopTokens.px(22); height: width
                             icon: actionRow.action.icon
                         }
                         Text {
-                            x: DesktopTokens.px(46)
+                            x: DesktopTokens.px(56)
                             width: hintLabel.x - x - DesktopTokens.px(12)
                             anchors.verticalCenter: parent.verticalCenter
                             text: actionRow.action.title
                             color: actionRow.exitAction ? Theme.coral : Theme.label
                             font.family: Theme.bodyFont
-                            font.pixelSize: DesktopTokens.px(14)
+                            font.pixelSize: DesktopTokens.bodySize
                             font.weight: actionRow.selected ? Font.DemiBold : Font.Medium
                             elide: Text.ElideRight
                         }
                         Text {
                             id: hintLabel
                             anchors.right: parent.right
-                            anchors.rightMargin: DesktopTokens.px(14)
+                            anchors.rightMargin: DesktopTokens.px(18)
                             anchors.verticalCenter: parent.verticalCenter
                             text: actionRow.action.hint
                             color: Theme.textMuted
                             font.family: Theme.bodyFont
-                            font.pixelSize: DesktopTokens.px(12)
+                            font.pixelSize: DesktopTokens.smallSize
                         }
                         HoverHandler { onHoveredChanged: if (hovered && actionRow.action.enabled) root.selectedIndex = actionRow.modelData }
                         TapHandler { onTapped: root.runAction(actionRow.modelData) }
@@ -275,18 +276,18 @@ FocusScope {
 
         // Stream details, plain label/value rows.
         Column {
-            x: DesktopTokens.px(24)
+            x: DesktopTokens.px(28)
             anchors.bottom: parent.bottom
-            anchors.bottomMargin: DesktopTokens.px(24)
-            width: parent.width - DesktopTokens.px(48)
-            spacing: DesktopTokens.px(8)
+            anchors.bottomMargin: DesktopTokens.px(32)
+            width: parent.width - DesktopTokens.px(56)
+            spacing: DesktopTokens.px(4)
             Text {
                 text: qsTr("Stream")
                 color: Theme.label
                 font.family: Theme.bodyFont
-                font.pixelSize: DesktopTokens.px(14)
+                font.pixelSize: DesktopTokens.bodySize
                 font.weight: Font.DemiBold
-                bottomPadding: DesktopTokens.px(2)
+                bottomPadding: DesktopTokens.px(8)
             }
             Repeater {
                 model: [
@@ -300,13 +301,13 @@ FocusScope {
                     id: detailRow
                     required property var modelData
                     width: parent.width
-                    height: DesktopTokens.px(20)
+                    height: DesktopTokens.px(30)
                     Text {
                         anchors.verticalCenter: parent.verticalCenter
                         text: detailRow.modelData.label
                         color: Theme.textMuted
                         font.family: Theme.bodyFont
-                        font.pixelSize: DesktopTokens.px(13)
+                        font.pixelSize: DesktopTokens.captionSize
                     }
                     Text {
                         anchors.right: parent.right
@@ -314,7 +315,7 @@ FocusScope {
                         text: detailRow.modelData.value
                         color: Theme.label
                         font.family: Theme.bodyFont
-                        font.pixelSize: DesktopTokens.px(13)
+                        font.pixelSize: DesktopTokens.captionSize
                         font.features: { "tnum": 1 }
                     }
                 }

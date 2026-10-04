@@ -68,6 +68,8 @@ FocusScope {
         active: root.visible
     }
 
+    // GeForce NOW style launch screen: the game's key art fills the screen
+    // behind a left and bottom scrim, with the title block on the safe margin.
     Rectangle { anchors.fill: parent; color: "#04060A" }
     Image {
         anchors.fill: parent
@@ -75,98 +77,127 @@ FocusScope {
         fillMode: Image.PreserveAspectCrop
         asynchronous: true
         cache: true
-        opacity: status === Image.Ready ? 0.36 : 0
-        Behavior on opacity { NumberAnimation { duration: DesktopTokens.revealDuration; easing.type: Easing.OutCubic } }
+        opacity: status === Image.Ready ? 0.7 : 0
+        scale: status === Image.Ready && !AppController.reducedMotion ? 1 : 1.04
+        Behavior on opacity { NumberAnimation { duration: 700; easing.type: Easing.OutCubic } }
+        Behavior on scale { NumberAnimation { duration: 1400; easing.type: Easing.OutCubic } }
     }
     Rectangle {
         anchors.fill: parent
         gradient: Gradient {
-            GradientStop { position: 0; color: "#C00A0A0A" }
-            GradientStop { position: 0.5; color: "#AC0A0A0A" }
+            orientation: Gradient.Horizontal
+            GradientStop { position: 0; color: "#F00A0A0A" }
+            GradientStop { position: 0.45; color: "#A00A0A0A" }
+            GradientStop { position: 1; color: "#300A0A0A" }
+        }
+    }
+    Rectangle {
+        anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom
+        height: parent.height * 0.55
+        gradient: Gradient {
+            GradientStop { position: 0; color: "#000A0A0A" }
             GradientStop { position: 1; color: "#F20A0A0A" }
         }
     }
 
-    Row {
-        anchors.left: parent.left
-        anchors.top: parent.top
-        anchors.margins: 32
-        spacing: 10
-        DesktopBrandLockup {
-            anchors.verticalCenter: parent.verticalCenter
-            markHeight: 12
-            fontPixelSize: 16
-            spacing: 10
-            ink: Theme.mediaForeground
-        }
+    DesktopBrandLockup {
+        x: DesktopTokens.safeX
+        y: DesktopTokens.px(32)
+        markHeight: DesktopTokens.px(14)
+        fontPixelSize: DesktopTokens.navSize
+        spacing: DesktopTokens.px(10)
+        ink: Theme.mediaForeground
     }
 
     Column {
-        anchors.centerIn: parent
-        width: Math.min(560, root.width - 64)
+        x: DesktopTokens.safeX
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: DesktopTokens.px(72)
+        width: Math.min(DesktopTokens.px(720), root.width - DesktopTokens.safeX * 2)
         spacing: 0
 
         Text {
-            text: root.stopping ? qsTr("Ending session")
-                : root.failed ? qsTr("Session interrupted") : qsTr("Starting session")
-            color: root.failed ? DesktopTokens.danger : Theme.mediaMuted
+            text: root.stopping ? qsTr("ENDING SESSION")
+                : root.failed ? qsTr("SESSION INTERRUPTED") : qsTr("STARTING SESSION")
+            color: root.failed ? DesktopTokens.danger : DesktopTokens.focus
             font.family: DesktopTokens.bodyFont
-            font.pixelSize: 14
-            font.weight: Font.Medium
+            font.pixelSize: DesktopTokens.captionSize
+            font.weight: Font.Bold
+            font.letterSpacing: DesktopTokens.px(2)
         }
         Text {
             width: parent.width
-            topPadding: 10
+            topPadding: DesktopTokens.px(10)
             text: String(root.game.title || qsTr("GeForce NOW"))
             color: Theme.mediaForeground
             font.family: DesktopTokens.displayFont
-            font.pixelSize: root.width < 800 ? 30 : 38
-            font.weight: Font.DemiBold
+            font.pixelSize: root.width < 800 ? DesktopTokens.titleSize : DesktopTokens.displaySize
+            font.weight: Font.Bold
+            font.letterSpacing: -DesktopTokens.px(0.5)
             maximumLineCount: 2
             wrapMode: Text.WordWrap
             elide: Text.ElideRight
+            lineHeight: 1.05
         }
-        Item { width: 1; height: 32 }
-        Row {
+        Item { width: 1; height: DesktopTokens.px(28) }
+        Text {
+            objectName: "sessionLaunchStatus"
             width: parent.width
-            spacing: 12
-            Item {
-                width: 20; height: 26
-                visible: !root.failed
-                BusyIndicator {
-                    anchors.centerIn: parent
-                    width: 22; height: 22
-                    running: root.visible && !root.failed
-                    palette.dark: Theme.mediaForeground
+            text: root.statusText
+            color: root.failed ? DesktopTokens.danger : Theme.mediaForeground
+            font.family: DesktopTokens.bodyFont
+            font.pixelSize: DesktopTokens.bodySize
+            font.weight: Font.DemiBold
+            wrapMode: Text.WordWrap
+        }
+        // Indeterminate progress: a short accent bar sweeping a thin track.
+        Item {
+            width: Math.min(parent.width, DesktopTokens.px(480))
+            height: visible ? DesktopTokens.px(16) + track.height : 0
+            visible: !root.failed
+            Rectangle {
+                id: track
+                y: DesktopTokens.px(16)
+                width: parent.width
+                height: DesktopTokens.px(4)
+                radius: height / 2
+                color: "#33FFFFFF"
+                clip: true
+                Rectangle {
+                    id: sweep
+                    width: parent.width * 0.3
+                    height: parent.height
+                    radius: height / 2
+                    color: DesktopTokens.focus
+                    x: AppController.reducedMotion ? 0 : -width
+                    NumberAnimation on x {
+                        running: root.visible && !root.failed && !AppController.reducedMotion
+                        loops: Animation.Infinite
+                        from: -sweep.width
+                        to: track.width
+                        duration: 1400
+                        easing.type: Easing.InOutCubic
+                    }
                 }
-            }
-            Text {
-                objectName: "sessionLaunchStatus"
-                width: parent.width - (root.failed ? 0 : 32)
-                text: root.statusText
-                color: root.failed ? DesktopTokens.danger : Theme.mediaForeground
-                font.family: DesktopTokens.bodyFont
-                font.pixelSize: 17
-                font.weight: Font.Medium
-                wrapMode: Text.WordWrap
             }
         }
         Text {
             width: parent.width
-            topPadding: 10
+            topPadding: DesktopTokens.px(14)
             text: root.detailText
+            visible: text !== ""
             color: Theme.mediaMuted
             font.family: DesktopTokens.bodyFont
-            font.pixelSize: 14
-            lineHeight: 1.4
+            font.pixelSize: DesktopTokens.captionSize
+            lineHeight: 1.35
             wrapMode: Text.WordWrap
             maximumLineCount: 5
             elide: Text.ElideRight
         }
-        Item { width: 1; height: 32 }
+        Item { width: 1; height: DesktopTokens.px(32) }
         Flow {
             width: parent.width
-            spacing: 12
+            spacing: DesktopTokens.px(12)
             DesktopButton {
                 onMediaBackground: true
                 visible: root.failed && (root.connecting || ShellStore.activeSession !== null
