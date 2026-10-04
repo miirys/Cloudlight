@@ -103,6 +103,7 @@ static int runApplicationSession(int argc, char *argv[], QString &restartExecuta
     const QStringList bundledFonts = {
         u":/qt/qml/OpenNOW/res/fonts/Nunito-Variable.ttf"_s,
         u":/qt/qml/OpenNOW/res/fonts/InterVariable.ttf"_s,
+        u":/qt/qml/OpenNOW/res/fonts/CormorantGaramond-Variable.ttf"_s,
         u":/qt/qml/OpenNOW/res/fonts/IBMPlexMono-Regular.ttf"_s,
         u":/qt/qml/OpenNOW/res/fonts/IBMPlexMono-Medium.ttf"_s,
         u":/qt/qml/OpenNOW/res/fonts/IBMPlexMono-Bold.ttf"_s,

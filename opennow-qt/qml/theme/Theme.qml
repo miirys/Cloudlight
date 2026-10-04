@@ -86,6 +86,8 @@ QtObject {
     readonly property string displayFont: "Inter Variable"
     readonly property string bodyFont: "Inter Variable"
     readonly property string monoFont: "IBM Plex Mono"
+    // Brand face: the Cloudlight wordmark and a few editorial headlines only.
+    readonly property string brandFont: "Cormorant Garamond"
 
     // Corner radii: small and consistent, no pills.
     readonly property int radiusSmall: 3

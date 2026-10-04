@@ -39,7 +39,7 @@ def generate_assets():
     png = base64.b64encode(assets["icons/opennow-512.png"]).decode("ascii")
     assets["io.github.opencloudgaming.OpenNOW.svg"] = (
         '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" '
-        'width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="OpenNOW">\n'
+        'width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Cloudlight">\n'
         f'  <image width="512" height="512" xlink:href="data:image/png;base64,{png}"/>\n'
         '</svg>\n'
     ).encode("ascii")
@@ -53,7 +53,7 @@ def write_preview(assets, path):
         x = column * 480
         draw.rectangle((x, 0, x + 479, 479), fill=background)
         foreground = "#202124" if column == 0 else "#f4f4f4"
-        draw.text((x + 24, 20), "OpenNOW / generated from logo.png", fill=foreground)
+        draw.text((x + 24, 20), "Cloudlight / generated from logo.png", fill=foreground)
         with Image.open(io.BytesIO(assets["icons/opennow-256.png"])) as image:
             preview.paste(image, (x + 112, 55), image)
         position = x + 24

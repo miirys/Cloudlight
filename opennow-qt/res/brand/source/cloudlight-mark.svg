@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  
+  <defs>
+    <mask id="cut" maskUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1024">
+      <rect width="1024" height="1024" fill="#fff"/>
+      <path d="M706,162 C728,308 728,308 818,330 C728,352 728,352 706,498 C684,352 684,352 594,330 C684,308 684,308 706,162 Z" fill="#000" stroke="#000" stroke-width="60" stroke-linejoin="round"/>
+    </mask>
+    <linearGradient id="cl" gradientUnits="userSpaceOnUse" x1="0" y1="330" x2="0" y2="752">
+      <stop offset="0" stop-color="#F3EFF9"/><stop offset="1" stop-color="#C9BEDB"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(0,46)"><g mask="url(#cut)" fill="url(#cl)">
+  <circle cx="352" cy="626" r="126"/>
+  <circle cx="520" cy="512" r="178"/>
+  <circle cx="700" cy="630" r="122"/>
+  <rect x="352" y="560" width="348" height="192"/>
+</g>
+  <path d="M706,162 C728,308 728,308 818,330 C728,352 728,352 706,498 C684,352 684,352 594,330 C684,308 684,308 706,162 Z" fill="#FFFFFF"/></g>
+</svg>

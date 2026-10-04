@@ -108,7 +108,7 @@ FocusScope {
                 x: root.headerEdge
                 textReveal: root.headerCompact ? 0 : 1
                 anchors.verticalCenter: parent.verticalCenter
-                markHeight: DesktopTokens.px(22)
+                markHeight: DesktopTokens.px(30)
                 fontPixelSize: DesktopTokens.px(21)
             }
 

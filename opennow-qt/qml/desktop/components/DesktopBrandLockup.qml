@@ -9,7 +9,7 @@ Item {
     property real spacing: DesktopTokens.px(10)
     property color ink: DesktopTokens.text
     property real textReveal: 1
-    readonly property real markAspect: 362 / 208
+    readonly property real markAspect: 720 / 713
     implicitWidth: mark.width + (root.textReveal > 0 ? root.spacing + label.implicitWidth * root.textReveal : 0)
     implicitHeight: Math.max(mark.height, label.implicitHeight)
     width: implicitWidth
@@ -34,8 +34,9 @@ Item {
         opacity: root.textReveal
         text: "Cloudlight"
         color: root.ink
-        font.family: DesktopTokens.displayFont
-        font.pixelSize: root.fontPixelSize
+        // The wordmark is set in the brand serif; it runs small, so it gets more size.
+        font.family: Theme.brandFont
+        font.pixelSize: Math.round(root.fontPixelSize * 1.3)
         font.weight: Font.Bold
         font.letterSpacing: 0
     }
