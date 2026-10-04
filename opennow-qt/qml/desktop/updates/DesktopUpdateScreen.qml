@@ -137,7 +137,7 @@ FocusScope {
             DesktopSettingsPanel {
                 width: parent.width
                 paperStyle: true
-                DesktopSettingsSection { text: qsTr("RELEASE NOTES") }
+                DesktopSettingsSection { text: qsTr("Release notes") }
                 ReleaseNotes {
                     x: DesktopTokens.px(24)
                     width: parent.width - x * 2

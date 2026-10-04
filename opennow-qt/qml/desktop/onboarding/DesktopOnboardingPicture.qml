@@ -12,7 +12,7 @@ Column {
     readonly property string resolution: String(settings.resolution || "1920x1080")
     readonly property bool wide: width >= DesktopTokens.px(1000)
     readonly property color mint: Theme.accentColor("green")
-    readonly property color panelColor: Theme.lightMode ? Theme.glass : "#C70B0F1A"
+    readonly property color panelColor: Theme.surface
     spacing: DesktopTokens.px(24)
 
     component Copy: Text {
@@ -27,15 +27,15 @@ Column {
         property alias text: badgeText.text
         implicitWidth: badgeText.implicitWidth + DesktopTokens.px(16)
         implicitHeight: DesktopTokens.px(28)
-        radius: DesktopTokens.px(5)
+        radius: DesktopTokens.radius
         color: DesktopTokens.raised
         border.color: DesktopTokens.seamSoft
         Text {
             id: badgeText
             anchors.centerIn: parent
             color: Theme.label
-            font.family: Theme.monoFont
-            font.pixelSize: DesktopTokens.px(10)
+            font.family: Theme.bodyFont
+            font.pixelSize: DesktopTokens.px(13)
             font.weight: Font.Bold
         }
     }
@@ -53,7 +53,7 @@ Column {
             x: DesktopTokens.px(18)
             y: DesktopTokens.px(16)
             width: DesktopTokens.px(36); height: width
-            radius: DesktopTokens.px(10); color: DesktopTokens.raised
+            radius: DesktopTokens.radiusLarge; color: DesktopTokens.raised
             DesktopSettingsIcon { anchors.centerIn: parent; width: DesktopTokens.px(16); height: width; glyph: settingRow.glyph; ink: Theme.label }
         }
         Column {
@@ -62,7 +62,7 @@ Column {
             y: settingRow.stacked ? DesktopTokens.px(14) : (parent.height - height) / 2
             width: parent.width - x - DesktopTokens.px(18) - (settingRow.stacked ? 0 : controlSlot.width + DesktopTokens.px(14))
             spacing: DesktopTokens.px(3)
-            Copy { width: parent.width; text: settingRow.title; color: Theme.label; font.pixelSize: DesktopTokens.px(14); font.weight: Font.ExtraBold }
+            Copy { width: parent.width; text: settingRow.title; color: Theme.label; font.pixelSize: DesktopTokens.px(14); font.weight: Font.DemiBold }
             Copy { width: parent.width; text: settingRow.description }
         }
         Row {
@@ -85,7 +85,7 @@ Column {
         function isDisabled(option) { return option.enabled === false || disabledValues.some(value => String(optionValue(value)) === String(optionValue(option))) }
         implicitWidth: DesktopTokens.px(6) + options.length * DesktopTokens.px(optionWidth + 2)
         implicitHeight: DesktopTokens.px(36)
-        Rectangle { anchors.fill: parent; radius: height / 2; color: DesktopTokens.raised; border.color: DesktopTokens.seamSoft }
+        Rectangle { anchors.fill: parent; radius: DesktopTokens.radius; color: DesktopTokens.raised; border.color: DesktopTokens.seamSoft }
         Row {
             x: DesktopTokens.px(3); y: DesktopTokens.px(3); spacing: DesktopTokens.px(2)
             Repeater {
@@ -100,12 +100,12 @@ Column {
                     checkable: true; checked: index === segments.selectedIndex
                     Accessible.name: label.text
                     onClicked: segments.selected(index, modelData)
-                    background: Rectangle { radius: height / 2; color: segment.checked ? Theme.face : segment.hovered ? DesktopTokens.raised : "transparent"; border.width: segment.activeFocus ? 2 : 0; border.color: Theme.focus }
+                    background: Rectangle { radius: DesktopTokens.radius; color: segment.checked ? Theme.face : segment.hovered ? DesktopTokens.raised : "transparent"; border.width: segment.activeFocus ? DesktopTokens.px(3) : 0; border.color: segment.checked ? Theme.focus : Theme.label }
                     contentItem: Text {
                         id: label
                         text: typeof segment.modelData === "object" ? segment.modelData.label : String(segment.modelData)
                         color: segment.checked ? Theme.faceText : Theme.textMuted
-                        font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.px(13); font.weight: Font.ExtraBold
+                        font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.px(13); font.weight: Font.DemiBold
                         horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter
                     }
                     ToolTip.visible: hovered && !enabled && segments.disabledHint !== ""
@@ -145,7 +145,7 @@ Column {
         Text {
             width: DesktopTokens.px(72); height: DesktopTokens.px(28)
             text: (Math.round(slider.value * 100) / 100) + control.suffix
-            color: Theme.label; font.family: Theme.monoFont; font.pixelSize: DesktopTokens.px(14); font.weight: Font.Bold
+            color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.px(14); font.weight: Font.Bold
             verticalAlignment: Text.AlignVCenter; horizontalAlignment: Text.AlignRight
         }
     }
@@ -155,9 +155,9 @@ Column {
         spacing: DesktopTokens.px(8)
         Text {
             height: DesktopTokens.px(28); verticalAlignment: Text.AlignVCenter
-            text: qsTr("REQUESTED"); color: Theme.textMuted
-            font.family: Theme.monoFont; font.pixelSize: DesktopTokens.px(10); font.weight: Font.Bold
-            font.letterSpacing: DesktopTokens.px(1)
+            text: qsTr("Requested"); color: Theme.textMuted
+            font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.px(13); font.weight: Font.Bold
+            font.letterSpacing: 0
         }
         Badge { text: root.resolution.replace("x", " × ") }
         Badge { text: Number(root.settings.fps ?? 60) === 0 ? qsTr("Automatic frame rate") : qsTr("%1 FPS").arg(root.settings.fps ?? 60) }
@@ -173,7 +173,7 @@ Column {
         Rectangle {
             Layout.fillWidth: true; Layout.minimumWidth: 0; Layout.alignment: Qt.AlignTop
             implicitHeight: rows.implicitHeight
-            radius: DesktopTokens.px(16); color: root.panelColor; border.color: Theme.seam
+            radius: DesktopTokens.radiusLarge; color: root.panelColor; border.color: Theme.seam
             Column {
                 id: rows
                 width: parent.width
@@ -259,17 +259,17 @@ Column {
             Layout.minimumWidth: 0; Layout.alignment: Qt.AlignTop
             spacing: DesktopTokens.px(14)
             Text {
-                x: DesktopTokens.px(4); text: qsTr("THE STAGE · REQUESTED PICTURE")
-                color: Theme.textMuted; font.family: Theme.monoFont
-                font.pixelSize: DesktopTokens.px(10); font.weight: Font.Bold; font.letterSpacing: DesktopTokens.px(1)
+                x: DesktopTokens.px(4); text: qsTr("The stage · requested picture")
+                color: Theme.textMuted; font.family: Theme.bodyFont
+                font.pixelSize: DesktopTokens.px(13); font.weight: Font.Bold; font.letterSpacing: 0
                 lineHeightMode: Text.FixedHeight; lineHeight: DesktopTokens.px(12)
             }
             Rectangle {
                 width: parent.width; height: DesktopTokens.px(232)
-                radius: DesktopTokens.px(16); border.color: Theme.seam
+                radius: DesktopTokens.radiusLarge; border.color: Theme.seam
                 gradient: Gradient {
                     GradientStop { position: 0; color: Theme.lightMode ? Theme.glass : "#172B2D" }
-                    GradientStop { position: 0.7; color: Theme.lightMode ? Theme.shell : "#0B0F1A" }
+                    GradientStop { position: 0.7; color: Theme.lightMode ? Theme.shell : "#141414" }
                 }
                 Shape {
                     id: previewOutline
@@ -293,14 +293,14 @@ Column {
                     x: DesktopTokens.px(18); y: DesktopTokens.px(12); spacing: DesktopTokens.px(10)
                     Text {
                         text: root.resolution.split("x").length === 2 ? root.resolution.split("x")[1] + "p" : root.resolution
-                        color: Theme.label; font.family: Theme.displayFont; font.pixelSize: DesktopTokens.px(44); font.weight: Font.Black
+                        color: Theme.label; font.family: Theme.displayFont; font.pixelSize: DesktopTokens.px(44); font.weight: Font.Bold
                     }
-                    Text { anchors.bottom: parent.bottom; anchors.bottomMargin: DesktopTokens.px(10); text: root.resolution.replace("x", " × "); color: Theme.textMuted; font.family: Theme.monoFont; font.pixelSize: DesktopTokens.px(10) }
+                    Text { anchors.bottom: parent.bottom; anchors.bottomMargin: DesktopTokens.px(10); text: root.resolution.replace("x", " × "); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.px(13) }
                 }
                 Column {
                     anchors.right: parent.right; anchors.rightMargin: DesktopTokens.px(18); y: DesktopTokens.px(18)
-                    Text { anchors.right: parent.right; text: Number(root.settings.fps ?? 60) === 0 ? qsTr("Auto") : String(root.settings.fps ?? 60); color: root.mint; font.family: Theme.monoFont; font.pixelSize: DesktopTokens.px(28); font.weight: Font.Bold }
-                    Text { anchors.right: parent.right; text: qsTr("FPS"); color: Theme.textMuted; font.family: Theme.monoFont; font.pixelSize: DesktopTokens.px(10) }
+                    Text { anchors.right: parent.right; text: Number(root.settings.fps ?? 60) === 0 ? qsTr("Auto") : String(root.settings.fps ?? 60); color: root.mint; font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.px(28); font.weight: Font.Bold }
+                    Text { anchors.right: parent.right; text: qsTr("FPS"); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.px(13) }
                 }
                 Row {
                     x: DesktopTokens.px(18); anchors.bottom: parent.bottom; anchors.bottomMargin: DesktopTokens.px(18); spacing: DesktopTokens.px(6)
@@ -310,19 +310,19 @@ Column {
                 Text {
                     anchors.right: parent.right; anchors.rightMargin: DesktopTokens.px(18); anchors.bottom: parent.bottom; anchors.bottomMargin: DesktopTokens.px(22)
                     text: qsTr("%1 Mbps").arg(root.settings.maxBitrateMbps ?? 75)
-                    color: Theme.label; font.family: Theme.monoFont; font.pixelSize: DesktopTokens.px(14); font.weight: Font.Bold
+                    color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.px(14); font.weight: Font.Bold
                 }
             }
             Rectangle {
                 width: parent.width; implicitHeight: budget.implicitHeight + DesktopTokens.px(32)
-                radius: DesktopTokens.px(14); color: root.panelColor; border.color: DesktopTokens.seamSoft
+                radius: DesktopTokens.radiusLarge; color: root.panelColor; border.color: DesktopTokens.seamSoft
                 Column {
                     id: budget
                     x: DesktopTokens.px(18); y: DesktopTokens.px(16); width: parent.width - DesktopTokens.px(36); spacing: DesktopTokens.px(10)
                     RowLayout {
                         width: parent.width
-                        Copy { text: qsTr("Bitrate limit"); color: Theme.label; font.pixelSize: DesktopTokens.px(13); font.weight: Font.ExtraBold; Layout.fillWidth: true }
-                        Copy { text: qsTr("%1 / 200 Mbps").arg(root.settings.maxBitrateMbps ?? 75); font.family: Theme.monoFont; font.pixelSize: DesktopTokens.px(11) }
+                        Copy { text: qsTr("Bitrate limit"); color: Theme.label; font.pixelSize: DesktopTokens.px(13); font.weight: Font.DemiBold; Layout.fillWidth: true }
+                        Copy { text: qsTr("%1 / 200 Mbps").arg(root.settings.maxBitrateMbps ?? 75); font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.px(13) }
                     }
                     Rectangle {
                         width: parent.width; height: DesktopTokens.px(4); radius: height / 2; color: DesktopTokens.raised

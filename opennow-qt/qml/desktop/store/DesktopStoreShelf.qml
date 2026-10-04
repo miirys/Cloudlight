@@ -102,8 +102,8 @@ Item {
             color: DesktopTokens.text
             font.family: Theme.displayFont
             font.pixelSize: DesktopTokens.px(16)
-            font.weight: Font.Black
-            font.letterSpacing: -0.16
+            font.weight: Font.Bold
+            font.letterSpacing: 0
         }
 
         Text {
@@ -111,10 +111,10 @@ Item {
             visible: root.eyebrow.length > 0
             text: root.eyebrow
             color: DesktopTokens.textMuted
-            font.family: Theme.monoFont
-            font.pixelSize: DesktopTokens.microSize
+            font.family: Theme.bodyFont
+            font.pixelSize: DesktopTokens.captionSize
             font.weight: Font.DemiBold
-            font.letterSpacing: 0.4
+            font.letterSpacing: 0
         }
     }
 
@@ -131,7 +131,7 @@ Item {
             text: root.seeAllText
             color: DesktopTokens.textMuted
             font.family: Theme.bodyFont
-            font.pixelSize: DesktopTokens.smallSize
+            font.pixelSize: DesktopTokens.captionSize
             font.weight: Font.Bold
         }
         Text {

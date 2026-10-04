@@ -275,7 +275,7 @@ FocusScope {
         y: root.panelTop
         width: root.panelWidth
         height: root.panelHeight
-        radius: 18
+        radius: DesktopTokens.radiusLarge
         color: DesktopTokens.shell
         border.width: 1
         border.color: DesktopTokens.seam
@@ -305,7 +305,7 @@ FocusScope {
                 shortcut: "Ctrl K"; keySize: 22; ink: DesktopTokens.textMuted
                 Accessible.name: qsTr("Ctrl K")
             }
-            Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: "#14FFFFFF" }
+            Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: DesktopTokens.seam }
         }
 
         Flickable {
@@ -342,12 +342,12 @@ FocusScope {
                 Text {
                     visible: root.gameList.length > 0
                     height: 26; leftPadding: 8
-                    text: qsTr("GAMES")
+                    text: qsTr("Games")
                     color: DesktopTokens.textMuted
-                    font.family: DesktopTokens.monoFont
-                    font.pixelSize: DesktopTokens.tinySize
+                    font.family: DesktopTokens.bodyFont
+                    font.pixelSize: DesktopTokens.captionSize
                     font.weight: Font.DemiBold
-                    font.letterSpacing: 1
+                    font.letterSpacing: 0
                     verticalAlignment: Text.AlignVCenter
                 }
                 Repeater {
@@ -362,7 +362,7 @@ FocusScope {
                         height: 56
                         padding: 0
                         background: Rectangle {
-                            radius: 11
+                            radius: DesktopTokens.radius
                             color: gameRow.current ? DesktopTokens.raisedStrong : (gameRow.hovered ? DesktopTokens.raised : "transparent")
                             border.width: gameRow.current ? 1 : 0
                             border.color: DesktopTokens.seam
@@ -393,7 +393,7 @@ FocusScope {
                                     text: root.gameSubtitle(gameRow.modelData)
                                     color: DesktopTokens.textMuted
                                     font.family: DesktopTokens.bodyFont
-                                    font.pixelSize: DesktopTokens.microSize
+                                    font.pixelSize: DesktopTokens.captionSize
                                     elide: Text.ElideRight
                                 }
                             }
@@ -405,12 +405,12 @@ FocusScope {
                                 spacing: 8
                                 Text {
                                     anchors.verticalCenter: parent.verticalCenter
-                                    text: qsTr("PLAY")
+                                    text: qsTr("Play")
                                     color: DesktopTokens.mint
                                     font.family: DesktopTokens.bodyFont
-                                    font.pixelSize: DesktopTokens.microSize
-                                    font.weight: Font.Black
-                                    font.letterSpacing: 0.6
+                                    font.pixelSize: DesktopTokens.captionSize
+                                    font.weight: Font.Bold
+                                    font.letterSpacing: 0
                                 }
                                 KeyboardGlyph { shortcut: "Enter"; keySize: 20; ink: DesktopTokens.textMuted; Accessible.name: qsTr("Enter") }
                             }
@@ -423,12 +423,12 @@ FocusScope {
                 Text {
                     visible: root.actionList.length > 0
                     height: 26; leftPadding: 8
-                    text: qsTr("ACTIONS")
+                    text: qsTr("Actions")
                     color: DesktopTokens.textMuted
-                    font.family: DesktopTokens.monoFont
-                    font.pixelSize: DesktopTokens.tinySize
+                    font.family: DesktopTokens.bodyFont
+                    font.pixelSize: DesktopTokens.captionSize
                     font.weight: Font.DemiBold
-                    font.letterSpacing: 1
+                    font.letterSpacing: 0
                     verticalAlignment: Text.AlignVCenter
                 }
                 Repeater {
@@ -444,7 +444,7 @@ FocusScope {
                         height: 40
                         padding: 0
                         background: Rectangle {
-                            radius: 11
+                            radius: DesktopTokens.radius
                             color: command.current ? DesktopTokens.raisedStrong : (command.hovered ? DesktopTokens.raised : "transparent")
                             border.width: command.current ? 1 : 0
                             border.color: DesktopTokens.seam
@@ -452,7 +452,7 @@ FocusScope {
                         contentItem: Item {
                             Rectangle {
                                 x: 8; anchors.verticalCenter: parent.verticalCenter
-                                width: 20; height: 20; radius: 7; color: DesktopTokens.raised
+                                width: 20; height: 20; radius: DesktopTokens.radius; color: DesktopTokens.raised
                                 DesktopGlyph { anchors.centerIn: parent; width: 13; height: 13; icon: command.modelData.icon }
                             }
                             Text {
@@ -492,8 +492,8 @@ FocusScope {
 
         Rectangle {
             x: 0; y: parent.height - 42; width: parent.width; height: 42
-            color: Theme.lightMode ? DesktopTokens.raised : "#8A04060A"
-            Rectangle { width: parent.width; height: 1; color: "#14FFFFFF" }
+            color: DesktopTokens.raised
+            Rectangle { width: parent.width; height: 1; color: DesktopTokens.seam }
             Row {
                 x: 16; anchors.verticalCenter: parent.verticalCenter; spacing: 15
                 DesktopKeyHint { keyText: qsTr("↑ ↓"); shortcut: "↑ ↓"; label: qsTr("Move") }
@@ -503,13 +503,13 @@ FocusScope {
             Text {
                 anchors.right: parent.right; anchors.rightMargin: 16; anchors.verticalCenter: parent.verticalCenter
                 text: root.scopeFilter === "all"
-                    ? qsTr("%1 RESULTS").arg(root.resultCount)
-                    : qsTr("%1 · %2").arg(root.scopeFilter.toUpperCase()).arg(qsTr("%1 RESULTS").arg(root.resultCount))
+                    ? qsTr("%1 results").arg(root.resultCount)
+                    : qsTr("%1 · %2").arg(root.scopeFilter.charAt(0).toUpperCase() + root.scopeFilter.slice(1)).arg(qsTr("%1 results").arg(root.resultCount))
                 color: DesktopTokens.textFaint
-                font.family: DesktopTokens.monoFont
-                font.pixelSize: DesktopTokens.microSize
+                font.family: DesktopTokens.bodyFont
+                font.pixelSize: DesktopTokens.captionSize
                 font.weight: Font.DemiBold
-                font.letterSpacing: 0.6
+                font.letterSpacing: 0
             }
         }
     }

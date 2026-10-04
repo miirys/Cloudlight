@@ -43,15 +43,19 @@ FocusScope {
         { route: "settings", icon: "desktop-nav-settings.svg", name: qsTr("Settings") }
     ]
 
+    function tierLabel(raw) {
+        const tier = String(raw)
+        return tier.charAt(0).toUpperCase() + tier.slice(1).toLowerCase()
+    }
     function liveMembershipTier() {
         // The login claim goes stale (e.g. upgrade after sign-in); the live
         // subscription is authoritative, the cached claim is the fallback.
         if (ShellStore.subscription && ShellStore.subscription.membershipTier)
-            return String(ShellStore.subscription.membershipTier).toUpperCase()
+            return root.tierLabel(ShellStore.subscription.membershipTier)
         if (ShellStore.signedIn && ShellStore.authSession && ShellStore.authSession.user
                 && ShellStore.authSession.user.membershipTier)
-            return String(ShellStore.authSession.user.membershipTier).toUpperCase()
-        return ShellStore.signedIn ? qsTr("Member").toUpperCase() : qsTr("NOT SIGNED IN")
+            return root.tierLabel(ShellStore.authSession.user.membershipTier)
+        return ShellStore.signedIn ? qsTr("Member") : qsTr("Not signed in")
     }
 
     function routeSelected(route) {
@@ -69,19 +73,7 @@ FocusScope {
             anchors.right: parent.right
             width: 1
             height: parent.height
-            color: root.overlayOpen ? "#29FFFFFF" : DesktopTokens.seamSoft
-        }
-    }
-
-    Rectangle {
-        visible: root.overlayOpen
-        x: root.width
-        width: DesktopTokens.px(40)
-        height: parent.height
-        gradient: Gradient {
-            orientation: Gradient.Horizontal
-            GradientStop { position: 0; color: "#A8000000" }
-            GradientStop { position: 1; color: "#00000000" }
+            color: root.overlayOpen ? DesktopTokens.seam : DesktopTokens.seamSoft
         }
     }
 
@@ -137,10 +129,8 @@ FocusScope {
                 height: 28
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.right: parent.right
-                radius: 9
-                color: collapseHover.hovered || collapseButton.activeFocus ? "#17FFFFFF" : "#0FFFFFFF"
-                border.width: 1
-                border.color: "#17FFFFFF"
+                radius: DesktopTokens.radius
+                color: collapseHover.hovered || collapseButton.activeFocus ? DesktopTokens.raisedStrong : DesktopTokens.raised
                 Accessible.role: Accessible.Button
                 Accessible.name: qsTr("Collapse sidebar")
                 Accessible.onPressAction: {
@@ -172,10 +162,8 @@ FocusScope {
                 width: 40
                 height: 28
                 x: 2
-                radius: 9
-                color: expandHover.hovered || expandButton.activeFocus ? "#17FFFFFF" : "#0FFFFFFF"
-                border.width: 1
-                border.color: "#17FFFFFF"
+                radius: DesktopTokens.radius
+                color: expandHover.hovered || expandButton.activeFocus ? DesktopTokens.raisedStrong : DesktopTokens.raised
                 Accessible.role: Accessible.Button
                 Accessible.name: root.overlayOpen ? qsTr("Collapse sidebar") : qsTr("Expand sidebar")
                 Accessible.onPressAction: {
@@ -226,10 +214,21 @@ FocusScope {
                     padding: 0
                     readonly property bool selected: root.routeSelected(modelData.route)
                     Accessible.name: modelData.name
+                    // Selected: raised fill with an accent bar on the left. Keyboard focus adds
+                    // a thick outline so it reads from across the room.
                     background: Rectangle {
-                        radius: 10
-                        color: navButton.selected ? DesktopTokens.raisedStrong
-                            : (navButton.hovered || navButton.activeFocus ? DesktopTokens.raised : "transparent")
+                        radius: DesktopTokens.radius
+                        color: navButton.selected ? DesktopTokens.raised
+                            : (navButton.hovered || navButton.activeFocus ? DesktopTokens.hover : "transparent")
+                        border.width: navButton.activeFocus ? DesktopTokens.px(3) : 0
+                        border.color: Theme.label
+                        Rectangle {
+                            visible: navButton.selected
+                            width: DesktopTokens.px(3)
+                            height: parent.height - DesktopTokens.px(16)
+                            anchors.verticalCenter: parent.verticalCenter
+                            color: DesktopTokens.focus
+                        }
                     }
                     contentItem: Item {
                         DesktopGlyph {
@@ -247,33 +246,10 @@ FocusScope {
                             visible: root.reveal > 0
                         opacity: root.reveal
                             text: navButton.modelData.name
-                            color: navButton.selected ? DesktopTokens.text : DesktopTokens.textMuted
+                            color: navButton.selected ? DesktopTokens.text : DesktopTokens.textBody
                             font.family: DesktopTokens.bodyFont
-                            font.pixelSize: DesktopTokens.px(14)
-                            font.weight: navButton.selected ? Font.ExtraBold : Font.DemiBold
-                        }
-                        Row {
-                            anchors.right: parent.right
-                            anchors.rightMargin: 10
-                            anchors.verticalCenter: parent.verticalCenter
-                            visible: navButton.modelData.route === "friends" && !navButton.selected
-                            Rectangle {
-                                width: 6
-                                height: 6
-                                radius: 3
-                                anchors.verticalCenter: parent.verticalCenter
-                                color: root.friendsAvailable ? DesktopTokens.green : DesktopTokens.textFaint
-                            }
-                        }
-                        Rectangle {
-                            anchors.right: parent.right
-                            anchors.rightMargin: 10
-                            anchors.verticalCenter: parent.verticalCenter
-                            visible: navButton.selected && !root.compact
-                            width: 4
-                            height: 16
-                            radius: 999
-                            color: DesktopTokens.focus
+                            font.pixelSize: DesktopTokens.px(15)
+                            font.weight: navButton.selected ? Font.DemiBold : Font.Medium
                         }
                     }
                     onClicked: {
@@ -301,12 +277,11 @@ FocusScope {
                     anchors.verticalCenter: parent.verticalCenter
                     visible: root.reveal > 0
                     opacity: root.reveal
-                    text: qsTr("COLLECTIONS")
-                    color: DesktopTokens.textFaint
-                    font.family: DesktopTokens.monoFont
-                    font.pixelSize: 9
+                    text: qsTr("Collections")
+                    color: DesktopTokens.textMuted
+                    font.family: DesktopTokens.bodyFont
+                    font.pixelSize: DesktopTokens.captionSize
                     font.weight: Font.DemiBold
-                    font.letterSpacing: 0.9
                 }
                 Button {
                     id: createCollectionButton
@@ -321,7 +296,7 @@ FocusScope {
                     Accessible.name: qsTr("New collection")
                     ToolTip.visible: hovered
                     ToolTip.text: qsTr("New collection")
-                    background: Rectangle { radius: 8; color: createCollectionButton.hovered || createCollectionButton.activeFocus ? DesktopTokens.raised : "transparent" }
+                    background: Rectangle { radius: DesktopTokens.radius; color: createCollectionButton.hovered || createCollectionButton.activeFocus ? DesktopTokens.raised : "transparent"; border.width: createCollectionButton.activeFocus ? DesktopTokens.px(3) : 0; border.color: Theme.label }
                     contentItem: DesktopGlyph {
                         width: createCollectionButton.availableWidth
                         height: createCollectionButton.availableHeight
@@ -350,9 +325,11 @@ FocusScope {
                     clip: true
                     Accessible.name: modelData.name
                     background: Rectangle {
-                        radius: 8
+                        radius: DesktopTokens.radius
                         color: ShellStore.activeCollectionId === collectionRow.modelData.id && root.currentRoute === "library"
-                            ? DesktopTokens.raisedStrong : collectionRow.hovered || collectionRow.activeFocus ? DesktopTokens.raised : "transparent"
+                            ? DesktopTokens.raised : collectionRow.hovered || collectionRow.activeFocus ? DesktopTokens.hover : "transparent"
+                        border.width: collectionRow.activeFocus ? DesktopTokens.px(3) : 0
+                        border.color: Theme.label
                     }
                     contentItem: Item {
                     width: DesktopTokens.railWidth - 28
@@ -374,9 +351,9 @@ FocusScope {
                         visible: root.reveal > 0
                         opacity: root.reveal
                         text: collectionRow.modelData.name
-                        color: collectionRow.hovered ? DesktopTokens.text : DesktopTokens.textMuted
+                        color: collectionRow.hovered ? DesktopTokens.text : DesktopTokens.textBody
                         font.family: DesktopTokens.bodyFont
-                        font.pixelSize: 13
+                        font.pixelSize: DesktopTokens.px(14)
                         font.weight: Font.DemiBold
                     }
                     Text {
@@ -386,10 +363,9 @@ FocusScope {
                         visible: root.reveal > 0
                         opacity: root.reveal
                         text: collectionRow.modelData.gameIds.length
-                        color: DesktopTokens.textFaint
-                        font.family: DesktopTokens.monoFont
-                        font.pixelSize: 10
-                        font.weight: Font.DemiBold
+                        color: DesktopTokens.textMuted
+                        font.family: DesktopTokens.bodyFont
+                        font.pixelSize: DesktopTokens.captionSize
                     }
                     }
                     onClicked: {
@@ -405,9 +381,9 @@ FocusScope {
                     visible: ShellStore.gameCollections.length === 0
                     text: qsTr("Create your first collection with +")
                     wrapMode: Text.WordWrap
-                    color: DesktopTokens.textFaint
+                    color: DesktopTokens.textMuted
                     font.family: DesktopTokens.bodyFont
-                    font.pixelSize: 12
+                    font.pixelSize: DesktopTokens.captionSize
                 }
             }
         }
@@ -440,8 +416,10 @@ FocusScope {
                     : (root.consoleModeOn ? qsTr("Console mode is on") : qsTr("Console mode is off"))
                 Behavior on opacity { NumberAnimation { duration: DesktopTokens.quickDuration } }
                 background: Rectangle {
-                    radius: 11
-                    color: consoleModeButton.hovered || consoleModeButton.activeFocus ? "#0CFFFFFF" : "transparent"
+                    radius: DesktopTokens.radius
+                    color: consoleModeButton.hovered || consoleModeButton.activeFocus ? DesktopTokens.hover : "transparent"
+                    border.width: consoleModeButton.activeFocus ? DesktopTokens.px(3) : 0
+                    border.color: Theme.label
                 }
                 contentItem: Item {
                     DesktopGlyph {
@@ -453,7 +431,7 @@ FocusScope {
                     }
                     Column {
                         x: 48
-                        width: Math.max(0, parent.width - x - 52)
+                        width: Math.max(0, parent.width - x - 50)
                         anchors.verticalCenter: parent.verticalCenter
                         visible: root.reveal > 0
                         opacity: root.reveal
@@ -461,36 +439,11 @@ FocusScope {
                         Text {
                             width: parent.width
                             elide: Text.ElideRight
-                            text: root.consoleModePending ? qsTr("Console mode…") : qsTr("Console mode")
-                            color: DesktopTokens.textHigh
+                            text: root.consoleModePending ? qsTr("Switching…") : qsTr("Console mode")
+                            color: DesktopTokens.textBody
                             font.family: DesktopTokens.bodyFont
-                            font.pixelSize: 13
-                            font.weight: Font.Bold
-                        }
-                        Row {
-                            spacing: 5
-                            Rectangle {
-                                width: 5
-                                height: 5
-                                radius: 3
-                                color: root.consoleModePending ? DesktopTokens.amber
-                                    : root.consoleModeOn ? DesktopTokens.mint : DesktopTokens.ledAmber
-                                SequentialAnimation on opacity {
-                                    running: root.consoleModePending
-                                    loops: Animation.Infinite
-                                    NumberAnimation { to: 0.25; duration: 420 }
-                                    NumberAnimation { to: 1; duration: 420 }
-                                }
-                            }
-                            Text {
-                                text: root.consoleModePending ? qsTr("SWITCHING…")
-                                    : root.consoleModeOn ? qsTr("CONSOLE ON") : qsTr("GAMEPAD READY")
-                                color: DesktopTokens.textMuted
-                                font.family: DesktopTokens.monoFont
-                                font.pixelSize: 9
-                                font.weight: Font.DemiBold
-                                font.letterSpacing: 0.36
-                            }
+                            font.pixelSize: DesktopTokens.px(14)
+                            font.weight: Font.Medium
                         }
                     }
                     Rectangle {
@@ -499,31 +452,19 @@ FocusScope {
                         anchors.verticalCenter: parent.verticalCenter
                         visible: root.reveal > 0
                         opacity: root.reveal
-                        width: 32
-                        height: 19
-                        radius: 999
-                        color: root.consoleModeOn ? "#2E6EE7B7" : "#1FFFFFFF"
-                        border.width: 1
-                        border.color: root.consoleModeOn ? "#526EE7B7" : "#1AFFFFFF"
+                        width: 34
+                        height: 20
+                        radius: height / 2
+                        color: root.consoleModeOn ? DesktopTokens.focus : DesktopTokens.raisedStrong
                         Rectangle {
-                            x: root.consoleModeOn ? 17 : 2
-                            y: 2
-                            width: 13
-                            height: 13
-                            radius: 999
-                            color: root.consoleModeOn ? DesktopTokens.focus : "#CCFFFFFF"
+                            x: root.consoleModeOn ? 17 : 3
+                            y: 3
+                            width: 14
+                            height: 14
+                            radius: 7
+                            color: root.consoleModeOn ? Theme.focusText : DesktopTokens.text
                             Behavior on x { NumberAnimation { duration: DesktopTokens.quickDuration; easing.type: Easing.OutCubic } }
                         }
-                    }
-                    Rectangle {
-                        anchors.right: parent.right
-                        anchors.top: parent.top
-                        width: 7
-                        height: 7
-                        radius: 4
-                        visible: root.compact
-                        color: root.consoleModePending ? DesktopTokens.amber
-                            : root.consoleModeOn ? DesktopTokens.mint : DesktopTokens.ledAmber
                     }
                 }
                 onClicked: root.consoleModeRequested()
@@ -536,8 +477,10 @@ FocusScope {
                 padding: 0
                 Accessible.name: qsTr("Profile")
                 background: Rectangle {
-                    radius: 11
-                    color: profileButton.hovered || profileButton.activeFocus ? "#0CFFFFFF" : "transparent"
+                    radius: DesktopTokens.radius
+                    color: profileButton.hovered || profileButton.activeFocus ? DesktopTokens.hover : "transparent"
+                    border.width: profileButton.activeFocus ? DesktopTokens.px(3) : 0
+                    border.color: Theme.label
                 }
                 contentItem: Item {
                     Rectangle {
@@ -545,10 +488,8 @@ FocusScope {
                         anchors.verticalCenter: parent.verticalCenter
                         width: 36
                         height: 36
-                        radius: 999
-                        color: "#17FFFFFF"
-                        border.width: 1
-                        border.color: "#29FFFFFF"
+                        radius: width / 2
+                        color: DesktopTokens.raisedStrong
                         Text {
                             anchors.centerIn: parent
                             text: ShellStore.signedIn && ShellStore.authSession.user
@@ -557,7 +498,7 @@ FocusScope {
                             color: DesktopTokens.textHigh
                             font.family: DesktopTokens.bodyFont
                             font.pixelSize: DesktopTokens.monoSize
-                            font.weight: Font.Black
+                            font.weight: Font.Bold
                         }
                     }
                     Column {
@@ -582,11 +523,9 @@ FocusScope {
                             text: root.liveMembershipTier()
                             width: parent.width
                             elide: Text.ElideRight
-                            color: DesktopTokens.textFaint
-                            font.family: DesktopTokens.monoFont
-                            font.pixelSize: DesktopTokens.tinySize
-                            font.weight: Font.DemiBold
-                            font.letterSpacing: 0.36
+                            color: DesktopTokens.textMuted
+                            font.family: DesktopTokens.bodyFont
+                            font.pixelSize: DesktopTokens.captionSize
                         }
                     }
                     DesktopGlyph {

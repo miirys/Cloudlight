@@ -40,7 +40,7 @@ Item {
         y: 0
         width: root.tileWidth
         height: root.artHeight
-        cornerRadius: DesktopTokens.px(12)
+        cornerRadius: DesktopTokens.radius
         scrimStart: 1
         artwork: DesktopTokens.artworkUrl(root.game, false)
         fallbackColor: root.fallbackColor
@@ -51,9 +51,9 @@ Item {
         y: -DesktopTokens.cardOutlinePad
         width: root.tileWidth + DesktopTokens.cardOutlinePad * 2
         height: root.artHeight + DesktopTokens.cardOutlinePad * 2
-        radius: DesktopTokens.px(14)
+        radius: DesktopTokens.radius + DesktopTokens.cardOutlinePad
         color: "transparent"
-        border.width: root.selected ? 2 : 1
+        border.width: root.selected ? 3 : 1
         border.color: root.selected ? DesktopTokens.focus : DesktopTokens.cardOutlineIdle
 
         Behavior on border.color {
@@ -93,16 +93,16 @@ Item {
             visible: root.discount.length > 0 && !root.owned
             width: discountLabel.implicitWidth + DesktopTokens.px(10)
             height: DesktopTokens.px(17)
-            radius: DesktopTokens.px(5)
-            color: Qt.rgba(0.431, 0.906, 0.718, 0.18)
+            radius: DesktopTokens.radius
+            color: DesktopTokens.raised
 
             Text {
                 id: discountLabel
                 anchors.centerIn: parent
                 text: root.discount
                 color: DesktopTokens.green
-                font.family: Theme.monoFont
-                font.pixelSize: DesktopTokens.tinySize
+                font.family: Theme.bodyFont
+                font.pixelSize: DesktopTokens.captionSize
                 font.weight: Font.Bold
             }
         }
@@ -125,8 +125,8 @@ Item {
             color: root.freeToPlay ? DesktopTokens.green
                                    : root.owned ? DesktopTokens.textMuted
                                                 : DesktopTokens.text
-            font.family: Theme.monoFont
-            font.pixelSize: DesktopTokens.smallSize
+            font.family: Theme.bodyFont
+            font.pixelSize: DesktopTokens.captionSize
             font.weight: root.owned ? Font.DemiBold : Font.Bold
             elide: Text.ElideRight
         }

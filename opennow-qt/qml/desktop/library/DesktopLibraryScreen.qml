@@ -180,7 +180,7 @@ FocusScope {
         width: parent.width - 48
         height: visible ? Math.max(58, noticeText.implicitHeight + 24) : 0
         visible: root.activeFilter === "cloud-favorites" || (ShellStore.catalogSource === "account-library" && ShellStore.catalogState !== "ready")
-        radius: 10
+        radius: DesktopTokens.radius
         color: DesktopTokens.surface
         border.color: DesktopTokens.seam
         Text {
@@ -238,10 +238,10 @@ FocusScope {
                 hoverEnabled: true
                 clip: false
                 background: Rectangle {
-                    radius: 11
-                    color: root.activeFilter === filterButton.modelData.key ? "#1AFFFFFF" : (filterButton.hovered ? "#0FFFFFFF" : "transparent")
-                    border.width: 1
-                    border.color: root.activeFilter === filterButton.modelData.key ? "#3DFFFFFF" : DesktopTokens.seam
+                    radius: DesktopTokens.radius
+                    color: root.activeFilter === filterButton.modelData.key ? DesktopTokens.raisedStrong : (filterButton.hovered ? DesktopTokens.raised : "transparent")
+                    border.width: filterButton.activeFocus ? DesktopTokens.px(3) : 1
+                    border.color: filterButton.activeFocus ? Theme.label : root.activeFilter === filterButton.modelData.key ? DesktopTokens.raisedStrong : DesktopTokens.seam
                 }
                 contentItem: Item {
                     implicitWidth: chipRow.implicitWidth
@@ -272,7 +272,7 @@ FocusScope {
                             text: filterButton.modelData.count
                             anchors.verticalCenter: parent.verticalCenter
                             color: DesktopTokens.textFaint
-                            font.family: DesktopTokens.monoFont
+                            font.family: DesktopTokens.bodyFont
                             font.pixelSize: 12
                             font.weight: Font.DemiBold
                             verticalAlignment: Text.AlignVCenter
@@ -289,12 +289,12 @@ FocusScope {
         anchors.rightMargin: 24
         anchors.verticalCenter: filterRow.verticalCenter
         visible: filterRow.height <= 40 && root.width - 24 - libraryHint.implicitWidth > 40 + filterRow.childrenRect.width
-        text: qsTr("RIGHT-CLICK A GAME FOR ACTIONS")
+        text: qsTr("Right-click a game for actions")
         color: DesktopTokens.textFaint
-        font.family: DesktopTokens.monoFont
+        font.family: DesktopTokens.bodyFont
         font.pixelSize: 10
         font.weight: Font.DemiBold
-        font.letterSpacing: 0.7
+        font.letterSpacing: 0
     }
 
     GridView {
@@ -390,7 +390,7 @@ FocusScope {
     }
     Rectangle {
         x: root.contextPoint.x; y: root.contextPoint.y
-        width: 230; height: 286; radius: 12
+        width: 230; height: 286; radius: DesktopTokens.radius
         visible: contextMotion.present
         enabled: root.contextGame !== null
         z: 41
@@ -398,13 +398,13 @@ FocusScope {
         border.width: 1; border.color: DesktopTokens.seam
         Column {
             x: 8; y: 8; width: 214; spacing: 0
-            Text { width: parent.width; height: 26; leftPadding: 8; text: root.presentedContextGame ? String(root.presentedContextGame.title || "").toUpperCase() : ""; color: DesktopTokens.textFaint; elide: Text.ElideRight; verticalAlignment: Text.AlignVCenter; font.family: DesktopTokens.monoFont; font.pixelSize: DesktopTokens.tinySize; font.weight: Font.DemiBold; font.letterSpacing: 0.6 }
+            Text { width: parent.width; height: 26; leftPadding: 8; text: root.presentedContextGame ? String(root.presentedContextGame.title || "") : ""; color: DesktopTokens.textMuted; elide: Text.ElideRight; verticalAlignment: Text.AlignVCenter; font.family: DesktopTokens.bodyFont; font.pixelSize: DesktopTokens.captionSize; font.weight: Font.DemiBold; font.letterSpacing: 0 }
             Rectangle {
                 id: playRow
-                width: parent.width; height: 36; radius: 9
-                color: playHover.hovered ? "#FFFFFF" : "#F2FFFFFF"
-                Text { x: 12; anchors.verticalCenter: parent.verticalCenter; text: "▶  " + qsTr("Play"); color: "#0B0F1A"; font.family: DesktopTokens.bodyFont; font.pixelSize: DesktopTokens.captionSize; font.weight: Font.Black }
-                KeyboardGlyph { anchors.right: parent.right; anchors.rightMargin: 12; anchors.verticalCenter: parent.verticalCenter; shortcut: "Enter"; keySize: 20; ink: "#0B0F1A"; Accessible.name: qsTr("Enter") }
+                width: parent.width; height: 36; radius: DesktopTokens.radius
+                color: playHover.hovered ? Qt.lighter(DesktopTokens.focus, 1.1) : DesktopTokens.focus
+                Text { x: 12; anchors.verticalCenter: parent.verticalCenter; text: "▶  " + qsTr("Play"); color: Theme.focusText; font.family: DesktopTokens.bodyFont; font.pixelSize: DesktopTokens.captionSize; font.weight: Font.Bold }
+                KeyboardGlyph { anchors.right: parent.right; anchors.rightMargin: 12; anchors.verticalCenter: parent.verticalCenter; shortcut: "Enter"; keySize: 20; ink: Theme.focusText; Accessible.name: qsTr("Enter") }
                 HoverHandler { id: playHover; cursorShape: Qt.PointingHandCursor }
                 TapHandler { onTapped: root.activateContext("play") }
             }
@@ -421,11 +421,11 @@ FocusScope {
                     required property var modelData
                     width: 214; height: 32; padding: 8
                     highlighted: modelData.action === "collection" && root.collectionOpen
-                    background: Rectangle { radius: 7; color: parent.hovered || parent.activeFocus || (modelData.action === "collection" && root.collectionOpen) ? "#14FFFFFF" : "transparent" }
+                    background: Rectangle { radius: DesktopTokens.radius; color: parent.hovered || parent.activeFocus || (modelData.action === "collection" && root.collectionOpen) ? DesktopTokens.raised : "transparent" }
                     contentItem: Item {
                         Text { anchors.left: parent.left; anchors.verticalCenter: parent.verticalCenter; text: modelData.label; color: DesktopTokens.textBody; font.family: DesktopTokens.bodyFont; font.pixelSize: DesktopTokens.captionSize }
                         KeyboardGlyph { visible: modelData.action !== "collection"; anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter; shortcut: modelData.key; keySize: 18; ink: DesktopTokens.textMuted }
-                        Text { visible: modelData.action === "collection"; anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter; text: modelData.key; color: DesktopTokens.textFaint; font.family: DesktopTokens.monoFont; font.pixelSize: DesktopTokens.tinySize }
+                        Text { visible: modelData.action === "collection"; anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter; text: modelData.key; color: DesktopTokens.textFaint; font.family: DesktopTokens.bodyFont; font.pixelSize: DesktopTokens.captionSize }
                     }
                     onClicked: {
                         if (modelData.action === "collection")
@@ -445,7 +445,7 @@ FocusScope {
         y: Math.max(8, Math.min(root.height - height - 8, root.contextPoint.y + 104))
         width: 240
         height: Math.min(root.height - 16, 96 + Math.min(6, ShellStore.gameCollections.length) * 36 + (ShellStore.collectionError ? 52 : 0))
-        radius: 12
+        radius: DesktopTokens.radius
         visible: collectionMotion.present
         enabled: root.contextGame !== null && root.collectionOpen
         z: 42
@@ -453,7 +453,7 @@ FocusScope {
         border.width: 1; border.color: DesktopTokens.seam
         Column {
             x: 8; y: 8; width: parent.width - 16; spacing: 0
-            Text { width: parent.width; height: 24; leftPadding: 8; text: qsTr("COLLECTIONS"); color: DesktopTokens.textFaint; verticalAlignment: Text.AlignVCenter; font.family: DesktopTokens.monoFont; font.pixelSize: DesktopTokens.tinySize; font.weight: Font.DemiBold; font.letterSpacing: 0.6 }
+            Text { width: parent.width; height: 24; leftPadding: 8; text: qsTr("Collections"); color: DesktopTokens.textFaint; verticalAlignment: Text.AlignVCenter; font.family: DesktopTokens.bodyFont; font.pixelSize: DesktopTokens.captionSize; font.weight: Font.DemiBold; font.letterSpacing: 0 }
             ListView {
                 width: parent.width
                 height: Math.min(6, count) * 36
@@ -469,7 +469,7 @@ FocusScope {
                     padding: 8
                     enabled: !ShellStore.collectionsBusy
                     Accessible.name: modelData.name
-                    background: Rectangle { radius: 7; color: membershipButton.hovered || membershipButton.activeFocus ? DesktopTokens.raised : "transparent" }
+                    background: Rectangle { radius: DesktopTokens.radius; color: membershipButton.hovered || membershipButton.activeFocus ? DesktopTokens.raised : "transparent" }
                     contentItem: Text {
                         text: (ShellStore.isInCollection(root.contextGame, membershipButton.modelData.id) ? "✓  " : "+  ") + membershipButton.modelData.name
                         textFormat: Text.PlainText
@@ -486,7 +486,7 @@ FocusScope {
                 id: newCollectionAction
                 width: parent.width; height: 40; padding: 8
                 enabled: !ShellStore.collectionsBusy
-                background: Rectangle { radius: 7; color: newCollectionAction.hovered || newCollectionAction.activeFocus ? DesktopTokens.raised : "transparent" }
+                background: Rectangle { radius: DesktopTokens.radius; color: newCollectionAction.hovered || newCollectionAction.activeFocus ? DesktopTokens.raised : "transparent" }
                 contentItem: Text {
                     text: qsTr("New collection")
                     verticalAlignment: Text.AlignVCenter

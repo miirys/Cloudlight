@@ -18,9 +18,10 @@ Rectangle {
     Rectangle {
         anchors.fill: parent
         gradient: Gradient {
-            GradientStop { position: 0; color: Theme.lightMode ? "#D9EDF3F8" : "#CC0D0F1A" }
-            GradientStop { position: 0.5; color: Theme.lightMode ? "#EBEDF3F8" : "#E60D0F1A" }
-            GradientStop { position: 1; color: Theme.lightMode ? "#F7EDF3F8" : "#F70D0F1A" }
+            // Darkens the hero art so the card in front stays legible.
+            GradientStop { position: 0; color: Theme.shell }
+            GradientStop { position: 0.5; color: Theme.shell }
+            GradientStop { position: 1; color: Theme.shell }
         }
     }
 }

@@ -17,7 +17,7 @@ Button {
     Accessible.name: text
 
     background: Rectangle {
-        radius: DesktopTokens.px(9)
+        radius: DesktopTokens.radius
         color: root.selected || root.down ? DesktopTokens.raisedStrong
                                           : root.hovered ? DesktopTokens.raised : DesktopTokens.seamSoft
         border.width: 1
@@ -43,7 +43,7 @@ Button {
             color: root.selected ? DesktopTokens.text : DesktopTokens.textMuted
             font.family: Theme.bodyFont
             font.pixelSize: DesktopTokens.monoSize
-            font.weight: root.selected ? Font.ExtraBold : Font.DemiBold
+            font.weight: root.selected ? Font.DemiBold : Font.DemiBold
         }
 
         DesktopSettingsIcon {

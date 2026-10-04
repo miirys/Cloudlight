@@ -15,10 +15,10 @@ AbstractButton {
     Accessible.checked: selected
 
     background: Rectangle {
-        radius: DesktopTokens.px(16)
-        color: Theme.lightMode ? Theme.glass : "#C70B0F1A"
-        border.width: root.selected || root.activeFocus ? 2 : 1
-        border.color: root.activeFocus ? Theme.focus : root.selected ? root.accent : Theme.seam
+        radius: DesktopTokens.radiusLarge
+        color: Theme.surface
+        border.width: root.activeFocus ? DesktopTokens.px(3) : root.selected ? 2 : 1
+        border.color: root.activeFocus ? Theme.label : root.selected ? root.accent : Theme.seam
         Behavior on border.color { ColorAnimation { duration: DesktopTokens.quickDuration } }
     }
 
@@ -41,16 +41,16 @@ AbstractButton {
         Rectangle {
             x: DesktopTokens.px(12); y: DesktopTokens.px(12)
             width: badge.implicitWidth + DesktopTokens.px(20)
-            height: DesktopTokens.px(26)
-            radius: height / 2
-            color: "#DB0B0F1A"; border.color: "#24FFFFFF"
+            height: DesktopTokens.px(28)
+            radius: DesktopTokens.radius
+            color: Theme.surface
             Text {
                 id: badge
                 anchors.centerIn: parent
-                text: root.consoleMode ? qsTr("GAMEPAD · 10-FOOT UI") : qsTr("MOUSE + KEYBOARD")
-                font.family: Theme.monoFont; font.pixelSize: DesktopTokens.px(10)
-                font.weight: Font.Bold; font.letterSpacing: DesktopTokens.px(0.8)
-                color: "#FFFFFF"
+                text: root.consoleMode ? qsTr("Gamepad · 10-foot UI") : qsTr("Mouse + keyboard")
+                font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.px(13)
+                font.weight: Font.DemiBold
+                color: Theme.label
             }
         }
 
@@ -59,14 +59,14 @@ AbstractButton {
             anchors.right: parent.right; anchors.top: parent.top
             anchors.margins: DesktopTokens.px(12)
             width: defaultLabel.implicitWidth + DesktopTokens.px(20)
-            height: DesktopTokens.px(26); radius: height / 2
-            color: "#6EE7B7"; border.color: "#596EE7B7"
+            height: DesktopTokens.px(28); radius: DesktopTokens.radius
+            color: root.accent
             Text {
                 id: defaultLabel
                 anchors.centerIn: parent
-                text: qsTr("DEFAULT · DESKTOP MODE")
-                color: "#0B0F1A"; font.family: Theme.monoFont
-                font.pixelSize: DesktopTokens.px(10); font.weight: Font.Bold
+                text: qsTr("Default")
+                color: Theme.contrastText(root.accent); font.family: Theme.bodyFont
+                font.pixelSize: DesktopTokens.px(13); font.weight: Font.DemiBold
             }
         }
     }
@@ -86,7 +86,7 @@ AbstractButton {
                 width: parent.width
                 text: root.consoleMode ? qsTr("Console mode") : qsTr("Desktop mode")
                 color: Theme.label; font.family: Theme.displayFont
-                font.pixelSize: DesktopTokens.px(20); font.weight: Font.Black
+                font.pixelSize: DesktopTokens.px(20); font.weight: Font.Bold
                 height: lineCount * DesktopTokens.px(24)
                 lineHeightMode: Text.FixedHeight; lineHeight: DesktopTokens.px(24)
                 topPadding: -DesktopTokens.px(3)

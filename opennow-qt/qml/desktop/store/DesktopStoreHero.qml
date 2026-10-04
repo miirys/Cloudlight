@@ -41,14 +41,14 @@ Item {
     // renderer cannot draw MultiEffect masks, but must still show a readable hero.
     Rectangle {
         anchors.fill: parent
-        radius: 16
-        color: "#0B0F1A"
+        radius: DesktopTokens.radiusLarge
+        color: "#0A0A0A"
     }
 
     Rectangle {
         id: heroMask
         anchors.fill: parent
-        radius: 16
+        radius: DesktopTokens.radiusLarge
         color: "white"
         visible: false
         layer.enabled: true
@@ -92,20 +92,12 @@ Item {
             anchors.fill: parent
             gradient: Gradient {
                 orientation: Gradient.Horizontal
-                GradientStop { position: 0; color: Qt.rgba(0.043, 0.059, 0.102, 0.96) }
-                GradientStop { position: 0.45; color: Qt.rgba(0.043, 0.059, 0.102, 0.72) }
-                GradientStop { position: 0.75; color: Qt.rgba(0.043, 0.059, 0.102, 0.12) }
-                GradientStop { position: 1; color: "transparent" }
+                // Legibility scrim: solid behind the text, clearing over the artwork.
+                GradientStop { position: 0; color: "#0A0A0A" }
+                GradientStop { position: 0.3; color: "#0A0A0A" }
+                GradientStop { position: 0.6; color: "#000A0A0A" }
             }
         }
-    }
-
-    Rectangle {
-        anchors.fill: parent
-        radius: 16
-        color: "transparent"
-        border.width: 1
-        border.color: Qt.rgba(1, 1, 1, 0.12)
     }
 
     HoverHandler { id: heroHover }
@@ -117,12 +109,11 @@ Item {
         spacing: 10
 
         Text {
-            text: root.slide && root.slide.kind === "marketing" ? qsTr("GEFORCE NOW") : qsTr("FEATURED")
-            color: DesktopTokens.mint
-            font.family: Theme.monoFont
-            font.pixelSize: DesktopTokens.microSize
-            font.weight: Font.Bold
-            font.letterSpacing: 1.1
+            text: root.slide && root.slide.kind === "marketing" ? qsTr("GeForce NOW") : qsTr("Featured")
+            color: Theme.mediaMuted
+            font.family: Theme.bodyFont
+            font.pixelSize: DesktopTokens.captionSize
+            font.weight: Font.DemiBold
         }
 
         Text {
@@ -131,8 +122,8 @@ Item {
             color: "#FFFFFF"
             font.family: Theme.displayFont
             font.pixelSize: DesktopTokens.px(30)
-            font.weight: Font.Black
-            font.letterSpacing: -0.9
+            font.weight: Font.Bold
+            font.letterSpacing: 0
             elide: Text.ElideRight
             maximumLineCount: 2
             wrapMode: Text.WordWrap
@@ -142,12 +133,10 @@ Item {
             width: parent.width
             visible: text !== ""
             text: root.slide ? String(root.slide.body || "") : ""
-            color: Qt.rgba(1, 1, 1, 0.72)
+            color: Theme.mediaMuted
             font.family: Theme.bodyFont
-            font.pixelSize: DesktopTokens.captionSize
-            font.weight: Font.Medium
-            lineHeightMode: Text.FixedHeight
-            lineHeight: 19
+            font.pixelSize: DesktopTokens.bodySize
+            font.weight: Font.Normal
             maximumLineCount: 2
             elide: Text.ElideRight
             wrapMode: Text.WordWrap
@@ -173,17 +162,17 @@ Item {
             onHoveredChanged: if (hovered) root.actionPointed(0)
             onClicked: if (root.slideGame) root.playRequested(root.slideGame)
             background: Rectangle {
-                radius: 10
-                color: playButton.down ? Qt.rgba(1, 1, 1, 0.82) : Qt.rgba(1, 1, 1, 0.95)
-                border.width: root.selectedAction === 0 ? 2 : 0
-                border.color: DesktopTokens.focus
+                radius: DesktopTokens.radius
+                color: playButton.down ? Qt.darker(Theme.mediaAccent, 1.15) : Theme.mediaAccent
+                border.width: root.selectedAction === 0 ? 3 : 0
+                border.color: "#FFFFFF"
             }
             contentItem: Text {
                 text: playButton.text
-                color: "#0B0F1A"
+                color: Theme.contrastText(Theme.mediaAccent)
                 font.family: Theme.bodyFont
                 font.pixelSize: DesktopTokens.captionSize
-                font.weight: Font.ExtraBold
+                font.weight: Font.DemiBold
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
             }
@@ -201,17 +190,17 @@ Item {
             onHoveredChanged: if (hovered) root.actionPointed(1)
             onClicked: if (root.slideGame) root.detailsRequested(root.slideGame)
             background: Rectangle {
-                radius: 10
-                color: detailsButton.down ? Qt.rgba(1, 1, 1, 0.16) : Qt.rgba(1, 1, 1, 0.10)
-                border.width: root.selectedAction === 1 ? 2 : 1
-                border.color: root.selectedAction === 1 ? DesktopTokens.focus : Qt.rgba(1, 1, 1, 0.18)
+                radius: DesktopTokens.radius
+                color: detailsButton.down ? "#454545" : "#333333"
+                border.width: root.selectedAction === 1 ? 3 : 0
+                border.color: "#FFFFFF"
             }
             contentItem: Text {
                 text: detailsButton.text
-                color: Qt.rgba(1, 1, 1, 0.88)
+                color: Theme.mediaForeground
                 font.family: Theme.bodyFont
                 font.pixelSize: DesktopTokens.captionSize
-                font.weight: Font.Bold
+                font.weight: Font.DemiBold
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
             }
@@ -227,11 +216,9 @@ Item {
             model: root.slides.length
             Rectangle {
                 required property int index
-                width: index === root.currentSlide ? 18 : 6
-                height: 6
-                radius: 3
-                color: index === root.currentSlide ? DesktopTokens.mint : Qt.rgba(1, 1, 1, 0.28)
-                Behavior on width { NumberAnimation { duration: AppController.reducedMotion ? 0 : 180; easing.type: Easing.OutCubic } }
+                width: 24
+                height: 3
+                color: index === root.currentSlide ? Theme.mediaForeground : "#5C5C5C"
                 HoverHandler { cursorShape: Qt.PointingHandCursor }
                 TapHandler { onTapped: root.currentSlide = index }
             }

@@ -21,7 +21,7 @@ FocusScope {
     readonly property string displayName: store.authSession && store.authSession.user
         ? String(store.authSession.user.displayName || "") : ""
     readonly property string membership: store.subscription && store.subscription.membershipTier
-        ? String(store.subscription.membershipTier).toUpperCase() : ""
+        ? String(store.subscription.membershipTier) : ""
     readonly property var stepNames: [qsTr("Welcome"),qsTr("Mode"),qsTr("Picture"),qsTr("Boost"),qsTr("Support"),qsTr("Ready")]
     readonly property var titles: [qsTr("Fresh out of\nthe oven."),qsTr("Desk or couch?"),qsTr("Pick your picture."),
         qsTr("A little extra boost."),qsTr("Keep the lights on."),qsTr("You're set.")]
@@ -141,13 +141,12 @@ FocusScope {
         height: lineCount * lineHeight
     }
     component Eyebrow: Text {
-        color: root.mint
-        font.family: Theme.monoFont
-        font.pixelSize: DesktopTokens.px(10)
-        font.weight: Font.Bold
-        font.letterSpacing: DesktopTokens.px(1)
+        color: Theme.textMuted
+        font.family: Theme.bodyFont
+        font.pixelSize: DesktopTokens.px(13)
+        font.weight: Font.DemiBold
         lineHeightMode: Text.FixedHeight
-        lineHeight: DesktopTokens.px(12)
+        lineHeight: DesktopTokens.px(16)
         height: lineCount * lineHeight
         wrapMode: Text.Wrap
     }
@@ -176,7 +175,7 @@ FocusScope {
             color: action.primary ? Theme.contrastText(action.accent) : Theme.label
             font.family: Theme.bodyFont
             font.pixelSize: DesktopTokens.px(14)
-            font.weight: Font.ExtraBold
+            font.weight: Font.DemiBold
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
             elide: Text.ElideRight
@@ -188,14 +187,14 @@ FocusScope {
             anchors.verticalCenter: parent.verticalCenter
             width: keyText.implicitWidth + DesktopTokens.px(16)
             height: DesktopTokens.px(action.primary ? 32 : 22)
-            radius: DesktopTokens.px(6)
-            color: action.primary ? "#0B0F1A" : DesktopTokens.raised
+            radius: DesktopTokens.radius
+            color: action.primary ? "#141414" : DesktopTokens.raised
             Text {
                 id: keyText
                 anchors.centerIn: parent
                 text: action.keyHint
                 color: action.primary ? action.accent : Theme.textMuted
-                font.family: Theme.monoFont; font.pixelSize: DesktopTokens.px(10)
+                font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.px(13)
                 font.weight: Font.Bold
             }
         }
@@ -206,8 +205,8 @@ FocusScope {
     component Card: Rectangle {
         default property alias content: contents.data
         implicitHeight: contents.implicitHeight + 2
-        color: Theme.lightMode ? Theme.glass : "#C70B0F1A"
-        radius: DesktopTokens.px(16)
+        color: Theme.surface
+        radius: DesktopTokens.radiusLarge
         border.color: Theme.seam
         Column {
             id: contents
@@ -234,18 +233,10 @@ FocusScope {
         Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: Theme.seam }
     }
 
-    Text {
-        anchors.right: parent.right; anchors.rightMargin: DesktopTokens.px(16)
-        y: root.height - DesktopTokens.px(360)
-        text: "0" + (root.stepIndex + 1)
-        color: Theme.label; opacity: 0.035
-        font.family: Theme.displayFont; font.pixelSize: DesktopTokens.px(260)
-        font.weight: Font.Black; font.letterSpacing: -DesktopTokens.px(13)
-    }
     Rectangle {
         anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom
         height: DesktopTokens.px(96)
-        color: Theme.lightMode ? "#B8EDF3F8" : "#660B0F1A"
+        color: Theme.shell
         Rectangle { width: parent.width; height: 1; color: DesktopTokens.seamSoft }
     }
 
@@ -265,25 +256,25 @@ FocusScope {
                 visible: !root.compact
                 implicitWidth: versionLabel.implicitWidth + DesktopTokens.px(14)
                 implicitHeight: DesktopTokens.px(24)
-                radius: DesktopTokens.px(6); color: DesktopTokens.raised
+                radius: DesktopTokens.radius; color: DesktopTokens.raised
                 Text {
                     id: versionLabel
                     anchors.centerIn: parent; text: Qt.application.version
-                    color: Theme.textMuted; font.family: Theme.monoFont
-                    font.pixelSize: DesktopTokens.px(11); font.weight: Font.Bold
+                    color: Theme.textMuted; font.family: Theme.bodyFont
+                    font.pixelSize: DesktopTokens.px(13); font.weight: Font.Bold
                 }
             }
             Rectangle {
                 implicitWidth: betaLabel.implicitWidth + DesktopTokens.px(16)
                 implicitHeight: DesktopTokens.px(24)
-                radius: DesktopTokens.px(6)
-                color: Qt.rgba(root.amber.r,root.amber.g,root.amber.b,0.12)
+                radius: DesktopTokens.radius
+                color: DesktopTokens.raised
                 Text {
                     id: betaLabel
                     anchors.centerIn: parent
-                    text: qsTr("BETA")
-                    color: root.amber; font.family: Theme.monoFont
-                    font.pixelSize: DesktopTokens.smallSize; font.weight: Font.Bold
+                    text: qsTr("Beta")
+                    color: root.amber; font.family: Theme.bodyFont
+                    font.pixelSize: DesktopTokens.captionSize; font.weight: Font.Bold
                 }
             }
             Item { Layout.fillWidth: true }
@@ -294,7 +285,7 @@ FocusScope {
                 Text {
                     anchors.centerIn: parent; text: root.displayName.charAt(0).toUpperCase()
                     color: Theme.label; font.family: Theme.bodyFont
-                    font.pixelSize: DesktopTokens.px(12); font.weight: Font.Black
+                    font.pixelSize: DesktopTokens.px(12); font.weight: Font.Bold
                 }
             }
             Text {
@@ -349,27 +340,28 @@ FocusScope {
                         background: Rectangle {
                             x: DesktopTokens.px(28); width: parent.width - DesktopTokens.px(40)
                             height: parent.height - DesktopTokens.px(10)
-                            radius: DesktopTokens.px(10)
+                            radius: DesktopTokens.radiusLarge
                             color: railStep.hovered || railStep.activeFocus ? DesktopTokens.raised : "transparent"
-                            border.width: railStep.activeFocus ? 2 : 0; border.color: Theme.focus
+                            border.width: railStep.activeFocus ? DesktopTokens.px(3) : 0; border.color: Theme.label
                         }
                         Rectangle {
                             x: DesktopTokens.px(49); y: DesktopTokens.px(26)
                             width: DesktopTokens.px(2); height: DesktopTokens.px(46)
                             visible: railStep.index < root.stepCount - 1
-                            color: railStep.index < root.stepIndex ? Qt.rgba(root.mint.r,root.mint.g,root.mint.b,0.35) : DesktopTokens.seamSoft
+                            color: railStep.index < root.stepIndex ? root.mint : DesktopTokens.seamSoft
                         }
                         Rectangle {
                             x: DesktopTokens.px(40); y: 0
                             width: DesktopTokens.px(20); height: width; radius: width / 2
                             color: railStep.index < root.stepIndex ? root.mint : "transparent"
-                            border.width: railStep.index === root.stepIndex ? 2 : 0
-                            border.color: root.mint
-                            Rectangle {
-                                anchors.centerIn: parent
-                                width: DesktopTokens.px(8); height: width; radius: width / 2
-                                color: railStep.index === root.stepIndex ? root.mint : DesktopTokens.textFaint
+                            border.width: railStep.index < root.stepIndex ? 0 : 2
+                            border.color: railStep.index === root.stepIndex ? root.mint : DesktopTokens.seam
+                            Text {
+                                anchors.centerIn: parent; text: railStep.index + 1
                                 visible: railStep.index >= root.stepIndex
+                                color: railStep.index === root.stepIndex ? Theme.label : DesktopTokens.textMuted
+                                font.family: Theme.bodyFont
+                                font.pixelSize: DesktopTokens.captionSize; font.weight: Font.DemiBold
                             }
                             Text {
                                 anchors.centerIn: parent; text: "✓"
@@ -390,7 +382,7 @@ FocusScope {
                                 width: parent.width; text: root.stepNames[railStep.index]
                                 color: railStep.index <= root.stepIndex ? Theme.label : DesktopTokens.textFaint
                                 font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.bodySize
-                                font.weight: railStep.index === root.stepIndex ? Font.ExtraBold : Font.Bold
+                                font.weight: railStep.index === root.stepIndex ? Font.DemiBold : Font.Bold
                                 elide: Text.ElideRight
                             }
                         }
@@ -422,15 +414,15 @@ FocusScope {
                             Accessible.selected: index === root.stepIndex
                             onClicked: root.goToStep(index)
                             background: Rectangle {
-                                radius: DesktopTokens.px(8)
-                                color: compactStep.index === root.stepIndex ? Qt.rgba(root.mint.r,root.mint.g,root.mint.b,0.14) : DesktopTokens.raised
+                                radius: DesktopTokens.radius
+                                color: compactStep.index === root.stepIndex ? DesktopTokens.raised : DesktopTokens.raised
                                 border.width: parent.activeFocus ? 2 : 0
                                 border.color: Theme.focus
                             }
                             Text {
                                 anchors.centerIn: parent; text: "0" + (compactStep.index + 1)
                                 color: compactStep.index === root.stepIndex ? root.mint : Theme.textMuted
-                                font.family: Theme.monoFont; font.pixelSize: DesktopTokens.monoSize
+                                font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.monoSize
                                 font.weight: Font.Bold
                             }
                         }
@@ -465,8 +457,8 @@ FocusScope {
                                     ? qsTr("You're set, %1.").arg(root.displayName) : root.titles[root.stepIndex]
                                 color: Theme.label; font.family: Theme.displayFont
                                 font.pixelSize: DesktopTokens.px(root.compact ? 38 : root.stepIndex === 5 ? 56 : 48)
-                                font.weight: Font.Black
-                                font.letterSpacing: -DesktopTokens.px(root.compact ? 38 : root.stepIndex === 5 ? 56 : 48) * 0.03
+                                font.weight: Font.Bold
+                                font.letterSpacing: 0
                                 lineHeightMode: Text.FixedHeight
                                 lineHeight: DesktopTokens.px(root.compact ? 44 : root.stepIndex === 5 ? 60 : 52)
                                 height: lineCount * lineHeight
@@ -500,8 +492,8 @@ FocusScope {
             Layout.leftMargin: DesktopTokens.px(root.compact ? 20 : 276)
             Layout.rightMargin: DesktopTokens.px(root.compact ? 20 : 40)
             implicitHeight: errorLabel.implicitHeight + DesktopTokens.px(24)
-            radius: DesktopTokens.px(10)
-            color: Qt.rgba(root.coral.r,root.coral.g,root.coral.b,0.12)
+            radius: DesktopTokens.radiusLarge
+            color: DesktopTokens.raised
             border.color: root.coral
             Text {
                 id: errorLabel
@@ -536,8 +528,8 @@ FocusScope {
                             Text {
                                 id: hint
                                 anchors.centerIn: parent; text: footerHint.modelData.key
-                                color: Theme.textMuted; font.family: Theme.monoFont
-                                font.pixelSize: DesktopTokens.px(10)
+                                color: Theme.textMuted; font.family: Theme.bodyFont
+                                font.pixelSize: DesktopTokens.px(13)
                             }
                         }
                         Text {
@@ -550,8 +542,8 @@ FocusScope {
                 Rectangle { implicitWidth: 1; implicitHeight: DesktopTokens.px(14); color: Theme.seam }
                 Eyebrow {
                     Layout.fillWidth: true
-                    text: qsTr("YOU CAN CHANGE ALL OF THIS LATER IN SETTINGS")
-                    color: Theme.textMuted; font.pixelSize: DesktopTokens.px(9)
+                    text: qsTr("You can change all of this later in settings")
+                    color: Theme.textMuted; font.pixelSize: DesktopTokens.px(13)
                 }
             }
             Action {
@@ -596,21 +588,14 @@ FocusScope {
                 Layout.minimumWidth: 0
                 spacing: DesktopTokens.px(16)
                 topPadding: DesktopTokens.px(8)
-                Row {
-                    spacing: DesktopTokens.px(10)
-                    Rectangle {
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: DesktopTokens.px(10); height: width; radius: width / 2; color: root.amber
-                    }
-                    Eyebrow { text: qsTr("NATIVE QT · BETA"); color: root.amber; font.pixelSize: DesktopTokens.px(11); lineHeight: DesktopTokens.px(14) }
-                }
+                Eyebrow { text: qsTr("Native Qt · beta"); color: root.amber; lineHeight: DesktopTokens.px(16) }
                 Column {
                     width: parent.width; spacing: DesktopTokens.px(12)
                     Text {
                         width: parent.width; text: root.titles[0]
                         color: Theme.label; font.family: Theme.displayFont
-                        font.pixelSize: DesktopTokens.px(root.compact ? 38 : 52); font.weight: Font.Black
-                        font.letterSpacing: -DesktopTokens.px(root.compact ? 38 : 52) * 0.03
+                        font.pixelSize: DesktopTokens.px(root.compact ? 38 : 52); font.weight: Font.Bold
+                        font.letterSpacing: 0
                         lineHeightMode: Text.FixedHeight; lineHeight: DesktopTokens.px(root.compact ? 44 : 56)
                         height: lineCount * lineHeight
                         topPadding: -DesktopTokens.px(7)
@@ -620,8 +605,8 @@ FocusScope {
                 }
                 Card {
                     width: parent.width
-                    border.color: Qt.rgba(root.amber.r,root.amber.g,root.amber.b,0.28)
-                    CardHeading { text: qsTr("WHAT BETA MEANS HERE"); ink: root.amber; note: qsTr("BUGS MAY OCCUR") }
+                    border.color: root.amber
+                    CardHeading { text: qsTr("What beta means here"); ink: root.amber; note: qsTr("Bugs may occur") }
                     Repeater {
                         model: [
                             {glyph:"monitor",title:qsTr("Report what went wrong"),body:qsTr("If a stream, a setting or a screen misbehaves, tell us what happened and what you expected instead.")},
@@ -636,7 +621,7 @@ FocusScope {
                             height: Math.max(DesktopTokens.px(82), betaCopy.implicitHeight + DesktopTokens.px(24))
                             Rectangle {
                                 x: DesktopTokens.px(18); y: DesktopTokens.px(12)
-                                width: DesktopTokens.px(32); height: width; radius: DesktopTokens.px(9)
+                                width: DesktopTokens.px(32); height: width; radius: DesktopTokens.radius
                                 color: DesktopTokens.raised
                                 DesktopSettingsIcon {
                                     anchors.centerIn: parent; width: DesktopTokens.px(16); height: width
@@ -649,7 +634,7 @@ FocusScope {
                                 width: parent.width - x - DesktopTokens.px(18); spacing: DesktopTokens.px(3)
                                 Copy {
                                     text: betaRow.modelData.title; color: Theme.label
-                                    font.pixelSize: DesktopTokens.px(14); font.weight: Font.ExtraBold; lineHeight: DesktopTokens.px(18)
+                                    font.pixelSize: DesktopTokens.px(14); font.weight: Font.DemiBold; lineHeight: DesktopTokens.px(18)
                                 }
                                 Copy { text: betaRow.modelData.body; font.pixelSize: DesktopTokens.px(13); lineHeight: DesktopTokens.px(18) }
                             }
@@ -682,7 +667,7 @@ FocusScope {
                             id: privacyNote
                             x: DesktopTokens.px(18); y: DesktopTokens.px(14)
                             width: parent.width - DesktopTokens.px(36); spacing: DesktopTokens.px(2)
-                            Copy { text: qsTr("Review what you share in a bug report"); color: Theme.label; font.weight: Font.ExtraBold; font.pixelSize: DesktopTokens.px(13); lineHeight: DesktopTokens.px(17) }
+                            Copy { text: qsTr("Review what you share in a bug report"); color: Theme.label; font.weight: Font.DemiBold; font.pixelSize: DesktopTokens.px(13); lineHeight: DesktopTokens.px(17) }
                             Copy { text: qsTr("Remove personal information from screenshots and logs before posting them on GitHub."); font.pixelSize: DesktopTokens.px(12); lineHeight: DesktopTokens.px(16) }
                         }
                     }
@@ -705,10 +690,10 @@ FocusScope {
                                 id: ticketTitle
                                 x: DesktopTokens.px(22); y: DesktopTokens.px(22)
                                 width: parent.width - DesktopTokens.px(44); spacing: DesktopTokens.px(6)
-                                Eyebrow { text: qsTr("THIS BUILD"); color: Theme.textMuted }
+                                Eyebrow { text: qsTr("This build"); color: Theme.textMuted }
                                 Text {
                                     width: parent.width; text: Qt.application.version
-                                    color: Theme.label; font.family: Theme.monoFont
+                                    color: Theme.label; font.family: Theme.bodyFont
                                     font.pixelSize: DesktopTokens.px(22); font.weight: Font.Bold; wrapMode: Text.Wrap
                                 }
                                 Copy { text: qsTr("Qt desktop · native streamer · beta"); font.pixelSize: DesktopTokens.px(12); lineHeight: DesktopTokens.px(16) }
@@ -717,10 +702,10 @@ FocusScope {
                         }
                         Repeater {
                             model: [
-                                {key:qsTr("BUGS"),value:qsTr("OpenCloudGaming/OpenNOW · Issues")},
-                                {key:qsTr("UPDATES"),value:qsTr("Releases are published on GitHub")},
-                                {key:qsTr("SETTINGS"),value:qsTr("Revisit your choices after setup")},
-                                {key:qsTr("SOURCE"),value:qsTr("Free and open source")}
+                                {key:qsTr("Bugs"),value:qsTr("OpenCloudGaming/OpenNOW · Issues")},
+                                {key:qsTr("Updates"),value:qsTr("Releases are published on GitHub")},
+                                {key:qsTr("Settings"),value:qsTr("Revisit your choices after setup")},
+                                {key:qsTr("Source"),value:qsTr("Free and open source")}
                             ]
                             delegate: RowLayout {
                                 id: ticketRow
@@ -742,10 +727,10 @@ FocusScope {
                     Rectangle {
                         anchors.right: parent.right; anchors.rightMargin: -DesktopTokens.px(14)
                         y: -DesktopTokens.px(24); width: DesktopTokens.px(75); height: DesktopTokens.px(38)
-                        radius: DesktopTokens.px(6); rotation: -7
-                        color: Theme.lightMode ? Theme.glass : "#DB0B0F1A"; border.color: root.amber; border.width: 2
+                        radius: DesktopTokens.radius; rotation: -7
+                        color: Theme.surface; border.color: root.amber; border.width: 2
                         Rectangle { anchors.fill: parent; anchors.margins: DesktopTokens.px(4); radius: DesktopTokens.px(3); color: "transparent"; border.color: root.amber }
-                        Eyebrow { anchors.centerIn: parent; text: qsTr("BETA"); color: root.amber; font.pixelSize: DesktopTokens.px(14) }
+                        Eyebrow { anchors.centerIn: parent; text: qsTr("Beta"); color: root.amber; font.pixelSize: DesktopTokens.px(14) }
                     }
                 }
                 Row {
@@ -810,7 +795,7 @@ FocusScope {
                             id: modeNote
                             x: DesktopTokens.px(18); y: DesktopTokens.px(14)
                             width: parent.width - DesktopTokens.px(36); spacing: DesktopTokens.px(2)
-                            Copy { text: qsTr("Your choice takes effect after setup"); font.pixelSize: DesktopTokens.px(13); lineHeight: DesktopTokens.px(17); color: Theme.label; font.weight: Font.ExtraBold }
+                            Copy { text: qsTr("Your choice takes effect after setup"); font.pixelSize: DesktopTokens.px(13); lineHeight: DesktopTokens.px(17); color: Theme.label; font.weight: Font.DemiBold }
                             Copy { text: qsTr("Switch between desktop and console later in Settings."); font.pixelSize: DesktopTokens.px(12); lineHeight: DesktopTokens.px(16) }
                         }
                     }
@@ -833,19 +818,19 @@ FocusScope {
                 spacing: DesktopTokens.px(28)
                 Card {
                     width: parent.width
-                    border.color: Qt.rgba(root.coral.r,root.coral.g,root.coral.b,0.35)
+                    border.color: root.coral
                     Item {
                         width: parent.width; height: DesktopTokens.px(81)
                         Rectangle {
                             x: DesktopTokens.px(22); y: DesktopTokens.px(20)
-                            width: DesktopTokens.px(44); height: width; radius: DesktopTokens.px(12)
-                            color: Qt.rgba(root.coral.r,root.coral.g,root.coral.b,0.14)
+                            width: DesktopTokens.px(44); height: width; radius: DesktopTokens.radiusLarge
+                            color: DesktopTokens.raised
                             DesktopSettingsIcon { anchors.centerIn: parent; width: DesktopTokens.px(22); height: width; glyph: "heart"; ink: root.coral }
                         }
                         Column {
                             x: DesktopTokens.px(80); y: DesktopTokens.px(20)
                             width: parent.width - x - DesktopTokens.px(22); spacing: DesktopTokens.px(2)
-                            Copy { text: qsTr("Sponsor on GitHub"); color: Theme.label; font.pixelSize: DesktopTokens.px(20); font.weight: Font.Black; lineHeight: DesktopTokens.px(24) }
+                            Copy { text: qsTr("Sponsor on GitHub"); color: Theme.label; font.pixelSize: DesktopTokens.px(20); font.weight: Font.Bold; lineHeight: DesktopTokens.px(24) }
                             Copy { text: "github.com/sponsors/zortos293"; font.pixelSize: DesktopTokens.px(13); lineHeight: DesktopTokens.px(18) }
                         }
                         Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: DesktopTokens.seamSoft }
@@ -873,14 +858,14 @@ FocusScope {
                                     onClicked: Qt.openUrlExternally(modelData.url)
                                     background: Rectangle {
                                         color: contributionOption.hovered ? DesktopTokens.raised : DesktopTokens.seamSoft
-                                        radius: DesktopTokens.px(12); border.width: contributionOption.activeFocus ? 2 : 1
+                                        radius: DesktopTokens.radiusLarge; border.width: contributionOption.activeFocus ? 2 : 1
                                         border.color: contributionOption.activeFocus ? Theme.focus : Theme.seam
                                     }
                                     Column {
                                         id: optionCopy
                                         x: DesktopTokens.px(14); y: DesktopTokens.px(14)
                                         width: parent.width - DesktopTokens.px(28); spacing: DesktopTokens.px(8)
-                                        Copy { text: contributionOption.modelData.title; color: Theme.label; font.family: Theme.monoFont; font.pixelSize: DesktopTokens.px(18); font.weight: Font.Bold; lineHeight: DesktopTokens.px(24) }
+                                        Copy { text: contributionOption.modelData.title; color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.px(18); font.weight: Font.Bold; lineHeight: DesktopTokens.px(24) }
                                         Copy { text: contributionOption.modelData.detail; font.pixelSize: DesktopTokens.px(12); lineHeight: DesktopTokens.px(17) }
                                     }
                                 }
@@ -916,7 +901,7 @@ FocusScope {
                     width: parent.width; spacing: DesktopTokens.px(10)
                     Rectangle {
                         width: DesktopTokens.px(28); height: width; radius: width / 2; color: DesktopTokens.raised
-                        Text { anchors.centerIn: parent; text: "Z"; color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.px(12); font.weight: Font.Black }
+                        Text { anchors.centerIn: parent; text: "Z"; color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.px(12); font.weight: Font.Bold }
                     }
                     Copy { width: parent.width - DesktopTokens.px(38); text: qsTr("Thank you for helping an open-source client keep improving."); font.pixelSize: DesktopTokens.px(13); lineHeight: DesktopTokens.px(28) }
                 }
@@ -928,7 +913,7 @@ FocusScope {
                 spacing: DesktopTokens.px(20)
                 Card {
                     width: parent.width
-                    CardHeading { text: qsTr("OTHER WAYS TO HELP") }
+                    CardHeading { text: qsTr("Other ways to help") }
                     Repeater {
                         model: [{glyph:"info",text:qsTr("Report a reproducible bug")},{glyph:"globe",text:qsTr("Help with translations")},{glyph:"folder",text:qsTr("Improve the documentation")},{glyph:"sliders",text:qsTr("Contribute to the code")}]
                         delegate: RowLayout {
@@ -948,7 +933,7 @@ FocusScope {
                             id: repoNote
                             x: DesktopTokens.px(20); y: DesktopTokens.px(18)
                             width: parent.width - DesktopTokens.px(40); spacing: DesktopTokens.px(10)
-                            Eyebrow { text: qsTr("OPEN SOURCE · OPEN TO EVERYONE"); color: Theme.textMuted }
+                            Eyebrow { text: qsTr("Open source · open to everyone"); color: Theme.textMuted }
                             Action {
                                 width: Math.min(implicitWidth, parent.width)
                                 text: qsTr("Visit the repository ↗"); implicitHeight: DesktopTokens.px(34)
@@ -969,7 +954,7 @@ FocusScope {
                 id: summaryCard
                 anchors.horizontalCenter: parent.horizontalCenter
                 width: Math.min(parent.width, DesktopTokens.px(780))
-                CardHeading { text: qsTr("YOUR SETUP"); note: qsTr("READY TO SAVE") }
+                CardHeading { text: qsTr("Your setup"); note: qsTr("Ready to save") }
                 Repeater {
                     model: [
                         {glyph:"monitor",label:qsTr("Picture"),step:2,value:qsTr("%1 · %2 FPS · %3 · %4 Mbps").arg(String(root.settings.resolution || "1920x1080").replace("x"," × "))
@@ -1000,14 +985,14 @@ FocusScope {
                             Rectangle {
                                 visible: !root.compact
                                 Layout.preferredWidth: DesktopTokens.px(32); Layout.preferredHeight: DesktopTokens.px(32)
-                                radius: DesktopTokens.px(9); color: DesktopTokens.raised
+                                radius: DesktopTokens.radius; color: DesktopTokens.raised
                                 DesktopSettingsIcon { anchors.centerIn: parent; width: DesktopTokens.px(16); height: width; glyph: summaryRow.modelData.glyph }
                             }
-                            Eyebrow { Layout.preferredWidth: DesktopTokens.px(root.compact ? 60 : 76); text: summaryRow.modelData.label.toUpperCase(); color: Theme.textMuted }
+                            Eyebrow { Layout.preferredWidth: DesktopTokens.px(root.compact ? 60 : 76); text: summaryRow.modelData.label; color: Theme.textMuted }
                             Copy {
                                 id: summaryValue
                                 Layout.fillWidth: true; text: summaryRow.modelData.value
-                                color: Theme.label; font.weight: Font.ExtraBold; lineHeight: DesktopTokens.px(20)
+                                color: Theme.label; font.weight: Font.DemiBold; lineHeight: DesktopTokens.px(20)
                             }
                             Eyebrow { text: "0" + (summaryRow.modelData.step + 1); color: Theme.textMuted; font.weight: Font.Medium }
                         }

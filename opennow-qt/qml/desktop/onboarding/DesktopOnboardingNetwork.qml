@@ -14,9 +14,9 @@ Rectangle {
     property bool restoring: false
     visible: controller.state !== MacAwdlController.Unsupported
     implicitHeight: content.implicitHeight + DesktopTokens.px(40)
-    radius: DesktopTokens.px(16)
-    color: Theme.lightMode ? Theme.glass : "#C70B0F1A"
-    border.color: Qt.rgba(accent.r, accent.g, accent.b, 0.35)
+    radius: DesktopTokens.radiusLarge
+    color: Theme.surface
+    border.color: accent
 
     function refreshIfVisible() {
         if (visible && !controller.busy)
@@ -56,12 +56,12 @@ Rectangle {
             color: action.primary ? Theme.contrastText(root.accent) : Theme.label
             font.family: Theme.bodyFont
             font.pixelSize: DesktopTokens.px(13)
-            font.weight: Font.ExtraBold
+            font.weight: Font.DemiBold
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
         }
         background: Rectangle {
-            radius: DesktopTokens.px(9)
+            radius: DesktopTokens.radius
             color: action.primary ? root.accent : action.hovered ? DesktopTokens.raisedStrong : DesktopTokens.raised
             border.color: action.activeFocus ? Theme.focus : Theme.seam
             border.width: action.activeFocus ? 2 : 1
@@ -90,7 +90,7 @@ Rectangle {
                 text: qsTr("Required macOS network setup")
                 color: Theme.label
                 font.pixelSize: DesktopTokens.px(20)
-                font.weight: Font.Black
+                font.weight: Font.Bold
                 lineHeight: DesktopTokens.px(24)
                 Accessible.role: Accessible.Heading
             }
@@ -116,7 +116,7 @@ Rectangle {
                         : root.controller.state === MacAwdlController.Unavailable ? qsTr("The AWDL interface was not found")
                         : qsTr("AWDL status is unavailable")
                     color: root.accent
-                    font.weight: Font.ExtraBold
+                    font.weight: Font.DemiBold
                     Accessible.role: Accessible.StaticText
                 }
                 Copy {
@@ -181,10 +181,10 @@ Rectangle {
             bottomPadding: 0
             color: Theme.label
             font.pixelSize: DesktopTokens.px(20)
-            font.weight: Font.Black
+            font.weight: Font.Bold
             lineHeight: DesktopTokens.px(26)
         }
-        background: Rectangle { radius: DesktopTokens.px(16); color: Theme.shell; border.color: Theme.seam }
+        background: Rectangle { radius: DesktopTokens.radiusLarge; color: Theme.shell; border.color: Theme.seam }
         contentItem: Copy {
             text: root.restoring
                 ? qsTr("macOS will ask for administrator authorization to bring awdl0 up. This lets AirDrop and related Apple features use AWDL again.")

@@ -702,7 +702,7 @@ FocusScope {
             visible: root.storeGames.length > 0 && (ShellStore.storeLoading || ShellStore.storeHasMore
                 || root.catalogError !== "" || ShellStore.storeWarning !== "")
             height: visible ? Math.max(48, statusText.implicitHeight + 24) : 0
-            radius: 12; color: DesktopTokens.raised
+            radius: DesktopTokens.radius; color: DesktopTokens.raised
             Text {
                 id: statusText
                 objectName: "storePageStatusText"
@@ -777,8 +777,8 @@ FocusScope {
         y: Math.max(12, Math.min(chips.y + anchorChip.y + anchorChip.height + 6 - content.contentY, root.height - height - 12))
         width: Math.min(DesktopTokens.px(284), root.width - 24)
         height: Math.min(menuColumn.contentHeight + 12, DesktopTokens.px(332), root.height - 24)
-        radius: DesktopTokens.px(11)
-        color: Theme.lightMode ? "#F7F9FC" : "#0B0F1A"
+        radius: DesktopTokens.radius
+        color: Theme.lightMode ? "#F7F9FC" : "#141414"
         border.width: 1
         border.color: DesktopTokens.seam
         opacity: filterMotion.progress
@@ -805,7 +805,7 @@ FocusScope {
                     focusPolicy: Qt.NoFocus
                     hoverEnabled: true
                     background: Rectangle {
-                        radius: 7
+                        radius: DesktopTokens.radius
                         color: menuButton.hovered || root.menuIndex === menuButton.index
                                ? DesktopTokens.raisedStrong : "transparent"
                     }
@@ -870,7 +870,7 @@ FocusScope {
             color: DesktopTokens.text
             font.family: Theme.displayFont
             font.pixelSize: DesktopTokens.px(22)
-            font.weight: Font.Black
+            font.weight: Font.Bold
         }
         Text {
             anchors.horizontalCenter: parent.horizontalCenter

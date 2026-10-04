@@ -31,7 +31,7 @@ FocusScope {
     function regionStatusText() {
         const selected = String(ShellStore.selectedRegion || "")
         if (selected === "")
-            return qsTr("AUTO REGION")
+            return qsTr("Auto region")
         const regions = ShellStore.regions || []
         for (let i = 0; i < regions.length; ++i) {
             if (regions[i].name === selected || regions[i].url === selected) {
@@ -81,7 +81,7 @@ FocusScope {
                     text: root.title; elide: Text.ElideRight
                     color: DesktopTokens.text; font.family: DesktopTokens.displayFont
                     font.pixelSize: root.settingsPage ? DesktopTokens.px(22) : DesktopTokens.titleSize
-                    font.weight: Font.Black; font.letterSpacing: -0.4
+                    font.weight: Font.Bold; font.letterSpacing: 0
                 }
                 Text {
                     x: headerTitle.width + DesktopTokens.px(10)
@@ -89,8 +89,8 @@ FocusScope {
                     visible: width >= DesktopTokens.px(90)
                     anchors.baseline: headerTitle.baseline
                     text: root.subtitle; elide: Text.ElideRight
-                    color: DesktopTokens.textMuted; font.family: DesktopTokens.monoFont
-                    font.pixelSize: DesktopTokens.captionSize; font.weight: Font.DemiBold; font.letterSpacing: 0.45
+                    color: DesktopTokens.textMuted; font.family: DesktopTokens.bodyFont
+                    font.pixelSize: DesktopTokens.captionSize; font.weight: Font.DemiBold; font.letterSpacing: 0
                 }
             }
             TextField {
@@ -109,7 +109,7 @@ FocusScope {
                 font.family: DesktopTokens.bodyFont; font.pixelSize: DesktopTokens.bodySize; font.weight: Font.DemiBold
                 text: root.searchText
                 selectByMouse: true
-                background: Rectangle { radius: DesktopTokens.px(10); color: Theme.lightMode ? DesktopTokens.raised : "#59000000"; border.width: 1; border.color: DesktopTokens.seam }
+                background: Rectangle { radius: DesktopTokens.radius; color: DesktopTokens.raised; border.width: 1; border.color: DesktopTokens.seam }
                 onTextChanged: root.searchText = text
                 DesktopGlyph { x: DesktopTokens.px(11); anchors.verticalCenter: parent.verticalCenter; width: DesktopTokens.px(14); height: DesktopTokens.px(14); icon: "desktop-search.svg" }
                 KeyboardGlyph { anchors.right: parent.right; anchors.rightMargin: DesktopTokens.px(8); anchors.verticalCenter: parent.verticalCenter; shortcut: "/"; keySize: DesktopTokens.px(20); ink: DesktopTokens.textBody }
@@ -126,7 +126,7 @@ FocusScope {
                 primary: true
                 glyph: "desktop-play.svg"
                 glyphSize: DesktopTokens.px(11)
-                font.pixelSize: DesktopTokens.smallSize
+                font.pixelSize: DesktopTokens.captionSize
                 text: root.activeSessionPrompt()
                 ToolTip.visible: hovered
                 ToolTip.text: text
@@ -143,7 +143,7 @@ FocusScope {
                         anchors.verticalCenter: parent.verticalCenter
                         text: activeSessionButton.text
                         elide: Text.ElideRight
-                        color: "#0A0D14"
+                        color: "#141414"
                         font: activeSessionButton.font
                     }
                 }
@@ -177,10 +177,7 @@ FocusScope {
             }
             Row { anchors.right: parent.right; anchors.rightMargin: DesktopTokens.px(24); anchors.verticalCenter: parent.verticalCenter; spacing: DesktopTokens.px(10)
                 visible: x >= shortcutHints.x + shortcutHints.width + DesktopTokens.px(16)
-                Rectangle { width: 8; height: 8; radius: 4; color: DesktopTokens.green }
-                Text { text: root.regionStatusText(); color: DesktopTokens.textBody; font.family: DesktopTokens.monoFont; font.pixelSize: DesktopTokens.px(11); font.weight: Font.DemiBold; font.letterSpacing: 0.4 }
-                Rectangle { width: 1; height: DesktopTokens.px(16); color: DesktopTokens.seam }
-                Text { text: String(ShellStore.settings.themePack || "nocturne").toUpperCase() + qsTr(" THEME"); color: DesktopTokens.textMuted; font.family: DesktopTokens.monoFont; font.pixelSize: DesktopTokens.px(11); font.weight: Font.DemiBold; font.letterSpacing: 0.4 }
+                Text { text: root.regionStatusText(); color: DesktopTokens.textMuted; font.family: DesktopTokens.bodyFont; font.pixelSize: DesktopTokens.px(12) }
             }
         }
     }

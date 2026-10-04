@@ -226,8 +226,8 @@ FocusScope {
         anchors.horizontalCenter: parent.horizontalCenter
         width: Math.min(640, errorText.implicitWidth + 40)
         height: 48
-        radius: 12
-        color: "#F02B1D24"
+        radius: DesktopTokens.radius
+        color: Theme.surfaceRaised
         border.width: 1
         border.color: DesktopTokens.danger
         visible: root.modeErrorVisible
@@ -237,10 +237,10 @@ FocusScope {
             anchors.centerIn: parent
             width: parent.width - 28
             text: ShellStore.consoleSurfaceError
-            color: "#FFFFDAD6"
+            color: DesktopTokens.text
             font.family: DesktopTokens.bodyFont
-            font.pixelSize: 12
-            font.weight: Font.Bold
+            font.pixelSize: 14
+            font.weight: Font.DemiBold
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight
         }

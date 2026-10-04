@@ -33,8 +33,8 @@ Item {
     RoundedArtwork {
         anchors.fill: parent
         artwork: root.artwork
-        fallbackColor: "#171B27"
-        cornerRadius: 12
+        fallbackColor: "#252525"
+        cornerRadius: DesktopTokens.radius
         scrimStart: root.highlighted ? 0.48 : 1
     }
 
@@ -43,9 +43,9 @@ Item {
         y: -DesktopTokens.cardOutlinePad
         width: root.tileWidth + DesktopTokens.cardOutlinePad * 2
         height: root.tileHeight + DesktopTokens.cardOutlinePad * 2
-        radius: 14
+        radius: DesktopTokens.radius + DesktopTokens.cardOutlinePad
         color: "transparent"
-        border.width: root.highlighted ? 2 : 1
+        border.width: root.highlighted ? 3 : 1
         border.color: root.highlighted ? DesktopTokens.focus : DesktopTokens.cardOutlineIdle
 
         Behavior on border.color {

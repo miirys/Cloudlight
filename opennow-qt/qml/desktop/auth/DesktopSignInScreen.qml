@@ -1,7 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Effects
 import QtQuick.Shapes
 import QtQuick.Window
 import OpenNOW
@@ -20,11 +19,10 @@ FocusScope {
     readonly property bool waiting: ShellStore.authState === "starting" || ShellStore.authState === "waiting" || ShellStore.authState === "completing"
     readonly property bool failed: ShellStore.authState === "error"
     readonly property bool wideLayout: width >= DesktopTokens.px(1240)
-    readonly property color mutedInk: Theme.lightMode ? Theme.textMuted : "#8AFFFFFF"
-    readonly property color faintInk: Theme.lightMode ? Theme.textMuted : "#6BFFFFFF"
-    readonly property color bodyInk: Theme.lightMode ? Theme.textMuted : "#A3FFFFFF"
-    readonly property color mint: "#6EE7B7"
-    readonly property color cardSeam: Theme.lightMode ? Theme.seam : "#24FFFFFF"
+    readonly property color mutedInk: DesktopTokens.textMuted
+    readonly property color faintInk: DesktopTokens.textMuted
+    readonly property color bodyInk: DesktopTokens.textBody
+    readonly property color cardSeam: DesktopTokens.seam
     readonly property bool hasExpiry: challenge !== null && Number.isFinite(Number(challenge.expiresAt))
     readonly property int secondsLeft: hasExpiry ? Math.max(0, Math.ceil((Number(challenge.expiresAt) - clockMs) / 1000)) : 0
     readonly property string timeLeft: Math.floor(secondsLeft / 60) + ":" + String(secondsLeft % 60).padStart(2, "0")
@@ -62,21 +60,21 @@ FocusScope {
     component BodyText: Text {
         color: root.bodyInk
         font.family: DesktopTokens.bodyFont
-        font.pixelSize: DesktopTokens.px(13)
-        font.weight: Font.Medium
+        font.pixelSize: DesktopTokens.px(14)
+        font.weight: Font.Normal
         wrapMode: Text.WordWrap
-        lineHeight: DesktopTokens.px(18)
+        lineHeight: DesktopTokens.px(20)
         lineHeightMode: Text.FixedHeight
         height: text.length > 0 ? Math.max(1, lineCount) * lineHeight : 0
     }
 
+    // Small secondary label (sentence case, body font).
     component MonoText: Text {
         color: root.faintInk
-        font.family: DesktopTokens.monoFont
-        font.pixelSize: DesktopTokens.px(10)
-        font.weight: Font.Bold
-        font.letterSpacing: 1.2 * DesktopTokens.uiScale
-        lineHeight: DesktopTokens.px(12)
+        font.family: DesktopTokens.bodyFont
+        font.pixelSize: DesktopTokens.px(13)
+        font.weight: Font.DemiBold
+        lineHeight: DesktopTokens.px(16)
         lineHeightMode: Text.FixedHeight
         height: text.length > 0 ? Math.max(1, lineCount) * lineHeight : 0
     }
@@ -87,8 +85,7 @@ FocusScope {
         property bool external: false
         height: DesktopTokens.px(44)
         implicitWidth: Math.max(DesktopTokens.px(68), contentItem.implicitWidth + leftPadding + rightPadding)
-        cornerRadius: DesktopTokens.px(10)
-        font.pixelSize: DesktopTokens.px(13)
+        font.pixelSize: DesktopTokens.px(14)
         contentItem: Item {
             implicitWidth: actionContents.implicitWidth
             implicitHeight: actionContents.implicitHeight
@@ -97,24 +94,8 @@ FocusScope {
                 anchors.centerIn: parent
                 spacing: DesktopTokens.px(10)
                 DesktopGlyph { visible: action.glyph !== ""; anchors.verticalCenter: parent.verticalCenter; width: action.glyphSize; height: action.glyphSize; icon: action.glyph }
-                BodyText { anchors.verticalCenter: parent.verticalCenter; text: action.text; color: action.primary ? "#0B0F1A" : action.quiet ? root.bodyInk : DesktopTokens.text; font: action.font }
-                BodyText { visible: action.external; anchors.verticalCenter: parent.verticalCenter; text: "↗"; color: action.primary ? "#0B0F1A" : DesktopTokens.text; font: action.font }
-            }
-        }
-        background: Rectangle {
-            radius: action.cornerRadius
-            color: action.primary ? (action.down ? Qt.darker(root.mint, 1.1) : root.mint)
-                : action.hovered || action.activeFocus ? DesktopTokens.raised : "transparent"
-            border.width: action.activeFocus ? 2 : action.primary || action.quiet ? 0 : 1
-            border.color: action.activeFocus ? DesktopTokens.focus : root.cardSeam
-            opacity: action.enabled ? 1 : 0.5
-            layer.enabled: action.primary
-            layer.effect: MultiEffect {
-                shadowEnabled: true
-                shadowColor: "#2E6EE7B7"
-                shadowBlur: 0.6
-                shadowVerticalOffset: DesktopTokens.px(8)
-                shadowHorizontalOffset: 0
+                BodyText { anchors.verticalCenter: parent.verticalCenter; text: action.text; color: action.quiet ? root.bodyInk : action.ink; font: action.font }
+                BodyText { visible: action.external; anchors.verticalCenter: parent.verticalCenter; text: "↗"; color: action.ink; font: action.font }
             }
         }
     }
@@ -134,9 +115,9 @@ FocusScope {
             verticalAlignment: Text.AlignVCenter
         }
         background: Rectangle {
-            radius: DesktopTokens.px(4)
+            radius: DesktopTokens.radius
             color: link.hovered ? DesktopTokens.raised : "transparent"
-            border.width: link.activeFocus ? 2 : 0; border.color: Theme.focus
+            border.width: link.activeFocus ? DesktopTokens.px(3) : 0; border.color: Theme.label
         }
         onClicked: {
             if (destination !== "")
@@ -153,7 +134,7 @@ FocusScope {
             padding: DesktopTokens.px(20)
             focus: true
             closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
-            background: Rectangle { radius: DesktopTokens.px(12); color: Theme.shell; border.color: Theme.seam }
+            background: Rectangle { radius: DesktopTokens.radiusLarge; color: Theme.surfaceRaised; border.color: Theme.seam }
             contentItem: BodyText { text: link.explanation }
         }
     }
@@ -173,29 +154,11 @@ FocusScope {
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: DesktopTokens.px(6)
                 leftPadding: DesktopTokens.px(4)
-                Rectangle {
-                    width: versionLabel.implicitWidth + DesktopTokens.px(16)
-                    height: DesktopTokens.px(24)
-                    radius: DesktopTokens.px(6)
-                    color: DesktopTokens.seamSoft
-                    border.width: 1
-                    border.color: DesktopTokens.seamSoft
-                    MonoText {
-                        id: versionLabel
-                        anchors.centerIn: parent
-                        text: Qt.application.version || qsTr("unknown")
-                        color: root.bodyInk
-                        font.pixelSize: DesktopTokens.px(11)
-                        font.letterSpacing: 0
-                        lineHeight: DesktopTokens.px(14)
-                    }
-                }
-                Rectangle {
-                    width: betaLabel.implicitWidth + DesktopTokens.px(14)
-                    height: DesktopTokens.px(24)
-                    radius: DesktopTokens.px(6)
-                    color: "#1FFFD166"
-                    MonoText { id: betaLabel; anchors.centerIn: parent; text: qsTr("BETA"); color: Theme.accentColor("amber") }
+                MonoText {
+                    id: versionLabel
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: (Qt.application.version || qsTr("unknown")) + qsTr(" · Beta")
+                    font.weight: Font.Normal
                 }
             }
         }
@@ -244,18 +207,10 @@ FocusScope {
                 anchors.verticalCenter: parent.verticalCenter
                 width: Math.min(DesktopTokens.px(440), parent.width)
                 height: cardColumn.implicitHeight + 2
-                radius: DesktopTokens.px(22)
-                color: Theme.lightMode ? Qt.rgba(Theme.shell.r, Theme.shell.g, Theme.shell.b, 0.92) : "#D10B0F1A"
+                radius: DesktopTokens.radiusLarge
+                color: Theme.surface
                 border.width: 1
                 border.color: root.cardSeam
-                layer.enabled: true
-                layer.effect: MultiEffect {
-                    shadowEnabled: true
-                    shadowColor: "#8C000000"
-                    shadowBlur: 1
-                    shadowVerticalOffset: DesktopTokens.px(24)
-                    shadowHorizontalOffset: 0
-                }
 
                 Column {
                     id: cardColumn
@@ -269,19 +224,9 @@ FocusScope {
                         topPadding: DesktopTokens.px(26)
                         bottomPadding: DesktopTokens.px(18)
                         spacing: DesktopTokens.px(8)
-                        Row {
-                            spacing: DesktopTokens.px(8)
-                            Rectangle {
-                                anchors.verticalCenter: parent.verticalCenter
-                                width: DesktopTokens.px(8)
-                                height: width
-                                radius: width / 2
-                                color: root.failed ? DesktopTokens.danger : root.waiting ? DesktopTokens.amber : root.faintInk
-                            }
-                            MonoText {
-                                text: root.failed ? qsTr("SIGN IN FAILED") : root.waiting ? qsTr("WAITING FOR APPROVAL") : qsTr("NOT SIGNED IN")
-                                color: root.failed ? DesktopTokens.danger : root.waiting ? Theme.accentColor("amber") : root.faintInk
-                            }
+                        MonoText {
+                            text: root.failed ? qsTr("Sign-in failed") : root.waiting ? qsTr("Waiting for approval") : qsTr("Not signed in")
+                            color: root.failed ? DesktopTokens.danger : root.waiting ? DesktopTokens.amber : root.faintInk
                         }
                         BodyText {
                             width: parent.width
@@ -290,8 +235,7 @@ FocusScope {
                             color: DesktopTokens.text
                             font.family: DesktopTokens.displayFont
                             font.pixelSize: DesktopTokens.px(26)
-                            font.weight: Font.Black
-                            font.letterSpacing: -0.52 * DesktopTokens.uiScale
+                            font.weight: Font.Bold
                             lineHeight: DesktopTokens.px(30)
                             topPadding: -DesktopTokens.px(3)
                         }
@@ -328,7 +272,7 @@ FocusScope {
                         spacing: DesktopTokens.px(8)
                         bottomPadding: DesktopTokens.px(18)
                         visible: !root.waiting && !root.failed
-                        MonoText { text: qsTr("PROVIDER") }
+                        MonoText { text: qsTr("Provider") }
                         BodyText {
                             objectName: "providerDiscoveryNotice"
                             width: parent.width
@@ -353,10 +297,10 @@ FocusScope {
                             padding: 0
                             Accessible.name: String(root.selectedProvider.displayName || "NVIDIA · GeForce NOW")
                             background: Rectangle {
-                                radius: DesktopTokens.px(12)
+                                radius: DesktopTokens.radius
                                 color: providerButton.hovered || providerButton.activeFocus ? DesktopTokens.raisedStrong : DesktopTokens.raised
-                                border.width: 1
-                                border.color: providerButton.activeFocus ? DesktopTokens.focus : root.cardSeam
+                                border.width: providerButton.activeFocus ? DesktopTokens.px(3) : 1
+                                border.color: providerButton.activeFocus ? Theme.label : root.cardSeam
                             }
                             contentItem: Item {
                                 Rectangle {
@@ -364,17 +308,17 @@ FocusScope {
                                     anchors.verticalCenter: parent.verticalCenter
                                     width: DesktopTokens.px(32)
                                     height: width
-                                    radius: DesktopTokens.px(9)
+                                    radius: DesktopTokens.radius
                                     color: "#76B900"
-                                    BodyText { anchors.centerIn: parent; text: String(root.selectedProvider.displayName || "").slice(0, 1).toUpperCase(); color: "#0B0F1A"; font.pixelSize: DesktopTokens.px(14); font.weight: Font.Black }
+                                    BodyText { anchors.centerIn: parent; text: String(root.selectedProvider.displayName || "").slice(0, 1).toUpperCase(); color: "#141414"; font.pixelSize: DesktopTokens.px(14); font.weight: Font.Bold }
                                 }
                                 Column {
                                     x: DesktopTokens.px(58)
                                     width: parent.width - DesktopTokens.px(100)
                                     anchors.verticalCenter: parent.verticalCenter
                                     spacing: DesktopTokens.px(2)
-                                    BodyText { objectName: "signInProviderName"; width: parent.width; text: String(root.selectedProvider.displayName || "NVIDIA · GeForce NOW"); color: DesktopTokens.text; font.pixelSize: DesktopTokens.px(14); font.weight: Font.ExtraBold; maximumLineCount: 1; elide: Text.ElideRight }
-                                    MonoText { objectName: "signInProviderRegion"; width: parent.width; text: String(root.selectedProvider.region || "GLOBAL").toUpperCase() + qsTr("  ·  SELECTED PROVIDER"); font.letterSpacing: 0.8 * DesktopTokens.uiScale; elide: Text.ElideRight }
+                                    BodyText { objectName: "signInProviderName"; width: parent.width; text: String(root.selectedProvider.displayName || "NVIDIA · GeForce NOW"); color: DesktopTokens.text; font.pixelSize: DesktopTokens.px(14); font.weight: Font.DemiBold; maximumLineCount: 1; elide: Text.ElideRight }
+                                    MonoText { objectName: "signInProviderRegion"; width: parent.width; text: String(root.selectedProvider.region || qsTr("Global")) + qsTr(" · selected provider"); font.weight: Font.Normal; elide: Text.ElideRight }
                                 }
                                 DesktopGlyph {
                                     anchors.right: parent.right
@@ -398,20 +342,20 @@ FocusScope {
                                 width: parent.width - DesktopTokens.px(8) - (moreProviders.visible ? moreProviders.width + parent.spacing : 0)
                                 text: qsTr("Alliance partners like LG U+, Taiwan Mobile and bro.game run their own rigs.")
                                 color: root.mutedInk
-                                font.pixelSize: DesktopTokens.px(12)
-                                lineHeight: DesktopTokens.px(16)
+                                font.pixelSize: DesktopTokens.px(13)
+                                lineHeight: DesktopTokens.px(18)
                             }
-                            MonoText { id: moreProviders; anchors.verticalCenter: parent.verticalCenter; visible: root.providers.length > 1; text: qsTr("%1 MORE").arg(root.providers.length - 1); color: DesktopTokens.focus; font.letterSpacing: 0.8 * DesktopTokens.uiScale }
+                            MonoText { id: moreProviders; anchors.verticalCenter: parent.verticalCenter; visible: root.providers.length > 1; text: qsTr("%1 more").arg(root.providers.length - 1); color: DesktopTokens.focus }
                         }
                         Rectangle {
                             width: parent.width
                             height: persistWarning.height + DesktopTokens.px(20)
                             visible: ShellStore.sessionPersistenceMessage !== ""
-                            radius: DesktopTokens.px(10)
-                            color: "#14FF8A80"
+                            radius: DesktopTokens.radius
+                            color: DesktopTokens.raised
                             border.width: 1
-                            border.color: "#28FF8A80"
-                            BodyText { id: persistWarning; x: DesktopTokens.px(10); y: DesktopTokens.px(10); width: parent.width - DesktopTokens.px(20); text: ShellStore.sessionPersistenceMessage; font.pixelSize: DesktopTokens.px(11); lineHeight: DesktopTokens.px(16) }
+                            border.color: DesktopTokens.danger
+                            BodyText { id: persistWarning; x: DesktopTokens.px(10); y: DesktopTokens.px(10); width: parent.width - DesktopTokens.px(20); text: ShellStore.sessionPersistenceMessage; font.pixelSize: DesktopTokens.px(13); lineHeight: DesktopTokens.px(18) }
                         }
                     }
 
@@ -428,6 +372,7 @@ FocusScope {
                         Accessible.checked: root.staySignedIn
                         background: Rectangle {
                             color: persistenceButton.hovered || persistenceButton.activeFocus ? DesktopTokens.raised : "transparent"
+                            Rectangle { visible: persistenceButton.activeFocus; width: DesktopTokens.px(4); height: parent.height; color: Theme.focus }
                             Rectangle { width: parent.width; height: 1; color: DesktopTokens.seamSoft }
                             Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: DesktopTokens.seamSoft }
                         }
@@ -438,20 +383,16 @@ FocusScope {
                                 width: parent.width - DesktopTokens.px(112)
                                 anchors.verticalCenter: parent.verticalCenter
                                 spacing: DesktopTokens.px(2)
-                                BodyText { width: parent.width; text: qsTr("Stay signed in on this PC"); color: DesktopTokens.text; font.weight: Font.ExtraBold; lineHeight: DesktopTokens.px(17) }
-                                BodyText { width: parent.width; text: qsTr("OpenNOW prefers the OS keychain for saved session tokens. If it is unavailable, tokens are saved unencrypted on disk."); color: root.mutedInk; font.pixelSize: DesktopTokens.px(12); lineHeight: DesktopTokens.px(16) }
+                                BodyText { width: parent.width; text: qsTr("Stay signed in on this PC"); color: DesktopTokens.text; font.weight: Font.DemiBold; lineHeight: DesktopTokens.px(17) }
+                                BodyText { width: parent.width; text: qsTr("OpenNOW prefers the OS keychain for saved session tokens. If it is unavailable, tokens are saved unencrypted on disk."); color: root.mutedInk; font.pixelSize: DesktopTokens.px(13); lineHeight: DesktopTokens.px(18) }
                             }
-                            Rectangle {
+                            DesktopSettingsToggle {
                                 anchors.right: parent.right
                                 anchors.rightMargin: DesktopTokens.px(26)
                                 anchors.verticalCenter: parent.verticalCenter
-                                width: DesktopTokens.px(44)
-                                height: DesktopTokens.px(26)
-                                radius: height / 2
-                                color: root.staySignedIn ? root.mint : DesktopTokens.raisedStrong
-                                border.width: persistenceButton.activeFocus ? 2 : 0
-                                border.color: DesktopTokens.focus
-                                Rectangle { x: root.staySignedIn ? parent.width - width - DesktopTokens.px(3) : DesktopTokens.px(3); y: DesktopTokens.px(3); width: DesktopTokens.px(20); height: width; radius: width / 2; color: root.staySignedIn ? "#0B0F1A" : DesktopTokens.text }
+                                checked: root.staySignedIn
+                                focusPolicy: Qt.NoFocus
+                                onValueChangedByUser: value => root.staySignedIn = value
                             }
                         }
                         onClicked: root.staySignedIn = !root.staySignedIn
@@ -510,8 +451,8 @@ FocusScope {
                             width: parent.width - DesktopTokens.px(20)
                             text: qsTr("OpenNOW never sees your password. Sign-in happens on your provider's own page and only a session token comes back.")
                             color: root.faintInk
-                            font.pixelSize: DesktopTokens.px(12)
-                            lineHeight: DesktopTokens.px(16)
+                            font.pixelSize: DesktopTokens.px(13)
+                            lineHeight: DesktopTokens.px(18)
                         }
                     }
 
@@ -530,7 +471,7 @@ FocusScope {
                                 width: DesktopTokens.px(150)
                                 height: width
                                 x: codeBlock.stacked ? (parent.width - width) / 2 : 0
-                                radius: DesktopTokens.px(12)
+                                radius: DesktopTokens.radius
                                 color: "#FFFFFF"
                                 Grid {
                                     id: qrGrid
@@ -545,11 +486,11 @@ FocusScope {
                                             required property int index
                                             width: qrGrid.cell
                                             height: qrGrid.cell
-                                            color: qrGrid.qrRows[Math.floor(index / qrGrid.columns)].charAt(index % qrGrid.columns) === "1" ? "#0B0F1A" : "#FFFFFF"
+                                            color: qrGrid.qrRows[Math.floor(index / qrGrid.columns)].charAt(index % qrGrid.columns) === "1" ? "#000000" : "#FFFFFF"
                                         }
                                     }
                                 }
-                                MonoText { anchors.centerIn: parent; visible: !qrGrid.visible; text: "QR"; color: "#0B0F1A"; font.pixelSize: DesktopTokens.px(30); lineHeight: DesktopTokens.px(36) }
+                                MonoText { anchors.centerIn: parent; visible: !qrGrid.visible; text: "QR"; color: "#000000"; font.pixelSize: DesktopTokens.px(30); lineHeight: DesktopTokens.px(36) }
                             }
                             Column {
                                 id: codeText
@@ -557,13 +498,15 @@ FocusScope {
                                 y: codeBlock.stacked && qrBox.visible ? qrBox.height + DesktopTokens.px(22) : Math.max(0, (qrBox.height - implicitHeight) / 2)
                                 width: parent.width - x
                                 spacing: DesktopTokens.px(10)
-                                MonoText { width: parent.width; text: qsTr("OR ENTER THIS CODE"); wrapMode: Text.WordWrap }
+                                MonoText { width: parent.width; text: qsTr("Or enter this code"); wrapMode: Text.WordWrap }
                                 MonoText {
                                     width: parent.width
-                                    text: root.challenge ? String(root.challenge.userCode || "").toUpperCase() : qsTr("CREATING SECURE CODE…")
+                                    text: root.challenge ? String(root.challenge.userCode || "").toUpperCase() : qsTr("Creating secure code…")
                                     color: DesktopTokens.text
-                                    font.pixelSize: DesktopTokens.px(root.challenge ? 28 : 13)
-                                    font.letterSpacing: 1.68 * DesktopTokens.uiScale
+                                    font.family: root.challenge ? DesktopTokens.monoFont : DesktopTokens.bodyFont
+                                    font.pixelSize: DesktopTokens.px(root.challenge ? 30 : 14)
+                                    font.weight: Font.Bold
+                                    font.letterSpacing: 0
                                     lineHeight: DesktopTokens.px(32)
                                     wrapMode: Text.WrapAnywhere
                                 }
@@ -571,10 +514,8 @@ FocusScope {
                                     width: parent.width
                                     text: root.challenge ? String(root.challenge.verificationUri || "").replace(/^https?:\/\//, "") : qsTr("Contacting provider")
                                     color: DesktopTokens.focus
-                                    font.pixelSize: DesktopTokens.px(12)
-                                    font.weight: Font.Medium
-                                    font.letterSpacing: 0
-                                    lineHeight: DesktopTokens.px(16)
+                                    font.pixelSize: DesktopTokens.px(14)
+                                    lineHeight: DesktopTokens.px(18)
                                     wrapMode: Text.WrapAnywhere
                                 }
                                 Column {
@@ -589,14 +530,14 @@ FocusScope {
                                         color: DesktopTokens.raised
                                         Rectangle { width: parent.width * Math.max(0, Math.min(1, (Number(root.challenge ? root.challenge.expiresAt : 0) - root.clockMs) / Math.max(1, Number(root.challenge ? root.challenge.expiresAt : 0) - root.challengeReceivedAt))); height: parent.height; radius: parent.radius; color: DesktopTokens.amber }
                                     }
-                                    MonoText { width: parent.width; text: qsTr("Code expires in %1").arg(root.timeLeft); color: root.mutedInk; font.pixelSize: DesktopTokens.px(11); font.weight: Font.Medium; font.letterSpacing: 0; lineHeight: DesktopTokens.px(14); wrapMode: Text.WordWrap }
+                                    MonoText { width: parent.width; text: qsTr("Code expires in %1").arg(root.timeLeft); color: root.mutedInk; font.weight: Font.Normal; wrapMode: Text.WordWrap }
                                 }
                             }
                         }
                         Rectangle {
                             width: parent.width
                             height: Math.max(DesktopTokens.px(66), approvalStatus.height + DesktopTokens.px(30))
-                            color: Theme.lightMode ? DesktopTokens.seamSoft : "#08FFFFFF"
+                            color: DesktopTokens.raised
                             Rectangle { width: parent.width; height: 1; color: DesktopTokens.seamSoft }
                             Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: DesktopTokens.seamSoft }
                             Item {
@@ -639,12 +580,10 @@ FocusScope {
                         Rectangle {
                             width: parent.width
                             height: failureText.height + DesktopTokens.px(32)
-                            radius: DesktopTokens.px(12)
-                            color: "#08FF8A80"
-                            border.width: 1
-                            border.color: "#24FF8A80"
-                            Rectangle { x: DesktopTokens.px(14); y: DesktopTokens.px(20); width: DesktopTokens.px(3); height: parent.height - DesktopTokens.px(40); radius: DesktopTokens.px(2); color: DesktopTokens.danger }
-                            BodyText { id: failureText; x: DesktopTokens.px(29); y: DesktopTokens.px(16); width: parent.width - DesktopTokens.px(45); text: qsTr("The authorization was cancelled or expired. Your previous account state is unchanged."); font.pixelSize: DesktopTokens.px(11); lineHeight: DesktopTokens.px(16) }
+                            radius: DesktopTokens.radius
+                            color: DesktopTokens.raised
+                            Rectangle { width: DesktopTokens.px(4); height: parent.height; color: DesktopTokens.danger }
+                            BodyText { id: failureText; x: DesktopTokens.px(20); y: DesktopTokens.px(16); width: parent.width - DesktopTokens.px(36); text: qsTr("The authorization was cancelled or expired. Your previous account state is unchanged.") }
                         }
                         Row {
                             width: parent.width
@@ -655,20 +594,18 @@ FocusScope {
                         Rectangle {
                             width: parent.width
                             height: retryNotes.implicitHeight + DesktopTokens.px(24)
-                            radius: DesktopTokens.px(12)
-                            color: DesktopTokens.seamSoft
-                            border.width: 1
-                            border.color: DesktopTokens.seamSoft
+                            radius: DesktopTokens.radius
+                            color: DesktopTokens.raised
                             Column {
                                 id: retryNotes
                                 x: DesktopTokens.px(12)
                                 y: DesktopTokens.px(12)
                                 width: parent.width - DesktopTokens.px(24)
                                 spacing: DesktopTokens.px(8)
-                                MonoText { width: parent.width; text: qsTr("BEFORE YOU TRY AGAIN"); wrapMode: Text.WordWrap }
-                                BodyText { width: parent.width; text: qsTr("Your internet connection is available"); font.pixelSize: DesktopTokens.px(11); lineHeight: DesktopTokens.px(16) }
-                                BodyText { width: parent.width; text: qsTr("Pop-ups are allowed in your browser"); font.pixelSize: DesktopTokens.px(11); lineHeight: DesktopTokens.px(16) }
-                                BodyText { width: parent.width; text: qsTr("You selected the correct alliance provider"); font.pixelSize: DesktopTokens.px(11); lineHeight: DesktopTokens.px(16) }
+                                MonoText { width: parent.width; text: qsTr("Before you try again, check that:"); wrapMode: Text.WordWrap }
+                                BodyText { width: parent.width; text: qsTr("Your internet connection is available"); font.pixelSize: DesktopTokens.px(13); lineHeight: DesktopTokens.px(18) }
+                                BodyText { width: parent.width; text: qsTr("Pop-ups are allowed in your browser"); font.pixelSize: DesktopTokens.px(13); lineHeight: DesktopTokens.px(18) }
+                                BodyText { width: parent.width; text: qsTr("You selected the correct alliance provider"); font.pixelSize: DesktopTokens.px(13); lineHeight: DesktopTokens.px(18) }
                             }
                         }
                     }
@@ -684,8 +621,8 @@ FocusScope {
                     visible: providerMotion.present
                     enabled: root.providerOpen && !root.waiting && !root.failed
                     z: 20
-                    radius: DesktopTokens.px(12)
-                    color: Theme.lightMode ? Theme.shell : "#FA111722"
+                    radius: DesktopTokens.radius
+                    color: Theme.surfaceRaised
                     border.width: 1
                     border.color: root.cardSeam
                     ListView {
@@ -700,11 +637,11 @@ FocusScope {
                             width: ListView.view.width
                             height: DesktopTokens.px(52)
                             Accessible.name: modelData.displayName || qsTr("Provider")
-                            background: Rectangle { radius: DesktopTokens.px(8); color: providerOption.hovered || providerOption.activeFocus ? DesktopTokens.raised : "transparent" }
+                            background: Rectangle { radius: DesktopTokens.radius; color: providerOption.hovered || providerOption.activeFocus ? DesktopTokens.raisedStrong : "transparent"; border.width: providerOption.activeFocus ? DesktopTokens.px(3) : 0; border.color: Theme.label }
                             contentItem: Column {
                                 spacing: DesktopTokens.px(2)
-                                BodyText { width: parent.width; text: providerOption.modelData.displayName || qsTr("Provider"); color: DesktopTokens.text; font.pixelSize: DesktopTokens.px(12); font.weight: Font.Bold; maximumLineCount: 1; elide: Text.ElideRight }
-                                MonoText { text: String(providerOption.modelData.region || "GLOBAL").toUpperCase(); font.pixelSize: DesktopTokens.px(9) }
+                                BodyText { width: parent.width; text: providerOption.modelData.displayName || qsTr("Provider"); color: DesktopTokens.text; font.weight: Font.DemiBold; maximumLineCount: 1; elide: Text.ElideRight }
+                                MonoText { text: String(providerOption.modelData.region || qsTr("Global")); font.weight: Font.Normal }
                             }
                             onClicked: { root.providerOpen = false; ShellStore.startDeviceLogin(modelData.idpId || "", root.staySignedIn) }
                         }
@@ -733,11 +670,11 @@ FocusScope {
                     anchors.verticalCenter: parent.verticalCenter
                     width: enterLabel.implicitWidth + DesktopTokens.px(12)
                     height: DesktopTokens.px(22)
-                    radius: DesktopTokens.px(6)
+                    radius: DesktopTokens.radius
                     color: DesktopTokens.raised
-                    MonoText { id: enterLabel; anchors.centerIn: parent; text: qsTr("Enter"); color: root.bodyInk; font.letterSpacing: 0 }
+                    MonoText { id: enterLabel; anchors.centerIn: parent; text: qsTr("Enter"); color: root.bodyInk }
                 }
-                BodyText { anchors.verticalCenter: parent.verticalCenter; text: qsTr("Activate focused action"); color: root.mutedInk; font.pixelSize: DesktopTokens.px(12); lineHeight: DesktopTokens.px(16) }
+                BodyText { anchors.verticalCenter: parent.verticalCenter; text: qsTr("Activate focused action"); color: root.mutedInk; font.pixelSize: DesktopTokens.px(13); lineHeight: DesktopTokens.px(18) }
             }
             Row {
                 spacing: DesktopTokens.px(8)
@@ -745,11 +682,11 @@ FocusScope {
                     anchors.verticalCenter: parent.verticalCenter
                     width: tabLabel.implicitWidth + DesktopTokens.px(12)
                     height: DesktopTokens.px(22)
-                    radius: DesktopTokens.px(6)
+                    radius: DesktopTokens.radius
                     color: DesktopTokens.raised
-                    MonoText { id: tabLabel; anchors.centerIn: parent; text: qsTr("Tab"); color: root.bodyInk; font.letterSpacing: 0 }
+                    MonoText { id: tabLabel; anchors.centerIn: parent; text: qsTr("Tab"); color: root.bodyInk }
                 }
-                BodyText { anchors.verticalCenter: parent.verticalCenter; text: qsTr("Move focus"); color: root.mutedInk; font.pixelSize: DesktopTokens.px(12); lineHeight: DesktopTokens.px(16) }
+                BodyText { anchors.verticalCenter: parent.verticalCenter; text: qsTr("Move focus"); color: root.mutedInk; font.pixelSize: DesktopTokens.px(13); lineHeight: DesktopTokens.px(18) }
             }
         }
         Row {
@@ -758,8 +695,7 @@ FocusScope {
             anchors.rightMargin: DesktopTokens.px(40)
             anchors.verticalCenter: parent.verticalCenter
             spacing: DesktopTokens.px(8)
-            Rectangle { anchors.verticalCenter: parent.verticalCenter; width: DesktopTokens.px(8); height: width; radius: width / 2; color: root.waiting ? DesktopTokens.amber : root.faintInk }
-            MonoText { text: root.waiting ? qsTr("WAITING · APPROVE ON YOUR PHONE OR IN THE BROWSER") : qsTr("OFFLINE MODE · NOT SIGNED IN") }
+            MonoText { text: root.waiting ? qsTr("Approve the sign-in on your phone or in the browser") : qsTr("Not signed in"); font.weight: Font.Normal }
         }
     }
 

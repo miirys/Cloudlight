@@ -14,7 +14,7 @@ Column {
     readonly property bool wide: width >= DesktopTokens.px(1000)
     readonly property color mint: Theme.accentColor("green")
     readonly property color blue: Theme.accentColor("blue")
-    readonly property color panelColor: Theme.lightMode ? Theme.glass : "#C70B0F1A"
+    readonly property color panelColor: Theme.surface
     spacing: DesktopTokens.px(24)
 
     component Copy: Text {
@@ -27,10 +27,10 @@ Column {
     }
     component Eyebrow: Text {
         color: Theme.textMuted
-        font.family: Theme.monoFont
-        font.pixelSize: DesktopTokens.px(10)
+        font.family: Theme.bodyFont
+        font.pixelSize: DesktopTokens.px(13)
         font.weight: Font.Bold
-        font.letterSpacing: DesktopTokens.px(1)
+        font.letterSpacing: 0
     }
     component DashedOutline: Shape {
         id: outline
@@ -56,8 +56,8 @@ Column {
         property color ink: Theme.textMuted
         implicitWidth: label.implicitWidth + DesktopTokens.px(14)
         implicitHeight: DesktopTokens.px(24)
-        radius: DesktopTokens.px(6)
-        color: Qt.rgba(ink.r, ink.g, ink.b, 0.12)
+        radius: DesktopTokens.radius
+        color: DesktopTokens.raised
         Eyebrow { id: label; anchors.centerIn: parent; color: parent.ink }
     }
     component Segments: Item {
@@ -68,7 +68,7 @@ Column {
         signal selected(int index, var value)
         implicitWidth: DesktopTokens.px(6) + options.length * DesktopTokens.px(optionWidth + 2)
         implicitHeight: DesktopTokens.px(36)
-        Rectangle { anchors.fill: parent; radius: height / 2; color: DesktopTokens.raised; border.color: DesktopTokens.seamSoft }
+        Rectangle { anchors.fill: parent; radius: DesktopTokens.radius; color: DesktopTokens.raised; border.color: DesktopTokens.seamSoft }
         Row {
             x: DesktopTokens.px(3); y: DesktopTokens.px(3); spacing: DesktopTokens.px(2)
             Repeater {
@@ -82,10 +82,10 @@ Column {
                     checkable: true; checked: index === segments.selectedIndex
                     Accessible.name: modelData.label
                     onClicked: segments.selected(index, modelData)
-                    background: Rectangle { radius: height / 2; color: segment.checked ? Theme.face : segment.hovered ? DesktopTokens.raised : "transparent"; border.width: segment.activeFocus ? 2 : 0; border.color: Theme.focus }
+                    background: Rectangle { radius: DesktopTokens.radius; color: segment.checked ? Theme.face : segment.hovered ? DesktopTokens.raised : "transparent"; border.width: segment.activeFocus ? DesktopTokens.px(3) : 0; border.color: segment.checked ? Theme.focus : Theme.label }
                     contentItem: Text {
                         text: segment.modelData.label; color: segment.checked ? Theme.faceText : Theme.textMuted
-                        font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.px(13); font.weight: Font.ExtraBold
+                        font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.px(13); font.weight: Font.DemiBold
                         horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter
                     }
                 }
@@ -96,7 +96,7 @@ Column {
         id: checker
         property bool enhanced: false
         width: DesktopTokens.px(56); height: width
-        radius: DesktopTokens.px(8)
+        radius: DesktopTokens.radius
         color: DesktopTokens.raised
         border.color: Theme.seam
         Grid {
@@ -145,7 +145,7 @@ Column {
         Text {
             width: DesktopTokens.px(26); height: DesktopTokens.px(28)
             text: Math.round(slider.value) + control.suffix
-            color: Theme.label; font.family: Theme.monoFont; font.pixelSize: DesktopTokens.px(14); font.weight: Font.Bold
+            color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.px(14); font.weight: Font.Bold
             verticalAlignment: Text.AlignVCenter; horizontalAlignment: Text.AlignRight
         }
     }
@@ -162,7 +162,7 @@ Column {
             Layout.fillWidth: true; Layout.preferredWidth: DesktopTokens.px(546); Layout.minimumWidth: 0
             Layout.alignment: Qt.AlignTop
             implicitHeight: generationContents.implicitHeight + DesktopTokens.px(4)
-            color: root.panelColor; radius: DesktopTokens.px(16)
+            color: root.panelColor; radius: DesktopTokens.radiusLarge
             border.width: root.settings.frameGeneration === "2x" ? DesktopTokens.px(2) : 1
             border.color: root.settings.frameGeneration === "2x" ? root.mint : Theme.seam
             Column {
@@ -172,13 +172,13 @@ Column {
                     width: parent.width; height: DesktopTokens.px(113)
                     RowLayout {
                         x: DesktopTokens.px(20); y: DesktopTokens.px(20); width: parent.width - DesktopTokens.px(40)
-                        Eyebrow { text: qsTr("2× FRAME PATTERN"); Layout.fillWidth: true }
+                        Eyebrow { text: qsTr("2× Frame pattern"); Layout.fillWidth: true }
                         Row {
                             spacing: DesktopTokens.px(6)
                             Rectangle { width: DesktopTokens.px(10); height: width; color: DesktopTokens.raisedStrong }
-                            Text { text: qsTr("stream"); color: Theme.textMuted; font.family: Theme.monoFont; font.pixelSize: DesktopTokens.px(10) }
+                            Text { text: qsTr("stream"); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.px(13) }
                             Rectangle { width: DesktopTokens.px(10); height: width; color: "transparent"; border.color: root.mint }
-                            Text { text: qsTr("generated"); color: Theme.textMuted; font.family: Theme.monoFont; font.pixelSize: DesktopTokens.px(10) }
+                            Text { text: qsTr("generated"); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.px(13) }
                         }
                     }
                     Row {
@@ -189,9 +189,9 @@ Column {
                             Rectangle {
                                 required property int index
                                 width: (parent.width - DesktopTokens.px(5) * 11) / 12
-                                height: DesktopTokens.px(56); radius: DesktopTokens.px(6)
-                                color: index % 2 === 0 ? DesktopTokens.raisedStrong : Qt.rgba(root.mint.r, root.mint.g, root.mint.b, 0.08)
-                                DashedOutline { anchors.fill: parent; visible: parent.index % 2 !== 0; ink: Qt.rgba(root.mint.r, root.mint.g, root.mint.b, 0.7) }
+                                height: DesktopTokens.px(56); radius: DesktopTokens.radius
+                                color: index % 2 === 0 ? DesktopTokens.raisedStrong : DesktopTokens.raised
+                                DashedOutline { anchors.fill: parent; visible: parent.index % 2 !== 0; ink: root.mint }
                             }
                         }
                     }
@@ -210,8 +210,8 @@ Column {
                             spacing: DesktopTokens.px(4)
                             Flow {
                                 width: parent.width; spacing: DesktopTokens.px(8)
-                                Copy { text: qsTr("Frame generation"); color: Theme.label; font.pixelSize: DesktopTokens.px(20); font.weight: Font.Black }
-                                Badge { text: qsTr("EXPERIMENTAL"); ink: Theme.accentColor("amber") }
+                                Copy { text: qsTr("Frame generation"); color: Theme.label; font.pixelSize: DesktopTokens.px(20); font.weight: Font.Bold }
+                                Badge { text: qsTr("Experimental"); ink: Theme.accentColor("amber") }
                             }
                             Copy {
                                 width: parent.width
@@ -240,13 +240,13 @@ Column {
                                 id: tradeoff
                                 required property var modelData
                                 width: (parent.width - DesktopTokens.px(20)) / 3
-                                height: DesktopTokens.px(54); radius: DesktopTokens.px(10)
+                                height: DesktopTokens.px(54); radius: DesktopTokens.radiusLarge
                                 color: DesktopTokens.seamSoft
                                 Column {
                                     x: DesktopTokens.px(12); y: DesktopTokens.px(8); width: parent.width - DesktopTokens.px(24)
                                     spacing: DesktopTokens.px(2)
-                                    Text { width: parent.width; text: tradeoff.modelData.title; color: tradeoff.modelData.ink; font.family: Theme.monoFont; font.pixelSize: DesktopTokens.px(14); font.weight: Font.Bold; elide: Text.ElideRight }
-                                    Copy { width: parent.width; text: tradeoff.modelData.caption; font.pixelSize: DesktopTokens.px(11); lineHeight: DesktopTokens.px(14); elide: Text.ElideRight; maximumLineCount: 1 }
+                                    Text { width: parent.width; text: tradeoff.modelData.title; color: tradeoff.modelData.ink; font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.px(14); font.weight: Font.Bold; elide: Text.ElideRight }
+                                    Copy { width: parent.width; text: tradeoff.modelData.caption; font.pixelSize: DesktopTokens.px(13); lineHeight: DesktopTokens.px(14); elide: Text.ElideRight; maximumLineCount: 1 }
                                 }
                             }
                         }
@@ -272,7 +272,7 @@ Column {
             Layout.alignment: Qt.AlignTop
             implicitHeight: Math.max(DesktopTokens.px(366), upscaleContents.implicitHeight + DesktopTokens.px(2))
             Layout.minimumHeight: root.wide ? generationCard.implicitHeight : 0
-            radius: DesktopTokens.px(16); border.color: Theme.seam; border.width: 1
+            radius: DesktopTokens.radiusLarge; border.color: Theme.seam; border.width: 1
             color: root.panelColor
             Column {
                 id: upscaleContents
@@ -281,16 +281,16 @@ Column {
                     width: parent.width; height: DesktopTokens.px(126)
                     RowLayout {
                         x: DesktopTokens.px(20); y: DesktopTokens.px(20); width: parent.width - DesktopTokens.px(40)
-                        Eyebrow { text: qsTr("SPATIAL UPSCALING"); Layout.fillWidth: true }
-                        Badge { text: root.mac ? qsTr("macOS ONLY") : qsTr("SDR ONLY"); ink: root.blue }
+                        Eyebrow { text: qsTr("Spatial upscaling"); Layout.fillWidth: true }
+                        Badge { text: root.mac ? qsTr("macOS only") : qsTr("SDR only"); ink: root.blue }
                     }
                     Row {
                         x: DesktopTokens.px(20); y: DesktopTokens.px(54); spacing: DesktopTokens.px(10)
                         Checker {}
-                        Text { anchors.verticalCenter: parent.verticalCenter; text: qsTr("bilinear"); color: Theme.textMuted; font.family: Theme.monoFont; font.pixelSize: DesktopTokens.px(10) }
+                        Text { anchors.verticalCenter: parent.verticalCenter; text: qsTr("bilinear"); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.px(13) }
                         Text { anchors.verticalCenter: parent.verticalCenter; text: "⟶"; color: Theme.textMuted; font.pixelSize: DesktopTokens.px(30) }
                         Checker { enhanced: true }
-                        Text { anchors.verticalCenter: parent.verticalCenter; text: root.mac ? qsTr("MetalFX spatial") : "FSR 1"; color: root.blue; font.family: Theme.monoFont; font.pixelSize: DesktopTokens.px(10) }
+                        Text { anchors.verticalCenter: parent.verticalCenter; text: root.mac ? qsTr("MetalFX spatial") : "FSR 1"; color: root.blue; font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.px(13) }
                     }
                     Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: DesktopTokens.seamSoft }
                 }
@@ -303,7 +303,7 @@ Column {
                         columnSpacing: DesktopTokens.px(16); rowSpacing: DesktopTokens.px(10)
                         Column {
                             Layout.fillWidth: true; Layout.minimumWidth: 0; spacing: DesktopTokens.px(4)
-                            Copy { text: qsTr("Upscaling"); color: Theme.label; font.pixelSize: DesktopTokens.px(20); font.weight: Font.Black }
+                            Copy { text: qsTr("Upscaling"); color: Theme.label; font.pixelSize: DesktopTokens.px(20); font.weight: Font.Bold }
                             Copy { width: parent.width; text: root.mac
                                 ? qsTr("Spatial upscaling for enlarged video. Uses extra GPU time and falls back to normal scaling when MetalFX is unavailable.")
                                 : qsTr("FSR 1 upscales enlarged SDR video on the GPU. Uses extra GPU time; HDR and unavailable effects use normal scaling.") }
@@ -335,7 +335,7 @@ Column {
                             enabled: root.upscalingEnabled; opacity: enabled ? 1 : 0.45
                             Column {
                                 Layout.fillWidth: true; Layout.minimumWidth: 0; spacing: DesktopTokens.px(3)
-                                Copy { width: parent.width; text: tuningControl.modelData.label; color: Theme.label; font.weight: Font.ExtraBold }
+                                Copy { width: parent.width; text: tuningControl.modelData.label; color: Theme.label; font.weight: Font.DemiBold }
                                 Copy { width: parent.width; text: tuningControl.modelData.description; font.pixelSize: DesktopTokens.px(12) }
                             }
                             TuningSlider {
@@ -356,7 +356,7 @@ Column {
     Rectangle {
         width: parent.width
         implicitHeight: Math.max(DesktopTokens.px(48), hints.implicitHeight + DesktopTokens.px(24))
-        radius: DesktopTokens.px(14); color: Theme.lightMode ? Theme.glass : "#B80B0F1A"; border.color: DesktopTokens.seamSoft
+        radius: DesktopTokens.radiusLarge; color: Theme.surface; border.color: DesktopTokens.seamSoft
         Flow {
             id: hints
             x: DesktopTokens.px(18); y: DesktopTokens.px(12); width: parent.width - DesktopTokens.px(36)
