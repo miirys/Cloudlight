@@ -80,7 +80,7 @@ Button {
                 anchors.verticalCenter: parent.verticalCenter
                 shortcut: root.shortcutSequence
                 Accessible.name: root.shortcutText
-                keySize: 20
+                keySize: DesktopTokens.px(22)
                 ink: root.ink
             }
         }

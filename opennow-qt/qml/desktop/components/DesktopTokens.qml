@@ -102,9 +102,10 @@ QtObject {
 
     function scaleForWindow(width, height) {
         // Laid out against a 1440x810 canvas, so a 1080p screen (a TV or
-        // projector seen from a couch) gets ~1.33x. Smaller windows reflow
-        // instead of shrinking below 0.95.
-        return Math.max(0.95, Math.min(1.5, Math.min(width / 1440, height / 810)))
+        // projector seen from a couch) gets ~1.33x and a 4K screen at 100%
+        // gets ~2.67x, the same layout drawn at native resolution. Smaller
+        // windows reflow instead of shrinking below 0.95.
+        return Math.max(0.95, Math.min(3, Math.min(width / 1440, height / 810)))
     }
 
     function storeKey(value) {
@@ -144,6 +145,24 @@ QtObject {
 
     function decodeArtworkUrl(url) {
         return String(url || "").split(";f=webp").join(";f=jpg")
+    }
+
+    // The image CDN resizes on request (";w=<px>"). Ask for the next width step at or
+    // above what the screen will show, so 1440p and 4K screens get sharp key art.
+    function artworkForWidth(url, pixelWidth) {
+        const source = String(url || "")
+        const match = source.match(/;w=(\d+)/)
+        if (!match || Number(pixelWidth) <= Number(match[1]))
+            return source
+        const steps = [1920, 2560, 3840]
+        let wanted = steps[steps.length - 1]
+        for (const step of steps) {
+            if (step >= pixelWidth) {
+                wanted = step
+                break
+            }
+        }
+        return wanted > Number(match[1]) ? source.replace(/;w=\d+/, ";w=" + wanted) : source
     }
 
     function consoleModeOn(win) {

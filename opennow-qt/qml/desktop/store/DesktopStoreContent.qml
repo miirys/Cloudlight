@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Window
 import QtQuick.Controls
 import OpenNOW
 
@@ -825,7 +826,7 @@ FocusScope {
                         width: DesktopTokens.px(20); height: width
                         source: root.presentedMenu === "store" ? DesktopTokens.storeIconUrl(menuButton.modelData) : ""
                         visible: source.toString() !== ""
-                        sourceSize: Qt.size(40,40); fillMode: Image.PreserveAspectFit
+                        sourceSize: Qt.size(Math.ceil(width * Screen.devicePixelRatio), Math.ceil(height * Screen.devicePixelRatio)); fillMode: Image.PreserveAspectFit
                       }
                       Text {
                         id: menuLabel

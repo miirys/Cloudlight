@@ -264,18 +264,10 @@ FocusScope {
                         Behavior on opacity {
                             NumberAnimation { duration: AppController.reducedMotion ? 0 : 700; easing.type: Easing.InOutQuad }
                         }
-                        ArtworkSource {
-                            id: heroArt
-                            sourceUrl: DesktopTokens.decodeArtworkUrl(DesktopTokens.artworkUrl(heroLayer.modelData, true))
-                            active: root.active
-                        }
-                        Image {
+                        HeroArtwork {
                             anchors.fill: parent
-                            source: heroArt.resolvedUrl
-                            fillMode: Image.PreserveAspectCrop
-                            sourceSize: Qt.size(1920, 1080)
-                            asynchronous: true
-                            cache: true
+                            artwork: DesktopTokens.artworkUrl(heroLayer.modelData, true)
+                            active: root.active
                             // Gentle settle on reveal and on each new slide.
                             scale: heroLayer.shown ? 1 + 0.06 * (1 - root.revealAt(0, 1100)) : 1.04
                             Behavior on scale {

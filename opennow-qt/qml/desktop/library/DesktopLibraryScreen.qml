@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import QtQuick.Window
 import QtQuick.Controls
 import OpenNOW
 
@@ -311,7 +312,7 @@ FocusScope {
                             height: DesktopTokens.px(16)
                             anchors.verticalCenter: parent.verticalCenter
                             source: visible ? DesktopTokens.storeIconUrl(filterButton.modelData.key) : ""
-                            sourceSize: Qt.size(32, 32)
+                            sourceSize: Qt.size(Math.ceil(width * Screen.devicePixelRatio), Math.ceil(height * Screen.devicePixelRatio))
                             fillMode: Image.PreserveAspectFit
                         }
                         Text {

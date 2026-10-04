@@ -2,7 +2,6 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Window
 import OpenNOW
 
 FocusScope {
@@ -63,12 +62,6 @@ FocusScope {
             cancelButton.forceActiveFocus()
     }
 
-    ArtworkSource {
-        id: artwork
-        sourceUrl: DesktopTokens.decodeArtworkUrl(String(root.game.heroImageUrl || root.game.imageUrl || ""))
-        active: root.visible
-    }
-
     // Where the launch is, as one of four plain stages. Steps 5 and 6 (cleanup, storage)
     // are waits, so they read as the queue stage.
     readonly property var stages: [qsTr("Checking"), qsTr("In queue"), qsTr("Setting up your rig"), qsTr("Connecting")]
@@ -86,15 +79,12 @@ FocusScope {
     // details sit on the safe margin, bottom left; the queue number and the mascot
     // slot sit bottom right.
     Rectangle { anchors.fill: parent; color: "#0B0A0E" }
-    Image {
+    HeroArtwork {
         anchors.fill: parent
-        source: artwork.resolvedUrl
-        fillMode: Image.PreserveAspectCrop
-        asynchronous: true
-        cache: true
-        sourceSize: Qt.size(Math.ceil(width * Screen.devicePixelRatio), Math.ceil(height * Screen.devicePixelRatio))
-        opacity: status === Image.Ready ? 0.72 : 0
-        scale: status === Image.Ready && !AppController.reducedMotion ? 1 : 1.04
+        artwork: String(root.game.heroImageUrl || root.game.imageUrl || "")
+        active: root.visible
+        opacity: ready ? 0.72 : 0
+        scale: ready && !AppController.reducedMotion ? 1 : 1.04
         Behavior on opacity { NumberAnimation { duration: 700; easing.type: Easing.OutCubic } }
         Behavior on scale { NumberAnimation { duration: 1400; easing.type: Easing.OutCubic } }
     }

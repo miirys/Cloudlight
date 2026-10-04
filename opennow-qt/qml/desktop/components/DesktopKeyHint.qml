@@ -11,7 +11,7 @@ Row {
 
     KeyboardGlyph {
         shortcut: root.shortcut
-        keySize: root.compact ? 18 : 24
+        keySize: root.compact ? DesktopTokens.px(18) : DesktopTokens.px(24)
         ink: DesktopTokens.textBody
         Accessible.name: root.keyText
     }

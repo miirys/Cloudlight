@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Window
 import OpenNOW
 
 // Full-bleed store marquee, matching the home hero: art across the whole
@@ -59,7 +60,7 @@ Item {
                 fillMode: Image.PreserveAspectCrop
                 asynchronous: true
                 cache: true
-                sourceSize: Qt.size(1920, 1080)
+                sourceSize: Qt.size(Math.ceil(width * Screen.devicePixelRatio), Math.ceil(height * Screen.devicePixelRatio))
                 scale: slideLayer.shown ? 1 : 1.04
                 Behavior on scale { NumberAnimation { duration: AppController.reducedMotion ? 0 : 1200; easing.type: Easing.OutCubic } }
             }

@@ -274,9 +274,10 @@ FocusScope {
             id: hero
             width: parent.width
             height: Math.round(parent.height * (dialog.narrow ? 0.62 : 0.86))
-            RoundedArtwork {
-                anchors.fill: parent; artwork: DesktopTokens.artworkUrl(root.game, true)
-                cornerRadius: 0; scrimStart: 1; fallbackColor: Theme.shell
+            HeroArtwork {
+                anchors.fill: parent
+                artwork: DesktopTokens.artworkUrl(root.game, true)
+                active: root.visible
             }
             // Left scrim carries the text; the bottom fade hands the art over to the page.
             Rectangle {

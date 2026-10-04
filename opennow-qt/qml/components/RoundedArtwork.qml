@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Effects
+import QtQuick.Window
 import OpenNOW
 
 Item {
@@ -50,7 +51,7 @@ Item {
             anchors.fill: parent
             source: artworkSource.resolvedUrl
             fillMode: Image.PreserveAspectCrop
-            sourceSize: Qt.size(Math.ceil(width), Math.ceil(height))
+            sourceSize: Qt.size(Math.ceil(width * Screen.devicePixelRatio), Math.ceil(height * Screen.devicePixelRatio))
             asynchronous: true
             cache: true
             opacity: status === Image.Ready ? 1 : 0

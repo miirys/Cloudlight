@@ -302,7 +302,7 @@ FocusScope {
             }
             KeyboardGlyph {
                 anchors.right: parent.right; anchors.rightMargin: 18; anchors.verticalCenter: parent.verticalCenter
-                shortcut: "Ctrl K"; keySize: 22; ink: DesktopTokens.textMuted
+                shortcut: "Ctrl K"; keySize: DesktopTokens.px(22); ink: DesktopTokens.textMuted
                 Accessible.name: qsTr("Ctrl K")
             }
             Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: DesktopTokens.seam }
@@ -412,7 +412,7 @@ FocusScope {
                                     font.weight: Font.Bold
                                     font.letterSpacing: 0
                                 }
-                                KeyboardGlyph { shortcut: "Enter"; keySize: 20; ink: DesktopTokens.textMuted; Accessible.name: qsTr("Enter") }
+                                KeyboardGlyph { shortcut: "Enter"; keySize: DesktopTokens.px(20); ink: DesktopTokens.textMuted; Accessible.name: qsTr("Enter") }
                             }
                         }
                         HoverHandler { cursorShape: Qt.PointingHandCursor }
@@ -466,7 +466,7 @@ FocusScope {
                             KeyboardGlyph {
                                 visible: command.modelData.key !== ""
                                 anchors.right: parent.right; anchors.rightMargin: 10; anchors.verticalCenter: parent.verticalCenter
-                                shortcut: command.modelData.key; keySize: 20; ink: DesktopTokens.textMuted
+                                shortcut: command.modelData.key; keySize: DesktopTokens.px(20); ink: DesktopTokens.textMuted
                             }
                         }
                         HoverHandler { cursorShape: Qt.PointingHandCursor }

@@ -255,6 +255,7 @@ qt_add_qml_module(opennow-qt
         qml/desktop/components/DesktopGlyph.qml
         qml/desktop/components/DesktopHeroButton.qml
         qml/desktop/components/CloudlightMascot.qml
+        qml/desktop/components/HeroArtwork.qml
         qml/desktop/components/DesktopKeyHint.qml
         qml/desktop/components/DesktopPoster.qml
         qml/desktop/components/DesktopPosterOverlay.qml

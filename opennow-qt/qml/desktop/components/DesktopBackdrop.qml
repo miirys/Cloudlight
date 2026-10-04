@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Window
 import OpenNOW
 
 Item {
@@ -32,7 +33,7 @@ Item {
             asynchronous: true
             cache: true
             fillMode: Image.PreserveAspectCrop
-            sourceSize: Qt.size(1440, 900)
+            sourceSize: Qt.size(Math.ceil(width * Screen.devicePixelRatio), Math.ceil(height * Screen.devicePixelRatio))
             opacity: status === Image.Ready && (root.signIn || String(ShellStore.settings.desktopBackground || "solid") === "art") ? 1 : 0
             Behavior on opacity { NumberAnimation { duration: DesktopTokens.revealDuration } }
         }
@@ -42,7 +43,7 @@ Item {
         objectName: "customDesktopBackground"
         anchors.fill: parent
         source: root.visible && root.customBackground ? String(ShellStore.settings.desktopBackgroundImage || "") : ""
-        sourceSize: Qt.size(1920, 1080)
+        sourceSize: Qt.size(Math.ceil(width * Screen.devicePixelRatio), Math.ceil(height * Screen.devicePixelRatio))
         asynchronous: true
         fillMode: Image.PreserveAspectCrop
         opacity: status === Image.Ready ? Number(ShellStore.settings.desktopBackgroundOpacity ?? 30) / 100 : 0
