@@ -3679,6 +3679,8 @@
     "welcome": "WELCOME",
     "themeCloudlight": "Cloudlight",
     "themeCloudlightBlurb": "Black and pearl white with a soft lilac cast.",
+    "welcomeHome": "Welcome home.",
+    "signInWelcomeBody": "Sign in once, and your GeForce NOW library is ready on the big screen.",
     "builtInPalettes": "  ·  Built-in Cloudlight palettes",
     "gpuRestartHint": "Graphics card used to decode and show the stream. Takes effect after restarting Cloudlight.",
     "gpuFallbackHint": "The saved graphics card isn't available, so the first one that can decode video is used. Takes effect after restarting Cloudlight."

@@ -254,6 +254,7 @@ qt_add_qml_module(opennow-qt
         qml/desktop/components/DesktopQueueSelector.qml
         qml/desktop/components/DesktopGlyph.qml
         qml/desktop/components/DesktopHeroButton.qml
+        qml/desktop/components/CloudlightMascot.qml
         qml/desktop/components/DesktopKeyHint.qml
         qml/desktop/components/DesktopPoster.qml
         qml/desktop/components/DesktopPosterOverlay.qml
@@ -385,6 +386,7 @@ qt_add_qml_module(opennow-qt
         res/icons/store-ubisoft.svg
         res/icons/store-battlenet.svg
         res/brand/opennow-mark.png
+        res/brand/cloudlight-mark-light.png
         res/brand/signin-hero.jpg
         res/brand/desktop-renew.jpg
         res/onboarding/desktop-preview.png

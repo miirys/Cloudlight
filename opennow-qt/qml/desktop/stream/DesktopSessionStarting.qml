@@ -107,6 +107,7 @@ FocusScope {
         fontPixelSize: DesktopTokens.navSize
         spacing: DesktopTokens.px(10)
         ink: Theme.mediaForeground
+        onMedia: true
     }
 
     Column {

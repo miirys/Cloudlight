@@ -141,6 +141,89 @@ FocusScope {
 
     DesktopOnboardingBackdrop { anchors.fill: parent }
 
+    // Wide screens split like a streaming service's sign-in: the mascot (or, until her
+    // art ships, the Cloudlight emblem) on a flat panel at the left, the form at the right.
+    readonly property real artWidth: wideLayout ? Math.round(width * 0.5) : 0
+    component Sparkle: Shape {
+        id: sparkle
+        property real size: DesktopTokens.px(16)
+        property color ink: "#B9A9D9"
+        readonly property real c: size / 2
+        readonly property real k: size * 0.07
+        width: size; height: size
+        preferredRendererType: Shape.CurveRenderer
+        ShapePath {
+            strokeWidth: -1
+            fillColor: sparkle.ink
+            startX: sparkle.c; startY: 0
+            PathCubic { x: sparkle.size; y: sparkle.c; control1X: sparkle.c + sparkle.k; control1Y: sparkle.c - sparkle.k; control2X: sparkle.c + sparkle.k; control2Y: sparkle.c - sparkle.k }
+            PathCubic { x: sparkle.c; y: sparkle.size; control1X: sparkle.c + sparkle.k; control1Y: sparkle.c + sparkle.k; control2X: sparkle.c + sparkle.k; control2Y: sparkle.c + sparkle.k }
+            PathCubic { x: 0; y: sparkle.c; control1X: sparkle.c - sparkle.k; control1Y: sparkle.c + sparkle.k; control2X: sparkle.c - sparkle.k; control2Y: sparkle.c + sparkle.k }
+            PathCubic { x: sparkle.c; y: 0; control1X: sparkle.c - sparkle.k; control1Y: sparkle.c - sparkle.k; control2X: sparkle.c - sparkle.k; control2Y: sparkle.c - sparkle.k }
+        }
+    }
+    Rectangle {
+        id: artPanel
+        objectName: "signInArtPanel"
+        visible: root.wideLayout
+        width: root.artWidth
+        height: root.height
+        color: Theme.surface
+
+        Repeater {
+            model: [
+                {x: 0.14, y: 0.22, s: 18}, {x: 0.80, y: 0.16, s: 12}, {x: 0.88, y: 0.58, s: 22},
+                {x: 0.10, y: 0.70, s: 10}, {x: 0.62, y: 0.86, s: 14}, {x: 0.30, y: 0.42, s: 8}
+            ]
+            Sparkle {
+                required property var modelData
+                x: Math.round(artPanel.width * modelData.x)
+                y: Math.round(artPanel.height * modelData.y)
+                size: DesktopTokens.px(modelData.s)
+                ink: Theme.lightMode ? "#7E6BA8" : "#B9A9D9"
+                opacity: 0.8
+            }
+        }
+
+        CloudlightMascot {
+            id: signInMascot
+            objectName: "signInMascot"
+            pose: "login"
+            anchors.horizontalCenter: parent.horizontalCenter
+            y: hasArt ? parent.height - height : Math.round(parent.height * 0.24)
+            width: hasArt ? Math.round(parent.width * 0.9) : Math.round(parent.width * 0.5)
+            height: hasArt ? Math.round(parent.height * 0.86) : width
+            emblemScale: 0.8
+        }
+
+        Column {
+            visible: !signInMascot.hasArt
+            anchors.horizontalCenter: parent.horizontalCenter
+            y: signInMascot.y + signInMascot.height + DesktopTokens.px(12)
+            width: Math.min(parent.width - DesktopTokens.px(96), DesktopTokens.px(560))
+            spacing: DesktopTokens.px(14)
+            Text {
+                width: parent.width
+                horizontalAlignment: Text.AlignHCenter
+                text: qsTr("Welcome home.")
+                color: Theme.label
+                font.family: Theme.brandFont
+                font.pixelSize: DesktopTokens.px(56)
+                font.weight: Font.Bold
+            }
+            Text {
+                width: parent.width
+                horizontalAlignment: Text.AlignHCenter
+                text: qsTr("Sign in once, and your GeForce NOW library is ready on the big screen.")
+                color: DesktopTokens.textMuted
+                font.family: DesktopTokens.bodyFont
+                font.pixelSize: DesktopTokens.bodySize
+                wrapMode: Text.WordWrap
+                lineHeight: 1.3
+            }
+        }
+    }
+
     Item {
         id: topStrip
         width: parent.width
@@ -196,20 +279,21 @@ FocusScope {
 
         Item {
             id: body
-            x: (viewport.width - width) / 2
+            x: root.artWidth + (viewport.width - root.artWidth - width) / 2
             y: height <= viewport.height ? (viewport.height - height) / 2 : DesktopTokens.px(24)
-            width: Math.max(0, Math.min(DesktopTokens.px(440), viewport.width - DesktopTokens.px(48)))
+            width: Math.max(0, Math.min(DesktopTokens.px(460), viewport.width - root.artWidth - DesktopTokens.px(48)))
             height: card.height
 
             Rectangle {
                 id: card
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
-                width: Math.min(DesktopTokens.px(440), parent.width)
+                width: Math.min(DesktopTokens.px(460), parent.width)
                 height: cardColumn.implicitHeight + 2
                 radius: DesktopTokens.radiusLarge
-                color: Theme.surface
-                border.width: 1
+                // Beside the art panel the form sits straight on the page; alone, it keeps its card.
+                color: root.wideLayout ? "transparent" : Theme.surface
+                border.width: root.wideLayout ? 0 : 1
                 border.color: root.cardSeam
 
                 Column {
@@ -657,7 +741,8 @@ FocusScope {
     Item {
         id: footer
         anchors.bottom: parent.bottom
-        width: parent.width
+        x: root.artWidth
+        width: parent.width - root.artWidth
         height: DesktopTokens.px(72)
         Rectangle { width: parent.width; height: 1; color: DesktopTokens.seamSoft }
         Row {

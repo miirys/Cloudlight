@@ -9,6 +9,8 @@ Item {
     property real spacing: DesktopTokens.px(10)
     property color ink: DesktopTokens.text
     property real textReveal: 1
+    // Over game art or the launch screen the background is always dark.
+    property bool onMedia: false
     readonly property real markAspect: 720 / 713
     implicitWidth: mark.width + (root.textReveal > 0 ? root.spacing + label.implicitWidth * root.textReveal : 0)
     implicitHeight: Math.max(mark.height, label.implicitHeight)
@@ -20,7 +22,7 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         height: root.markHeight
         width: Math.max(1, Math.round(height * root.markAspect))
-        source: "qrc:/qt/qml/OpenNOW/res/brand/opennow-mark.png"
+        source: Theme.lightMode && !root.onMedia ? "qrc:/qt/qml/OpenNOW/res/brand/cloudlight-mark-light.png" : "qrc:/qt/qml/OpenNOW/res/brand/opennow-mark.png"
         fillMode: Image.PreserveAspectFit
         mipmap: true
         sourceSize: Qt.size(Math.ceil(width * Screen.devicePixelRatio), Math.ceil(height * Screen.devicePixelRatio))
