@@ -1,0 +1,2514 @@
+Internal ctest changing into directory: /home/runner/work/OpenNOW/OpenNOW/build/opennow-qt-release
+Test project /home/runner/work/OpenNOW/OpenNOW/build/opennow-qt-release
+        Start   1: opennow-applicationicons-tests
+        Start   2: opennow-graphicsdevices-tests
+        Start   3: opennow-macawdl-tests
+        Start   4: opennow-waylandhdroutput-tests
+  1/402 Test   #2: opennow-graphicsdevices-tests ...................   Passed    0.02 sec
+        Start   5: opennow-windowshdrdisplay-tests
+  2/402 Test   #4: opennow-waylandhdroutput-tests ..................   Passed    0.02 sec
+        Start   6: opennow-updatefailure-tests
+  3/402 Test   #5: opennow-windowshdrdisplay-tests .................   Passed    0.01 sec
+        Start   7: opennow-queueselector-tests
+  4/402 Test   #1: opennow-applicationicons-tests ..................   Passed    0.05 sec
+        Start   8: qml-queue-selector
+  5/402 Test   #3: opennow-macawdl-tests ...........................   Passed    0.06 sec
+        Start   9: opennow-hevchelp-tests
+  6/402 Test   #6: opennow-updatefailure-tests .....................   Passed    0.11 sec
+        Start  10: opennow-tenbitwarning-tests
+  7/402 Test   #9: opennow-hevchelp-tests ..........................   Passed    0.18 sec
+        Start  11: qml-ten-bit-warning-desktop
+  8/402 Test  #10: opennow-tenbitwarning-tests .....................   Passed    0.17 sec
+        Start  12: qml-ten-bit-warning-console
+  9/402 Test   #7: opennow-queueselector-tests .....................   Passed    0.38 sec
+        Start  13: opennow-consolelayout-tests
+ 10/402 Test  #13: opennow-consolelayout-tests .....................***Failed    0.33 sec
+********* Start testing of consolelayout *********
+Config: Using QtTest library 6.8.3, Qt 6.8.3 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 10.3.1 20210422 (Red Hat 10.3.1-1)), ubuntu 24.04
+PASS   : consolelayout::ConsoleLayout::initTestCase()
+QWARN  : consolelayout::ConsoleLayout::test_clockUpdates() file:///home/runner/work/OpenNOW/OpenNOW/opennow-qt/qml/theme/Theme.qml:93: ReferenceError: AppController is not defined
+QWARN  : consolelayout::ConsoleLayout::test_clockUpdates() file:///home/runner/work/OpenNOW/OpenNOW/opennow-qt/qml/theme/Theme.qml:92: ReferenceError: AppController is not defined
+QWARN  : consolelayout::ConsoleLayout::test_clockUpdates() file:///home/runner/work/OpenNOW/OpenNOW/opennow-qt/qml/theme/Theme.qml:91: ReferenceError: AppController is not defined
+QWARN  : consolelayout::ConsoleLayout::test_clockUpdates() file:///home/runner/work/OpenNOW/OpenNOW/opennow-qt/qml/theme/Theme.qml:90: ReferenceError: AppController is not defined
+QWARN  : consolelayout::ConsoleLayout::test_clockUpdates() file:///home/runner/work/OpenNOW/OpenNOW/opennow-qt/qml/theme/Theme.qml:89: ReferenceError: AppController is not defined
+FAIL!  : consolelayout::ConsoleLayout::test_clockUpdates() Compared values are not the same with delta(0.01)
+   Actual   (): 27.500000000000004
+   Expected (): 28
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/consolelayout/tst_consolelayout.qml(44)]
+FAIL!  : consolelayout::ConsoleLayout::test_fullscreenRoundTrip() Compared values are not the same with delta(0.01)
+   Actual   (): 27.499999999999996
+   Expected (): 28
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/consolelayout/tst_consolelayout.qml(44)]
+FAIL!  : consolelayout::ConsoleLayout::test_resizeAndModeSwitch() Compared values are not the same with delta(0.01)
+   Actual   (): 27.5
+   Expected (): 28
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/consolelayout/tst_consolelayout.qml(44)]
+FAIL!  : consolelayout::ConsoleLayout::test_resolutions(960x540) Compared values are not the same with delta(0.01)
+   Actual   (): 27.5
+   Expected (): 28
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/consolelayout/tst_consolelayout.qml(44)]
+FAIL!  : consolelayout::ConsoleLayout::test_resolutions(1280x720) Compared values are not the same with delta(0.01)
+   Actual   (): 27.500000000000004
+   Expected (): 28
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/consolelayout/tst_consolelayout.qml(44)]
+FAIL!  : consolelayout::ConsoleLayout::test_resolutions(1280x800) Compared values are not the same with delta(0.01)
+   Actual   (): 27.500000000000004
+   Expected (): 28
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/consolelayout/tst_consolelayout.qml(44)]
+FAIL!  : consolelayout::ConsoleLayout::test_resolutions(1920x1080) Compared values are not the same with delta(0.01)
+   Actual   (): 27.5
+   Expected (): 28
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/consolelayout/tst_consolelayout.qml(44)]
+FAIL!  : consolelayout::ConsoleLayout::test_resolutions(1920x1200) Compared values are not the same with delta(0.01)
+   Actual   (): 27.5
+   Expected (): 28
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/consolelayout/tst_consolelayout.qml(44)]
+FAIL!  : consolelayout::ConsoleLayout::test_resolutions(2560x1440) Compared values are not the same with delta(0.01)
+   Actual   (): 27.500000000000004
+   Expected (): 28
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/consolelayout/tst_consolelayout.qml(44)]
+FAIL!  : consolelayout::ConsoleLayout::test_resolutions(2560x1600) Compared values are not the same with delta(0.01)
+   Actual   (): 27.500000000000004
+   Expected (): 28
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/consolelayout/tst_consolelayout.qml(44)]
+FAIL!  : consolelayout::ConsoleLayout::test_resolutions(3840x2160) Compared values are not the same with delta(0.01)
+   Actual   (): 27.5
+   Expected (): 28
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/consolelayout/tst_consolelayout.qml(44)]
+FAIL!  : consolelayout::ConsoleLayout::test_resolutions(3840x2400) Compared values are not the same with delta(0.01)
+   Actual   (): 27.5
+   Expected (): 28
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/consolelayout/tst_consolelayout.qml(44)]
+FAIL!  : consolelayout::ConsoleLayout::test_resolutions(ultrawide) Compared values are not the same with delta(0.01)
+   Actual   (): 27.500000000000004
+   Expected (): 28
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/consolelayout/tst_consolelayout.qml(44)]
+FAIL!  : consolelayout::ConsoleLayout::test_resolutions(arbitrary-window) Compared values are not the same with delta(0.01)
+   Actual   (): 27.500000000000004
+   Expected (): 28
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/consolelayout/tst_consolelayout.qml(44)]
+PASS   : consolelayout::ConsoleLayout::cleanupTestCase()
+Totals: 2 passed, 14 failed, 0 skipped, 0 blacklisted, 163ms
+********* Finished testing of consolelayout *********
+
+        Start  14: opennow-onboarding-tests
+ 11/402 Test  #14: opennow-onboarding-tests ........................   Passed    0.05 sec
+        Start  15: qml-onboarding-replay-960
+ 12/402 Test   #8: qml-queue-selector ..............................   Passed    1.16 sec
+        Start  16: qml-onboarding-replay-1440
+ 13/402 Test  #12: qml-ten-bit-warning-console .....................   Passed    1.12 sec
+        Start  17: qml-onboarding-layout-960-0
+ 14/402 Test  #11: qml-ten-bit-warning-desktop .....................   Passed    1.30 sec
+        Start  18: qml-onboarding-layout-960-2
+ 15/402 Test  #15: qml-onboarding-replay-960 .......................   Passed    1.18 sec
+        Start  19: qml-onboarding-layout-960-5
+ 16/402 Test  #16: qml-onboarding-replay-1440 ......................   Passed    1.21 sec
+        Start  20: qml-onboarding-resolution-960
+ 17/402 Test  #17: qml-onboarding-layout-960-0 .....................   Passed    1.50 sec
+        Start  21: qml-onboarding-layout-1440-0
+ 18/402 Test  #18: qml-onboarding-layout-960-2 .....................   Passed    1.41 sec
+        Start  22: qml-onboarding-layout-1440-2
+ 19/402 Test  #19: qml-onboarding-layout-960-5 .....................   Passed    1.40 sec
+        Start  23: qml-onboarding-layout-1440-5
+ 20/402 Test  #20: qml-onboarding-resolution-960 ...................   Passed    1.51 sec
+        Start  24: qml-onboarding-resolution-1440
+ 21/402 Test  #22: qml-onboarding-layout-1440-2 ....................   Passed    1.49 sec
+        Start  25: qml-onboarding-awdl-960
+ 22/402 Test  #21: qml-onboarding-layout-1440-0 ....................   Passed    1.69 sec
+        Start  26: qml-onboarding-awdl-1440
+ 23/402 Test  #23: qml-onboarding-layout-1440-5 ....................   Passed    1.48 sec
+        Start  27: qml-onboarding-awdl-fullscreen
+ 24/402 Test  #24: qml-onboarding-resolution-1440 ..................   Passed    1.52 sec
+        Start  28: qml-onboarding-login-scroll
+ 25/402 Test  #25: qml-onboarding-awdl-960 .........................   Passed    1.64 sec
+        Start  29: qml-onboarding-scroll-0
+ 26/402 Test  #26: qml-onboarding-awdl-1440 ........................   Passed    1.76 sec
+        Start  30: qml-onboarding-scroll-1
+ 27/402 Test  #27: qml-onboarding-awdl-fullscreen ..................   Passed    1.74 sec
+        Start  31: qml-onboarding-scroll-2
+ 28/402 Test  #28: qml-onboarding-login-scroll .....................   Passed    1.60 sec
+        Start  32: qml-onboarding-scroll-3
+ 29/402 Test  #29: qml-onboarding-scroll-0 .........................   Passed    1.44 sec
+        Start  33: qml-onboarding-scroll-4
+ 30/402 Test  #30: qml-onboarding-scroll-1 .........................   Passed    1.47 sec
+        Start  34: qml-onboarding-scroll-5
+ 31/402 Test  #31: qml-onboarding-scroll-2 .........................   Passed    1.52 sec
+        Start  35: qml-onboarding-960
+ 32/402 Test  #32: qml-onboarding-scroll-3 .........................   Passed    1.54 sec
+        Start  36: qml-onboarding-render-960-0
+ 33/402 Test  #33: qml-onboarding-scroll-4 .........................   Passed    1.45 sec
+        Start  37: qml-onboarding-render-960-1
+ 34/402 Test  #34: qml-onboarding-scroll-5 .........................   Passed    1.46 sec
+        Start  38: qml-onboarding-render-960-2
+ 35/402 Test  #35: qml-onboarding-960 ..............................   Passed    1.43 sec
+        Start  39: qml-onboarding-render-960-3
+ 36/402 Test  #36: qml-onboarding-render-960-0 .....................   Passed    1.47 sec
+        Start  40: qml-onboarding-render-960-4
+ 37/402 Test  #37: qml-onboarding-render-960-1 .....................   Passed    1.43 sec
+        Start  41: qml-onboarding-render-960-5
+ 38/402 Test  #38: qml-onboarding-render-960-2 .....................   Passed    1.47 sec
+        Start  42: qml-onboarding-1440
+ 39/402 Test  #39: qml-onboarding-render-960-3 .....................   Passed    1.50 sec
+        Start  43: qml-onboarding-render-1440-0
+ 40/402 Test  #40: qml-onboarding-render-960-4 .....................   Passed    1.40 sec
+        Start  44: qml-onboarding-render-1440-1
+ 41/402 Test  #41: qml-onboarding-render-960-5 .....................   Passed    1.42 sec
+        Start  45: qml-onboarding-render-1440-2
+ 42/402 Test  #42: qml-onboarding-1440 .............................   Passed    1.47 sec
+        Start  46: qml-onboarding-render-1440-3
+ 43/402 Test  #43: qml-onboarding-render-1440-0 ....................   Passed    1.51 sec
+        Start  47: qml-onboarding-render-1440-4
+ 44/402 Test  #44: qml-onboarding-render-1440-1 ....................   Passed    1.35 sec
+        Start  48: qml-onboarding-render-1440-5
+ 45/402 Test  #45: qml-onboarding-render-1440-2 ....................   Passed    1.47 sec
+        Start  49: opennow-streamtoasts-tests
+ 46/402 Test  #46: qml-onboarding-render-1440-3 ....................   Passed    1.38 sec
+        Start  50: opennow-controllericons-tests
+ 47/402 Test  #50: opennow-controllericons-tests ...................***Failed    0.21 sec
+********* Start testing of controllericons *********
+Config: Using QtTest library 6.8.3, Qt 6.8.3 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 10.3.1 20210422 (Red Hat 10.3.1-1)), ubuntu 24.04
+PASS   : controllericons::ControllerIcons::initTestCase()
+PASS   : controllericons::ControllerIcons::test_assets(Awhite)
+PASS   : controllericons::ControllerIcons::test_assets(A#111827)
+PASS   : controllericons::ControllerIcons::test_assets(Bwhite)
+PASS   : controllericons::ControllerIcons::test_assets(B#111827)
+PASS   : controllericons::ControllerIcons::test_assets(Xwhite)
+PASS   : controllericons::ControllerIcons::test_assets(X#111827)
+PASS   : controllericons::ControllerIcons::test_assets(Ywhite)
+PASS   : controllericons::ControllerIcons::test_assets(Y#111827)
+PASS   : controllericons::ControllerIcons::test_assets(LBwhite)
+PASS   : controllericons::ControllerIcons::test_assets(LB#111827)
+PASS   : controllericons::ControllerIcons::test_assets(RBwhite)
+PASS   : controllericons::ControllerIcons::test_assets(RB#111827)
+PASS   : controllericons::ControllerIcons::test_assets(LTwhite)
+PASS   : controllericons::ControllerIcons::test_assets(LT#111827)
+PASS   : controllericons::ControllerIcons::test_assets(RTwhite)
+PASS   : controllericons::ControllerIcons::test_assets(RT#111827)
+PASS   : controllericons::ControllerIcons::test_assets(MENUwhite)
+PASS   : controllericons::ControllerIcons::test_assets(MENU#111827)
+PASS   : controllericons::ControllerIcons::test_assets(VIEWwhite)
+PASS   : controllericons::ControllerIcons::test_assets(VIEW#111827)
+PASS   : controllericons::ControllerIcons::test_assets(GUIDEwhite)
+PASS   : controllericons::ControllerIcons::test_assets(GUIDE#111827)
+PASS   : controllericons::ControllerIcons::test_assets(controllerwhite)
+PASS   : controllericons::ControllerIcons::test_assets(controller#111827)
+PASS   : controllericons::ControllerIcons::test_assets(xboxwhite)
+PASS   : controllericons::ControllerIcons::test_assets(xbox#111827)
+PASS   : controllericons::ControllerIcons::test_assets(playstationwhite)
+PASS   : controllericons::ControllerIcons::test_assets(playstation#111827)
+PASS   : controllericons::ControllerIcons::test_assets(keyboardwhite)
+PASS   : controllericons::ControllerIcons::test_assets(keyboard#111827)
+FAIL!  : controllericons::ControllerIcons::test_buttonContrastAndActivation() Compared values are not the same
+   Actual   (): #f2f2f2
+   Expected (): #ffffff
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/controllericons/tst_controllericons.qml(84)]
+PASS   : controllericons::ControllerIcons::test_consoleButtonReturnActivation(return)
+PASS   : controllericons::ControllerIcons::test_consoleButtonReturnActivation(enter)
+PASS   : controllericons::ControllerIcons::test_desktopControllerIcons()
+PASS   : controllericons::ControllerIcons::test_promptSizingAndContrast()
+PASS   : controllericons::ControllerIcons::test_semanticsAndFallbacks()
+PASS   : controllericons::ControllerIcons::cleanupTestCase()
+PASS   : controllericons::KeyboardIcons::initTestCase()
+PASS   : controllericons::KeyboardIcons::test_assets(ctrl-white)
+PASS   : controllericons::KeyboardIcons::test_assets(ctrl-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(control-white)
+PASS   : controllericons::KeyboardIcons::test_assets(control-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(shift-white)
+PASS   : controllericons::KeyboardIcons::test_assets(shift-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(alt-white)
+PASS   : controllericons::KeyboardIcons::test_assets(alt-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(cmd-white)
+PASS   : controllericons::KeyboardIcons::test_assets(cmd-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(command-white)
+PASS   : controllericons::KeyboardIcons::test_assets(command-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(⌘-white)
+PASS   : controllericons::KeyboardIcons::test_assets(⌘-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(option-white)
+PASS   : controllericons::KeyboardIcons::test_assets(option-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(win-white)
+PASS   : controllericons::KeyboardIcons::test_assets(win-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(super-white)
+PASS   : controllericons::KeyboardIcons::test_assets(super-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(meta-white)
+PASS   : controllericons::KeyboardIcons::test_assets(meta-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(esc-white)
+PASS   : controllericons::KeyboardIcons::test_assets(esc-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(escape-white)
+PASS   : controllericons::KeyboardIcons::test_assets(escape-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(enter-white)
+PASS   : controllericons::KeyboardIcons::test_assets(enter-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(return-white)
+PASS   : controllericons::KeyboardIcons::test_assets(return-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(tab-white)
+PASS   : controllericons::KeyboardIcons::test_assets(tab-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(space-white)
+PASS   : controllericons::KeyboardIcons::test_assets(space-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(backspace-white)
+PASS   : controllericons::KeyboardIcons::test_assets(backspace-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(del-white)
+PASS   : controllericons::KeyboardIcons::test_assets(del-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(delete-white)
+PASS   : controllericons::KeyboardIcons::test_assets(delete-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(ins-white)
+PASS   : controllericons::KeyboardIcons::test_assets(ins-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(insert-white)
+PASS   : controllericons::KeyboardIcons::test_assets(insert-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(home-white)
+PASS   : controllericons::KeyboardIcons::test_assets(home-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(end-white)
+PASS   : controllericons::KeyboardIcons::test_assets(end-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(pgup-white)
+PASS   : controllericons::KeyboardIcons::test_assets(pgup-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(pageup-white)
+PASS   : controllericons::KeyboardIcons::test_assets(pageup-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(page up-white)
+PASS   : controllericons::KeyboardIcons::test_assets(page up-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(pgdown-white)
+PASS   : controllericons::KeyboardIcons::test_assets(pgdown-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(pgdn-white)
+PASS   : controllericons::KeyboardIcons::test_assets(pgdn-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(pagedown-white)
+PASS   : controllericons::KeyboardIcons::test_assets(pagedown-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(page down-white)
+PASS   : controllericons::KeyboardIcons::test_assets(page down-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(pause-white)
+PASS   : controllericons::KeyboardIcons::test_assets(pause-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(print-white)
+PASS   : controllericons::KeyboardIcons::test_assets(print-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(printscreen-white)
+PASS   : controllericons::KeyboardIcons::test_assets(printscreen-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(up-white)
+PASS   : controllericons::KeyboardIcons::test_assets(up-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(↑-white)
+PASS   : controllericons::KeyboardIcons::test_assets(↑-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(down-white)
+PASS   : controllericons::KeyboardIcons::test_assets(down-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(↓-white)
+PASS   : controllericons::KeyboardIcons::test_assets(↓-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(left-white)
+PASS   : controllericons::KeyboardIcons::test_assets(left-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(←-white)
+PASS   : controllericons::KeyboardIcons::test_assets(←-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(right-white)
+PASS   : controllericons::KeyboardIcons::test_assets(right-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(→-white)
+PASS   : controllericons::KeyboardIcons::test_assets(→-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(arrows-white)
+PASS   : controllericons::KeyboardIcons::test_assets(arrows-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(↑ ↓-white)
+PASS   : controllericons::KeyboardIcons::test_assets(↑ ↓-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(/-white)
+PASS   : controllericons::KeyboardIcons::test_assets(/-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(\-white)
+PASS   : controllericons::KeyboardIcons::test_assets(\-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(?-white)
+PASS   : controllericons::KeyboardIcons::test_assets(?-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(,-white)
+PASS   : controllericons::KeyboardIcons::test_assets(,-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(.-white)
+PASS   : controllericons::KeyboardIcons::test_assets(.-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(+-white)
+PASS   : controllericons::KeyboardIcons::test_assets(+-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(--white)
+PASS   : controllericons::KeyboardIcons::test_assets(--dark)
+PASS   : controllericons::KeyboardIcons::test_assets(=-white)
+PASS   : controllericons::KeyboardIcons::test_assets(=-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(;-white)
+PASS   : controllericons::KeyboardIcons::test_assets(;-dark)
+PASS   : controllericons::KeyboardIcons::test_assets('-white)
+PASS   : controllericons::KeyboardIcons::test_assets('-dark)
+PASS   : controllericons::KeyboardIcons::test_assets([-white)
+PASS   : controllericons::KeyboardIcons::test_assets([-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(]-white)
+PASS   : controllericons::KeyboardIcons::test_assets(]-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(`-white)
+PASS   : controllericons::KeyboardIcons::test_assets(`-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(A-white)
+PASS   : controllericons::KeyboardIcons::test_assets(A-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(B-white)
+PASS   : controllericons::KeyboardIcons::test_assets(B-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(C-white)
+PASS   : controllericons::KeyboardIcons::test_assets(C-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(D-white)
+PASS   : controllericons::KeyboardIcons::test_assets(D-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(E-white)
+PASS   : controllericons::KeyboardIcons::test_assets(E-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(F-white)
+PASS   : controllericons::KeyboardIcons::test_assets(F-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(G-white)
+PASS   : controllericons::KeyboardIcons::test_assets(G-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(H-white)
+PASS   : controllericons::KeyboardIcons::test_assets(H-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(I-white)
+PASS   : controllericons::KeyboardIcons::test_assets(I-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(J-white)
+PASS   : controllericons::KeyboardIcons::test_assets(J-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(K-white)
+PASS   : controllericons::KeyboardIcons::test_assets(K-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(L-white)
+PASS   : controllericons::KeyboardIcons::test_assets(L-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(M-white)
+PASS   : controllericons::KeyboardIcons::test_assets(M-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(N-white)
+PASS   : controllericons::KeyboardIcons::test_assets(N-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(O-white)
+PASS   : controllericons::KeyboardIcons::test_assets(O-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(P-white)
+PASS   : controllericons::KeyboardIcons::test_assets(P-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(Q-white)
+PASS   : controllericons::KeyboardIcons::test_assets(Q-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(R-white)
+PASS   : controllericons::KeyboardIcons::test_assets(R-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(S-white)
+PASS   : controllericons::KeyboardIcons::test_assets(S-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(T-white)
+PASS   : controllericons::KeyboardIcons::test_assets(T-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(U-white)
+PASS   : controllericons::KeyboardIcons::test_assets(U-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(V-white)
+PASS   : controllericons::KeyboardIcons::test_assets(V-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(W-white)
+PASS   : controllericons::KeyboardIcons::test_assets(W-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(X-white)
+PASS   : controllericons::KeyboardIcons::test_assets(X-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(Y-white)
+PASS   : controllericons::KeyboardIcons::test_assets(Y-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(Z-white)
+PASS   : controllericons::KeyboardIcons::test_assets(Z-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(0-white)
+PASS   : controllericons::KeyboardIcons::test_assets(0-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(1-white)
+PASS   : controllericons::KeyboardIcons::test_assets(1-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(2-white)
+PASS   : controllericons::KeyboardIcons::test_assets(2-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(3-white)
+PASS   : controllericons::KeyboardIcons::test_assets(3-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(4-white)
+PASS   : controllericons::KeyboardIcons::test_assets(4-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(5-white)
+PASS   : controllericons::KeyboardIcons::test_assets(5-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(6-white)
+PASS   : controllericons::KeyboardIcons::test_assets(6-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(7-white)
+PASS   : controllericons::KeyboardIcons::test_assets(7-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(8-white)
+PASS   : controllericons::KeyboardIcons::test_assets(8-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(9-white)
+PASS   : controllericons::KeyboardIcons::test_assets(9-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(F1-white)
+PASS   : controllericons::KeyboardIcons::test_assets(F1-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(F2-white)
+PASS   : controllericons::KeyboardIcons::test_assets(F2-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(F3-white)
+PASS   : controllericons::KeyboardIcons::test_assets(F3-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(F4-white)
+PASS   : controllericons::KeyboardIcons::test_assets(F4-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(F5-white)
+PASS   : controllericons::KeyboardIcons::test_assets(F5-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(F6-white)
+PASS   : controllericons::KeyboardIcons::test_assets(F6-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(F7-white)
+PASS   : controllericons::KeyboardIcons::test_assets(F7-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(F8-white)
+PASS   : controllericons::KeyboardIcons::test_assets(F8-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(F9-white)
+PASS   : controllericons::KeyboardIcons::test_assets(F9-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(F10-white)
+PASS   : controllericons::KeyboardIcons::test_assets(F10-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(F11-white)
+PASS   : controllericons::KeyboardIcons::test_assets(F11-dark)
+PASS   : controllericons::KeyboardIcons::test_assets(F12-white)
+PASS   : controllericons::KeyboardIcons::test_assets(F12-dark)
+PASS   : controllericons::KeyboardIcons::test_chords(plus-delimited)
+PASS   : controllericons::KeyboardIcons::test_chords(space-delimited)
+PASS   : controllericons::KeyboardIcons::test_chords(trimmed)
+PASS   : controllericons::KeyboardIcons::test_chords(literal-plus)
+PASS   : controllericons::KeyboardIcons::test_chords(modified-plus)
+PASS   : controllericons::KeyboardIcons::test_chords(modified-comma)
+PASS   : controllericons::KeyboardIcons::test_chords(all-modifiers)
+PASS   : controllericons::KeyboardIcons::test_chords(page-up)
+PASS   : controllericons::KeyboardIcons::test_chords(navigation)
+PASS   : controllericons::KeyboardIcons::test_chords(unavailable-key)
+PASS   : controllericons::KeyboardIcons::test_chords(unknown-key)
+PASS   : controllericons::KeyboardIcons::test_chords(multi-stroke)
+PASS   : controllericons::KeyboardIcons::test_chords(empty)
+PASS   : controllericons::KeyboardIcons::test_fallbackAndDeviceSeparation()
+PASS   : controllericons::KeyboardIcons::test_platformModifiers()
+PASS   : controllericons::KeyboardIcons::test_shortcutButtonActivation()
+PASS   : controllericons::KeyboardIcons::test_sizingAndThemeChanges()
+PASS   : controllericons::KeyboardIcons::test_translatedAccessibleLabel()
+PASS   : controllericons::KeyboardIcons::cleanupTestCase()
+Totals: 267 passed, 1 failed, 0 skipped, 0 blacklisted, 159ms
+********* Finished testing of controllericons *********
+
+        Start  51: opennow-consoleactions-tests
+ 48/402 Test  #47: qml-onboarding-render-1440-4 ....................   Passed    1.32 sec
+        Start  52: opennow-theme-tests
+ 49/402 Test  #51: opennow-consoleactions-tests ....................   Passed    0.20 sec
+        Start  53: qml-gpu-settings-desktop-0
+ 50/402 Test  #48: qml-onboarding-render-1440-5 ....................   Passed    1.32 sec
+        Start  54: qml-gpu-settings-desktop-1
+ 51/402 Test  #52: opennow-theme-tests .............................***Failed    0.75 sec
+********* Start testing of theme *********
+Config: Using QtTest library 6.8.3, Qt 6.8.3 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 10.3.1 20210422 (Red Hat 10.3.1-1)), ubuntu 24.04
+PASS   : theme::ThemePalette::initTestCase()
+PASS   : theme::ThemePalette::test_autoFollowsSystem()
+PASS   : theme::ThemePalette::test_optimisticSettingsMatchPersistedCoupling()
+FAIL!  : theme::ThemePalette::test_palette(nocturne-light-pack) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(nocturne-light-green) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(nocturne-light-blue) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(nocturne-light-violet) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(nocturne-light-rose) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(nocturne-light-coral) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(nocturne-light-amber) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(nocturne-light-white) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(nocturne-dark-pack) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(nocturne-dark-green) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(nocturne-dark-blue) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(nocturne-dark-violet) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(nocturne-dark-rose) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(nocturne-dark-coral) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(nocturne-dark-amber) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(nocturne-dark-white) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(aurora-light-pack) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(aurora-light-green) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(aurora-light-blue) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(aurora-light-violet) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(aurora-light-rose) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(aurora-light-coral) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(aurora-light-amber) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(aurora-light-white) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(aurora-dark-pack) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(aurora-dark-green) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(aurora-dark-blue) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(aurora-dark-violet) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(aurora-dark-rose) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(aurora-dark-coral) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(aurora-dark-amber) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(aurora-dark-white) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(kraft-light-pack) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(kraft-light-green) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(kraft-light-blue) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(kraft-light-violet) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(kraft-light-rose) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(kraft-light-coral) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(kraft-light-amber) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(kraft-light-white) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(kraft-dark-pack) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(kraft-dark-green) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(kraft-dark-blue) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(kraft-dark-violet) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(kraft-dark-rose) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(kraft-dark-coral) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(kraft-dark-amber) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(kraft-dark-white) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+PASS   : theme::ThemePalette::test_palette(phosphor-light-pack)
+PASS   : theme::ThemePalette::test_palette(phosphor-light-green)
+PASS   : theme::ThemePalette::test_palette(phosphor-light-blue)
+PASS   : theme::ThemePalette::test_palette(phosphor-light-violet)
+PASS   : theme::ThemePalette::test_palette(phosphor-light-rose)
+PASS   : theme::ThemePalette::test_palette(phosphor-light-coral)
+PASS   : theme::ThemePalette::test_palette(phosphor-light-amber)
+PASS   : theme::ThemePalette::test_palette(phosphor-light-white)
+FAIL!  : theme::ThemePalette::test_palette(phosphor-dark-pack) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.00
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(phosphor-dark-green) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.00
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(phosphor-dark-blue) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.00
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(phosphor-dark-violet) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.00
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(phosphor-dark-rose) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.00
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(phosphor-dark-coral) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.00
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(phosphor-dark-amber) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.00
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(phosphor-dark-white) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.00
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(bone-light-pack) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(bone-light-green) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(bone-light-blue) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(bone-light-violet) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(bone-light-rose) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(bone-light-coral) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(bone-light-amber) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(bone-light-white) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(bone-dark-pack) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(bone-dark-green) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(bone-dark-blue) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(bone-dark-violet) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(bone-dark-rose) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(bone-dark-coral) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(bone-dark-amber) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(bone-dark-white) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(cobalt-light-pack) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(cobalt-light-green) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(cobalt-light-blue) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(cobalt-light-violet) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(cobalt-light-rose) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(cobalt-light-coral) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(cobalt-light-amber) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(cobalt-light-white) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(cobalt-dark-pack) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(cobalt-dark-green) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(cobalt-dark-blue) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(cobalt-dark-violet) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(cobalt-dark-rose) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(cobalt-dark-coral) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(cobalt-dark-amber) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(cobalt-dark-white) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(hibiscus-light-pack) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(hibiscus-light-green) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(hibiscus-light-blue) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(hibiscus-light-violet) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(hibiscus-light-rose) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(hibiscus-light-coral) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(hibiscus-light-amber) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(hibiscus-light-white) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(hibiscus-dark-pack) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(hibiscus-dark-green) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(hibiscus-dark-blue) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(hibiscus-dark-violet) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(hibiscus-dark-rose) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(hibiscus-dark-coral) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(hibiscus-dark-amber) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(hibiscus-dark-white) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(chapel-light-pack) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(chapel-light-green) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(chapel-light-blue) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(chapel-light-violet) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(chapel-light-rose) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(chapel-light-coral) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(chapel-light-amber) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(chapel-light-white) Compared values are not the same
+   Actual   (): 1.00
+   Expected (): 0.95
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(chapel-dark-pack) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(chapel-dark-green) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(chapel-dark-blue) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(chapel-dark-violet) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(chapel-dark-rose) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(chapel-dark-coral) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(chapel-dark-amber) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+FAIL!  : theme::ThemePalette::test_palette(chapel-dark-white) Compared values are not the same
+   Actual   (): 0.11
+   Expected (): 0.08
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_palette.qml(59)]
+PASS   : theme::ThemePalette::test_previewRestoresOverrides()
+PASS   : theme::ThemePalette::cleanupTestCase()
+PASS   : theme::SessionSetupProgress::initTestCase()
+PASS   : theme::SessionSetupProgress::test_lifecyclePrecedence()
+PASS   : theme::SessionSetupProgress::test_nativeConnectionProgress()
+PASS   : theme::SessionSetupProgress::test_progressCanMoveBackward()
+PASS   : theme::SessionSetupProgress::test_queuePositionBounds()
+PASS   : theme::SessionSetupProgress::test_setupSteps(missing)
+PASS   : theme::SessionSetupProgress::test_setupSteps(null)
+PASS   : theme::SessionSetupProgress::test_setupSteps(unknown)
+PASS   : theme::SessionSetupProgress::test_setupSteps(negative)
+PASS   : theme::SessionSetupProgress::test_setupSteps(invalid)
+PASS   : theme::SessionSetupProgress::test_setupSteps(fraction)
+PASS   : theme::SessionSetupProgress::test_setupSteps(connecting)
+PASS   : theme::SessionSetupProgress::test_setupSteps(queue-without-position)
+PASS   : theme::SessionSetupProgress::test_setupSteps(queue)
+PASS   : theme::SessionSetupProgress::test_setupSteps(position-only)
+PASS   : theme::SessionSetupProgress::test_setupSteps(configuring-2)
+PASS   : theme::SessionSetupProgress::test_setupSteps(configuring-3-not-native-enum)
+PASS   : theme::SessionSetupProgress::test_setupSteps(configuring-4-not-ready)
+PASS   : theme::SessionSetupProgress::test_setupSteps(cleanup)
+PASS   : theme::SessionSetupProgress::test_setupSteps(storage)
+PASS   : theme::SessionSetupProgress::cleanupTestCase()
+PASS   : theme::SessionStartingContrast::initTestCase()
+FAIL!  : theme::SessionStartingContrast::test_failureAndReconnect() Compared values are not the same
+   Actual   (): #141414
+   Expected (): #0a0d14
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(96)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(nocturne-light-pack) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(nocturne-light-green) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(nocturne-light-blue) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(nocturne-light-violet) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(nocturne-light-rose) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(nocturne-light-coral) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(nocturne-light-amber) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(nocturne-light-white) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(nocturne-dark-pack) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(nocturne-dark-green) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(nocturne-dark-blue) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(nocturne-dark-violet) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(nocturne-dark-rose) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(nocturne-dark-coral) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(nocturne-dark-amber) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(nocturne-dark-white) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(nocturne-auto-pack) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(nocturne-auto-green) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(nocturne-auto-blue) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(nocturne-auto-violet) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(nocturne-auto-rose) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(nocturne-auto-coral) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(nocturne-auto-amber) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(nocturne-auto-white) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(aurora-light-pack) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(aurora-light-green) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(aurora-light-blue) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(aurora-light-violet) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(aurora-light-rose) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(aurora-light-coral) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(aurora-light-amber) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(aurora-light-white) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(aurora-dark-pack) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(aurora-dark-green) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(aurora-dark-blue) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(aurora-dark-violet) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(aurora-dark-rose) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(aurora-dark-coral) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(aurora-dark-amber) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(aurora-dark-white) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(aurora-auto-pack) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(aurora-auto-green) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(aurora-auto-blue) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(aurora-auto-violet) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(aurora-auto-rose) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(aurora-auto-coral) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(aurora-auto-amber) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(aurora-auto-white) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(kraft-light-pack) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(kraft-light-green) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(kraft-light-blue) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(kraft-light-violet) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(kraft-light-rose) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(kraft-light-coral) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(kraft-light-amber) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(kraft-light-white) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(kraft-dark-pack) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(kraft-dark-green) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(kraft-dark-blue) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(kraft-dark-violet) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(kraft-dark-rose) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(kraft-dark-coral) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(kraft-dark-amber) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(kraft-dark-white) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(kraft-auto-pack) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(kraft-auto-green) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(kraft-auto-blue) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(kraft-auto-violet) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(kraft-auto-rose) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(kraft-auto-coral) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(kraft-auto-amber) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(kraft-auto-white) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(phosphor-light-pack) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(phosphor-light-green) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(phosphor-light-blue) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(phosphor-light-violet) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(phosphor-light-rose) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(phosphor-light-coral) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(phosphor-light-amber) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(phosphor-light-white) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(phosphor-dark-pack) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(phosphor-dark-green) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(phosphor-dark-blue) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(phosphor-dark-violet) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(phosphor-dark-rose) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(phosphor-dark-coral) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(phosphor-dark-amber) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(phosphor-dark-white) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(phosphor-auto-pack) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(phosphor-auto-green) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(phosphor-auto-blue) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(phosphor-auto-violet) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(phosphor-auto-rose) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(phosphor-auto-coral) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(phosphor-auto-amber) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(phosphor-auto-white) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(bone-light-pack) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(bone-light-green) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(bone-light-blue) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(bone-light-violet) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(bone-light-rose) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(bone-light-coral) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(bone-light-amber) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(bone-light-white) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(bone-dark-pack) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(bone-dark-green) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(bone-dark-blue) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(bone-dark-violet) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(bone-dark-rose) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(bone-dark-coral) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(bone-dark-amber) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(bone-dark-white) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(bone-auto-pack) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(bone-auto-green) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(bone-auto-blue) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(bone-auto-violet) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(bone-auto-rose) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(bone-auto-coral) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(bone-auto-amber) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(bone-auto-white) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(cobalt-light-pack) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(cobalt-light-green) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(cobalt-light-blue) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(cobalt-light-violet) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(cobalt-light-rose) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(cobalt-light-coral) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(cobalt-light-amber) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(cobalt-light-white) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(cobalt-dark-pack) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(cobalt-dark-green) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(cobalt-dark-blue) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(cobalt-dark-violet) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(cobalt-dark-rose) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(cobalt-dark-coral) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(cobalt-dark-amber) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(cobalt-dark-white) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(cobalt-auto-pack) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(cobalt-auto-green) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(cobalt-auto-blue) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(cobalt-auto-violet) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(cobalt-auto-rose) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(cobalt-auto-coral) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(cobalt-auto-amber) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(cobalt-auto-white) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(hibiscus-light-pack) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(hibiscus-light-green) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(hibiscus-light-blue) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(hibiscus-light-violet) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(hibiscus-light-rose) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(hibiscus-light-coral) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(hibiscus-light-amber) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(hibiscus-light-white) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(hibiscus-dark-pack) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(hibiscus-dark-green) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(hibiscus-dark-blue) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(hibiscus-dark-violet) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(hibiscus-dark-rose) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(hibiscus-dark-coral) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(hibiscus-dark-amber) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(hibiscus-dark-white) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(hibiscus-auto-pack) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(hibiscus-auto-green) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(hibiscus-auto-blue) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(hibiscus-auto-violet) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(hibiscus-auto-rose) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(hibiscus-auto-coral) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(hibiscus-auto-amber) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(hibiscus-auto-white) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(chapel-light-pack) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(chapel-light-green) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(chapel-light-blue) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(chapel-light-violet) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(chapel-light-rose) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(chapel-light-coral) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(chapel-light-amber) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(chapel-light-white) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(chapel-dark-pack) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(chapel-dark-green) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(chapel-dark-blue) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(chapel-dark-violet) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(chapel-dark-rose) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(chapel-dark-coral) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(chapel-dark-amber) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(chapel-dark-white) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(chapel-auto-pack) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(chapel-auto-green) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(chapel-auto-blue) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(chapel-auto-violet) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(chapel-auto-rose) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(chapel-auto-coral) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(chapel-auto-amber) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+FAIL!  : theme::SessionStartingContrast::test_launchPalette(chapel-auto-white) 'Missing text: STARTING SESSION' returned FALSE. ()
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_sessionstarting.qml(40)]
+PASS   : theme::SessionStartingContrast::cleanupTestCase()
+PASS   : theme::DesktopStoreSelection::initTestCase()
+FAIL!  : theme::DesktopStoreSelection::test_chooseStore(mouse) Compared values are not the same
+   Actual   (): Owned on XBOX
+   Expected (): OWNED ON XBOX
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_storeselection.qml(61)]
+FAIL!  : theme::DesktopStoreSelection::test_chooseStore(return) Compared values are not the same
+   Actual   (): Owned on XBOX
+   Expected (): OWNED ON XBOX
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_storeselection.qml(61)]
+FAIL!  : theme::DesktopStoreSelection::test_chooseStore(enter) Compared values are not the same
+   Actual   (): Owned on XBOX
+   Expected (): OWNED ON XBOX
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_storeselection.qml(61)]
+FAIL!  : theme::DesktopStoreSelection::test_chooseStore(space) Compared values are not the same
+   Actual   (): Owned on XBOX
+   Expected (): OWNED ON XBOX
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/theme/tst_storeselection.qml(61)]
+PASS   : theme::DesktopStoreSelection::test_clearingGameRemovesPicker()
+PASS   : theme::DesktopStoreSelection::test_scaledPicker(default)
+PASS   : theme::DesktopStoreSelection::test_scaledPicker(125-percent)
+PASS   : theme::DesktopStoreSelection::test_scaledPicker(150-percent)
+PASS   : theme::DesktopStoreSelection::test_singleStoreHidesPicker()
+PASS   : theme::DesktopStoreSelection::test_storeLogos(dark)
+PASS   : theme::DesktopStoreSelection::test_storeLogos(light)
+PASS   : theme::DesktopStoreSelection::cleanupTestCase()
+Totals: 45 passed, 317 failed, 0 skipped, 0 blacklisted, 695ms
+********* Finished testing of theme *********
+
+        Start  55: qml-gpu-settings-desktop-2
+ 52/402 Test  #53: qml-gpu-settings-desktop-0 ......................   Passed    1.34 sec
+        Start  56: qml-gpu-settings-desktop-3
+ 53/402 Test  #54: qml-gpu-settings-desktop-1 ......................   Passed    1.32 sec
+        Start  57: qml-gpu-settings-console-0
+ 54/402 Test  #55: qml-gpu-settings-desktop-2 ......................   Passed    1.23 sec
+        Start  58: qml-gpu-settings-console-1
+ 55/402 Test  #57: qml-gpu-settings-console-0 ......................   Passed    1.17 sec
+        Start  59: qml-gpu-settings-console-2
+ 56/402 Test  #56: qml-gpu-settings-desktop-3 ......................   Passed    1.31 sec
+        Start  60: qml-gpu-settings-console-3
+ 57/402 Test  #58: qml-gpu-settings-console-1 ......................   Passed    1.10 sec
+        Start  61: qml-upscaling
+ 58/402 Test  #59: qml-gpu-settings-console-2 ......................   Passed    1.15 sec
+        Start  62: qml-theme-settings-960-dark
+ 59/402 Test  #60: qml-gpu-settings-console-3 ......................   Passed    1.15 sec
+        Start  63: qml-theme-settings-960-light
+ 60/402 Test  #61: qml-upscaling ...................................   Passed    1.10 sec
+        Start  64: qml-theme-settings-1440-dark
+ 61/402 Test  #62: qml-theme-settings-960-dark .....................   Passed    1.09 sec
+        Start  65: qml-theme-settings-1440-light
+ 62/402 Test  #63: qml-theme-settings-960-light ....................   Passed    1.13 sec
+        Start  66: opennow-framepacer-tests
+ 63/402 Test  #66: opennow-framepacer-tests ........................   Passed    0.00 sec
+        Start  67: opennow-streampresenttimings-tests
+ 64/402 Test  #67: opennow-streampresenttimings-tests ..............   Passed    0.00 sec
+        Start  68: opennow-fsrupscaler-tests
+ 65/402 Test  #64: qml-theme-settings-1440-dark ....................   Passed    1.10 sec
+        Start  69: opennow-hdrcolor-tests
+ 66/402 Test  #65: qml-theme-settings-1440-light ...................   Passed    1.05 sec
+        Start  70: opennow-frameinterpolator-tests
+ 67/402 Test  #68: opennow-fsrupscaler-tests .......................   Passed    0.99 sec
+        Start  71: opennow-streamcolor-tests
+ 68/402 Test  #71: opennow-streamcolor-tests .......................   Passed    0.57 sec
+        Start  72: qml-game-details-normal-1-owned
+ 69/402 Test  #69: opennow-hdrcolor-tests ..........................   Passed    2.48 sec
+        Start  73: qml-game-details-normal-1-unowned
+ 70/402 Test  #72: qml-game-details-normal-1-owned .................   Passed    1.23 sec
+        Start  74: qml-game-details-normal-1.25-owned
+ 71/402 Test  #49: opennow-streamtoasts-tests ......................   Passed    8.49 sec
+        Start  75: qml-game-details-normal-1.25-unowned
+ 72/402 Test  #73: qml-game-details-normal-1-unowned ...............   Passed    1.56 sec
+        Start  76: qml-game-details-normal-1.5-owned
+ 73/402 Test  #74: qml-game-details-normal-1.25-owned ..............   Passed    1.43 sec
+        Start  77: qml-game-details-normal-1.5-unowned
+ 74/402 Test  #75: qml-game-details-normal-1.25-unowned ............   Passed    1.60 sec
+        Start  78: qml-game-details-short-1-owned
+ 75/402 Test  #76: qml-game-details-normal-1.5-owned ...............   Passed    1.43 sec
+        Start  79: qml-game-details-short-1-unowned
+ 76/402 Test  #78: qml-game-details-short-1-owned ..................   Passed    1.38 sec
+        Start  80: qml-game-details-short-1.25-owned
+ 77/402 Test  #77: qml-game-details-normal-1.5-unowned .............   Passed    1.68 sec
+        Start  81: qml-game-details-short-1.25-unowned
+ 78/402 Test  #79: qml-game-details-short-1-unowned ................   Passed    1.57 sec
+        Start  82: qml-game-details-short-1.5-owned
+ 79/402 Test  #80: qml-game-details-short-1.25-owned ...............   Passed    1.47 sec
+        Start  83: qml-game-details-short-1.5-unowned
+ 80/402 Test  #81: qml-game-details-short-1.25-unowned .............   Passed    1.65 sec
+        Start  84: qml-command-search-compact
+ 81/402 Test  #82: qml-game-details-short-1.5-owned ................   Passed    1.50 sec
+        Start  85: qml-command-search-normal
+ 82/402 Test  #83: qml-game-details-short-1.5-unowned ..............   Passed    1.63 sec
+        Start  86: qml-command-search-scaled-light
+ 83/402 Test  #70: opennow-frameinterpolator-tests .................   Passed   13.79 sec
+        Start  87: qml-ownership-desktop-960-confirmation
+ 84/402 Test  #87: qml-ownership-desktop-960-confirmation ..........   Passed    0.88 sec
+        Start  88: qml-ownership-desktop-960-error
+ 85/402 Test  #84: qml-command-search-compact ......................   Passed    8.75 sec
+        Start  89: qml-ownership-desktop-1440-confirmation
+ 86/402 Test  #88: qml-ownership-desktop-960-error .................   Passed    0.90 sec
+        Start  90: qml-ownership-desktop-1440-error
+ 87/402 Test  #89: qml-ownership-desktop-1440-confirmation .........   Passed    0.94 sec
+        Start  91: qml-ownership-console-960-confirmation
+ 88/402 Test  #85: qml-command-search-normal .......................   Passed    8.61 sec
+        Start  92: qml-ownership-console-960-error
+ 89/402 Test  #90: qml-ownership-desktop-1440-error ................   Passed    0.96 sec
+        Start  93: qml-ownership-console-1440-confirmation
+ 90/402 Test  #86: qml-command-search-scaled-light .................   Passed    8.81 sec
+        Start  94: qml-ownership-console-1440-error
+ 91/402 Test  #91: qml-ownership-console-960-confirmation ..........   Passed    1.05 sec
+        Start  95: qml-catalog-sync-960
+ 92/402 Test  #92: qml-ownership-console-960-error .................   Passed    1.06 sec
+        Start  96: qml-catalog-notice-settings-account-960
+ 93/402 Test  #93: qml-ownership-console-1440-confirmation .........   Passed    1.00 sec
+        Start  97: qml-catalog-notice-game-detail-960
+ 94/402 Test  #94: qml-ownership-console-1440-error ................   Passed    0.93 sec
+        Start  98: qml-push-invalidation-960
+ 95/402 Test  #96: qml-catalog-notice-settings-account-960 .........   Passed    1.31 sec
+        Start  99: qml-catalog-sync-1440
+ 96/402 Test  #98: qml-push-invalidation-960 .......................   Passed    1.09 sec
+        Start 100: qml-catalog-notice-settings-account-1440
+ 97/402 Test  #95: qml-catalog-sync-960 ............................   Passed    2.13 sec
+        Start 101: qml-catalog-notice-game-detail-1440
+ 98/402 Test  #97: qml-catalog-notice-game-detail-960 ..............   Passed    2.14 sec
+        Start 102: qml-push-invalidation-1440
+ 99/402 Test #100: qml-catalog-notice-settings-account-1440 ........   Passed    1.35 sec
+        Start 103: qml-recording
+100/402 Test #102: qml-push-invalidation-1440 ......................   Passed    0.99 sec
+        Start 104: qml-shortcuts
+101/402 Test #103: qml-recording ...................................   Passed    0.89 sec
+        Start 105: qml-microphone
+102/402 Test  #99: qml-catalog-sync-1440 ...........................   Passed    2.52 sec
+        Start 106: qml-microphone-settings-desktop
+103/402 Test #101: qml-catalog-notice-game-detail-1440 .............   Passed    2.33 sec
+        Start 107: qml-microphone-muted-desktop
+104/402 Test #105: qml-microphone ..................................   Passed    0.85 sec
+        Start 108: qml-microphone-settings-console
+105/402 Test #104: qml-shortcuts ...................................   Passed    1.24 sec
+        Start 109: qml-microphone-muted-console
+106/402 Test #106: qml-microphone-settings-desktop .................   Passed    1.08 sec
+        Start 110: qml-audio-output
+107/402 Test #109: qml-microphone-muted-console ....................   Passed    0.95 sec
+        Start 111: qml-background-stream
+108/402 Test #107: qml-microphone-muted-desktop ....................   Passed    1.04 sec
+        Start 112: qml-collections-960
+109/402 Test #110: qml-audio-output ................................   Passed    0.58 sec
+        Start 113: qml-collections-light-960
+110/402 Test #108: qml-microphone-settings-console .................   Passed    1.15 sec
+        Start 114: qml-collections-1440
+111/402 Test #111: qml-background-stream ...........................   Passed    0.92 sec
+        Start 115: qml-collections-light-1440
+112/402 Test #112: qml-collections-960 .............................   Passed    1.19 sec
+        Start 116: qml-controller-metadata
+113/402 Test #113: qml-collections-light-960 .......................   Passed    1.28 sec
+        Start 117: qml-language-settings-desktop-900
+114/402 Test #114: qml-collections-1440 ............................   Passed    1.24 sec
+        Start 118: qml-language-settings-desktop-1400
+115/402 Test #115: qml-collections-light-1440 ......................   Passed    1.11 sec
+        Start 119: qml-language-colors-desktop
+116/402 Test #116: qml-controller-metadata .........................   Passed    1.19 sec
+        Start 120: qml-language-hdr-invalidation-desktop
+117/402 Test #117: qml-language-settings-desktop-900 ...............   Passed    2.51 sec
+        Start 121: qml-language-settings-console-900
+118/402 Test #118: qml-language-settings-desktop-1400 ..............   Passed    2.49 sec
+        Start 122: qml-language-settings-console-1400
+119/402 Test #119: qml-language-colors-desktop .....................   Passed    2.30 sec
+        Start 123: qml-language-colors-console
+120/402 Test #120: qml-language-hdr-invalidation-desktop ...........   Passed    2.48 sec
+        Start 124: qml-language-hdr-invalidation-console
+121/402 Test #123: qml-language-colors-console .....................   Passed    2.95 sec
+        Start 125: qml-language-settings-scaled-light
+122/402 Test #125: qml-language-settings-scaled-light ..............   Passed    2.67 sec
+        Start 126: qml-language-keyboard-selection
+123/402 Test #121: qml-language-settings-console-900 ...............   Passed    6.42 sec
+        Start 127: qml-frame-rate-settings-desktop-900
+124/402 Test #122: qml-language-settings-console-1400 ..............   Passed    6.51 sec
+        Start 128: qml-frame-rate-settings-desktop-1400
+125/402 Test #124: qml-language-hdr-invalidation-console ...........   Passed    6.57 sec
+        Start 129: qml-frame-rate-settings-console-900
+126/402 Test #128: qml-frame-rate-settings-desktop-1400 ............   Passed    1.32 sec
+        Start 130: qml-frame-rate-settings-console-1400
+127/402 Test #127: qml-frame-rate-settings-desktop-900 .............   Passed    1.47 sec
+        Start 131: qml-stream-stats-v2-compact
+128/402 Test #126: qml-language-keyboard-selection .................   Passed    2.40 sec
+        Start 132: qml-stream-stats-v2-expanded
+129/402 Test #131: qml-stream-stats-v2-compact .....................***Failed    0.80 sec
+qt.multimedia.symbolsresolver: Couldn't load pipewire-0.3 library
+qt.multimedia.symbolsresolver: Couldn't resolve pipewire-0.3 symbols
+This plugin does not support createPlatformVulkanInstance
+QVulkanInstance: Failed to initialize Vulkan
+embedded Vulkan adapter=llvmpipe (LLVM 20.1.2, 256 bits) vendor=0x10005 device=0x0 driver=104865800 api=1.4.318
+candidate Vulkan device llvmpipe (LLVM 20.1.2, 256 bits) (index 0, score -5300) rejected: Vulkan is unavailable: cannot isolate the Qt graphics queue from native compute, copy and video decode queues
+embedded Vulkan unavailable: Vulkan is unavailable: cannot isolate the Qt graphics queue from native compute, copy and video decode queues
+2026-10-04T15:34:59.521 warning default: Embedded Vulkan Video is unavailable: Native Vulkan Video device creation failed (status 7). Qt will use its default graphics device.
+[CUDA @ 0x7f4c255b0800] Cannot load libcuda.so.1
+[CUDA @ 0x7f4c255b0800] Could not dynamically load CUDA
+[CUDA @ 0x7f4c24de9740] Cannot load libcuda.so.1
+[CUDA @ 0x7f4c24de9740] Could not dynamically load CUDA
+[CUDA @ 0x7f4c255b2c40] Cannot load libcuda.so.1
+[CUDA @ 0x7f4c255b2c40] Could not dynamically load CUDA
+qrc:/acceptance/StreamStatsV2Acceptance.qml:118: Error: Stream stats V2: video and peer-filtered socket rates remain distinct in the expanded panel and report
+2026-10-04T15:35:00.087 warning default: qrc:/acceptance/StreamStatsV2Acceptance.qml:118: Error: Stream stats V2: video and peer-filtered socket rates remain distinct in the expanded panel and report
+qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+2026-10-04T15:35:00.093 warning default: qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+2026-10-04T15:35:00.093 warning default: qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+2026-10-04T15:35:00.093 warning default: qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+2026-10-04T15:35:00.093 warning default: qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+2026-10-04T15:35:00.093 warning default: qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:302: TypeError: Cannot read property 'verticalCenter' of null
+2026-10-04T15:35:00.094 warning default: qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:302: TypeError: Cannot read property 'verticalCenter' of null
+
+        Start 133: qml-stream-stats-v2-degraded
+130/402 Test #129: qml-frame-rate-settings-console-900 .............   Passed    1.23 sec
+        Start 134: qml-stream-stats-v2-scaled
+131/402 Test #130: qml-frame-rate-settings-console-1400 ............   Passed    1.33 sec
+132/402 Test #132: qml-stream-stats-v2-expanded ....................***Failed    0.70 sec
+qt.multimedia.symbolsresolver: Couldn't load pipewire-0.3 library
+qt.multimedia.symbolsresolver: Couldn't resolve pipewire-0.3 symbols
+This plugin does not support createPlatformVulkanInstance
+QVulkanInstance: Failed to initialize Vulkan
+embedded Vulkan adapter=llvmpipe (LLVM 20.1.2, 256 bits) vendor=0x10005 device=0x0 driver=104865800 api=1.4.318
+candidate Vulkan device llvmpipe (LLVM 20.1.2, 256 bits) (index 0, score -5300) rejected: Vulkan is unavailable: cannot isolate the Qt graphics queue from native compute, copy and video decode queues
+embedded Vulkan unavailable: Vulkan is unavailable: cannot isolate the Qt graphics queue from native compute, copy and video decode queues
+2026-10-04T15:35:00.031 warning default: Embedded Vulkan Video is unavailable: Native Vulkan Video device creation failed (status 7). Qt will use its default graphics device.
+[CUDA @ 0x7fb10c0586c0] Cannot load libcuda.so.1
+[CUDA @ 0x7fb10c0586c0] Could not dynamically load CUDA
+[CUDA @ 0x7fb10d2a4e80] Cannot load libcuda.so.1
+[CUDA @ 0x7fb10d2a4e80] Could not dynamically load CUDA
+[CUDA @ 0x7fb10d085440] Cannot load libcuda.so.1
+[CUDA @ 0x7fb10d085440] Could not dynamically load CUDA
+qrc:/acceptance/StreamStatsV2Acceptance.qml:118: Error: Stream stats V2: video and peer-filtered socket rates remain distinct in the expanded panel and report
+2026-10-04T15:35:00.529 warning default: qrc:/acceptance/StreamStatsV2Acceptance.qml:118: Error: Stream stats V2: video and peer-filtered socket rates remain distinct in the expanded panel and report
+qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+2026-10-04T15:35:00.536 warning default: qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+2026-10-04T15:35:00.536 warning default: qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+2026-10-04T15:35:00.536 warning default: qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+2026-10-04T15:35:00.536 warning default: qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+2026-10-04T15:35:00.536 warning default: qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:302: TypeError: Cannot read property 'verticalCenter' of null
+2026-10-04T15:35:00.537 warning default: qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:302: TypeError: Cannot read property 'verticalCenter' of null
+
+        Start 135: qml-stream-stats-compact
+        Start 136: qml-stream-stats-expanded
+133/402 Test #133: qml-stream-stats-v2-degraded ....................***Failed    0.75 sec
+qt.multimedia.symbolsresolver: Couldn't load pipewire-0.3 library
+qt.multimedia.symbolsresolver: Couldn't resolve pipewire-0.3 symbols
+This plugin does not support createPlatformVulkanInstance
+QVulkanInstance: Failed to initialize Vulkan
+embedded Vulkan adapter=llvmpipe (LLVM 20.1.2, 256 bits) vendor=0x10005 device=0x0 driver=104865800 api=1.4.318
+candidate Vulkan device llvmpipe (LLVM 20.1.2, 256 bits) (index 0, score -5300) rejected: Vulkan is unavailable: cannot isolate the Qt graphics queue from native compute, copy and video decode queues
+embedded Vulkan unavailable: Vulkan is unavailable: cannot isolate the Qt graphics queue from native compute, copy and video decode queues
+2026-10-04T15:35:00.320 warning default: Embedded Vulkan Video is unavailable: Native Vulkan Video device creation failed (status 7). Qt will use its default graphics device.
+[CUDA @ 0x7fcdd95b1100] Cannot load libcuda.so.1
+[CUDA @ 0x7fcdd95b1100] Could not dynamically load CUDA
+[CUDA @ 0x7fcdd802fc80] Cannot load libcuda.so.1
+[CUDA @ 0x7fcdd802fc80] Could not dynamically load CUDA
+[CUDA @ 0x7fcdd8010700] Cannot load libcuda.so.1
+[CUDA @ 0x7fcdd8010700] Could not dynamically load CUDA
+qrc:/acceptance/StreamStatsV2Acceptance.qml:118: Error: Stream stats V2: video and peer-filtered socket rates remain distinct in the expanded panel and report
+2026-10-04T15:35:00.825 warning default: qrc:/acceptance/StreamStatsV2Acceptance.qml:118: Error: Stream stats V2: video and peer-filtered socket rates remain distinct in the expanded panel and report
+qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+2026-10-04T15:35:00.832 warning default: qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+2026-10-04T15:35:00.832 warning default: qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+2026-10-04T15:35:00.832 warning default: qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+2026-10-04T15:35:00.832 warning default: qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+2026-10-04T15:35:00.832 warning default: qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:302: TypeError: Cannot read property 'verticalCenter' of null
+2026-10-04T15:35:00.832 warning default: qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:302: TypeError: Cannot read property 'verticalCenter' of null
+
+        Start 137: qml-custom-background-960
+134/402 Test #134: qml-stream-stats-v2-scaled ......................***Failed    0.77 sec
+qt.multimedia.symbolsresolver: Couldn't load pipewire-0.3 library
+qt.multimedia.symbolsresolver: Couldn't resolve pipewire-0.3 symbols
+This plugin does not support createPlatformVulkanInstance
+QVulkanInstance: Failed to initialize Vulkan
+embedded Vulkan adapter=llvmpipe (LLVM 20.1.2, 256 bits) vendor=0x10005 device=0x0 driver=104865800 api=1.4.318
+candidate Vulkan device llvmpipe (LLVM 20.1.2, 256 bits) (index 0, score -5300) rejected: Vulkan is unavailable: cannot isolate the Qt graphics queue from native compute, copy and video decode queues
+embedded Vulkan unavailable: Vulkan is unavailable: cannot isolate the Qt graphics queue from native compute, copy and video decode queues
+2026-10-04T15:35:00.403 warning default: Embedded Vulkan Video is unavailable: Native Vulkan Video device creation failed (status 7). Qt will use its default graphics device.
+[CUDA @ 0x7fe85d835b80] Cannot load libcuda.so.1
+[CUDA @ 0x7fe85d835b80] Could not dynamically load CUDA
+[CUDA @ 0x7fe85d835c00] Cannot load libcuda.so.1
+[CUDA @ 0x7fe85d835c00] Could not dynamically load CUDA
+[CUDA @ 0x7fe85d8a2ac0] Cannot load libcuda.so.1
+[CUDA @ 0x7fe85d8a2ac0] Could not dynamically load CUDA
+qrc:/acceptance/StreamStatsV2Acceptance.qml:118: Error: Stream stats V2: video and peer-filtered socket rates remain distinct in the expanded panel and report
+2026-10-04T15:35:00.926 warning default: qrc:/acceptance/StreamStatsV2Acceptance.qml:118: Error: Stream stats V2: video and peer-filtered socket rates remain distinct in the expanded panel and report
+qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+2026-10-04T15:35:00.932 warning default: qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+2026-10-04T15:35:00.932 warning default: qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+2026-10-04T15:35:00.933 warning default: qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+2026-10-04T15:35:00.933 warning default: qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+2026-10-04T15:35:00.933 warning default: qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:302: TypeError: Cannot read property 'verticalCenter' of null
+2026-10-04T15:35:00.934 warning default: qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:302: TypeError: Cannot read property 'verticalCenter' of null
+
+        Start 138: qml-custom-background-1600
+135/402 Test #136: qml-stream-stats-expanded .......................***Failed    0.74 sec
+qt.multimedia.symbolsresolver: Couldn't load pipewire-0.3 library
+qt.multimedia.symbolsresolver: Couldn't resolve pipewire-0.3 symbols
+This plugin does not support createPlatformVulkanInstance
+QVulkanInstance: Failed to initialize Vulkan
+embedded Vulkan adapter=llvmpipe (LLVM 20.1.2, 256 bits) vendor=0x10005 device=0x0 driver=104865800 api=1.4.318
+candidate Vulkan device llvmpipe (LLVM 20.1.2, 256 bits) (index 0, score -5300) rejected: Vulkan is unavailable: cannot isolate the Qt graphics queue from native compute, copy and video decode queues
+embedded Vulkan unavailable: Vulkan is unavailable: cannot isolate the Qt graphics queue from native compute, copy and video decode queues
+2026-10-04T15:35:00.757 warning default: Embedded Vulkan Video is unavailable: Native Vulkan Video device creation failed (status 7). Qt will use its default graphics device.
+[CUDA @ 0x7fb14d087380] Cannot load libcuda.so.1
+[CUDA @ 0x7fb14d087380] Could not dynamically load CUDA
+[CUDA @ 0x7fb14c010580] Cannot load libcuda.so.1
+[CUDA @ 0x7fb14c010580] Could not dynamically load CUDA
+[CUDA @ 0x7fb14d0899c0] Cannot load libcuda.so.1
+[CUDA @ 0x7fb14d0899c0] Could not dynamically load CUDA
+qrc:/acceptance/StreamStatsAcceptance.qml:7: Error: Stream stats: Ping compact value
+2026-10-04T15:35:01.286 warning default: qrc:/acceptance/StreamStatsAcceptance.qml:7: Error: Stream stats: Ping compact value
+qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+2026-10-04T15:35:01.294 warning default: qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+2026-10-04T15:35:01.294 warning default: qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+2026-10-04T15:35:01.294 warning default: qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+2026-10-04T15:35:01.294 warning default: qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+2026-10-04T15:35:01.294 warning default: qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+
+        Start 139: qml-steam-big-picture
+136/402 Test #135: qml-stream-stats-compact ........................***Failed    0.78 sec
+qt.multimedia.symbolsresolver: Couldn't load pipewire-0.3 library
+qt.multimedia.symbolsresolver: Couldn't resolve pipewire-0.3 symbols
+This plugin does not support createPlatformVulkanInstance
+QVulkanInstance: Failed to initialize Vulkan
+embedded Vulkan adapter=llvmpipe (LLVM 20.1.2, 256 bits) vendor=0x10005 device=0x0 driver=104865800 api=1.4.318
+candidate Vulkan device llvmpipe (LLVM 20.1.2, 256 bits) (index 0, score -5300) rejected: Vulkan is unavailable: cannot isolate the Qt graphics queue from native compute, copy and video decode queues
+embedded Vulkan unavailable: Vulkan is unavailable: cannot isolate the Qt graphics queue from native compute, copy and video decode queues
+2026-10-04T15:35:00.757 warning default: Embedded Vulkan Video is unavailable: Native Vulkan Video device creation failed (status 7). Qt will use its default graphics device.
+[CUDA @ 0x7f6c20db7480] Cannot load libcuda.so.1
+[CUDA @ 0x7f6c20db7480] Could not dynamically load CUDA
+[CUDA @ 0x7f6c2107fc80] Cannot load libcuda.so.1
+[CUDA @ 0x7f6c2107fc80] Could not dynamically load CUDA
+[CUDA @ 0x7f6c20df10c0] Cannot load libcuda.so.1
+[CUDA @ 0x7f6c20df10c0] Could not dynamically load CUDA
+qrc:/acceptance/StreamStatsAcceptance.qml:7: Error: Stream stats: Ping compact value
+2026-10-04T15:35:01.307 warning default: qrc:/acceptance/StreamStatsAcceptance.qml:7: Error: Stream stats: Ping compact value
+qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+2026-10-04T15:35:01.314 warning default: qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+2026-10-04T15:35:01.314 warning default: qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+2026-10-04T15:35:01.314 warning default: qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+2026-10-04T15:35:01.314 warning default: qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+2026-10-04T15:35:01.314 warning default: qrc:/qt/qml/OpenNOW/qml/desktop/stream/DesktopStreamStats.qml:280: TypeError: Cannot read property 'verticalCenter' of null
+
+        Start 140: qml-persistent-in-game-settings
+137/402 Test #137: qml-custom-background-960 .......................   Passed    1.11 sec
+        Start 141: qml-network-test
+138/402 Test #138: qml-custom-background-1600 ......................   Passed    1.09 sec
+        Start 142: qml-save-bandwidth
+139/402 Test #140: qml-persistent-in-game-settings .................   Passed    1.11 sec
+        Start 143: qml-store-launch-960-windowed
+140/402 Test #139: qml-steam-big-picture ...........................   Passed    1.23 sec
+        Start 144: qml-store-launch-960-fullscreen
+141/402 Test #141: qml-network-test ................................   Passed    0.91 sec
+        Start 145: qml-store-launch-1600-windowed
+142/402 Test #142: qml-save-bandwidth ..............................   Passed    1.21 sec
+        Start 146: qml-store-launch-1600-fullscreen
+143/402 Test #143: qml-store-launch-960-windowed ...................   Passed    1.39 sec
+        Start 147: qml-frame-generation
+144/402 Test #144: qml-store-launch-960-fullscreen .................   Passed    1.46 sec
+        Start 148: qml-frame-generation-stats-desktop
+145/402 Test #145: qml-store-launch-1600-windowed ..................   Passed    1.28 sec
+        Start 149: qml-frame-generation-stats-console
+146/402 Test #146: qml-store-launch-1600-fullscreen ................   Passed    1.24 sec
+        Start 150: qml-idle-mode
+147/402 Test #147: qml-frame-generation ............................   Passed    1.14 sec
+        Start 151: qml-stream-recovery
+148/402 Test #149: qml-frame-generation-stats-console ..............***Failed    1.43 sec
+qt.multimedia.symbolsresolver: Couldn't load pipewire-0.3 library
+qt.multimedia.symbolsresolver: Couldn't resolve pipewire-0.3 symbols
+This plugin does not support createPlatformVulkanInstance
+QVulkanInstance: Failed to initialize Vulkan
+embedded Vulkan adapter=llvmpipe (LLVM 20.1.2, 256 bits) vendor=0x10005 device=0x0 driver=104865800 api=1.4.318
+candidate Vulkan device llvmpipe (LLVM 20.1.2, 256 bits) (index 0, score -5300) rejected: Vulkan is unavailable: cannot isolate the Qt graphics queue from native compute, copy and video decode queues
+embedded Vulkan unavailable: Vulkan is unavailable: cannot isolate the Qt graphics queue from native compute, copy and video decode queues
+2026-10-04T15:35:04.392 warning default: Embedded Vulkan Video is unavailable: Native Vulkan Video device creation failed (status 7). Qt will use its default graphics device.
+[CUDA @ 0x7f8f902e91c0] Cannot load libcuda.so.1
+[CUDA @ 0x7f8f902e91c0] Could not dynamically load CUDA
+[CUDA @ 0x7f8f90df2a80] Cannot load libcuda.so.1
+[CUDA @ 0x7f8f90df2a80] Could not dynamically load CUDA
+[CUDA @ 0x7f8f90dea7c0] Cannot load libcuda.so.1
+[CUDA @ 0x7f8f90dea7c0] Could not dynamically load CUDA
+2026-10-04T15:35:05.591 critical default: Production frame-generation statistics report is stale or conflates source/output FPS
+
+        Start 152: qml-color-format-desktop-decoder-windowed
+149/402 Test #148: qml-frame-generation-stats-desktop ..............***Failed    1.62 sec
+qt.multimedia.symbolsresolver: Couldn't load pipewire-0.3 library
+qt.multimedia.symbolsresolver: Couldn't resolve pipewire-0.3 symbols
+This plugin does not support createPlatformVulkanInstance
+QVulkanInstance: Failed to initialize Vulkan
+embedded Vulkan adapter=llvmpipe (LLVM 20.1.2, 256 bits) vendor=0x10005 device=0x0 driver=104865800 api=1.4.318
+candidate Vulkan device llvmpipe (LLVM 20.1.2, 256 bits) (index 0, score -5300) rejected: Vulkan is unavailable: cannot isolate the Qt graphics queue from native compute, copy and video decode queues
+embedded Vulkan unavailable: Vulkan is unavailable: cannot isolate the Qt graphics queue from native compute, copy and video decode queues
+2026-10-04T15:35:04.220 warning default: Embedded Vulkan Video is unavailable: Native Vulkan Video device creation failed (status 7). Qt will use its default graphics device.
+[CUDA @ 0x7f7179ac0380] Cannot load libcuda.so.1
+[CUDA @ 0x7f7179ac0380] Could not dynamically load CUDA
+[CUDA @ 0x7f7179082600] Cannot load libcuda.so.1
+[CUDA @ 0x7f7179082600] Could not dynamically load CUDA
+[CUDA @ 0x7f7179a88ec0] Cannot load libcuda.so.1
+[CUDA @ 0x7f7179a88ec0] Could not dynamically load CUDA
+2026-10-04T15:35:05.592 critical default: Production frame-generation statistics report is stale or conflates source/output FPS
+
+        Start 153: qml-color-format-desktop-decoder-fullscreen
+150/402 Test #150: qml-idle-mode ...................................   Passed    1.63 sec
+        Start 154: qml-color-format-desktop-server-windowed
+151/402 Test #151: qml-stream-recovery .............................   Passed    1.54 sec
+        Start 155: qml-color-format-desktop-server-fullscreen
+152/402 Test #152: qml-color-format-desktop-decoder-windowed .......   Passed    1.17 sec
+        Start 156: qml-color-format-console-decoder-windowed
+153/402 Test #153: qml-color-format-desktop-decoder-fullscreen .....   Passed    1.20 sec
+        Start 157: qml-color-format-console-decoder-fullscreen
+154/402 Test #154: qml-color-format-desktop-server-windowed ........   Passed    0.99 sec
+        Start 158: qml-color-format-console-server-windowed
+155/402 Test #155: qml-color-format-desktop-server-fullscreen ......   Passed    0.90 sec
+        Start 159: qml-color-format-console-server-fullscreen
+156/402 Test #156: qml-color-format-console-decoder-windowed .......   Passed    0.84 sec
+        Start 160: qml-color-format-menu-windowed
+157/402 Test #157: qml-color-format-console-decoder-fullscreen .....   Passed    0.86 sec
+        Start 161: qml-color-format-menu-fullscreen
+158/402 Test #158: qml-color-format-console-server-windowed ........   Passed    0.82 sec
+        Start 162: qml-queue-drops-960-stats
+159/402 Test #159: qml-color-format-console-server-fullscreen ......   Passed    0.79 sec
+        Start 163: qml-queue-drops-960-report
+160/402 Test #160: qml-color-format-menu-windowed ..................   Passed    0.94 sec
+        Start 164: qml-queue-drops-1440-stats
+161/402 Test #161: qml-color-format-menu-fullscreen ................   Passed    0.99 sec
+        Start 165: qml-queue-drops-1440-report
+162/402 Test #162: qml-queue-drops-960-stats .......................   Passed    1.14 sec
+        Start 166: qml-backend-availability
+163/402 Test #163: qml-queue-drops-960-report ......................   Passed    1.13 sec
+        Start 167: qml-store-paging
+164/402 Test #164: qml-queue-drops-1440-stats ......................   Passed    1.11 sec
+        Start 168: qml-store-navigation-960-normal
+165/402 Test #165: qml-queue-drops-1440-report .....................   Passed    1.06 sec
+        Start 169: qml-store-navigation-960-reduced
+166/402 Test #166: qml-backend-availability ........................   Passed    1.08 sec
+        Start 170: qml-store-navigation-1440-normal
+167/402 Test #167: qml-store-paging ................................   Passed    1.43 sec
+        Start 171: qml-store-navigation-1440-reduced
+168/402 Test #169: qml-store-navigation-960-reduced ................   Passed    3.31 sec
+        Start 172: qml-region-ping-960
+169/402 Test #168: qml-store-navigation-960-normal .................   Passed    3.37 sec
+        Start 173: qml-region-ping-1440
+170/402 Test #170: qml-store-navigation-1440-normal ................   Passed    3.31 sec
+        Start 174: opennow-localization-tests
+171/402 Test #174: opennow-localization-tests ......................***Failed    0.09 sec
+********* Start testing of LocalizationTest *********
+Config: Using QtTest library 6.8.3, Qt 6.8.3 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 10.3.1 20210422 (Red Hat 10.3.1-1)), ubuntu 24.04
+PASS   : LocalizationTest::initTestCase()
+PASS   : LocalizationTest::displayNamesPreserveExactWireIdentifiers()
+PASS   : LocalizationTest::loadsAvailableLocalesAndUsesEnglishFallback()
+PASS   : LocalizationTest::translatesSourceTextAndInterpolatesKeyedValues()
+PASS   : LocalizationTest::interpolationTreatsReplacementTextLiterally()
+PASS   : LocalizationTest::interpolationHandlesEmptyAdjacentValues()
+PASS   : LocalizationTest::everySupportedLocaleLoadsWithFallback()
+FAIL!  : LocalizationTest::everyExtractedQmlSourceExistsInEnglishCatalog() 'missing.isEmpty()' returned FALSE. (/home/runner/work/OpenNOW/OpenNOW/opennow-qt/../opennow-qt/qml/screens/ThemeStoreScreen.qml: Built in
+/home/runner/work/OpenNOW/OpenNOW/opennow-qt/../opennow-qt/qml/screens/ThemeStoreScreen.qml:   ·  Built-in OpenNOW palettes
+/home/runner/work/OpenNOW/OpenNOW/opennow-qt/../opennow-qt/qml/screens/SettingsScreen.qml: 16:9 Standard
+/home/runner/work/OpenNOW/OpenNOW/opennow-qt/../opennow-qt/qml/screens/SettingsScreen.qml: 16:10 Widescreen
+/home/runner/work/OpenNOW/OpenNOW/opennow-qt/../opennow-qt/qml/screens/SettingsScreen.qml: 21:9 Ultrawide
+/home/runner/work/OpenNOW/OpenNOW/opennow-qt/../opennow-qt/qml/screens/SettingsScreen.qml: 32:9 Super ultrawide
+/home/runner/work/OpenNOW/OpenNOW/opennow-qt/../opennow-qt/qml/screens/GameDetailScreen.qml: Sessions
+/home/runner/work/OpenNOW/OpenNOW/opennow-qt/../opennow-qt/qml/screens/GameDetailScreen.qml: Last played
+/home/runner/work/OpenNOW/OpenNOW/opennow-qt/../opennow-qt/qml/screens/GameDetailScreen.qml: Last played
+/home/runner/work/OpenNOW/OpenNOW/opennow-qt/../opennow-qt/qml/screens/StreamScreen.qml: Media startup failed
+/home/runner/work/OpenNOW/OpenNOW/opennow-qt/../opennow-qt/qml/screens/StreamScreen.qml: Reconnecting
+/home/runner/work/OpenNOW/OpenNOW/opennow-qt/../opennow-qt/qml/screens/StreamScreen.qml: Cloud seat ready
+/home/runner/work/OpenNOW/OpenNOW/opennow-qt/../opennow-qt/qml/screens/StreamScreen.qml: Server
+/home/runner/work/OpenNOW/OpenNOW/opennow-qt/../opennow-qt/qml/screens/HomeScreen.qml: Move tile  ·  D-pad move  ·  A place  ·  B cancel
+/home/runner/work/OpenNOW/OpenNOW/opennow-qt/../opennow-qt/qml/screens/GameAccountsScreen.qml: Sync error
+/home/runner/work/OpenNOW/OpenNOW/opennow-qt/../opennow-qt/qml/desktop/shell/DesktopCommandPalette.qml: Games
+/home/runner/work/OpenNOW/OpenNOW/opennow-qt/../opennow-qt/qml/desktop/shell/DesktopCommandPalette.qml: Actions
+/home/runner/work/OpenNOW/OpenNOW/opennow-qt/../opennow-qt/qml/desktop/shell/DesktopCommandPalette.qml: %1 results
+/home/runner/work/OpenNOW/OpenNOW/opennow-qt/../opennow-qt/qml/desktop/shell/DesktopCommandPalette.qml: %1 results
+/home/runner/work/OpenNOW/OpenNOW/opennow-qt/../opennow-qt/qml/desktop/shell/DesktopShell.qml: Auto region
+/home/runner/work/OpenNOW/OpenNOW/opennow-qt/../opennow-qt/qml/desktop/components/DesktopQueueSelector.qml: Server locations
+/home/runner/work/OpenNOW/OpenNOW/opennow-qt/../opennow-qt/qml/desktop/components/DesktopGameModal.qml: Owned on %1
+/home/runner/work/OpenNOW/OpenNOW/opennow-qt/../opennow-qt/qml/desktop/components/DesktopGameModal.qml: Keyboard
+/home/runner/work/OpenNOW/OpenNOW/opennow-qt/../opennow-qt/qml/desktop/components/DesktopGameModal.qml: Last played
+/home/runner/work/OpenNOW/OpenNOW/opennow-qt/../opennow-qt/qml/desktop/components/DesktopGameModal.qml: Hours played
+/home/runner/work/OpenNOW/OpenNOW/opennow-qt/../opennow-qt/qml/desktop/components/DesktopGameModal.qml: Sessions
+/home/runner/work/OpenNOW/OpenNOW/opennow-qt/../opennow-qt/qml/desktop/settings/DesktopSettingsScreen.qml: Profile, membership, game stores
+/home/runner/work/OpenNOW/OpenNOW/opennow-qt/../opennow-qt/qml/desktop/settings/DesktopSettingsScreen.qml: Streaming quality
+/home/runner/work/OpenNOW/OpenNOW/opennow-qt/../opennow-qt/qml/desktop/settings/DesktopSettingsScreen.qml: Resolution, frame rate, bit rate
+/home/runner/work/OpenNOW/OpenNOW/opennow-qt/../opennow-qt/qml/desktop/settings/DesktopSettingsScreen.qml: Region, network test, proxy
+/home/runner/work/OpenNOW/OpenNOW/opennow-qt/../opennow-qt/qml/desktop/settings/DesktopSettingsScreen.qml: Output and microphone
+/home/runner/work/OpenNOW/OpenNOW/opennow-qt/../opennow-qt/qml/desktop/settings/DesktopSettingsScreen.qml: Controllers, mouse, keyboard, shortcuts
+/home/runner/work/OpenNOW/OpenNOW/opennow-qt/../opennow-qt/qml/desktop/settings/DesktopSettingsScreen.qml: Capture
+/home/runner/work/OpenNOW/OpenNOW/opennow-qt/../opennow-qt/qml/desktop/settings/DesktopSettingsScreen.qml: Screenshots, recording, replay
+/home/runner/work/OpenNOW/OpenNOW/opennow-qt/../opennow-qt/qml/desktop/settings/DesktopSettingsScree
+   Loc: [/home/runner/work/OpenNOW/OpenNOW/opennow-qt/tests/tst_localization.cpp(131)]
+PASS   : LocalizationTest::cleanupTestCase()
+Totals: 8 passed, 1 failed, 0 skipped, 0 blacklisted, 83ms
+********* Finished testing of LocalizationTest *********
+
+        Start 175: opennow-qt-tests
+172/402 Test #175: opennow-qt-tests ................................   Passed    0.02 sec
+        Start 176: opennow-coreclient-tests
+173/402 Test #173: qml-region-ping-1440 ............................***Failed    0.60 sec
+qt.multimedia.symbolsresolver: Couldn't load pipewire-0.3 library
+qt.multimedia.symbolsresolver: Couldn't resolve pipewire-0.3 symbols
+This plugin does not support createPlatformVulkanInstance
+QVulkanInstance: Failed to initialize Vulkan
+embedded Vulkan adapter=llvmpipe (LLVM 20.1.2, 256 bits) vendor=0x10005 device=0x0 driver=104865800 api=1.4.318
+candidate Vulkan device llvmpipe (LLVM 20.1.2, 256 bits) (index 0, score -5300) rejected: Vulkan is unavailable: cannot isolate the Qt graphics queue from native compute, copy and video decode queues
+embedded Vulkan unavailable: Vulkan is unavailable: cannot isolate the Qt graphics queue from native compute, copy and video decode queues
+2026-10-04T15:35:13.184 warning default: Embedded Vulkan Video is unavailable: Native Vulkan Video device creation failed (status 7). Qt will use its default graphics device.
+[CUDA @ 0x7f3480def200] Cannot load libcuda.so.1
+[CUDA @ 0x7f3480def200] Could not dynamically load CUDA
+[CUDA @ 0x7f34800633c0] Cannot load libcuda.so.1
+[CUDA @ 0x7f34800633c0] Could not dynamically load CUDA
+[CUDA @ 0x7f3480010740] Cannot load libcuda.so.1
+[CUDA @ 0x7f3480010740] Could not dynamically load CUDA
+qrc:/acceptance/RegionChoicesAcceptance.qml:6: Error: Region choices acceptance: United Kingdom 1 has the wrong continent
+2026-10-04T15:35:13.634 warning default: qrc:/acceptance/RegionChoicesAcceptance.qml:6: Error: Region choices acceptance: United Kingdom 1 has the wrong continent
+2026-10-04T15:35:13.634 critical default: Store/region acceptance failed
+
+        Start 177: opennow-nativeframegeneration-tests
+174/402 Test #172: qml-region-ping-960 .............................***Failed    0.62 sec
+qt.multimedia.symbolsresolver: Couldn't load pipewire-0.3 library
+qt.multimedia.symbolsresolver: Couldn't resolve pipewire-0.3 symbols
+This plugin does not support createPlatformVulkanInstance
+QVulkanInstance: Failed to initialize Vulkan
+embedded Vulkan adapter=llvmpipe (LLVM 20.1.2, 256 bits) vendor=0x10005 device=0x0 driver=104865800 api=1.4.318
+candidate Vulkan device llvmpipe (LLVM 20.1.2, 256 bits) (index 0, score -5300) rejected: Vulkan is unavailable: cannot isolate the Qt graphics queue from native compute, copy and video decode queues
+embedded Vulkan unavailable: Vulkan is unavailable: cannot isolate the Qt graphics queue from native compute, copy and video decode queues
+2026-10-04T15:35:13.188 warning default: Embedded Vulkan Video is unavailable: Native Vulkan Video device creation failed (status 7). Qt will use its default graphics device.
+[CUDA @ 0x7f653c064e00] Cannot load libcuda.so.1
+[CUDA @ 0x7f653c064e00] Could not dynamically load CUDA
+[CUDA @ 0x7f653d0134c0] Cannot load libcuda.so.1
+[CUDA @ 0x7f653d0134c0] Could not dynamically load CUDA
+[CUDA @ 0x7f653d080480] Cannot load libcuda.so.1
+[CUDA @ 0x7f653d080480] Could not dynamically load CUDA
+qrc:/acceptance/RegionChoicesAcceptance.qml:6: Error: Region choices acceptance: United Kingdom 1 has the wrong continent
+2026-10-04T15:35:13.642 warning default: qrc:/acceptance/RegionChoicesAcceptance.qml:6: Error: Region choices acceptance: United Kingdom 1 has the wrong continent
+2026-10-04T15:35:13.642 critical default: Store/region acceptance failed
+
+        Start 178: opennow-linuxvulkangraphics-tests
+175/402 Test #178: opennow-linuxvulkangraphics-tests ...............   Passed    0.03 sec
+        Start 179: opennow-streamvideo-tests
+176/402 Test #179: opennow-streamvideo-tests .......................   Passed    0.10 sec
+        Start 180: opennow-waylandpointer-tests
+177/402 Test #180: opennow-waylandpointer-tests ....................   Passed    0.01 sec
+        Start 181: opennow-macpointer-tests
+178/402 Test #181: opennow-macpointer-tests ........................   Passed    0.02 sec
+        Start 182: opennow-nativestreamruntime-tests
+179/402 Test #171: qml-store-navigation-1440-reduced ...............   Passed    3.14 sec
+        Start 183: opennow-sonychain-tests
+180/402 Test #182: opennow-nativestreamruntime-tests ...............   Passed    0.66 sec
+        Start 184: opennow-embedded-orchestration-tests
+181/402 Test #184: opennow-embedded-orchestration-tests ............   Passed    0.63 sec
+        Start 185: opennow-singleinstance-tests
+182/402 Test #185: opennow-singleinstance-tests ....................   Passed    0.06 sec
+        Start 186: opennow-thumbnail-tests
+183/402 Test #186: opennow-thumbnail-tests .........................   Passed    0.06 sec
+        Start 187: opennow-controllerinput-tests
+184/402 Test #177: opennow-nativeframegeneration-tests .............   Passed    5.65 sec
+        Start 188: opennow-controllernavigation-tests
+185/402 Test #188: opennow-controllernavigation-tests ..............   Passed    1.05 sec
+        Start 189: opennow-controllertuning-tests
+186/402 Test #183: opennow-sonychain-tests .........................   Passed    6.44 sec
+        Start 190: opennow-controllersources-tests
+187/402 Test #187: opennow-controllerinput-tests ...................   Passed    6.24 sec
+        Start 191: opennow-controllermetadata-tests
+188/402 Test #189: opennow-controllertuning-tests ..................   Passed    2.42 sec
+        Start 192: qml-route-home
+189/402 Test #176: opennow-coreclient-tests ........................   Passed    9.41 sec
+        Start 193: qml-route-library
+190/402 Test #192: qml-route-home ..................................   Passed    0.79 sec
+        Start 194: qml-route-store
+191/402 Test #193: qml-route-library ...............................   Passed    0.80 sec
+        Start 195: qml-route-theme-store
+192/402 Test #194: qml-route-store .................................   Passed    0.78 sec
+        Start 196: qml-route-controllers
+193/402 Test #195: qml-route-theme-store ...........................   Passed    0.81 sec
+        Start 197: qml-route-settings
+194/402 Test #196: qml-route-controllers ...........................   Passed    0.83 sec
+        Start 198: qml-route-settings-account
+195/402 Test #197: qml-route-settings ..............................   Passed    0.82 sec
+        Start 199: qml-route-settings-streaming
+196/402 Test #198: qml-route-settings-account ......................   Passed    0.81 sec
+        Start 200: qml-route-settings-video
+197/402 Test #199: qml-route-settings-streaming ....................   Passed    0.82 sec
+        Start 201: qml-route-settings-video-dropdown
+198/402 Test #200: qml-route-settings-video ........................   Passed    0.82 sec
+        Start 202: qml-route-settings-input
+199/402 Test #201: qml-route-settings-video-dropdown ...............   Passed    0.81 sec
+        Start 203: qml-route-settings-network
+200/402 Test #202: qml-route-settings-input ........................   Passed    0.81 sec
+        Start 204: qml-route-settings-themes
+201/402 Test #203: qml-route-settings-network ......................   Passed    0.82 sec
+        Start 205: qml-route-settings-advanced
+202/402 Test #204: qml-route-settings-themes .......................   Passed    0.81 sec
+        Start 206: qml-route-settings-advanced-dropdown
+203/402 Test #205: qml-route-settings-advanced .....................   Passed    0.81 sec
+        Start 207: qml-route-game-detail
+204/402 Test #190: opennow-controllersources-tests .................   Passed    8.45 sec
+        Start 208: qml-route-game-detail-platform-dropdown
+205/402 Test #206: qml-route-settings-advanced-dropdown ............   Passed    0.81 sec
+        Start 209: qml-route-sign-in
+206/402 Test #207: qml-route-game-detail ...........................   Passed    0.82 sec
+        Start 210: qml-route-joining
+207/402 Test #208: qml-route-game-detail-platform-dropdown .........   Passed    0.84 sec
+        Start 211: qml-route-inserting
+208/402 Test #209: qml-route-sign-in ...............................   Passed    0.78 sec
+        Start 212: qml-route-stream
+209/402 Test #210: qml-route-joining ...............................   Passed    0.82 sec
+        Start 213: qml-route-accounts
+210/402 Test #211: qml-route-inserting .............................   Passed    0.83 sec
+        Start 214: qml-route-profile-pin
+211/402 Test #212: qml-route-stream ................................   Passed    0.78 sec
+        Start 215: qml-route-game-accounts
+212/402 Test #213: qml-route-accounts ..............................   Passed    0.83 sec
+        Start 216: qml-route-persistent-storage
+213/402 Test #214: qml-route-profile-pin ...........................   Passed    0.83 sec
+        Start 217: qml-route-media
+214/402 Test #215: qml-route-game-accounts .........................   Passed    0.78 sec
+        Start 218: qml-route-diagnostics
+215/402 Test #216: qml-route-persistent-storage ....................   Passed    0.83 sec
+        Start 219: qml-route-updates
+216/402 Test #217: qml-route-media .................................   Passed    0.82 sec
+        Start 220: qml-route-feedback
+217/402 Test #218: qml-route-diagnostics ...........................   Passed    0.80 sec
+        Start 221: qml-session-resume-desktop-conflict
+218/402 Test #219: qml-route-updates ...............................   Passed    0.80 sec
+        Start 222: qml-session-resume-desktop-unavailable
+219/402 Test #220: qml-route-feedback ..............................   Passed    0.84 sec
+        Start 223: qml-session-resume-desktop-resuming
+220/402 Test #221: qml-session-resume-desktop-conflict .............   Passed    0.88 sec
+        Start 224: qml-session-resume-desktop-finished
+221/402 Test #222: qml-session-resume-desktop-unavailable ..........   Passed    0.93 sec
+        Start 225: qml-session-resume-desktop-not-found
+222/402 Test #223: qml-session-resume-desktop-resuming .............   Passed    0.98 sec
+        Start 226: qml-session-resume-console-conflict
+223/402 Test #224: qml-session-resume-desktop-finished .............   Passed    0.94 sec
+        Start 227: qml-session-resume-console-unavailable
+224/402 Test #225: qml-session-resume-desktop-not-found ............   Passed    0.89 sec
+        Start 228: qml-session-resume-console-resuming
+225/402 Test #226: qml-session-resume-console-conflict .............   Passed    0.87 sec
+        Start 229: qml-session-resume-console-finished
+226/402 Test #227: qml-session-resume-console-unavailable ..........   Passed    0.83 sec
+        Start 230: qml-session-resume-console-not-found
+227/402 Test #191: opennow-controllermetadata-tests ................   Passed   13.74 sec
+        Start 231: qml-auth-persistence-local-file
+228/402 Test #228: qml-session-resume-console-resuming .............   Passed    0.85 sec
+        Start 232: qml-auth-persistence-memory-only
+229/402 Test #229: qml-session-resume-console-finished .............   Passed    0.90 sec
+        Start 233: qml-auth-persistence-migration-pending
+230/402 Test #230: qml-session-resume-console-not-found ............   Passed    0.91 sec
+        Start 234: qml-auth-persistence-unavailable
+231/402 Test #231: qml-auth-persistence-local-file .................   Passed    1.00 sec
+        Start 235: qml-alliance-routing-desktop-960
+232/402 Test #232: qml-auth-persistence-memory-only ................   Passed    0.93 sec
+        Start 236: qml-alliance-routing-desktop-1440
+233/402 Test #233: qml-auth-persistence-migration-pending ..........   Passed    0.95 sec
+        Start 237: qml-alliance-routing-console-960
+234/402 Test #234: qml-auth-persistence-unavailable ................   Passed    0.95 sec
+        Start 238: qml-alliance-routing-console-1440
+235/402 Test #235: qml-alliance-routing-desktop-960 ................   Passed    0.94 sec
+        Start 239: qml-session-launch-normal-windowed
+236/402 Test #236: qml-alliance-routing-desktop-1440 ...............   Passed    0.98 sec
+        Start 240: qml-session-launch-video-normal-windowed
+237/402 Test #237: qml-alliance-routing-console-960 ................   Passed    0.85 sec
+        Start 241: qml-motion-normal-windowed
+238/402 Test #238: qml-alliance-routing-console-1440 ...............   Passed    0.85 sec
+        Start 242: qml-sidebar-normal-windowed
+239/402 Test #242: qml-sidebar-normal-windowed .....................   Passed    2.15 sec
+        Start 243: qml-settings-motion-normal-windowed
+240/402 Test #241: qml-motion-normal-windowed ......................   Passed    2.90 sec
+        Start 244: qml-session-launch-normal-fullscreen
+241/402 Test #243: qml-settings-motion-normal-windowed .............***Failed    1.80 sec
+qt.multimedia.symbolsresolver: Couldn't load pipewire-0.3 library
+qt.multimedia.symbolsresolver: Couldn't resolve pipewire-0.3 symbols
+This plugin does not support createPlatformVulkanInstance
+QVulkanInstance: Failed to initialize Vulkan
+embedded Vulkan adapter=llvmpipe (LLVM 20.1.2, 256 bits) vendor=0x10005 device=0x0 driver=104865800 api=1.4.318
+candidate Vulkan device llvmpipe (LLVM 20.1.2, 256 bits) (index 0, score -5300) rejected: Vulkan is unavailable: cannot isolate the Qt graphics queue from native compute, copy and video decode queues
+embedded Vulkan unavailable: Vulkan is unavailable: cannot isolate the Qt graphics queue from native compute, copy and video decode queues
+2026-10-04T15:35:40.078 warning default: Embedded Vulkan Video is unavailable: Native Vulkan Video device creation failed (status 7). Qt will use its default graphics device.
+[CUDA @ 0x7f7e54df0300] Cannot load libcuda.so.1
+[CUDA @ 0x7f7e54df0300] Could not dynamically load CUDA
+[CUDA @ 0x7f7e555ace40] Cannot load libcuda.so.1
+[CUDA @ 0x7f7e555ace40] Could not dynamically load CUDA
+[CUDA @ 0x7f7e54db8c40] Cannot load libcuda.so.1
+[CUDA @ 0x7f7e54db8c40] Could not dynamically load CUDA
+2026-10-04T15:35:41.667 critical default: Settings motion tick 60: resolution picker missing
+
+        Start 245: qml-session-launch-video-normal-fullscreen
+242/402 Test #239: qml-session-launch-normal-windowed ..............   Passed    9.07 sec
+        Start 246: qml-motion-normal-fullscreen
+243/402 Test #240: qml-session-launch-video-normal-windowed ........   Passed   10.40 sec
+        Start 247: qml-sidebar-normal-fullscreen
+244/402 Test #246: qml-motion-normal-fullscreen ....................   Passed    3.00 sec
+        Start 248: qml-settings-motion-normal-fullscreen
+245/402 Test #244: qml-session-launch-normal-fullscreen ............   Passed    9.30 sec
+        Start 249: qml-session-launch-reduced-windowed
+246/402 Test #247: qml-sidebar-normal-fullscreen ...................   Passed    2.25 sec
+        Start 250: qml-session-launch-video-reduced-windowed
+247/402 Test #248: qml-settings-motion-normal-fullscreen ...........***Failed    1.86 sec
+qt.multimedia.symbolsresolver: Couldn't load pipewire-0.3 library
+qt.multimedia.symbolsresolver: Couldn't resolve pipewire-0.3 symbols
+This plugin does not support createPlatformVulkanInstance
+QVulkanInstance: Failed to initialize Vulkan
+embedded Vulkan adapter=llvmpipe (LLVM 20.1.2, 256 bits) vendor=0x10005 device=0x0 driver=104865800 api=1.4.318
+candidate Vulkan device llvmpipe (LLVM 20.1.2, 256 bits) (index 0, score -5300) rejected: Vulkan is unavailable: cannot isolate the Qt graphics queue from native compute, copy and video decode queues
+embedded Vulkan unavailable: Vulkan is unavailable: cannot isolate the Qt graphics queue from native compute, copy and video decode queues
+2026-10-04T15:35:49.366 warning default: Embedded Vulkan Video is unavailable: Native Vulkan Video device creation failed (status 7). Qt will use its default graphics device.
+[CUDA @ 0x7f78bc03ca80] Cannot load libcuda.so.1
+[CUDA @ 0x7f78bc03ca80] Could not dynamically load CUDA
+[CUDA @ 0x7f78bd85cf40] Cannot load libcuda.so.1
+[CUDA @ 0x7f78bd85cf40] Could not dynamically load CUDA
+[CUDA @ 0x7f78bd88e7c0] Cannot load libcuda.so.1
+[CUDA @ 0x7f78bd88e7c0] Could not dynamically load CUDA
+2026-10-04T15:35:50.966 critical default: Settings motion tick 60: resolution picker missing
+
+        Start 251: qml-motion-reduced-windowed
+248/402 Test #245: qml-session-launch-video-normal-fullscreen ......   Passed   10.02 sec
+        Start 252: qml-sidebar-reduced-windowed
+249/402 Test #252: qml-sidebar-reduced-windowed ....................   Passed    2.16 sec
+        Start 253: qml-settings-motion-reduced-windowed
+250/402 Test #251: qml-motion-reduced-windowed .....................   Passed    2.89 sec
+        Start 254: qml-session-launch-reduced-fullscreen
+251/402 Test #253: qml-settings-motion-reduced-windowed ............***Failed    1.74 sec
+qt.multimedia.symbolsresolver: Couldn't load pipewire-0.3 library
+qt.multimedia.symbolsresolver: Couldn't resolve pipewire-0.3 symbols
+This plugin does not support createPlatformVulkanInstance
+QVulkanInstance: Failed to initialize Vulkan
+embedded Vulkan adapter=llvmpipe (LLVM 20.1.2, 256 bits) vendor=0x10005 device=0x0 driver=104865800 api=1.4.318
+candidate Vulkan device llvmpipe (LLVM 20.1.2, 256 bits) (index 0, score -5300) rejected: Vulkan is unavailable: cannot isolate the Qt graphics queue from native compute, copy and video decode queues
+embedded Vulkan unavailable: Vulkan is unavailable: cannot isolate the Qt graphics queue from native compute, copy and video decode queues
+2026-10-04T15:35:54.022 warning default: Embedded Vulkan Video is unavailable: Native Vulkan Video device creation failed (status 7). Qt will use its default graphics device.
+[CUDA @ 0x7f7081085600] Cannot load libcuda.so.1
+[CUDA @ 0x7f7081085600] Could not dynamically load CUDA
+[CUDA @ 0x7f7080010740] Cannot load libcuda.so.1
+[CUDA @ 0x7f7080010740] Could not dynamically load CUDA
+[CUDA @ 0x7f708104f680] Cannot load libcuda.so.1
+[CUDA @ 0x7f708104f680] Could not dynamically load CUDA
+2026-10-04T15:35:55.563 critical default: Settings motion tick 60: resolution picker missing
+
+        Start 255: qml-session-launch-video-reduced-fullscreen
+252/402 Test #249: qml-session-launch-reduced-windowed .............   Passed    9.30 sec
+        Start 256: qml-motion-reduced-fullscreen
+253/402 Test #250: qml-session-launch-video-reduced-windowed .......   Passed    9.70 sec
+        Start 257: qml-sidebar-reduced-fullscreen
+254/402 Test #257: qml-sidebar-reduced-fullscreen ..................   Passed    1.98 sec
+        Start 258: qml-settings-motion-reduced-fullscreen
+255/402 Test #256: qml-motion-reduced-fullscreen ...................   Passed    2.74 sec
+        Start 259: qml-desktop-route-home
+256/402 Test #259: qml-desktop-route-home ..........................   Passed    0.98 sec
+        Start 260: qml-desktop-route-library
+257/402 Test #254: qml-session-launch-reduced-fullscreen ...........   Passed    9.19 sec
+        Start 261: qml-desktop-route-store
+258/402 Test #258: qml-settings-motion-reduced-fullscreen ..........***Failed    1.75 sec
+qt.multimedia.symbolsresolver: Couldn't load pipewire-0.3 library
+qt.multimedia.symbolsresolver: Couldn't resolve pipewire-0.3 symbols
+This plugin does not support createPlatformVulkanInstance
+QVulkanInstance: Failed to initialize Vulkan
+embedded Vulkan adapter=llvmpipe (LLVM 20.1.2, 256 bits) vendor=0x10005 device=0x0 driver=104865800 api=1.4.318
+candidate Vulkan device llvmpipe (LLVM 20.1.2, 256 bits) (index 0, score -5300) rejected: Vulkan is unavailable: cannot isolate the Qt graphics queue from native compute, copy and video decode queues
+embedded Vulkan unavailable: Vulkan is unavailable: cannot isolate the Qt graphics queue from native compute, copy and video decode queues
+2026-10-04T15:36:01.847 warning default: Embedded Vulkan Video is unavailable: Native Vulkan Video device creation failed (status 7). Qt will use its default graphics device.
+[CUDA @ 0x7f468cdc6c00] Cannot load libcuda.so.1
+[CUDA @ 0x7f468cdc6c00] Could not dynamically load CUDA
+[CUDA @ 0x7f468d5abe00] Cannot load libcuda.so.1
+[CUDA @ 0x7f468d5abe00] Could not dynamically load CUDA
+[CUDA @ 0x7f468cdc9300] Cannot load libcuda.so.1
+[CUDA @ 0x7f468cdc9300] Could not dynamically load CUDA
+2026-10-04T15:36:03.430 critical default: Settings motion tick 60: resolution picker missing
+
+        Start 262: qml-desktop-route-friends
+259/402 Test #260: qml-desktop-route-library .......................   Passed    0.92 sec
+        Start 263: qml-desktop-route-updates
+260/402 Test #261: qml-desktop-route-store .........................   Passed    0.90 sec
+        Start 264: qml-desktop-route-settings
+261/402 Test #262: qml-desktop-route-friends .......................   Passed    0.99 sec
+        Start 265: qml-desktop-route-settings-account
+262/402 Test #263: qml-desktop-route-updates .......................   Passed    0.96 sec
+        Start 266: qml-desktop-route-settings-streaming
+263/402 Test #255: qml-session-launch-video-reduced-fullscreen .....   Passed    9.58 sec
+        Start 267: qml-desktop-route-settings-input
+264/402 Test #264: qml-desktop-route-settings ......................   Passed    1.19 sec
+        Start 268: qml-desktop-route-settings-network
+265/402 Test #265: qml-desktop-route-settings-account ..............   Passed    1.15 sec
+        Start 269: qml-desktop-route-settings-themes
+266/402 Test #266: qml-desktop-route-settings-streaming ............   Passed    1.26 sec
+        Start 270: qml-desktop-route-settings-advanced
+267/402 Test #267: qml-desktop-route-settings-input ................   Passed    1.07 sec
+        Start 271: qml-desktop-route-game-detail
+268/402 Test #268: qml-desktop-route-settings-network ..............   Passed    1.04 sec
+        Start 272: qml-desktop-route-stream
+269/402 Test #269: qml-desktop-route-settings-themes ...............   Passed    1.04 sec
+        Start 273: qml-renew-settings-streaming-desktop
+270/402 Test #270: qml-desktop-route-settings-advanced .............   Passed    0.94 sec
+        Start 274: qml-renew-settings-streaming-compact
+271/402 Test #271: qml-desktop-route-game-detail ...................   Passed    0.95 sec
+        Start 275: qml-renew-settings-audio-desktop
+272/402 Test #272: qml-desktop-route-stream ........................   Passed    0.98 sec
+        Start 276: qml-renew-settings-audio-compact
+273/402 Test #273: qml-renew-settings-streaming-desktop ............   Passed    1.05 sec
+        Start 277: qml-renew-settings-console-desktop
+274/402 Test #274: qml-renew-settings-streaming-compact ............   Passed    1.04 sec
+        Start 278: qml-renew-settings-console-compact
+275/402 Test #275: qml-renew-settings-audio-desktop ................   Passed    1.00 sec
+        Start 279: qml-renew-settings-input-desktop
+276/402 Test #276: qml-renew-settings-audio-compact ................   Passed    1.05 sec
+        Start 280: qml-renew-settings-input-compact
+277/402 Test #277: qml-renew-settings-console-desktop ..............   Passed    0.98 sec
+        Start 281: qml-renew-settings-themes-desktop
+278/402 Test #278: qml-renew-settings-console-compact ..............   Passed    1.00 sec
+        Start 282: qml-renew-settings-themes-compact
+279/402 Test #279: qml-renew-settings-input-desktop ................   Passed    0.99 sec
+        Start 283: qml-renew-settings-account-desktop
+280/402 Test #280: qml-renew-settings-input-compact ................   Passed    1.05 sec
+        Start 284: qml-renew-settings-account-compact
+281/402 Test #281: qml-renew-settings-themes-desktop ...............   Passed    1.05 sec
+        Start 285: qml-renew-settings-network-desktop
+282/402 Test #282: qml-renew-settings-themes-compact ...............   Passed    1.02 sec
+        Start 286: qml-renew-settings-network-compact
+283/402 Test #283: qml-renew-settings-account-desktop ..............   Passed    1.02 sec
+        Start 287: qml-renew-settings-advanced-desktop
+284/402 Test #284: qml-renew-settings-account-compact ..............   Passed    1.00 sec
+        Start 288: qml-renew-settings-advanced-compact
+285/402 Test #285: qml-renew-settings-network-desktop ..............   Passed    0.99 sec
+        Start 289: qml-renew-resolution-picker
+286/402 Test #286: qml-renew-settings-network-compact ..............   Passed    1.03 sec
+        Start 290: qml-settings-layout-stream-desktop
+287/402 Test #287: qml-renew-settings-advanced-desktop .............   Passed    0.99 sec
+        Start 291: qml-settings-layout-stream-compact
+288/402 Test #289: qml-renew-resolution-picker .....................***Failed    0.51 sec
+qt.multimedia.symbolsresolver: Couldn't load pipewire-0.3 library
+qt.multimedia.symbolsresolver: Couldn't resolve pipewire-0.3 symbols
+This plugin does not support createPlatformVulkanInstance
+QVulkanInstance: Failed to initialize Vulkan
+embedded Vulkan adapter=llvmpipe (LLVM 20.1.2, 256 bits) vendor=0x10005 device=0x0 driver=104865800 api=1.4.318
+candidate Vulkan device llvmpipe (LLVM 20.1.2, 256 bits) (index 0, score -5300) rejected: Vulkan is unavailable: cannot isolate the Qt graphics queue from native compute, copy and video decode queues
+embedded Vulkan unavailable: Vulkan is unavailable: cannot isolate the Qt graphics queue from native compute, copy and video decode queues
+2026-10-04T15:36:10.863 warning default: Embedded Vulkan Video is unavailable: Native Vulkan Video device creation failed (status 7). Qt will use its default graphics device.
+[CUDA @ 0x7f059d5b0a80] Cannot load libcuda.so.1
+[CUDA @ 0x7f059d5b0a80] Could not dynamically load CUDA
+[CUDA @ 0x7f059db14200] Cannot load libcuda.so.1
+[CUDA @ 0x7f059db14200] Could not dynamically load CUDA
+[CUDA @ 0x7f059d5b3100] Cannot load libcuda.so.1
+[CUDA @ 0x7f059d5b3100] Could not dynamically load CUDA
+
+        Start 292: qml-settings-layout-stream-scaled
+289/402 Test #288: qml-renew-settings-advanced-compact .............   Passed    0.98 sec
+        Start 293: qml-settings-layout-network-desktop
+290/402 Test #290: qml-settings-layout-stream-desktop ..............   Passed    1.12 sec
+        Start 294: qml-settings-layout-network-compact
+291/402 Test #292: qml-settings-layout-stream-scaled ...............   Passed    1.23 sec
+        Start 295: qml-settings-layout-network-scaled
+292/402 Test #291: qml-settings-layout-stream-compact ..............   Passed    1.25 sec
+        Start 296: qml-settings-layout-audio-desktop
+293/402 Test #293: qml-settings-layout-network-desktop .............   Passed    1.20 sec
+        Start 297: qml-settings-layout-audio-compact
+294/402 Test #294: qml-settings-layout-network-compact .............   Passed    0.98 sec
+        Start 298: qml-settings-layout-audio-scaled
+295/402 Test #296: qml-settings-layout-audio-desktop ...............   Passed    1.20 sec
+        Start 299: qml-settings-layout-controls-desktop
+296/402 Test #295: qml-settings-layout-network-scaled ..............   Passed    1.27 sec
+        Start 300: qml-settings-layout-controls-compact
+297/402 Test #297: qml-settings-layout-audio-compact ...............   Passed    1.20 sec
+        Start 301: qml-settings-layout-controls-scaled
+298/402 Test #298: qml-settings-layout-audio-scaled ................   Passed    1.09 sec
+        Start 302: qml-settings-layout-recording-desktop
+299/402 Test #299: qml-settings-layout-controls-desktop ............   Passed    1.19 sec
+        Start 303: qml-settings-layout-recording-compact
+300/402 Test #300: qml-settings-layout-controls-compact ............   Passed    1.24 sec
+        Start 304: qml-settings-layout-recording-scaled
+301/402 Test #301: qml-settings-layout-controls-scaled .............   Passed    1.38 sec
+        Start 305: qml-settings-layout-appearance-desktop
+302/402 Test #302: qml-settings-layout-recording-desktop ...........   Passed    1.18 sec
+        Start 306: qml-settings-layout-appearance-compact
+303/402 Test #303: qml-settings-layout-recording-compact ...........   Passed    1.13 sec
+        Start 307: qml-settings-layout-appearance-scaled
+304/402 Test #304: qml-settings-layout-recording-scaled ............   Passed    1.26 sec
+        Start 308: qml-settings-layout-console-desktop
+305/402 Test #305: qml-settings-layout-appearance-desktop ..........   Passed    1.27 sec
+        Start 309: qml-settings-layout-console-compact
+306/402 Test #306: qml-settings-layout-appearance-compact ..........   Passed    1.19 sec
+        Start 310: qml-settings-layout-console-scaled
+307/402 Test #307: qml-settings-layout-appearance-scaled ...........   Passed    1.10 sec
+        Start 311: qml-settings-layout-account-desktop
+308/402 Test #308: qml-settings-layout-console-desktop .............   Passed    1.18 sec
+        Start 312: qml-settings-layout-account-compact
+309/402 Test #309: qml-settings-layout-console-compact .............   Passed    1.17 sec
+        Start 313: qml-settings-layout-account-scaled
+310/402 Test #310: qml-settings-layout-console-scaled ..............   Passed    1.18 sec
+        Start 314: qml-settings-layout-about-desktop
+311/402 Test #311: qml-settings-layout-account-desktop .............   Passed    1.02 sec
+        Start 315: qml-settings-layout-about-compact
+312/402 Test #312: qml-settings-layout-account-compact .............   Passed    1.14 sec
+        Start 316: qml-settings-layout-about-scaled
+313/402 Test #314: qml-settings-layout-about-desktop ...............   Passed    1.13 sec
+        Start 317: qml-renew-advanced-stats-desktop
+314/402 Test #313: qml-settings-layout-account-scaled ..............   Passed    1.26 sec
+        Start 318: qml-renew-advanced-stats-compact
+315/402 Test #315: qml-settings-layout-about-compact ...............   Passed    1.04 sec
+        Start 319: qml-renew-advanced-audio-desktop
+316/402 Test #316: qml-settings-layout-about-scaled ................   Passed    1.07 sec
+        Start 320: qml-renew-advanced-audio-compact
+317/402 Test #317: qml-renew-advanced-stats-desktop ................   Passed    1.16 sec
+        Start 321: qml-renew-advanced-interface-desktop
+318/402 Test #318: qml-renew-advanced-stats-compact ................   Passed    1.21 sec
+        Start 322: qml-renew-advanced-interface-compact
+319/402 Test #319: qml-renew-advanced-audio-desktop ................   Passed    1.13 sec
+        Start 323: qml-renew-advanced-console-desktop
+320/402 Test #320: qml-renew-advanced-audio-compact ................   Passed    0.99 sec
+        Start 324: qml-renew-advanced-console-compact
+321/402 Test #321: qml-renew-advanced-interface-desktop ............   Passed    1.10 sec
+        Start 325: qml-renew-advanced-shortcuts-desktop
+322/402 Test #322: qml-renew-advanced-interface-compact ............   Passed    1.14 sec
+        Start 326: qml-renew-advanced-shortcuts-compact
+323/402 Test #323: qml-renew-advanced-console-desktop ..............   Passed    1.18 sec
+        Start 327: qml-renew-advanced-controllers-desktop
+324/402 Test #324: qml-renew-advanced-console-compact ..............   Passed    1.03 sec
+        Start 328: qml-renew-advanced-controllers-compact
+325/402 Test #325: qml-renew-advanced-shortcuts-desktop ............   Passed    1.07 sec
+        Start 329: qml-renew-advanced-subscription-desktop
+326/402 Test #326: qml-renew-advanced-shortcuts-compact ............   Passed    1.17 sec
+        Start 330: qml-renew-advanced-subscription-compact
+327/402 Test #327: qml-renew-advanced-controllers-desktop ..........   Passed    1.14 sec
+        Start 331: qml-renew-advanced-recording-desktop
+328/402 Test #328: qml-renew-advanced-controllers-compact ..........   Passed    1.10 sec
+        Start 332: qml-renew-advanced-recording-compact
+329/402 Test #329: qml-renew-advanced-subscription-desktop .........   Passed    1.02 sec
+        Start 333: qml-renew-network-picker
+330/402 Test #330: qml-renew-advanced-subscription-compact .........   Passed    1.05 sec
+        Start 334: qml-renew-language-picker
+331/402 Test #331: qml-renew-advanced-recording-desktop ............   Passed    1.08 sec
+        Start 335: qml-renew-actions-settings-network
+332/402 Test #332: qml-renew-advanced-recording-compact ............   Passed    1.08 sec
+        Start 336: qml-renew-actions-settings-advanced
+333/402 Test #333: qml-renew-network-picker ........................***Failed    0.95 sec
+qt.multimedia.symbolsresolver: Couldn't load pipewire-0.3 library
+qt.multimedia.symbolsresolver: Couldn't resolve pipewire-0.3 symbols
+This plugin does not support createPlatformVulkanInstance
+QVulkanInstance: Failed to initialize Vulkan
+embedded Vulkan adapter=llvmpipe (LLVM 20.1.2, 256 bits) vendor=0x10005 device=0x0 driver=104865800 api=1.4.318
+candidate Vulkan device llvmpipe (LLVM 20.1.2, 256 bits) (index 0, score -5300) rejected: Vulkan is unavailable: cannot isolate the Qt graphics queue from native compute, copy and video decode queues
+embedded Vulkan unavailable: Vulkan is unavailable: cannot isolate the Qt graphics queue from native compute, copy and video decode queues
+2026-10-04T15:36:23.307 warning default: Embedded Vulkan Video is unavailable: Native Vulkan Video device creation failed (status 7). Qt will use its default graphics device.
+[CUDA @ 0x7fc38131ae80] Cannot load libcuda.so.1
+[CUDA @ 0x7fc38131ae80] Could not dynamically load CUDA
+[CUDA @ 0x7fc380010740] Cannot load libcuda.so.1
+[CUDA @ 0x7fc380010740] Could not dynamically load CUDA
+[CUDA @ 0x7fc380029e00] Cannot load libcuda.so.1
+[CUDA @ 0x7fc380029e00] Could not dynamically load CUDA
+2026-10-04T15:36:24.061 critical default: QML smoke test focus target is not usable: DesktopSettingsField_QMLTYPE_292 (visible=0, enabled=1)
+
+        Start 337: qml-renew-actions-settings-themes
+334/402 Test #334: qml-renew-language-picker .......................   Passed    1.03 sec
+        Start 338: qml-renew-actions-settings-input
+335/402 Test #335: qml-renew-actions-settings-network ..............   Passed    1.03 sec
+        Start 339: qml-renew-actions-stats
+336/402 Test #336: qml-renew-actions-settings-advanced .............   Passed    1.09 sec
+        Start 340: qml-desktop-stream-menu
+337/402 Test #337: qml-renew-actions-settings-themes ...............***Failed    1.07 sec
+qt.multimedia.symbolsresolver: Couldn't load pipewire-0.3 library
+qt.multimedia.symbolsresolver: Couldn't resolve pipewire-0.3 symbols
+This plugin does not support createPlatformVulkanInstance
+QVulkanInstance: Failed to initialize Vulkan
+embedded Vulkan adapter=llvmpipe (LLVM 20.1.2, 256 bits) vendor=0x10005 device=0x0 driver=104865800 api=1.4.318
+candidate Vulkan device llvmpipe (LLVM 20.1.2, 256 bits) (index 0, score -5300) rejected: Vulkan is unavailable: cannot isolate the Qt graphics queue from native compute, copy and video decode queues
+embedded Vulkan unavailable: Vulkan is unavailable: cannot isolate the Qt graphics queue from native compute, copy and video decode queues
+2026-10-04T15:36:24.297 warning default: Embedded Vulkan Video is unavailable: Native Vulkan Video device creation failed (status 7). Qt will use its default graphics device.
+[CUDA @ 0x7fe7bd086400] Cannot load libcuda.so.1
+[CUDA @ 0x7fe7bd086400] Could not dynamically load CUDA
+[CUDA @ 0x7fe7bc010740] Cannot load libcuda.so.1
+[CUDA @ 0x7fe7bc010740] Could not dynamically load CUDA
+[CUDA @ 0x7fe7bc0b98c0] Cannot load libcuda.so.1
+[CUDA @ 0x7fe7bc0b98c0] Could not dynamically load CUDA
+2026-10-04T15:36:25.097 critical default: QML smoke test focus target is not usable: DesktopSettingsField_QMLTYPE_306 (visible=0, enabled=1)
+
+        Start 341: qml-desktop-stream-stats
+338/402 Test #338: qml-renew-actions-settings-input ................   Passed    1.07 sec
+        Start 342: qml-desktop-stream-stats-expanded
+339/402 Test #339: qml-renew-actions-stats .........................   Passed    1.13 sec
+        Start 343: qml-desktop-stream-exit-confirm
+340/402 Test #340: qml-desktop-stream-menu .........................   Passed    0.99 sec
+        Start 344: qml-desktop-input-capture-error
+341/402 Test #341: qml-desktop-stream-stats ........................   Passed    0.97 sec
+        Start 345: qml-console-input-capture-error
+342/402 Test #342: qml-desktop-stream-stats-expanded ...............   Passed    0.88 sec
+        Start 346: qml-window-close-desktop-windowed-stream
+343/402 Test #344: qml-desktop-input-capture-error .................   Passed    0.88 sec
+        Start 347: qml-authorized-quit-desktop-stream
+344/402 Test #343: qml-desktop-stream-exit-confirm .................   Passed    0.96 sec
+        Start 348: qml-window-close-desktop-windowed-inserting
+345/402 Test #345: qml-console-input-capture-error .................   Passed    0.85 sec
+        Start 349: qml-authorized-quit-desktop-inserting
+346/402 Test #346: qml-window-close-desktop-windowed-stream ........   Passed    1.31 sec
+        Start 350: qml-window-close-desktop-windowed-home
+347/402 Test #347: qml-authorized-quit-desktop-stream ..............   Passed    0.98 sec
+        Start 351: qml-authorized-quit-desktop-home
+348/402 Test #349: qml-authorized-quit-desktop-inserting ...........   Passed    0.94 sec
+        Start 352: qml-stream-exit-desktop-windowed-return
+349/402 Test #348: qml-window-close-desktop-windowed-inserting .....   Passed    1.49 sec
+        Start 353: qml-stream-exit-desktop-windowed-enter
+350/402 Test #351: qml-authorized-quit-desktop-home ................   Passed    0.99 sec
+        Start 354: qml-stream-exit-desktop-windowed-tab-space
+351/402 Test #350: qml-window-close-desktop-windowed-home ..........   Passed    1.45 sec
+        Start 355: qml-window-close-desktop-fullscreen-stream
+352/402 Test #352: qml-stream-exit-desktop-windowed-return .........   Passed    1.58 sec
+        Start 356: qml-window-close-desktop-fullscreen-inserting
+353/402 Test #353: qml-stream-exit-desktop-windowed-enter ..........   Passed    1.45 sec
+        Start 357: qml-window-close-desktop-fullscreen-home
+354/402 Test #354: qml-stream-exit-desktop-windowed-tab-space ......   Passed    1.40 sec
+        Start 358: qml-stream-exit-desktop-fullscreen-return
+355/402 Test #355: qml-window-close-desktop-fullscreen-stream ......   Passed    1.31 sec
+        Start 359: qml-stream-exit-desktop-fullscreen-enter
+356/402 Test #356: qml-window-close-desktop-fullscreen-inserting ...   Passed    1.30 sec
+        Start 360: qml-stream-exit-desktop-fullscreen-tab-space
+357/402 Test #357: qml-window-close-desktop-fullscreen-home ........   Passed    1.33 sec
+        Start 361: qml-window-close-console-windowed-stream
+358/402 Test #358: qml-stream-exit-desktop-fullscreen-return .......   Passed    1.40 sec
+        Start 362: qml-authorized-quit-console-stream
+359/402 Test #359: qml-stream-exit-desktop-fullscreen-enter ........   Passed    1.44 sec
+        Start 363: qml-window-close-console-windowed-inserting
+360/402 Test #361: qml-window-close-console-windowed-stream ........   Passed    1.18 sec
+        Start 364: qml-authorized-quit-console-inserting
+361/402 Test #360: qml-stream-exit-desktop-fullscreen-tab-space ....   Passed    1.45 sec
+        Start 365: qml-window-close-console-windowed-home
+362/402 Test #362: qml-authorized-quit-console-stream ..............   Passed    0.75 sec
+        Start 366: qml-authorized-quit-console-home
+363/402 Test #363: qml-window-close-console-windowed-inserting .....   Passed    1.19 sec
+364/402 Test #364: qml-authorized-quit-console-inserting ...........   Passed    0.85 sec
+        Start 367: qml-stream-exit-console-windowed-return
+        Start 368: qml-stream-exit-console-windowed-enter
+365/402 Test #366: qml-authorized-quit-console-home ................   Passed    0.96 sec
+        Start 369: qml-stream-exit-console-windowed-tab-space
+366/402 Test #365: qml-window-close-console-windowed-home ..........   Passed    1.34 sec
+        Start 370: qml-window-close-console-fullscreen-stream
+367/402 Test #368: qml-stream-exit-console-windowed-enter ..........   Passed    1.46 sec
+        Start 371: qml-window-close-console-fullscreen-inserting
+368/402 Test #367: qml-stream-exit-console-windowed-return .........   Passed    1.46 sec
+        Start 372: qml-window-close-console-fullscreen-home
+369/402 Test #369: qml-stream-exit-console-windowed-tab-space ......   Passed    1.45 sec
+        Start 373: qml-stream-exit-console-fullscreen-return
+370/402 Test #370: qml-window-close-console-fullscreen-stream ......   Passed    1.26 sec
+        Start 374: qml-stream-exit-console-fullscreen-enter
+371/402 Test #371: qml-window-close-console-fullscreen-inserting ...   Passed    1.29 sec
+        Start 375: qml-stream-exit-console-fullscreen-tab-space
+372/402 Test #372: qml-window-close-console-fullscreen-home ........   Passed    1.39 sec
+        Start 376: qml-session-fullscreen-desktop-windowed
+373/402 Test #373: qml-stream-exit-console-fullscreen-return .......   Passed    1.53 sec
+        Start 377: qml-session-fullscreen-desktop-maximized
+374/402 Test #374: qml-stream-exit-console-fullscreen-enter ........   Passed    1.46 sec
+        Start 378: qml-session-fullscreen-desktop-fullscreen
+375/402 Test #375: qml-stream-exit-console-fullscreen-tab-space ....   Passed    1.40 sec
+        Start 379: qml-session-fullscreen-console-windowed
+376/402 Test #376: qml-session-fullscreen-desktop-windowed .........   Passed    4.36 sec
+        Start 380: qml-session-fullscreen-console-maximized
+377/402 Test #377: qml-session-fullscreen-desktop-maximized ........   Passed    4.41 sec
+        Start 381: qml-session-fullscreen-console-fullscreen
+378/402 Test #378: qml-session-fullscreen-desktop-fullscreen .......   Passed    4.41 sec
+        Start 382: qml-fullscreen-stream-stats-shortcut
+379/402 Test #382: qml-fullscreen-stream-stats-shortcut ............   Passed    0.59 sec
+        Start 383: qml-fullscreen-configured-stats-shortcut
+380/402 Test #379: qml-session-fullscreen-console-windowed .........   Passed    4.22 sec
+        Start 384: qml-console-mode-persistence-rollback
+381/402 Test #383: qml-fullscreen-configured-stats-shortcut ........   Passed    0.62 sec
+        Start 385: qml-release-notes-updates-960
+382/402 Test #384: qml-console-mode-persistence-rollback ...........   Passed    0.87 sec
+        Start 386: qml-release-notes-updates-1600
+383/402 Test #385: qml-release-notes-updates-960 ...................   Passed    0.93 sec
+        Start 387: qml-release-notes-settings-advanced-960
+384/402 Test #386: qml-release-notes-updates-1600 ..................   Passed    0.90 sec
+        Start 388: qml-release-notes-settings-advanced-1600
+385/402 Test #387: qml-release-notes-settings-advanced-960 .........   Passed    0.91 sec
+        Start 389: qml-streamer-event-contract
+386/402 Test #388: qml-release-notes-settings-advanced-1600 ........   Passed    0.93 sec
+        Start 390: qml-overlay-friends
+387/402 Test #389: qml-streamer-event-contract .....................   Passed    0.42 sec
+        Start 391: qml-overlay-friend-actions
+388/402 Test #380: qml-session-fullscreen-console-maximized ........   Passed    4.33 sec
+        Start 392: qml-overlay-quick-settings
+389/402 Test #381: qml-session-fullscreen-console-fullscreen .......   Passed    4.30 sec
+        Start 393: qml-overlay-session-conflict
+390/402 Test #391: qml-overlay-friend-actions ......................   Passed    0.97 sec
+        Start 394: qml-overlay-session-report
+391/402 Test #390: qml-overlay-friends .............................   Passed    1.00 sec
+        Start 395: qml-overlay-queue-ad
+392/402 Test #392: qml-overlay-quick-settings ......................   Passed    0.92 sec
+        Start 396: qml-overlay-guide-session
+393/402 Test #393: qml-overlay-session-conflict ....................   Passed    1.00 sec
+        Start 397: qml-overlay-guide-controls
+394/402 Test #394: qml-overlay-session-report ......................   Passed    1.01 sec
+        Start 398: qml-overlay-guide-media
+395/402 Test #395: qml-overlay-queue-ad ............................   Passed    1.06 sec
+        Start 399: qml-overlay-guide-shortcuts
+396/402 Test #396: qml-overlay-guide-session .......................   Passed    0.95 sec
+        Start 401: opennow-performance-relative-path-rejected
+397/402 Test #397: qml-overlay-guide-controls ......................   Passed    0.92 sec
+        Start 402: opennow-acceptance-verifier-help
+398/402 Test #402: opennow-acceptance-verifier-help ................   Passed    0.00 sec
+399/402 Test #401: opennow-performance-relative-path-rejected ......   Passed    0.46 sec
+400/402 Test #398: qml-overlay-guide-media .........................   Passed    1.04 sec
+401/402 Test #399: qml-overlay-guide-shortcuts .....................   Passed    1.04 sec
+        Start 400: opennow-performance-report-harness
+402/402 Test #400: opennow-performance-report-harness ..............   Passed    5.48 sec
+
+95% tests passed, 21 tests failed out of 402
+
+Label Time Summary:
+ci-unit    =  70.82 sec*proc (31 tests)
+
+Total Test time (real) = 168.00 sec
+
+The following tests FAILED:
+	 13 - opennow-consolelayout-tests (Failed)              ci-unit
+	 50 - opennow-controllericons-tests (Failed)            ci-unit
+	 52 - opennow-theme-tests (Failed)                      ci-unit
+	131 - qml-stream-stats-v2-compact (Failed)
+	132 - qml-stream-stats-v2-expanded (Failed)
+	133 - qml-stream-stats-v2-degraded (Failed)
+	134 - qml-stream-stats-v2-scaled (Failed)
+	135 - qml-stream-stats-compact (Failed)
+	136 - qml-stream-stats-expanded (Failed)
+	148 - qml-frame-generation-stats-desktop (Failed)
+	149 - qml-frame-generation-stats-console (Failed)
+	172 - qml-region-ping-960 (Failed)
+	173 - qml-region-ping-1440 (Failed)
+	174 - opennow-localization-tests (Failed)               ci-unit
+	243 - qml-settings-motion-normal-windowed (Failed)
+	248 - qml-settings-motion-normal-fullscreen (Failed)
+	253 - qml-settings-motion-reduced-windowed (Failed)
+	258 - qml-settings-motion-reduced-fullscreen (Failed)
+	289 - qml-renew-resolution-picker (Failed)
+	333 - qml-renew-network-picker (Failed)
+	337 - qml-renew-actions-settings-themes (Failed)
+Errors while running CTest
+ctest exit 8

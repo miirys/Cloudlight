@@ -1,0 +1,18 @@
+qt.multimedia.symbolsresolver: Couldn't load pipewire-0.3 library
+qt.multimedia.symbolsresolver: Couldn't resolve pipewire-0.3 symbols
+This plugin does not support createPlatformVulkanInstance
+QVulkanInstance: Failed to initialize Vulkan
+embedded Vulkan adapter=llvmpipe (LLVM 20.1.2, 256 bits) vendor=0x10005 device=0x0 driver=104865800 api=1.4.318
+candidate Vulkan device llvmpipe (LLVM 20.1.2, 256 bits) (index 0, score -5300) rejected: Vulkan is unavailable: cannot isolate the Qt graphics queue from native compute, copy and video decode queues
+embedded Vulkan unavailable: Vulkan is unavailable: cannot isolate the Qt graphics queue from native compute, copy and video decode queues
+2026-10-04T15:33:49.578 warning default: Embedded Vulkan Video is unavailable: Native Vulkan Video device creation failed (status 7). Qt will use its default graphics device.
+[CUDA @ 0x7fc7b0055d80] Cannot load libcuda.so.1
+[CUDA @ 0x7fc7b0055d80] Could not dynamically load CUDA
+[CUDA @ 0x7fc7b153f900] Cannot load libcuda.so.1
+[CUDA @ 0x7fc7b153f900] Could not dynamically load CUDA
+[CUDA @ 0x7fc7b15ac880] Cannot load libcuda.so.1
+[CUDA @ 0x7fc7b15ac880] Could not dynamically load CUDA
+qrc:/acceptance/StorePagingAcceptance.qml:27: Error: Store pagination: short final row stretched its posters
+2026-10-04T15:33:50.216 warning default: qrc:/acceptance/StorePagingAcceptance.qml:27: Error: Store pagination: short final row stretched its posters
+2026-10-04T15:33:50.216 critical default: Store/region acceptance failed
+exit status 1

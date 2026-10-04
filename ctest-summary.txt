@@ -1,0 +1,23 @@
+ 10/402 Test  #13: opennow-consolelayout-tests .....................***Failed    0.33 sec
+ 47/402 Test  #50: opennow-controllericons-tests ...................***Failed    0.21 sec
+ 51/402 Test  #52: opennow-theme-tests .............................***Failed    0.75 sec
+129/402 Test #131: qml-stream-stats-v2-compact .....................***Failed    0.80 sec
+132/402 Test #132: qml-stream-stats-v2-expanded ....................***Failed    0.70 sec
+133/402 Test #133: qml-stream-stats-v2-degraded ....................***Failed    0.75 sec
+134/402 Test #134: qml-stream-stats-v2-scaled ......................***Failed    0.77 sec
+135/402 Test #136: qml-stream-stats-expanded .......................***Failed    0.74 sec
+136/402 Test #135: qml-stream-stats-compact ........................***Failed    0.78 sec
+148/402 Test #149: qml-frame-generation-stats-console ..............***Failed    1.43 sec
+149/402 Test #148: qml-frame-generation-stats-desktop ..............***Failed    1.62 sec
+171/402 Test #174: opennow-localization-tests ......................***Failed    0.09 sec
+173/402 Test #173: qml-region-ping-1440 ............................***Failed    0.60 sec
+174/402 Test #172: qml-region-ping-960 .............................***Failed    0.62 sec
+241/402 Test #243: qml-settings-motion-normal-windowed .............***Failed    1.80 sec
+247/402 Test #248: qml-settings-motion-normal-fullscreen ...........***Failed    1.86 sec
+251/402 Test #253: qml-settings-motion-reduced-windowed ............***Failed    1.74 sec
+258/402 Test #258: qml-settings-motion-reduced-fullscreen ..........***Failed    1.75 sec
+288/402 Test #289: qml-renew-resolution-picker .....................***Failed    0.51 sec
+333/402 Test #333: qml-renew-network-picker ........................***Failed    0.95 sec
+337/402 Test #337: qml-renew-actions-settings-themes ...............***Failed    1.07 sec
+95% tests passed, 21 tests failed out of 402
+ctest exit 8
