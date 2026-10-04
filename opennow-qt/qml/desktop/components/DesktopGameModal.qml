@@ -562,7 +562,7 @@ FocusScope {
                             width: parent.width
                             columns: width < DesktopTokens.px(620) ? 2 : 4
                             uniformCellWidths: columns === 2
-                            columnSpacing: DesktopTokens.px(28); rowSpacing: DesktopTokens.px(16)
+                            columnSpacing: DesktopTokens.px(20); rowSpacing: DesktopTokens.px(16)
                             Repeater {
                                 model: root.summaryCards
                                 delegate: Item {
@@ -572,15 +572,17 @@ FocusScope {
                                     Layout.fillWidth: true; Layout.minimumWidth: 0
                                     Layout.preferredWidth: DesktopTokens.px(180)
                                     Layout.preferredHeight: factColumn.implicitHeight
+                                    // Cards after the first in a row start with a hairline rule.
+                                    readonly property bool ruled: index % summaryGrid.columns !== 0
                                     Rectangle {
                                         width: 1; height: parent.height
-                                        x: -Math.round(summaryGrid.columnSpacing / 2)
-                                        visible: index % summaryGrid.columns !== 0
+                                        visible: parent.ruled
                                         color: Theme.seam
                                     }
                                     Column {
                                         id: factColumn
-                                        width: parent.width
+                                        x: parent.ruled ? DesktopTokens.px(20) : 0
+                                        width: parent.width - x
                                         spacing: DesktopTokens.px(4)
                                         Text { width: parent.width; text: modelData.label.toUpperCase(); elide: Text.ElideRight; color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.smallSize; font.weight: Font.Bold; font.letterSpacing: DesktopTokens.px(1.2) }
                                         Text { width: parent.width; text: modelData.title; elide: Text.ElideRight; color: DesktopTokens.textHigh; font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.bodySize; font.weight: Font.DemiBold }

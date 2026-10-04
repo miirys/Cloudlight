@@ -115,7 +115,7 @@ private slots:
         QCOMPARE(engine.evaluate(QStringLiteral("sessionPersistence = 'memory-only'; persistenceMessage()")).toString(),
             QStringLiteral("This session is memory-only and will not last after you quit."));
         const auto signIn = source(QStringLiteral("qml/desktop/auth/DesktopSignInScreen.qml"));
-        QCOMPARE(signIn.count(QStringLiteral("OpenNOW prefers the OS keychain for saved session tokens. If it is unavailable, tokens are saved unencrypted on disk.")), 2);
+        QCOMPARE(signIn.count(QStringLiteral("Cloudlight prefers the OS keychain for saved session tokens. If it is unavailable, tokens are saved unencrypted on disk.")), 2);
         QVERIFY(!signIn.contains(QStringLiteral("The refresh token is encrypted with the OS keychain.")));
     }
 

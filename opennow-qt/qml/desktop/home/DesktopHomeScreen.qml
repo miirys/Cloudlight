@@ -94,7 +94,7 @@ FocusScope {
         const last = DesktopTokens.relativeLastPlayed(game.lastPlayed, root.lastPlayedNowMs)
         const hours = game.hoursPlayed ? qsTr("%1 h played").arg(game.hoursPlayed) : ""
         if (last !== "" && hours !== "")
-            return last + "  ·  " + hours
+            return last + " · " + hours
         if (last !== "")
             return last
         if (hours !== "")
