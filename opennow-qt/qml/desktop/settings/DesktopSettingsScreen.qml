@@ -430,8 +430,8 @@ FocusScope {
             text: qsTr("Settings")
             color: Theme.label
             font.family: Theme.displayFont
-            font.pixelSize: DesktopTokens.px(22)
-            font.weight: Font.DemiBold
+            font.pixelSize: DesktopTokens.titleSize
+            font.weight: Font.Bold
         }
 
         TextField {
@@ -506,7 +506,7 @@ FocusScope {
                             color: navItem.current ? Theme.label : DesktopTokens.textBody
                             font.family: Theme.bodyFont
                             font.pixelSize: DesktopTokens.px(14)
-                            font.weight: navItem.current ? Font.DemiBold : Font.Normal
+                            font.weight: navItem.current ? Font.DemiBold : Font.Medium
                             elide: Text.ElideRight
                         }
                     }
@@ -529,8 +529,8 @@ FocusScope {
             text: root.pageTitles[root.selectedSection] || ""
             color: Theme.label
             font.family: Theme.displayFont
-            font.pixelSize: DesktopTokens.px(22)
-            font.weight: Font.DemiBold
+            font.pixelSize: DesktopTokens.titleSize
+            font.weight: Font.Bold
         }
         Flickable {
             id: contentFlick

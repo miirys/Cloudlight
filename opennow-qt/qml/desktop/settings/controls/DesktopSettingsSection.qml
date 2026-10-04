@@ -22,7 +22,7 @@ Item {
             color: Theme.label
             font.family: Theme.bodyFont
             font.pixelSize: DesktopTokens.headingSize
-            font.weight: Font.DemiBold
+            font.weight: Font.Bold
             wrapMode: Text.WordWrap
         }
         Text {

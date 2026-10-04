@@ -223,7 +223,7 @@ FocusScope {
         return value ? qsTr("Selected region") : qsTr("Automatic region")
     }
     Rectangle {
-        anchors.fill: parent; color: "#A6000000"; opacity: reveal.progress
+        anchors.fill: parent; color: "#CC000000"; opacity: reveal.progress
         MouseArea {
             anchors.fill: parent; acceptedButtons: Qt.AllButtons
             hoverEnabled: true; preventStealing: true
@@ -399,15 +399,16 @@ FocusScope {
                                 id: primaryAction
                                 objectName: "desktopGamePlay"
                                 Layout.fillWidth: true; Layout.minimumWidth: 0; Layout.preferredHeight: DesktopTokens.px(52)
-                                font.pixelSize: DesktopTokens.captionSize
+                                font.pixelSize: DesktopTokens.bodySize; font.weight: Font.Bold
                                 leftPadding: DesktopTokens.px(14); rightPadding: DesktopTokens.px(14)
+                                glyphSize: DesktopTokens.px(20)
                                 primary: true; glyph: "desktop-play.svg"; text: ShellStore.selectedGameActionLabel(); shortcutText: qsTr("Enter"); shortcutSequence: "Enter"
                                 enabled: root.game !== null && !ShellStore.cloudMutationBusy && ShellStore.launchInspectRequestId === ""
                                 onClicked: root.playRequested()
                             }
                             DesktopButton {
                                 Layout.preferredWidth: DesktopTokens.px(52); Layout.preferredHeight: DesktopTokens.px(52)
-                                themedGlyph: "star"; leftPadding: 0; rightPadding: 0
+                                themedGlyph: "star"; glyphSize: DesktopTokens.px(22); leftPadding: 0; rightPadding: 0
                                 Accessible.name: root.game && ShellStore.isCloudFavorite(root.game) ? qsTr("Remove from GeForce NOW favorites") : qsTr("Add to GeForce NOW favorites")
                                 ToolTip.visible: hovered; ToolTip.text: Accessible.name
                                 enabled: ShellStore.signedIn && !ShellStore.cloudMutationBusy
@@ -415,7 +416,7 @@ FocusScope {
                             }
                             DesktopButton {
                                 Layout.preferredWidth: DesktopTokens.px(52); Layout.preferredHeight: DesktopTokens.px(52)
-                                themedGlyph: "folder"; leftPadding: 0; rightPadding: 0
+                                themedGlyph: "folder"; glyphSize: DesktopTokens.px(22); leftPadding: 0; rightPadding: 0
                                 Accessible.name: qsTr("Collections")
                                 ToolTip.visible: hovered; ToolTip.text: Accessible.name
                                 onClicked: collectionMenu.popup()
@@ -426,7 +427,7 @@ FocusScope {
                             }
                             DesktopButton {
                                 Layout.preferredWidth: DesktopTokens.px(52); Layout.preferredHeight: DesktopTokens.px(52)
-                                themedGlyph: "more"; leftPadding: 0; rightPadding: 0
+                                themedGlyph: "more"; glyphSize: DesktopTokens.px(22); leftPadding: 0; rightPadding: 0
                                 Accessible.name: qsTr("More game actions")
                                 onClicked: moreMenu.popup()
                                 Menu {

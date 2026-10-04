@@ -11,7 +11,7 @@ Button {
     property string shortcutSequence: shortcutText
     property string glyph: ""
     property string themedGlyph: ""
-    property int glyphSize: 16
+    property int glyphSize: DesktopTokens.px(18)
     property int cornerRadius: DesktopTokens.radius
     height: DesktopTokens.px(44)
     implicitWidth: Math.max(DesktopTokens.px(80), contentRow.implicitWidth + leftPadding + rightPadding)
@@ -50,7 +50,7 @@ Button {
         Row {
             id: contentRow
             anchors.centerIn: parent
-            spacing: root.glyph !== "" || root.themedGlyph !== "" ? 11 : 8
+            spacing: root.glyph !== "" || root.themedGlyph !== "" ? DesktopTokens.px(10) : DesktopTokens.px(8)
             DesktopGlyph {
                 visible: root.glyph !== "" && root.themedGlyph === ""
                 anchors.verticalCenter: parent.verticalCenter

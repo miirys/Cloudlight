@@ -3671,7 +3671,12 @@
     "resolutionSuperUltrawide": "32:9 SUPER ULTRAWIDE",
     "superUltrawide": "Super Ultrawide",
     "dropdownPick": "ENTER  Pick",
-    "dropdownCancel": "ESC  Cancel"
+    "dropdownCancel": "ESC  Cancel",
+    "backgroundDescription": "A solid color, game art, gradient or your own image",
+    "findYourGames": "Find your games",
+    "player": "Player",
+    "seeAll": "SEE ALL",
+    "welcome": "WELCOME"
   },
   "shortcutEditor": {
     "s_n_is_already_used_by_n": "%1 is already used by %2.",
