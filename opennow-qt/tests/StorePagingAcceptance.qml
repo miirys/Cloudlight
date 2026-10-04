@@ -272,7 +272,7 @@ QtObject {
         shelf.categoryId = ""
         shelf.width = 600
         shelf.games = [ranked]
-        check(shelf.tileWidth < 160, "short final row stretched its posters")
+        check(shelf.tileWidth < DesktopTokens.px(160), "short final row stretched its posters")
         shelf.destroy()
 
         // An account switch cancels both channels, and late results cannot leak.
