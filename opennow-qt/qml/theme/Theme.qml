@@ -16,14 +16,14 @@ QtObject {
         {id:"chapel", name:"Graphite Violet", author:"OPENNOW", category:"Dark", detail:"VIOLET", bg:"#141414", lightBg:"#F2F2F2", mid:"#2A2A2A", accent:"#9B7BFF", lightAccent:"#5B3FC0"},
         // Cloudlight's house theme: a black dress and white hair. Neutrals carry a faint
         // lilac cast in both modes, and the accent is pearl on dark, ink on light.
-        {id:"echidna", name:"Echidna", author:"CLOUDLIGHT", category:"Dark", detail:"PEARL", bg:"#100E13", lightBg:"#F4F2F7", mid:"#2A2530", accent:"#ECE6F5", lightAccent:"#1D1823",
+        {id:"cloudlight", name:"Cloudlight", author:"CLOUDLIGHT", category:"Dark", detail:"PEARL", bg:"#100E13", lightBg:"#F4F2F7", mid:"#2A2530", accent:"#ECE6F5", lightAccent:"#1D1823",
          dark:{surface:"#18151C", raised:"#211D26", hover:"#2A252F", strong:"#352F3C", seam:"#2C2732", label:"#F4F1F8", muted:"#A39CAD"},
          light:{surface:"#FFFFFF", raised:"#EBE7F0", hover:"#E2DDE9", strong:"#D4CEDD", seam:"#D9D3E1", label:"#17141B", muted:"#5E5768"}}
     ]
     readonly property string mode: String(ShellStore.settings.appTheme || "auto")
     readonly property string themePack: ShellStore.previewThemePack !== ""
                                         ? ShellStore.previewThemePack
-                                        : String(ShellStore.settings.themePack || "echidna")
+                                        : String(ShellStore.settings.themePack || "cloudlight")
     readonly property var pack: packs.find(item => item.id === themePack) || packs[0]
     readonly property bool packLight: pack.category === "Light"
     readonly property bool systemLight: Qt.styleHints.colorScheme === Qt.Light

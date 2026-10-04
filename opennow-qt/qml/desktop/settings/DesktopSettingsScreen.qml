@@ -228,7 +228,7 @@ FocusScope {
 
     function themeMeta(id) {
         const packs = {
-            echidna: { name: qsTr("Echidna"), blurb: qsTr("Black and pearl white with a soft lilac cast."), accent: "#ECE6F5" },
+            cloudlight: { name: qsTr("Cloudlight"), blurb: qsTr("Black and pearl white with a soft lilac cast."), accent: "#ECE6F5" },
             aurora: { name: qsTr("Aurora"), blurb: qsTr("Cool teal shell with a mint focus ring."), accent: "#56E6A5" },
             nocturne: { name: qsTr("Nocturne"), blurb: qsTr("Near-black nocturne shell with a sky focus ring."), accent: "#7FD4FF" },
             kraft: { name: qsTr("Kraft"), blurb: qsTr("Warm brown shell with a brass focus ring."), accent: "#C6A46A" },

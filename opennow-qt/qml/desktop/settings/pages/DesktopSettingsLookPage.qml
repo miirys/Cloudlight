@@ -35,8 +35,8 @@ Column {
             objectName: "renewThemeChoice"
             width: parent.width; glyph: "moon"; title: qsTr("Theme")
             description: qsTr("Applies the pack's appearance, accent and surfaces")
-            items: ["echidna","aurora","nocturne","kraft","phosphor","hibiscus","chapel","bone","cobalt"].map(id => ({label:page.settingsScreen.themeMeta(id).name,detail:page.settingsScreen.themeMeta(id).blurb,value:id}))
-            value: page.settingsScreen.valueSetting("themePack","echidna")
+            items: ["cloudlight","aurora","nocturne","kraft","phosphor","hibiscus","chapel","bone","cobalt"].map(id => ({label:page.settingsScreen.themeMeta(id).name,detail:page.settingsScreen.themeMeta(id).blurb,value:id}))
+            value: page.settingsScreen.valueSetting("themePack","cloudlight")
             onSelected: value => page.settingsScreen.setChoice("themePack",value)
         }
         DesktopSettingsRow {

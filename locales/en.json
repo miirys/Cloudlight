@@ -3677,8 +3677,8 @@
     "player": "Player",
     "seeAll": "SEE ALL",
     "welcome": "WELCOME",
-    "themeEchidna": "Echidna",
-    "themeEchidnaBlurb": "Black and pearl white with a soft lilac cast.",
+    "themeCloudlight": "Cloudlight",
+    "themeCloudlightBlurb": "Black and pearl white with a soft lilac cast.",
     "builtInPalettes": "  ·  Built-in Cloudlight palettes",
     "gpuRestartHint": "Graphics card used to decode and show the stream. Takes effect after restarting Cloudlight.",
     "gpuFallbackHint": "The saved graphics card isn't available, so the first one that can decode video is used. Takes effect after restarting Cloudlight."
