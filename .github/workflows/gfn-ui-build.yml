@@ -6,11 +6,11 @@ name: GFN UI build (linux-x64)
 
 on:
   push:
-    branches: [main, gfn-ui]
+    branches: [ctest-baseline]
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: gfn-ui-${{ github.ref }}
@@ -83,6 +83,39 @@ jobs:
 
       - name: Build
         run: cmake --build build/opennow-qt-release --config Release --parallel 4
+
+      - name: Capture UI screenshots
+        run: |
+          sudo apt-get install -y xvfb xauth libxcb-cursor0 libxkbcommon-x11-0 \
+            libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 \
+            libxcb-shape0 libxcb-xinerama0 libxcb-xkb1 libegl1 libgl1 fonts-noto-color-emoji \
+            mesa-vulkan-drivers libvulkan1 libgl1-mesa-dri
+          mkdir -p build/screens
+          app=$(find build/opennow-qt-release -maxdepth 3 -type f -name opennow-qt -perm -u+x | head -1)
+          bash scripts/capture-gfn-ui.sh "$app" build/screens | tee build/screens/summary.txt || true
+
+      - name: Run the Qt test suite
+        run: |
+          set +e
+          xvfb-run -a -s '-screen 0 1920x1080x24' ctest --test-dir build/opennow-qt-release -C Release \
+            --output-on-failure --parallel 4 --timeout 300 --no-tests=error -LE interactive-desktop \
+            > build/screens/ctest.log 2>&1
+          echo "ctest exit $?" >> build/screens/ctest.log
+          grep -E "tests passed|tests failed|\*\*\*Failed|\*\*\*Timeout|Not Run|ctest exit" build/screens/ctest.log \
+            > build/screens/ctest-summary.txt
+          cat build/screens/ctest-summary.txt
+          true
+
+      - name: Publish screenshots to the screens branch
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        run: |
+          cd build/screens
+          git init -q -b screens
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Screens for ${GITHUB_SHA::8} (run ${GITHUB_RUN_NUMBER})"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git" screens:screens-baseline
 
       - name: Lint QML
         continue-on-error: true
