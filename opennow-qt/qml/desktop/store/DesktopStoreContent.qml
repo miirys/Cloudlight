@@ -861,6 +861,15 @@ FocusScope {
         visible: root.panelShelves.length === 0 && root.newGames.length === 0 && root.popularGames.length === 0
         z: 200
 
+        CloudlightMascot {
+            objectName: "storeEmptyMascot"
+            anchors.horizontalCenter: parent.horizontalCenter
+            visible: root.catalogList().length > 0 || root.catalogState === "error" || root.catalogState === "ready"
+            pose: root.catalogList().length === 0 && root.catalogState === "error" ? "error" : "empty"
+            width: hasArt ? DesktopTokens.px(220) : DesktopTokens.px(96)
+            height: width
+            emblemScale: 1
+        }
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
             width: parent.width

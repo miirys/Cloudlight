@@ -1,10 +1,8 @@
 <p align="center">
-  <img src="opennow-qt/res/brand/opennow-mark.png" alt="OpenNOW cloud logo" width="96" height="52" />
+  <img src="docs/assets/brand/cloudlight-banner.png" alt="Cloudlight: your GeForce NOW library, on the big screen." width="100%" />
 </p>
 
-<h1 align="center">OpenNOW</h1>
-
-<p align="center"><strong>An open-source desktop client for GeForce NOW.</strong></p>
+<p align="center"><strong>Cloudlight is a couch-first GeForce NOW client, built on <a href="https://github.com/OpenCloudGaming/OpenNOW">OpenNOW</a>.</strong></p>
 
 <p align="center">
   <a href="https://github.com/OpenCloudGaming/OpenNOW/releases"><img src="https://img.shields.io/badge/Download-Desktop_builds-56E6A5?style=for-the-badge&labelColor=101916" alt="Download desktop builds" /></a>

@@ -386,6 +386,14 @@ FocusScope {
         width: Math.min(grid.width - 48, DesktopTokens.px(560))
         spacing: DesktopTokens.px(14)
         visible: root.games.length === 0
+        CloudlightMascot {
+            objectName: "libraryEmptyMascot"
+            anchors.horizontalCenter: parent.horizontalCenter
+            pose: "empty"
+            width: hasArt ? DesktopTokens.px(220) : DesktopTokens.px(96)
+            height: width
+            emblemScale: 1
+        }
         Text {
             width: parent.width
             text: root.collection ? qsTr("No games in this view") : qsTr("No games found")
