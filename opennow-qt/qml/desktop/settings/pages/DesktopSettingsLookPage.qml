@@ -85,18 +85,18 @@ Column {
         width: parent.width; paperStyle: true
         DesktopSettingsSection { text: qsTr("Background") }
         DesktopSettingsRow {
-            width: parent.width; paperStyle: true; glyph: "image"; title: qsTr("Background"); description: qsTr("Game art, a custom image, gradient or solid color")
+            width: parent.width; paperStyle: true; glyph: "image"; title: qsTr("Background"); description: qsTr("A solid color, game art, gradient or your own image")
             DesktopSettingsSegmented {
                 id: backgroundSelector
                 objectName: "desktopBackgroundChoice"
-                options: [{label:qsTr("Game art"),value:"art"},{label:qsTr("Gradient"),value:"gradient"},{label:qsTr("Solid"),value:"solid"},{label:qsTr("Custom"),value:"custom"}]; optionWidth: 72
-                selectedIndex: options.findIndex(item => item.value === page.settingsScreen.valueSetting("desktopBackground","art"))
+                options: [{label:qsTr("Solid"),value:"solid"},{label:qsTr("Game art"),value:"art"},{label:qsTr("Gradient"),value:"gradient"},{label:qsTr("Custom"),value:"custom"}]; optionWidth: 72
+                selectedIndex: options.findIndex(item => item.value === page.settingsScreen.valueSetting("desktopBackground","solid"))
                 onSelected: (index,item) => page.settingsScreen.setSetting("desktopBackground",item.value)
             }
         }
         DesktopSettingsRow {
             width: parent.width; paperStyle: true; glyph: "image"; title: qsTr("Custom image")
-            visible: page.settingsScreen.valueSetting("desktopBackground", "art") === "custom"
+            visible: page.settingsScreen.valueSetting("desktopBackground", "solid") === "custom"
             description: backgroundPreview.status === Image.Error
                 ? qsTr("Image unavailable. Choose another file or remove it.")
                 : page.backgroundImage !== "" ? qsTr("Keep the image in its original location") : qsTr("Choose a local PNG, JPEG, WebP or BMP image")
@@ -125,8 +125,8 @@ Column {
                     visible: page.backgroundImage !== ""
                     onClicked: {
                         page.settingsScreen.setSetting("desktopBackgroundImage", "")
-                        if (page.settingsScreen.valueSetting("desktopBackground", "art") === "custom")
-                            page.settingsScreen.setSetting("desktopBackground", "art")
+                        if (page.settingsScreen.valueSetting("desktopBackground", "solid") === "custom")
+                            page.settingsScreen.setSetting("desktopBackground", "solid")
                         backgroundSelector.focusSelectedOption()
                     }
                 }
@@ -134,11 +134,11 @@ Column {
         }
         DesktopSettingsRow {
             width: parent.width; paperStyle: true; glyph: "sun"; title: qsTr("Image opacity")
-            visible: page.settingsScreen.valueSetting("desktopBackground", "art") === "custom"
+            visible: page.settingsScreen.valueSetting("desktopBackground", "solid") === "custom"
             description: qsTr("0% hides the image · 100% shows the full image"); showDivider: false
             DesktopSettingsSlider {
                 objectName: "customBackgroundOpacity"
-                enabled: page.settingsScreen.valueSetting("desktopBackground", "art") === "custom" && page.backgroundImage !== ""
+                enabled: page.settingsScreen.valueSetting("desktopBackground", "solid") === "custom" && page.backgroundImage !== ""
                 from: 0; to: 100; stepSize: 1
                 value: Number(page.settingsScreen.valueSetting("desktopBackgroundOpacity", 30))
                 onCommitted: value => page.settingsScreen.setSetting("desktopBackgroundOpacity", value)
@@ -155,15 +155,6 @@ Column {
                 selectedIndex: Number(page.settingsScreen.valueSetting("posterSizeScale",1.05)) < 1 ? 0 : Number(page.settingsScreen.valueSetting("posterSizeScale",1.05)) > 1.1 ? 2 : 1
                 onSelected: index => page.settingsScreen.setSetting("posterSizeScale",[0.9,1.05,1.25][index])
             }
-        }
-        DesktopSettingsRow {
-            width: parent.width; paperStyle: true; glyph: "sidebar"; title: qsTr("Collapsed sidebar")
-            description: qsTr("Show icons only · Ctrl B toggles")
-            DesktopSettingsToggle { checked: page.settingsScreen.boolSetting("desktopRailCollapsed",true); onValueChangedByUser: value => page.settingsScreen.setSetting("desktopRailCollapsed",value) }
-        }
-        DesktopSettingsRow {
-            width: parent.width; paperStyle: true; glyph: "sidebar"; title: qsTr("Sidebar opens on hover"); description: qsTr("Expands over the page without moving it")
-            DesktopSettingsToggle { checked: page.settingsScreen.boolSetting("desktopSidebarHover",true); onValueChangedByUser: value => page.settingsScreen.setSetting("desktopSidebarHover",value) }
         }
         DesktopSettingsRow {
             width: parent.width; paperStyle: true; glyph: "wave"; title: qsTr("Reduce motion")

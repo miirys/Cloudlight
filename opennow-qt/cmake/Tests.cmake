@@ -1193,14 +1193,11 @@ if(BUILD_TESTING)
                 list(APPEND motion_args --smoke-motion-fullscreen)
             endif()
             add_test(NAME "qml-motion-${motion_mode}-${motion_window}" COMMAND opennow-qt ${motion_args})
-            add_test(NAME "qml-sidebar-${motion_mode}-${motion_window}" COMMAND opennow-qt ${motion_args} --smoke-sidebar)
             add_test(NAME "qml-settings-motion-${motion_mode}-${motion_window}" COMMAND opennow-qt ${motion_args} --smoke-settings-motion)
             # This sequence deliberately exercises over four seconds of motion.
             math(EXPR settings_motion_timeout "${OPENNOW_QT_SMOKE_TIMEOUT} + 10")
             set_tests_properties("qml-settings-motion-${motion_mode}-${motion_window}" PROPERTIES
                 ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT ${settings_motion_timeout})
-            set_tests_properties("qml-sidebar-${motion_mode}-${motion_window}" PROPERTIES
-                ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT ${OPENNOW_QT_SMOKE_TIMEOUT})
             set_tests_properties("qml-motion-${motion_mode}-${motion_window}" PROPERTIES
                 ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT ${OPENNOW_QT_SMOKE_TIMEOUT})
         endforeach()

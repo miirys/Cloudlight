@@ -7,15 +7,23 @@ FocusScope {
     default property alias contentData: contentHost.data
     property string route: "home"
     readonly property bool settingsPage: route.indexOf("settings") === 0
-    readonly property int headerHeight: settingsPage ? DesktopTokens.px(60) : DesktopTokens.topBarHeight
-    readonly property int footerHeight: DesktopTokens.px(40)
+    readonly property int headerHeight: DesktopTokens.topBarHeight
     property string title: qsTr("Home")
     property string subtitle: qsTr("Your library")
     property bool searchVisible: route !== "settings" && route.indexOf("settings-") !== 0 && route !== "friends" && route !== "updates"
     property string searchText: ""
-    readonly property bool railCollapsed: ShellStore.settings.desktopRailCollapsed !== false
-    // A pinned sidebar reserves space; only transient hover expansion overlays.
-    readonly property int contentInset: railCollapsed ? DesktopTokens.railCollapsedWidth : DesktopTokens.railWidth
+    property date now: new Date()
+    readonly property bool friendsAvailable: Boolean(ShellStore.socialCapabilities && ShellStore.socialCapabilities.friendsAvailable)
+    readonly property var navItems: {
+        const items = [
+            { route: "home", name: qsTr("Home") },
+            { route: "library", name: qsTr("Library") },
+            { route: "store", name: qsTr("Store") }
+        ]
+        if (root.friendsAvailable)
+            items.push({ route: "friends", name: qsTr("Friends") })
+        return items
+    }
     signal routeRequested(string route)
     signal consoleModeRequested()
     signal commandPaletteRequested()
@@ -23,26 +31,24 @@ FocusScope {
     anchors.fill: parent
     focus: true
 
-    function persistRailCollapsed(collapsed) {
-        ShellStore.applySetting("desktopRailCollapsed", collapsed)
-        ShellStore.setSetting("desktopRailCollapsed", collapsed)
+    function routeSelected(value) {
+        if (value === "library")
+            return root.route === "library" || root.route === "game-detail"
+        return root.route === value
     }
 
-    function regionStatusText() {
-        const selected = String(ShellStore.selectedRegion || "")
-        if (selected === "")
-            return qsTr("Auto region")
-        const regions = ShellStore.regions || []
-        for (let i = 0; i < regions.length; ++i) {
-            if (regions[i].name === selected || regions[i].url === selected) {
-                const ping = ShellStore.regionPingResults ? ShellStore.regionPingResults[regions[i].url] : undefined
-                const name = String(regions[i].name || selected)
-                if (ping === undefined || ping === null || ping === "")
-                    return name.toUpperCase()
-                return name.toUpperCase() + " · " + ping + " ms"
-            }
-        }
-        return selected.toUpperCase()
+    function displayName() {
+        return ShellStore.signedIn && ShellStore.authSession && ShellStore.authSession.user
+            ? String(ShellStore.authSession.user.displayName || qsTr("Player"))
+            : qsTr("Guest")
+    }
+
+    Timer {
+        interval: 15000
+        repeat: true
+        running: root.visible
+        triggeredOnStart: true
+        onTriggered: root.now = new Date()
     }
 
     function activeSessionPrompt() {
@@ -57,97 +63,209 @@ FocusScope {
 
     DesktopBackdrop { anchors.fill: parent }
 
+    // GeForce NOW layout: one opaque top bar (brand, section tabs, search,
+    // account) over full-width content. No sidebar, no footer.
     Item {
         id: main
-        x: root.contentInset
-        width: root.width - root.contentInset
-        height: root.height
+        anchors.fill: parent
 
         Rectangle {
             id: header
+            objectName: "desktopTopBar"
             width: parent.width; height: root.headerHeight
-            readonly property real availableWidth: Math.max(0, width - DesktopTokens.px(48))
+            z: 2
             color: DesktopTokens.topBar
-            Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: DesktopTokens.seam }
-            Item {
-                id: heading
-                objectName: "desktopHeaderHeading"
-                x: DesktopTokens.px(24); anchors.verticalCenter: parent.verticalCenter
-                width: Math.max(0, (search.visible ? search.x : activeSessionButton.visible ? activeSessionButton.x : parent.width - DesktopTokens.px(14)) - x - DesktopTokens.px(10))
-                height: headerTitle.implicitHeight
-                Text {
-                    id: headerTitle
-                    width: Math.min(implicitWidth, parent.width)
-                    text: root.title; elide: Text.ElideRight
-                    color: DesktopTokens.text; font.family: DesktopTokens.displayFont
-                    font.pixelSize: root.settingsPage ? DesktopTokens.px(22) : DesktopTokens.titleSize
-                    font.weight: Font.Bold; font.letterSpacing: 0
-                }
-                Text {
-                    x: headerTitle.width + DesktopTokens.px(10)
-                    width: Math.max(0, parent.width - x)
-                    visible: width >= DesktopTokens.px(90)
-                    anchors.baseline: headerTitle.baseline
-                    text: root.subtitle; elide: Text.ElideRight
-                    color: DesktopTokens.textMuted; font.family: DesktopTokens.bodyFont
-                    font.pixelSize: DesktopTokens.captionSize; font.weight: Font.DemiBold; font.letterSpacing: 0
+
+            DesktopBrandLockup {
+                id: brand
+                x: DesktopTokens.safeX
+                anchors.verticalCenter: parent.verticalCenter
+                markHeight: DesktopTokens.px(22)
+                fontPixelSize: DesktopTokens.px(21)
+            }
+
+            Row {
+                id: tabs
+                objectName: "desktopTopTabs"
+                x: brand.x + brand.width + DesktopTokens.px(44)
+                height: parent.height
+                spacing: DesktopTokens.px(8)
+                Repeater {
+                    model: root.navItems
+                    delegate: ItemDelegate {
+                        id: tab
+                        required property var modelData
+                        required property int index
+                        objectName: "desktopTab-" + modelData.route
+                        readonly property bool selected: root.routeSelected(modelData.route)
+                        readonly property bool keyboardFocus: activeFocus && AppController.inputMode !== "pointer"
+                        height: tabs.height
+                        leftPadding: DesktopTokens.px(16); rightPadding: DesktopTokens.px(16)
+                        topPadding: 0; bottomPadding: 0
+                        focusPolicy: Qt.StrongFocus
+                        Accessible.name: modelData.name
+                        background: Item {
+                            Rectangle {
+                                anchors.fill: parent
+                                anchors.topMargin: DesktopTokens.px(14); anchors.bottomMargin: DesktopTokens.px(14)
+                                radius: DesktopTokens.radius
+                                color: tab.hovered || tab.keyboardFocus ? DesktopTokens.hover : "transparent"
+                                border.width: tab.keyboardFocus ? DesktopTokens.focusOutline : 0
+                                border.color: Theme.label
+                                Behavior on color { ColorAnimation { duration: DesktopTokens.quickDuration } }
+                            }
+                            Rectangle {
+                                anchors.bottom: parent.bottom
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                height: DesktopTokens.px(3)
+                                width: tab.selected ? parent.width - DesktopTokens.px(24) : 0
+                                color: DesktopTokens.focus
+                                Behavior on width { NumberAnimation { duration: DesktopTokens.motionDuration; easing.type: Easing.OutCubic } }
+                            }
+                        }
+                        contentItem: Text {
+                            text: tab.modelData.name
+                            verticalAlignment: Text.AlignVCenter
+                            color: tab.selected || tab.hovered || tab.keyboardFocus ? DesktopTokens.textHigh : DesktopTokens.textMuted
+                            font.family: DesktopTokens.bodyFont
+                            font.pixelSize: DesktopTokens.navSize
+                            font.weight: tab.selected ? Font.Bold : Font.DemiBold
+                            Behavior on color { ColorAnimation { duration: DesktopTokens.quickDuration } }
+                        }
+                        onClicked: {
+                            if (modelData.route === "library")
+                                ShellStore.activeCollectionId = ""
+                            root.routeRequested(modelData.route)
+                        }
+                    }
                 }
             }
+
             TextField {
                 id: search
                 objectName: "desktopHeaderSearch"
-                visible: root.searchVisible
-                anchors.right: activeSessionButton.visible ? activeSessionButton.left : parent.right
-                anchors.rightMargin: activeSessionButton.visible ? DesktopTokens.px(10) : DesktopTokens.px(24)
+                readonly property real slotLeft: tabs.x + tabs.width + DesktopTokens.px(32)
+                readonly property real slotRight: account.x - DesktopTokens.px(24)
+                visible: root.searchVisible && slotRight - slotLeft >= DesktopTokens.px(220)
+                x: slotLeft + Math.max(0, (slotRight - slotLeft - width) / 2)
                 anchors.verticalCenter: parent.verticalCenter
-                width: Math.min(DesktopTokens.px(300), header.availableWidth * (activeSessionButton.visible ? 0.34 : 0.48))
-                height: DesktopTokens.controlHeight
-                leftPadding: DesktopTokens.px(34); rightPadding: DesktopTokens.px(34); topPadding: 0; bottomPadding: 0
-                color: DesktopTokens.textBody
-                placeholderText: root.route === "friends" ? qsTr("Search friends") : root.route === "store" ? qsTr("Search the store") : qsTr("Search your library")
+                width: Math.min(DesktopTokens.px(560), slotRight - slotLeft)
+                height: DesktopTokens.px(44)
+                leftPadding: DesktopTokens.px(46); rightPadding: DesktopTokens.px(16); topPadding: 0; bottomPadding: 0
+                color: DesktopTokens.textHigh
+                placeholderText: root.route === "friends" ? qsTr("Search friends") : root.route === "store" ? qsTr("Search the store") : qsTr("Find your games")
                 placeholderTextColor: DesktopTokens.textMuted
-                font.family: DesktopTokens.bodyFont; font.pixelSize: DesktopTokens.bodySize; font.weight: Font.DemiBold
+                font.family: DesktopTokens.bodyFont; font.pixelSize: DesktopTokens.bodySize; font.weight: Font.Medium
                 text: root.searchText
                 selectByMouse: true
-                background: Rectangle { radius: DesktopTokens.radius; color: DesktopTokens.raised; border.width: 1; border.color: DesktopTokens.seam }
-                onTextChanged: root.searchText = text
-                DesktopGlyph { x: DesktopTokens.px(11); anchors.verticalCenter: parent.verticalCenter; width: DesktopTokens.px(14); height: DesktopTokens.px(14); icon: "desktop-search.svg" }
-                KeyboardGlyph { anchors.right: parent.right; anchors.rightMargin: DesktopTokens.px(8); anchors.verticalCenter: parent.verticalCenter; shortcut: "/"; keySize: DesktopTokens.px(20); ink: DesktopTokens.textBody }
-            }
-            DesktopButton {
-                id: activeSessionButton
-                objectName: "desktopHeaderResume"
-                visible: ShellStore.resumableSession !== null && root.route !== "stream"
-                anchors.right: parent.right
-                anchors.rightMargin: DesktopTokens.px(24)
-                anchors.verticalCenter: parent.verticalCenter
-                width: Math.min(DesktopTokens.px(260), header.availableWidth * (search.visible ? 0.34 : 0.48))
-                height: DesktopTokens.controlHeight
-                primary: true
-                glyph: "desktop-play.svg"
-                glyphSize: DesktopTokens.px(11)
-                font.pixelSize: DesktopTokens.captionSize
-                text: root.activeSessionPrompt()
-                ToolTip.visible: hovered
-                ToolTip.text: text
-                ToolTip.delay: 700
-                contentItem: Item {
-                    DesktopGlyph {
-                        anchors.left: parent.left; anchors.verticalCenter: parent.verticalCenter
-                        width: activeSessionButton.glyphSize; height: width
-                        icon: "desktop-play.svg"
-                    }
-                    Text {
-                        x: activeSessionButton.glyphSize + DesktopTokens.px(8)
-                        width: Math.max(0, parent.width - x)
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: activeSessionButton.text
-                        elide: Text.ElideRight
-                        color: "#141414"
-                        font: activeSessionButton.font
-                    }
+                background: Rectangle {
+                    radius: DesktopTokens.radius
+                    color: search.activeFocus ? DesktopTokens.raisedStrong : DesktopTokens.raised
+                    border.width: search.activeFocus ? DesktopTokens.focusOutline : 0
+                    border.color: Theme.label
                 }
-                onClicked: ShellStore.resumeActiveSession()
+                onTextChanged: root.searchText = text
+                DesktopGlyph { x: DesktopTokens.px(16); anchors.verticalCenter: parent.verticalCenter; width: DesktopTokens.px(18); height: width; icon: "desktop-search.svg" }
+            }
+
+            Row {
+                id: account
+                anchors.right: parent.right
+                anchors.rightMargin: DesktopTokens.safeX
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: DesktopTokens.px(12)
+
+                DesktopButton {
+                    id: activeSessionButton
+                    objectName: "desktopHeaderResume"
+                    visible: ShellStore.resumableSession !== null && root.route !== "stream"
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: Math.min(DesktopTokens.px(300), Math.max(DesktopTokens.px(160), implicitWidth))
+                    height: DesktopTokens.px(44)
+                    primary: true
+                    text: root.activeSessionPrompt()
+                    ToolTip.visible: hovered
+                    ToolTip.text: text
+                    ToolTip.delay: 700
+                    onClicked: ShellStore.resumeActiveSession()
+                }
+
+                Text {
+                    id: clock
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: Qt.formatTime(root.now, Qt.locale().timeFormat(Locale.ShortFormat))
+                    color: DesktopTokens.textMuted
+                    font.family: DesktopTokens.bodyFont; font.pixelSize: DesktopTokens.bodySize; font.weight: Font.DemiBold
+                    font.features: { "tnum": 1 }
+                }
+
+                ItemDelegate {
+                    id: profileButton
+                    objectName: "desktopHeaderProfile"
+                    anchors.verticalCenter: parent.verticalCenter
+                    height: DesktopTokens.px(48)
+                    leftPadding: DesktopTokens.px(6); rightPadding: DesktopTokens.px(14)
+                    topPadding: 0; bottomPadding: 0
+                    focusPolicy: Qt.StrongFocus
+                    Accessible.name: qsTr("Account")
+                    readonly property bool keyboardFocus: activeFocus && AppController.inputMode !== "pointer"
+                    background: Rectangle {
+                        radius: DesktopTokens.radius
+                        color: profileButton.hovered || profileButton.keyboardFocus ? DesktopTokens.hover : "transparent"
+                        border.width: profileButton.keyboardFocus ? DesktopTokens.focusOutline : 0
+                        border.color: Theme.label
+                    }
+                    contentItem: Row {
+                        spacing: DesktopTokens.px(12)
+                        Rectangle {
+                            anchors.verticalCenter: parent.verticalCenter
+                            width: DesktopTokens.px(36); height: width; radius: width / 2
+                            color: DesktopTokens.focus
+                            Text {
+                                anchors.centerIn: parent
+                                text: root.displayName().charAt(0).toUpperCase()
+                                color: Theme.focusText
+                                font.family: DesktopTokens.bodyFont; font.pixelSize: DesktopTokens.bodySize; font.weight: Font.Bold
+                            }
+                        }
+                        Text {
+                            anchors.verticalCenter: parent.verticalCenter
+                            visible: header.width >= DesktopTokens.px(1280)
+                            text: root.displayName()
+                            color: DesktopTokens.textHigh
+                            font.family: DesktopTokens.bodyFont; font.pixelSize: DesktopTokens.bodySize; font.weight: Font.DemiBold
+                        }
+                    }
+                    onClicked: root.routeRequested("settings-account")
+                }
+
+                ItemDelegate {
+                    id: settingsButton
+                    objectName: "desktopHeaderSettings"
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: DesktopTokens.px(48); height: width
+                    padding: 0
+                    focusPolicy: Qt.StrongFocus
+                    Accessible.name: qsTr("Settings")
+                    readonly property bool selected: root.settingsPage
+                    readonly property bool keyboardFocus: activeFocus && AppController.inputMode !== "pointer"
+                    background: Rectangle {
+                        radius: DesktopTokens.radius
+                        color: settingsButton.selected ? DesktopTokens.raised
+                            : settingsButton.hovered || settingsButton.keyboardFocus ? DesktopTokens.hover : "transparent"
+                        border.width: settingsButton.keyboardFocus ? DesktopTokens.focusOutline : 0
+                        border.color: Theme.label
+                    }
+                    contentItem: Item {
+                        DesktopGlyph {
+                            anchors.centerIn: parent
+                            width: DesktopTokens.px(22); height: width
+                            icon: "desktop-nav-settings.svg"
+                            active: settingsButton.selected
+                        }
+                    }
+                    onClicked: root.routeRequested("settings")
+                }
             }
         }
 
@@ -155,56 +273,8 @@ FocusScope {
             id: contentHost
             x: 0; y: root.headerHeight
             width: parent.width
-            height: parent.height - root.headerHeight - root.footerHeight
+            height: parent.height - root.headerHeight
             clip: true
-        }
-
-        Rectangle {
-            id: footer
-            anchors.bottom: parent.bottom
-            width: parent.width
-            height: root.footerHeight
-            color: DesktopTokens.statusBar
-            clip: true
-            readonly property bool compactHints: true
-            Rectangle { width: parent.width; height: 1; color: DesktopTokens.seam }
-            Row { id: shortcutHints; x: DesktopTokens.px(24); anchors.verticalCenter: parent.verticalCenter; spacing: DesktopTokens.px(footer.compactHints ? 8 : 16)
-                DesktopKeyHint { compact: footer.compactHints; keyText: qsTr("Arrows"); shortcut: "Arrows"; label: qsTr("Move") }
-                DesktopKeyHint { compact: footer.compactHints; keyText: qsTr("Enter"); shortcut: "Enter"; label: qsTr("Play") }
-                DesktopKeyHint { compact: footer.compactHints; keyText: "/"; label: qsTr("Search") }
-                DesktopKeyHint { compact: footer.compactHints; keyText: qsTr("Ctrl K"); shortcut: "Ctrl K"; label: qsTr("Commands") }
-                DesktopKeyHint { compact: footer.compactHints; keyText: "?"; label: qsTr("All shortcuts") }
-            }
-            Row { anchors.right: parent.right; anchors.rightMargin: DesktopTokens.px(24); anchors.verticalCenter: parent.verticalCenter; spacing: DesktopTokens.px(10)
-                visible: x >= shortcutHints.x + shortcutHints.width + DesktopTokens.px(16)
-                Text { text: root.regionStatusText(); color: DesktopTokens.textMuted; font.family: DesktopTokens.bodyFont; font.pixelSize: DesktopTokens.px(12) }
-            }
-        }
-    }
-
-    Rectangle {
-        id: railScrim
-        x: root.contentInset
-        width: root.width - root.contentInset
-        height: root.height
-        z: 20
-        color: "transparent"
-        visible: sidebar.overlayOpen
-        TapHandler { onTapped: sidebar.closeOverlay() }
-    }
-
-    DesktopSidebar {
-        id: sidebar
-        x: 0
-        z: sidebar.overlayOpen ? 40 : 3
-        currentRoute: root.route
-        collapsed: root.railCollapsed
-        onRouteRequested: route => root.routeRequested(route)
-        onConsoleModeRequested: root.consoleModeRequested()
-        onCollapseRequested: collapsed => root.persistRailCollapsed(collapsed)
-        onCreateCollectionRequested: {
-            sidebar.closeOverlay()
-            collectionDialog.open()
         }
     }
 
@@ -219,9 +289,6 @@ FocusScope {
     Keys.onPressed: event => {
         if ((event.modifiers & Qt.ControlModifier) && event.key === Qt.Key_K) {
             root.commandPaletteRequested()
-            event.accepted = true
-        } else if ((event.modifiers & Qt.ControlModifier) && event.key === Qt.Key_B) {
-            root.persistRailCollapsed(!root.railCollapsed)
             event.accepted = true
         } else if ((event.modifiers & Qt.ControlModifier) && event.key === Qt.Key_Comma) {
             root.routeRequested("settings")

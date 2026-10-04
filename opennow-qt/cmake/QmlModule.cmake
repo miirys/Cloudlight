@@ -306,7 +306,6 @@ qt_add_qml_module(opennow-qt
         qml/desktop/shell/DesktopApp.qml
         qml/desktop/shell/DesktopCommandPalette.qml
         qml/desktop/shell/DesktopShell.qml
-        qml/desktop/shell/DesktopSidebar.qml
         qml/desktop/store/DesktopStoreCard.qml
         qml/desktop/store/DesktopStoreChip.qml
         qml/desktop/store/DesktopStoreContent.qml

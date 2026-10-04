@@ -489,11 +489,6 @@ int AcceptanceSession::startSmokeWorkload()
             ? nullptr : qobject_cast<QQuickWindow *>(m_engine.rootObjects().first());
         startSettingsMotionAcceptance(window, &m_controller, &m_qmlWarningOccurred,
                                       m_arguments.contains(u"--smoke-motion-fullscreen"_s));
-    } else if (m_smokeTest && m_arguments.contains(u"--smoke-sidebar"_s)) {
-        auto *window = m_engine.rootObjects().isEmpty()
-            ? nullptr : qobject_cast<QQuickWindow *>(m_engine.rootObjects().first());
-        startSidebarAcceptance(window, &m_controller, &m_qmlWarningOccurred,
-                               m_arguments.contains(u"--smoke-motion-fullscreen"_s));
     } else if (m_smokeTest && m_arguments.contains(u"--smoke-motion"_s)) {
         auto *window = m_engine.rootObjects().isEmpty()
             ? nullptr : qobject_cast<QQuickWindow *>(m_engine.rootObjects().first());

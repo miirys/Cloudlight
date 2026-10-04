@@ -54,17 +54,22 @@ QtObject {
     property real uiScale: 1
     // Type ramp. Every desktop font size must come from here so text stays
     // proportionate on any display size; raw pixelSize literals drift.
-    readonly property int titleSize: px(26)
-    readonly property int headingSize: px(17)
-    readonly property int bodySize: px(15)
-    readonly property int captionSize: px(13)
-    readonly property int monoSize: px(12)
-    readonly property int smallSize: px(11)
-    readonly property int microSize: px(10)
-    readonly property int tinySize: px(9)
+    readonly property int titleSize: px(30)
+    readonly property int headingSize: px(20)
+    readonly property int bodySize: px(17)
+    readonly property int captionSize: px(15)
+    readonly property int monoSize: px(14)
+    readonly property int smallSize: px(13)
+    readonly property int microSize: px(12)
+    readonly property int tinySize: px(11)
     readonly property int railWidth: px(232)
     readonly property int railCollapsedWidth: px(72)
-    readonly property int topBarHeight: px(64)
+    readonly property int topBarHeight: px(72)
+    readonly property int navSize: px(18)
+    readonly property int displaySize: px(44)
+    // Horizontal safe margin: 96px at 1080p, the 10-foot overscan guide.
+    readonly property int safeX: px(72)
+    readonly property int focusOutline: Math.max(3, px(2))
     readonly property int statusBarHeight: px(52)
     readonly property int rowHeight: px(60)
     readonly property int controlHeight: px(38)
@@ -84,10 +89,10 @@ QtObject {
         font.weight: Font.Bold
     }
     readonly property int storeCardInfoHeight: px(8) + Math.ceil(storeTitleMetrics.height) * 2 + px(4) + px(17) + px(4)
-    readonly property int quickDuration: AppController.reducedMotion ? 0 : 120
-    readonly property int motionDuration: AppController.reducedMotion ? 0 : 220
+    readonly property int quickDuration: AppController.reducedMotion ? 0 : 150
+    readonly property int motionDuration: AppController.reducedMotion ? 0 : 250
     readonly property int revealDuration: AppController.reducedMotion ? 0 : 320
-    readonly property real cardHoverScale: 1.025
+    readonly property real cardHoverScale: 1.06
     readonly property int cardOutlinePad: 2
     readonly property color cardOutlineIdle: Theme.seam
 
@@ -96,9 +101,10 @@ QtObject {
     }
 
     function scaleForWindow(width, height) {
-        // Qt already accounts for display DPI. Keep logical text readable;
-        // use reflow, not aggressive downscaling, for smaller windows.
-        return Math.max(0.95, Math.min(1.15, Math.min(width / 1440, height / 900)))
+        // Laid out against a 1440x810 canvas, so a 1080p screen (a TV or
+        // projector seen from a couch) gets ~1.33x. Smaller windows reflow
+        // instead of shrinking below 0.95.
+        return Math.max(0.95, Math.min(1.5, Math.min(width / 1440, height / 810)))
     }
 
     function storeKey(value) {

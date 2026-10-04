@@ -6,8 +6,10 @@ import OpenNOW
 Item {
     id: root
     property real progress: 1
-    readonly property real pageOpacity: 0.65 + 0.35 * progress
-    readonly property real offset: 6 * (1 - progress)
+    // Fade the whole page in while it settles upward, so a route change reads
+    // as one deliberate reveal rather than a flicker.
+    readonly property real pageOpacity: Math.min(1, progress * 1.6)
+    readonly property real offset: 18 * (1 - progress)
 
     function restart() {
         entrance.stop()
@@ -18,7 +20,10 @@ Item {
     NumberAnimation {
         id: entrance
         target: root; property: "progress"; to: 1
-        duration: 170; easing.type: Easing.OutCubic
+        duration: 280
+        // Material 3 "emphasized decelerate".
+        easing.type: Easing.BezierSpline
+        easing.bezierCurve: [0.05, 0.7, 0.1, 1, 1, 1]
     }
     Connections {
         target: AppController

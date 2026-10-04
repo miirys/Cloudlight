@@ -15,7 +15,7 @@ Item {
     ArtworkSource {
         id: artworkSource
         sourceUrl: root.normalizedArtwork
-        active: root.visible && (root.signIn || String(ShellStore.settings.desktopBackground || "art") === "art")
+        active: root.visible && (root.signIn || String(ShellStore.settings.desktopBackground || "solid") === "art")
     }
 
     Rectangle { anchors.fill: parent; color: root.signIn ? Theme.shell : DesktopTokens.shell }
@@ -33,7 +33,7 @@ Item {
             cache: true
             fillMode: Image.PreserveAspectCrop
             sourceSize: Qt.size(1440, 900)
-            opacity: status === Image.Ready && (root.signIn || String(ShellStore.settings.desktopBackground || "art") === "art") ? 1 : 0
+            opacity: status === Image.Ready && (root.signIn || String(ShellStore.settings.desktopBackground || "solid") === "art") ? 1 : 0
             Behavior on opacity { NumberAnimation { duration: DesktopTokens.revealDuration } }
         }
     }
@@ -72,7 +72,7 @@ Item {
         anchors.fill: parent
         // Only the explicit "gradient" background gets an accent wash; it sits
         // above the darkening layers used for artwork.
-        visible: !root.signIn && !root.customBackground && String(ShellStore.settings.desktopBackground || "art") === "gradient"
+        visible: !root.signIn && !root.customBackground && String(ShellStore.settings.desktopBackground || "solid") === "gradient"
         z: 1
         gradient: Gradient {
             GradientStop { position: 0; color: Qt.rgba(Theme.focus.r, Theme.focus.g, Theme.focus.b, 0.22) }

@@ -83,7 +83,7 @@ FocusScope {
             return
         const fitted = DesktopTokens.scaleForWindow(root.width, root.height)
         const preference = Number(ShellStore.settings.desktopUiScale || 1)
-        DesktopTokens.uiScale = Math.min(1.4, Math.max(0.9, fitted * preference))
+        DesktopTokens.uiScale = Math.min(1.6, Math.max(0.9, fitted * preference))
     }
     onWidthChanged: root.updateUiScale()
     onHeightChanged: root.updateUiScale()
