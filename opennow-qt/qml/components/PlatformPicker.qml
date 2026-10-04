@@ -118,7 +118,7 @@ FocusScope {
 
     Rectangle {
         anchors.fill: parent
-        radius: 28
+        radius: Theme.radiusLarge
         color: Theme.glassStrong
         border.color: root.activeFocus || root.expanded ? Theme.focus : Theme.seam
         border.width: root.activeFocus || root.expanded ? 3 : 1
@@ -138,7 +138,7 @@ FocusScope {
                 color: Theme.label
                 font.family: Theme.bodyFont
                 font.pixelSize: 16
-                font.weight: Font.Black
+                font.weight: Font.Bold
             }
             Text {
                 text: root.ownershipText(root.currentVariant)
@@ -155,7 +155,7 @@ FocusScope {
             text: "⌄"
             color: Theme.label
             font.pixelSize: 20
-            font.weight: Font.Black
+            font.weight: Font.Bold
             rotation: root.expanded ? 180 : 0
             Behavior on rotation { NumberAnimation { duration: Theme.focusDuration; easing.type: Easing.OutCubic } }
         }
@@ -168,8 +168,9 @@ FocusScope {
         y: 70
         width: parent.width
         height: Math.min(304, 16 + root.variants.length * 56)
-        radius: 26
-        color: Qt.rgba(0, 0, 0, 0.4)
+        radius: Theme.radiusLarge
+        color: Theme.surfaceRaised
+        border.color: Theme.seam
         opacity: root.expanded ? 1 : 0
         scale: root.expanded ? 1 : 0.96
         transformOrigin: Item.TopRight
@@ -212,7 +213,7 @@ FocusScope {
                 Accessible.description: root.ownershipText(modelData)
                 onClicked: root.choose(index)
                 background: Rectangle {
-                    radius: 22
+                    radius: Theme.radiusLarge
                     color: platformOption.highlighted ? Theme.face : "transparent"
                     border.color: platformOption.highlighted ? Theme.focus : "transparent"
                     border.width: platformOption.highlighted ? 2 : 0
@@ -233,7 +234,7 @@ FocusScope {
                         elide: Text.ElideRight
                         font.family: Theme.bodyFont
                         font.pixelSize: 15
-                        font.weight: Font.Black
+                        font.weight: Font.Bold
                     }
                     Rectangle {
                         id: ownership
@@ -242,9 +243,9 @@ FocusScope {
                         anchors.verticalCenter: parent.verticalCenter
                         width: ownershipText.implicitWidth + 18
                         height: 30
-                        radius: 15
+                        radius: Theme.radiusLarge
                         color: root.owned(modelData)
-                            ? (platformOption.highlighted ? Qt.rgba(0.04, 0.48, 0.28, 0.18) : Qt.rgba(0.43, 0.91, 0.72, 0.13))
+                            ? (platformOption.highlighted ? Theme.surfaceHover : Theme.surfaceStrong)
                             : "transparent"
                         border.color: root.owned(modelData) ? Theme.mint : Theme.seam
                         border.width: 1
@@ -254,10 +255,10 @@ FocusScope {
                             text: root.ownershipText(modelData)
                             color: root.owned(modelData)
                                 ? (platformOption.highlighted ? Theme.faceText : Theme.mint)
-                                : (platformOption.highlighted ? Qt.rgba(0.04, 0.06, 0.10, 0.6) : Theme.textMuted)
+                                : (platformOption.highlighted ? "#5C5C5C" : Theme.textMuted)
                             font.family: Theme.bodyFont
                             font.pixelSize: 12
-                            font.weight: Font.Black
+                            font.weight: Font.Bold
                         }
                     }
                 }

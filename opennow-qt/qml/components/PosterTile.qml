@@ -25,14 +25,14 @@ ItemDelegate {
     background: RoundedArtwork {
         artwork: root.artwork
         fallbackColor: root.storeColor
-        cornerRadius: 25
+        cornerRadius: Theme.radiusLarge
         scrimStart: 0.55
     }
 
     contentItem: Item {
         StoreBadge {
             visible: root.showStoreBadge
-            x: 10; y: 10; width: 28; height: 28; radius: 8
+            x: 10; y: 10; width: 28; height: 28; radius: Theme.radius
             badgeSize: 28
             storeGlyph: root.storeGlyph
             storeColor: root.storeColor
@@ -45,7 +45,7 @@ ItemDelegate {
             elide: Text.ElideRight
             font.family: Theme.displayFont
             font.pixelSize: 15
-            font.weight: Font.Black
+            font.weight: Font.Bold
         }
     }
 

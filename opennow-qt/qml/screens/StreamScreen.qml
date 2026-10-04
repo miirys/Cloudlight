@@ -141,7 +141,7 @@ FocusScope {
         layer.enabled: HdrOutput.chromeRequired
         layer.effect: HdrChromeEffect {}
         anchors.fill: parent
-        color: Qt.rgba(0.02, 0.04, 0.08, 0.38)
+        color: Qt.rgba(0, 0, 0, 0.38)
         z: 2
     }
 
@@ -178,8 +178,8 @@ FocusScope {
                 Column {
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: 3
-                    Text { text: root.failed ? qsTr("MEDIA STARTUP FAILED") : (root.status === "reconnecting" ? qsTr("RECONNECTING") : qsTr("CLOUD SEAT READY")); color: root.failed ? Theme.coral : Theme.focus; font.family: Theme.bodyFont; font.pixelSize: 14; font.weight: Font.Black; font.letterSpacing: 1.4 }
-                    Text { text: root.game.title || qsTr("GeForce NOW"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 34; font.weight: Font.Black }
+                    Text { text: root.failed ? qsTr("Media startup failed") : (root.status === "reconnecting" ? qsTr("Reconnecting") : qsTr("Cloud seat ready")); color: root.failed ? Theme.coral : Theme.focus; font.family: Theme.bodyFont; font.pixelSize: 14; font.weight: Font.Bold; font.letterSpacing: 0 }
+                    Text { text: root.game.title || qsTr("GeForce NOW"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 34; font.weight: Font.Bold }
                 }
             }
 
@@ -218,12 +218,12 @@ FocusScope {
                     anchors.fill: parent; anchors.margins: 18; spacing: 22
                     Column {
                         width: parent.width * 0.42
-                        Text { text: qsTr("SESSION"); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 11; font.weight: Font.Black; font.letterSpacing: 1.2 }
+                        Text { text: qsTr("Session"); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 11; font.weight: Font.Bold; font.letterSpacing: 0 }
                         Text { width: parent.width; elide: Text.ElideMiddle; text: root.session.sessionId || "—"; color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 14 }
                     }
                     Column {
                         width: parent.width * 0.42
-                        Text { text: qsTr("SERVER"); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 11; font.weight: Font.Black; font.letterSpacing: 1.2 }
+                        Text { text: qsTr("Server"); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 11; font.weight: Font.Bold; font.letterSpacing: 0 }
                         Text { width: parent.width; elide: Text.ElideMiddle; text: root.session.serverLocation || root.session.zone || "—"; color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 14 }
                     }
                 }
@@ -247,8 +247,8 @@ FocusScope {
         x: 34; y: 34; width: 190; height: 58; panelRadius: 22; strong: true
         Row {
             anchors.centerIn: parent; spacing: 10
-            Text { text: "◷"; color: Theme.focus; font.pixelSize: 19; font.weight: Font.Black }
-            Text { text: root.elapsed(root.elapsedSeconds); color: Theme.label; font.family: Theme.monoFont; font.pixelSize: 17; font.weight: Font.Bold }
+            Text { text: "◷"; color: Theme.focus; font.pixelSize: 19; font.weight: Font.Bold }
+            Text { text: root.elapsed(root.elapsedSeconds); color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 17; font.weight: Font.Bold }
         }
         opacity: clockMotion.progress
     }
@@ -290,7 +290,7 @@ FocusScope {
         Row {
             anchors.centerIn: parent; spacing: 10
             Rectangle { width: 10; height: 10; radius: 5; color: Theme.mint }
-            Text { text: qsTr("ANTI-AFK ON"); color: Theme.label; font.family: Theme.monoFont; font.pixelSize: 13; font.weight: Font.Black; font.letterSpacing: 0.8 }
+            Text { text: qsTr("Anti-AFK on"); color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 13; font.weight: Font.Bold; font.letterSpacing: 0 }
         }
         opacity: afkMotion.progress
     }

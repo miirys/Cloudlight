@@ -16,7 +16,7 @@ FocusScope {
                 Rectangle { anchors.centerIn: parent; width: 22; height: 22; radius: 11; color: Theme.focus }
                 RotationAnimation on rotation { from: 0; to: 360; duration: 1100; loops: Animation.Infinite; running: !AppController.reducedMotion }
             }
-            Text { anchors.horizontalCenter: parent.horizontalCenter; text: ShellStore.streamState === "error" ? qsTr("Session could not start") : qsTr("Inserting you into the cloud"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 32; font.weight: Font.Black }
+            Text { anchors.horizontalCenter: parent.horizontalCenter; text: ShellStore.streamState === "error" ? qsTr("Session could not start") : qsTr("Inserting you into the cloud"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 32; font.weight: Font.Bold }
             Text { width: parent.width; horizontalAlignment: Text.AlignHCenter; wrapMode: Text.WordWrap; text: I18n.source(ShellStore.streamMessage, I18n.revision); color: ShellStore.streamState === "error" ? Theme.coral : Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 17 }
             Text { anchors.horizontalCenter: parent.horizontalCenter; text: root.game.title + (root.session.gpuType ? " · " + root.session.gpuType : ""); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 14; font.weight: Font.DemiBold }
             GlassButton { anchors.horizontalCenter: parent.horizontalCenter; visible: ShellStore.streamState === "error" && (ShellStore.pendingLaunchParams !== null || ShellStore.activeSession !== null || ShellStore.conflictSession !== null); enabled: !ShellStore.streamBusy; text: qsTr("Try again"); primary: true; onClicked: ShellStore.retrySessionLaunch() }

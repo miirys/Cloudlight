@@ -34,7 +34,7 @@ Dialog {
         color: Theme.label
         font.family: Theme.bodyFont
         font.pixelSize: DesktopTokens.px(20)
-        font.weight: Font.ExtraBold
+        font.weight: Font.DemiBold
         wrapMode: Text.WordWrap
     }
     background: Rectangle {

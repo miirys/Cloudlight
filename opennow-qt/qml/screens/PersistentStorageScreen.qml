@@ -17,7 +17,7 @@ FocusScope {
         x: 96; y: 128; width: root.width * 0.57; height: root.height - 264; panelRadius: 40
         Column {
             anchors.fill: parent; anchors.margins: 34; spacing: 14
-            Text { text: qsTr("Persistent storage"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 36; font.weight: Font.Black }
+            Text { text: qsTr("Persistent storage"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 36; font.weight: Font.Bold }
             Text { text: qsTr("Choose the NVIDIA storage region to inspect or reset."); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 16 }
             ListView {
                 id: locationList
@@ -45,12 +45,12 @@ FocusScope {
                     width: locationList.width; height: 66; focusPolicy: Qt.StrongFocus
                     highlighted: ListView.isCurrentItem
                     onClicked: locationList.currentIndex = index
-                    background: Rectangle { radius: 21; color: parent.highlighted ? Theme.glassStrong : Theme.glass; border.color: parent.highlighted ? Theme.focus : Theme.seam; border.width: parent.highlighted ? 3 : 1 }
+                    background: Rectangle { radius: Theme.radiusLarge; color: parent.highlighted ? Theme.glassStrong : Theme.glass; border.color: parent.highlighted ? Theme.focus : Theme.seam; border.width: parent.highlighted ? 3 : 1 }
                     contentItem: Row {
                         spacing: 14
                         Rectangle { width: 14; height: 14; radius: 7; anchors.verticalCenter: parent.verticalCenter; color: modelData.isCurrent ? Theme.mint : modelData.isAvailable ? Theme.focus : Theme.coral }
                         Text { width: parent.width - 170; anchors.verticalCenter: parent.verticalCenter; text: modelData.name; color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 17; font.weight: Font.Bold; elide: Text.ElideRight }
-                        Text { anchors.verticalCenter: parent.verticalCenter; text: modelData.isCurrent ? qsTr("CURRENT") : modelData.isRecommended ? qsTr("RECOMMENDED") : modelData.code; color: modelData.isCurrent ? Theme.mint : Theme.textMuted; font.family: Theme.monoFont; font.pixelSize: 11; font.weight: Font.Black }
+                        Text { anchors.verticalCenter: parent.verticalCenter; text: modelData.isCurrent ? qsTr("Current") : modelData.isRecommended ? qsTr("Recommended") : modelData.code; color: modelData.isCurrent ? Theme.mint : Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 11; font.weight: Font.Bold }
                     }
                 }
                 ScrollIndicator.vertical: ScrollIndicator {}
@@ -62,7 +62,7 @@ FocusScope {
         x: root.width * 0.7; y: 175; width: root.width * 0.23; height: 560; panelRadius: 36; strong: true
         Column {
             anchors.fill: parent; anchors.margins: 26; spacing: 14
-            Text { width: parent.width; text: root.selectedLocation ? root.selectedLocation.name : qsTr("Cloud storage"); wrapMode: Text.WordWrap; color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 27; font.weight: Font.Black }
+            Text { width: parent.width; text: root.selectedLocation ? root.selectedLocation.name : qsTr("Cloud storage"); wrapMode: Text.WordWrap; color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 27; font.weight: Font.Bold }
             Text { width: parent.width; text: ShellStore.storageMessage || qsTr("Reset deletes game settings and files stored by GeForce NOW in the selected region. This cannot be undone."); wrapMode: Text.WordWrap; color: root.confirmReset ? Theme.coral : Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 15; lineHeight: 1.2 }
             GlassButton {
                 id: resetButton; width: parent.width; glyph: root.confirmReset ? "A" : "X"; danger: true

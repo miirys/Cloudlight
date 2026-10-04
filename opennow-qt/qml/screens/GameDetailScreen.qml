@@ -77,16 +77,16 @@ FocusScope {
         width: 900; height: 620; panelRadius: 40
         RoundedArtwork {
             anchors.fill: parent; anchors.margins: 3
-            artwork: root.artwork; fallbackColor: "#33485E"; cornerRadius: 37; scrimStart: 0.35
+            artwork: root.artwork; fallbackColor: "#33485E"; cornerRadius: Theme.radiusLarge; scrimStart: 0.35
         }
         Column {
             x: 38; y: parent.height - height - 38; spacing: 8
-            Text { text: (root.game.publisherName || root.game.developerName || "").toUpperCase() + (root.game.genres && root.game.genres.length ? (root.game.publisherName || root.game.developerName ? " · " : "") + root.game.genres.join(" · ").toUpperCase() : ""); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 14; font.weight: Font.Black; font.letterSpacing: 1.2 }
-            Text { text: root.game.title; color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 52; font.weight: Font.Black }
+            Text { text: (root.game.publisherName || root.game.developerName || "").toUpperCase() + (root.game.genres && root.game.genres.length ? (root.game.publisherName || root.game.developerName ? " · " : "") + root.game.genres.join(" · ").toUpperCase() : ""); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 14; font.weight: Font.Bold; font.letterSpacing: 0 }
+            Text { text: root.game.title; color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 52; font.weight: Font.Bold }
         }
         Rectangle {
             anchors.fill: parent
-            radius: 40
+            radius: Theme.radiusLarge
             color: "transparent"
             border.color: Theme.face
             border.width: 3
@@ -106,19 +106,19 @@ FocusScope {
             x: 28; y: 98; width: 504; height: 72; spacing: 10
             Repeater {
                 model: [
-                    {value: root.game.hoursPlayed === undefined || root.game.hoursPlayed === null ? "—" : root.game.hoursPlayed + " h", label: qsTr("PLAYED")},
-                    {value: root.game.sessionCount === undefined || root.game.sessionCount === null ? "—" : root.game.sessionCount, label: qsTr("SESSIONS")},
-                    {value: root.game.lastPlayedLabel || "—", label: qsTr("LAST PLAYED")}
+                    {value: root.game.hoursPlayed === undefined || root.game.hoursPlayed === null ? "—" : root.game.hoursPlayed + " h", label: qsTr("Played")},
+                    {value: root.game.sessionCount === undefined || root.game.sessionCount === null ? "—" : root.game.sessionCount, label: qsTr("Sessions")},
+                    {value: root.game.lastPlayedLabel || "—", label: qsTr("Last played")}
                 ]
-                Rectangle { required property var modelData; width: (504 - 20) / 3; height: 72; radius: 18; color: Theme.glassStrong
+                Rectangle { required property var modelData; width: (504 - 20) / 3; height: 72; radius: Theme.radiusLarge; color: Theme.glassStrong
                     Column { anchors.left: parent.left; anchors.leftMargin: 16; anchors.verticalCenter: parent.verticalCenter; spacing: 2
-                        Text { text: modelData.value; color: modelData.label === qsTr("LAST PLAYED") ? Theme.mint : Theme.label; font.family: Theme.bodyFont; font.pixelSize: 24; font.weight: Font.Black }
-                        Text { text: modelData.label; color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 11; font.weight: Font.Black; font.letterSpacing: 1 }
+                        Text { text: modelData.value; color: modelData.label === qsTr("Last played") ? Theme.mint : Theme.label; font.family: Theme.bodyFont; font.pixelSize: 24; font.weight: Font.Bold }
+                        Text { text: modelData.label; color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 11; font.weight: Font.Bold; font.letterSpacing: 0 }
                     }
                 }
             }
         }
-        Text { x: 28; y: 185; text: qsTr("PLATFORM"); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 11; font.weight: Font.Black; font.letterSpacing: 1 }
+        Text { x: 28; y: 185; text: qsTr("Platform"); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 11; font.weight: Font.Bold; font.letterSpacing: 0 }
         PlatformPicker {
             id: platformPicker
             x: 28; y: 205; width: 504
@@ -134,7 +134,7 @@ FocusScope {
                 GlassPanel {
                     required property string modelData
                     width: chipLabel.implicitWidth + 26; height: 34; panelRadius: 17; strong: true
-                    Text { id: chipLabel; anchors.centerIn: parent; text: modelData; color: modelData.indexOf("●") === 0 ? Theme.mint : Theme.label; font.family: Theme.bodyFont; font.pixelSize: 13; font.weight: Font.Black }
+                    Text { id: chipLabel; anchors.centerIn: parent; text: modelData; color: modelData.indexOf("●") === 0 ? Theme.mint : Theme.label; font.family: Theme.bodyFont; font.pixelSize: 13; font.weight: Font.Bold }
                 }
             }
         }

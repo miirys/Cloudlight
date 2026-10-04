@@ -36,7 +36,7 @@ FocusScope {
                     color: Theme.label
                     font.family: Theme.displayFont
                     font.pixelSize: 38
-                    font.weight: Font.Black
+                    font.weight: Font.Bold
                 }
                 Text {
                     width: parent.width
@@ -135,7 +135,7 @@ FocusScope {
                 Rectangle {
                     width: 280
                     height: 280
-                    radius: 24
+                    radius: Theme.radiusLarge
                     color: "#FFFFFF"
 
                     Grid {
@@ -159,7 +159,7 @@ FocusScope {
                         anchors.centerIn: parent
                         spacing: 10
                         visible: root.qrSize === 0
-                        Text { anchors.horizontalCenter: parent.horizontalCenter; text: root.connected ? "✓" : "◎"; color: "#111827"; font.pixelSize: 72; font.weight: Font.Black }
+                        Text { anchors.horizontalCenter: parent.horizontalCenter; text: root.connected ? "✓" : "◎"; color: "#111827"; font.pixelSize: 72; font.weight: Font.Bold }
                         Text { anchors.horizontalCenter: parent.horizontalCenter; text: root.connected ? qsTr("Connected") : qsTr("Ready when you are"); color: "#111827"; font.family: Theme.bodyFont; font.pixelSize: 16; font.weight: Font.Bold }
                     }
                 }
@@ -169,8 +169,8 @@ FocusScope {
                     color: Theme.label
                     font.family: Theme.displayFont
                     font.pixelSize: root.challenge ? 24 : 18
-                    font.weight: Font.Black
-                    font.letterSpacing: root.challenge ? 3 : 0
+                    font.weight: Font.Bold
+                    font.letterSpacing: 0
                 }
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter

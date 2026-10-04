@@ -17,7 +17,7 @@ FocusScope {
             anchors.fill: parent
             anchors.margins: 40
             spacing: 22
-            Text { text: qsTr("Bring player two online"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 38; font.weight: Font.Black }
+            Text { text: qsTr("Bring player two online"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 38; font.weight: Font.Bold }
             Text {
                 width: parent.width
                 text: qsTr("OpenNOW forwards up to four standard controllers directly to the active GeForce NOW session. Connect a second controller, then return to the game.")
@@ -43,7 +43,7 @@ FocusScope {
                                 anchors.verticalCenter: parent.verticalCenter
                                 width: 48; height: 48; radius: 24
                                 color: slotCard.controller ? Theme.mint : Theme.focus
-                                Text { anchors.centerIn: parent; text: qsTr("P") + (slotCard.modelData + 1); color: Theme.contrastText(slotCard.controller ? Theme.mint : Theme.focus); font.weight: Font.Black }
+                                Text { anchors.centerIn: parent; text: qsTr("P") + (slotCard.modelData + 1); color: Theme.contrastText(slotCard.controller ? Theme.mint : Theme.focus); font.weight: Font.Bold }
                             }
                             Column {
                                 anchors.verticalCenter: parent.verticalCenter
@@ -66,7 +66,7 @@ FocusScope {
                 width: parent.width; height: 142; panelRadius: 24
                 Column {
                     anchors.fill: parent; anchors.margins: 20; spacing: 8
-                    Text { text: root.playerTwoReady ? qsTr("Player two is ready") : qsTr("Waiting for player two"); color: root.playerTwoReady ? Theme.mint : Theme.focus; font.family: Theme.bodyFont; font.pixelSize: 18; font.weight: Font.Black }
+                    Text { text: root.playerTwoReady ? qsTr("Player two is ready") : qsTr("Waiting for player two"); color: root.playerTwoReady ? Theme.mint : Theme.focus; font.family: Theme.bodyFont; font.pixelSize: 18; font.weight: Font.Bold }
                     Text {
                         width: parent.width
                         text: root.playerTwoReady

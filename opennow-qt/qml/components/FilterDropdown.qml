@@ -92,7 +92,7 @@ FocusScope {
 
     Rectangle {
         anchors.fill: parent
-        radius: 28
+        radius: Theme.radiusLarge
         color: root.activeFocus || root.expanded ? Theme.glassStrong : Theme.glass
         border.color: root.activeFocus || root.expanded ? Theme.focus : Theme.seam
         border.width: root.activeFocus || root.expanded ? 3 : 1
@@ -107,7 +107,7 @@ FocusScope {
             elide: Text.ElideRight
             font.family: Theme.bodyFont
             font.pixelSize: 14
-            font.weight: Font.Black
+            font.weight: Font.Bold
         }
         Text {
             anchors.right: parent.right
@@ -117,7 +117,7 @@ FocusScope {
             color: Theme.label
             font.family: Theme.bodyFont
             font.pixelSize: 18
-            font.weight: Font.Black
+            font.weight: Font.Bold
             rotation: root.expanded ? 180 : 0
             Behavior on rotation { NumberAnimation { duration: Theme.focusDuration; easing.type: Easing.OutCubic } }
         }
@@ -130,7 +130,7 @@ FocusScope {
         y: 70
         width: Math.max(root.width, 220)
         height: Math.min(304, 16 + root.options.length * 44)
-        radius: 24
+        radius: Theme.radiusLarge
         color: Qt.rgba(0, 0, 0, 0.38)
         opacity: root.expanded ? 1 : 0
         scale: root.expanded ? 1 : 0.96
@@ -172,7 +172,7 @@ FocusScope {
                 highlighted: index === root.highlightedIndex
                 onClicked: root.choose(index)
                 background: Rectangle {
-                    radius: 19
+                    radius: Theme.radiusLarge
                     color: option.highlighted ? Theme.face : "transparent"
                     border.color: option.highlighted ? Theme.focus : "transparent"
                     border.width: option.highlighted ? 2 : 0
@@ -187,7 +187,7 @@ FocusScope {
                         elide: Text.ElideRight
                         font.family: Theme.bodyFont
                         font.pixelSize: 14
-                        font.weight: Font.Black
+                        font.weight: Font.Bold
                     }
                     Text {
                         visible: index === root.currentIndex
@@ -197,7 +197,7 @@ FocusScope {
                         text: "✓"
                         color: option.highlighted ? Theme.faceText : Theme.mint
                         font.pixelSize: 16
-                        font.weight: Font.Black
+                        font.weight: Font.Bold
                     }
                 }
             }

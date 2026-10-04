@@ -65,8 +65,8 @@ FocusScope {
                 color: Theme.label
                 font.family: Theme.displayFont
                 font.pixelSize: 24
-                font.weight: Font.Black
-                font.letterSpacing: -0.48
+                font.weight: Font.Bold
+                font.letterSpacing: 0
             }
 
             Text {
@@ -110,7 +110,7 @@ FocusScope {
                     background: RoundedArtwork {
                         artwork: parent.game ? (parent.game.imageUrl || parent.game.heroImageUrl || "") : ""
                         fallbackColor: Theme.glassStrong
-                        cornerRadius: 18
+                        cornerRadius: Theme.radiusLarge
                         scrimStart: 1
                     }
                     contentItem: Item {}
@@ -157,7 +157,7 @@ FocusScope {
                     color: Theme.label
                     font.family: Theme.displayFont
                     font.pixelSize: 25
-                    font.weight: Font.Black
+                    font.weight: Font.Bold
                 }
                 GlassButton {
                     anchors.horizontalCenter: parent.horizontalCenter

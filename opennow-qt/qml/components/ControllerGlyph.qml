@@ -38,7 +38,7 @@ Row {
                 color: Theme.contrastText(root.glyphColor)
                 font.family: Theme.displayFont
                 font.pixelSize: root.glyph.length > 2 ? 11 : 12
-                font.weight: Font.Black
+                font.weight: Font.Bold
             }
         }
     }

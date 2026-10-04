@@ -51,7 +51,7 @@ FocusScope {
 
     Rectangle {
         anchors.fill: parent
-        color: Qt.rgba(0.024, 0.035, 0.071, 0.56)
+        color: Qt.rgba(0, 0, 0, 0.6)
         MouseArea {
             anchors.fill: parent
             onClicked: root.closeRequested()
@@ -80,8 +80,8 @@ FocusScope {
                 color: Theme.label
                 font.family: Theme.displayFont
                 font.pixelSize: 28
-                font.weight: Font.Black
-                font.letterSpacing: -0.56
+                font.weight: Font.Bold
+                font.letterSpacing: 0
             }
             Text {
                 width: 330
@@ -102,8 +102,8 @@ FocusScope {
             y: 40
             width: rightClickLabel.implicitWidth + 24
             height: 30
-            radius: 15
-            color: Qt.rgba(1, 1, 1, 0.10)
+            radius: Theme.radiusLarge
+            color: Theme.surfaceRaised
             Text {
                 id: rightClickLabel
                 anchors.centerIn: parent
@@ -111,7 +111,7 @@ FocusScope {
                 color: Theme.textMuted
                 font.family: Theme.bodyFont
                 font.pixelSize: 12
-                font.weight: Font.ExtraBold
+                font.weight: Font.DemiBold
             }
         }
 
@@ -157,10 +157,9 @@ FocusScope {
                 background: Rectangle {
                     radius: index < 2 ? 22 : 20
                     color: action.highlighted ? Theme.face
-                         : modelData.danger ? Qt.rgba(1, 0.541, 0.502, 0.08)
-                         : Qt.rgba(1, 1, 1, 0.04)
+                         : Theme.surfaceRaised
                     border.color: action.highlighted ? Theme.focus
-                                : modelData.danger ? Qt.rgba(1, 0.541, 0.502, 0.44)
+                                : modelData.danger ? Theme.coral
                                 : Theme.seam
                     border.width: action.highlighted ? 4 : 1
                     Behavior on color { ColorAnimation { duration: Theme.focusDuration } }
@@ -181,7 +180,7 @@ FocusScope {
                             color: Theme.faceText
                             font.family: Theme.bodyFont
                             font.pixelSize: index === 2 ? 17 : 20
-                            font.weight: Font.Black
+                            font.weight: Font.Bold
                         }
                     }
 
@@ -197,14 +196,14 @@ FocusScope {
                                  : modelData.danger ? Theme.coral : Theme.label
                             font.family: Theme.bodyFont
                             font.pixelSize: index < 2 ? 17 : 16
-                            font.weight: Font.Black
+                            font.weight: Font.Bold
                             elide: Text.ElideRight
                         }
                         Text {
                             width: parent.width
                             visible: modelData.description.length > 0
                             text: modelData.description
-                            color: action.highlighted ? Qt.rgba(0.043, 0.059, 0.102, 0.62) : Theme.textMuted
+                            color: action.highlighted ? "#5C5C5C" : Theme.textMuted
                             font.family: Theme.bodyFont
                             font.pixelSize: 13
                             font.weight: Font.Bold
@@ -224,12 +223,12 @@ FocusScope {
                                 required property string modelData
                                 width: sizeLabel.implicitWidth + 28
                                 height: 36
-                                radius: 18
+                                radius: Theme.radiusLarge
                                 color: root.tileSize === modelData
                                     ? (action.highlighted ? Theme.faceText : Theme.face)
                                     : "transparent"
                                 border.color: root.tileSize === modelData ? "transparent"
-                                    : action.highlighted ? Qt.rgba(0.043, 0.059, 0.102, 0.20) : Theme.seam
+                                    : action.highlighted ? "#B0B0B0" : Theme.seam
                                 border.width: 1
                                 Text {
                                     id: sizeLabel
@@ -240,7 +239,7 @@ FocusScope {
                                         : action.highlighted ? Theme.faceText : Theme.textMuted
                                     font.family: Theme.bodyFont
                                     font.pixelSize: 13
-                                    font.weight: Font.Black
+                                    font.weight: Font.Bold
                                 }
                             }
                         }
@@ -265,7 +264,7 @@ FocusScope {
                         text: "›"
                         color: action.highlighted ? Theme.faceText : Theme.label
                         font.pixelSize: 24
-                        font.weight: Font.Black
+                        font.weight: Font.Bold
                     }
 
                     Text {
@@ -274,7 +273,7 @@ FocusScope {
                         anchors.rightMargin: 16
                         anchors.verticalCenter: parent.verticalCenter
                         text: qsTr("Still available in Library")
-                        color: action.highlighted ? Qt.rgba(0.043, 0.059, 0.102, 0.62) : Theme.textMuted
+                        color: action.highlighted ? "#5C5C5C" : Theme.textMuted
                         font.family: Theme.bodyFont
                         font.pixelSize: 13
                         font.weight: Font.Bold

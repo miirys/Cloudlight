@@ -13,7 +13,7 @@ ItemDelegate {
     property bool addTile: false
     property string eyebrow: ""
     property bool currentItem: false
-    readonly property real cornerRadius: wide ? 34 : 12
+    readonly property real cornerRadius: Theme.radiusLarge
     signal menuRequested()
     highlighted: activeFocus || currentItem
 
@@ -51,11 +51,11 @@ ItemDelegate {
             Text {
                 visible: root.eyebrow.length > 0
                 text: root.eyebrow
-                color: Qt.rgba(1, 1, 1, 0.7)
+                color: Theme.mediaMuted
                 font.family: Theme.bodyFont
                 font.pixelSize: 11
                 font.weight: Font.Bold
-                font.letterSpacing: 0.8
+                font.letterSpacing: 0
             }
             Text {
                 width: parent.width
@@ -65,7 +65,7 @@ ItemDelegate {
                 elide: Text.ElideRight
                 font.family: Theme.displayFont
                 font.pixelSize: root.wide ? 22 : 17
-                font.weight: Font.Black
+                font.weight: Font.Bold
             }
         }
 
@@ -73,12 +73,12 @@ ItemDelegate {
             visible: root.session && !root.addTile
             anchors.right: parent.right; anchors.rightMargin: 14
             anchors.bottom: parent.bottom; anchors.bottomMargin: 14
-            width: resumeText.implicitWidth + 42; height: 38; radius: 19
+            width: resumeText.implicitWidth + 42; height: 38; radius: Theme.radiusLarge
             color: Theme.face
             Row {
                 anchors.centerIn: parent; spacing: 8
                 ControllerGlyph { glyph: "A"; label: ""; glyphSize: 24; glyphColor: Theme.faceText }
-                Text { id: resumeText; anchors.verticalCenter: parent.verticalCenter; text: qsTr("Jump back in!"); color: Theme.faceText; font.family: Theme.bodyFont; font.pixelSize: 14; font.weight: Font.Black }
+                Text { id: resumeText; anchors.verticalCenter: parent.verticalCenter; text: qsTr("Jump back in!"); color: Theme.faceText; font.family: Theme.bodyFont; font.pixelSize: 14; font.weight: Font.Bold }
             }
         }
 
@@ -86,10 +86,10 @@ ItemDelegate {
             visible: root.addTile
             anchors.centerIn: parent
             spacing: 10
-            Rectangle { anchors.horizontalCenter: parent.horizontalCenter; width: 38; height: 38; radius: 19; color: Qt.rgba(1, 1, 1, 0.12)
+            Rectangle { anchors.horizontalCenter: parent.horizontalCenter; width: 38; height: 38; radius: 19; color: Theme.surfaceStrong
                 Text { anchors.centerIn: parent; text: "+"; color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 30; font.weight: Font.Bold }
             }
-            Text { anchors.horizontalCenter: parent.horizontalCenter; text: qsTr("Add a game"); color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 16; font.weight: Font.ExtraBold }
+            Text { anchors.horizontalCenter: parent.horizontalCenter; text: qsTr("Add a game"); color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 16; font.weight: Font.DemiBold }
         }
     }
 

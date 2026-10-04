@@ -9,8 +9,8 @@ Rectangle {
     // one system themes desktop and console together. The per-screen tint
     // survives only as a faint wash for identity — never as a dark crush.
     // Kept translucent enough that artwork breathes instead of drowning.
-    readonly property color scrimMid: Qt.rgba(Theme.shell.r, Theme.shell.g, Theme.shell.b, 0.60)
-    readonly property color scrimFar: Qt.rgba(Theme.shell.r, Theme.shell.g, Theme.shell.b, 0.88)
+    readonly property color scrimMid: Theme.shell
+    readonly property color scrimFar: Theme.shell
     anchors.fill: parent
     color: Theme.shell
 

@@ -9,10 +9,9 @@ Rectangle {
 
     width: badgeSize
     height: badgeSize
-    radius: badgeSize === 30 ? 9 : 8
+    radius: Theme.radius
     color: storeColor
-    border.color: Qt.rgba(1, 1, 1, 0.85)
-    border.width: 2
+    border.width: 0
 
     function storeIcon() {
         const key = root.storeGlyph.toUpperCase()
@@ -39,6 +38,6 @@ Rectangle {
         color: Theme.mediaForeground
         font.family: Theme.displayFont
         font.pixelSize: root.badgeSize === 30 ? 12 : 11
-        font.weight: Font.Black
+        font.weight: Font.Bold
     }
 }

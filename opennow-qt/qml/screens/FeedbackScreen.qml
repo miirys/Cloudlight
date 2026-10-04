@@ -13,7 +13,7 @@ FocusScope {
         anchors.centerIn: parent; width: Math.min(1000, parent.width - 180); height: 650; panelRadius: 42; strong: true
         Item {
             anchors.fill: parent; anchors.margins: 34
-            Text { id: heading; text: root.bugMode ? qsTr("Report a bug") : qsTr("Share feedback"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 34; font.weight: Font.Black }
+            Text { id: heading; text: root.bugMode ? qsTr("Report a bug") : qsTr("Share feedback"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 34; font.weight: Font.Bold }
             Row {
                 x: parent.width - 364; y: 0; spacing: 8
                 GlassButton { id: feedbackTab; width: 174; text: qsTr("Feedback"); primary: !root.bugMode; onClicked: root.bugMode = false; Component.onCompleted: forceActiveFocus() }
@@ -30,14 +30,14 @@ FocusScope {
                 id: titleField; visible: root.bugMode; x: 0; y: 66; width: parent.width; height: 54
                 placeholderText: qsTr("Short title (8–120 characters)"); color: Theme.label
                 font.family: Theme.bodyFont; font.pixelSize: 16; selectByMouse: true
-                background: Rectangle { radius: 18; color: Theme.glass; border.color: titleField.activeFocus ? Theme.focus : Theme.seam; border.width: titleField.activeFocus ? 3 : 1 }
+                background: Rectangle { radius: Theme.radiusLarge; color: Theme.glass; border.color: titleField.activeFocus ? Theme.focus : Theme.seam; border.width: titleField.activeFocus ? 3 : 1 }
             }
             TextArea {
                 id: messageField; x: 0; y: root.bugMode ? 134 : 128; width: parent.width; height: root.bugMode ? 310 : 360
                 placeholderText: root.bugMode ? qsTr("What happened, what did you expect, and how can we reproduce it? (40–12,000 characters)") : qsTr("Tell us what would make OpenNOW better…")
                 color: Theme.label; placeholderTextColor: Theme.textMuted; wrapMode: TextEdit.Wrap
                 font.family: Theme.bodyFont; font.pixelSize: 16; selectByMouse: true
-                background: Rectangle { radius: 22; color: Theme.glass; border.color: messageField.activeFocus ? Theme.focus : Theme.seam; border.width: messageField.activeFocus ? 3 : 1 }
+                background: Rectangle { radius: Theme.radiusLarge; color: Theme.glass; border.color: messageField.activeFocus ? Theme.focus : Theme.seam; border.width: messageField.activeFocus ? 3 : 1 }
             }
             GlassButton {
                 visible: root.bugMode; x: 0; y: 458; width: 360

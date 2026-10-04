@@ -267,7 +267,7 @@ FocusScope {
         width: 1586
         height: 626
         panelRadius: 42
-        color: Qt.rgba(0.055, 0.063, 0.094, 0.58)
+        color: Qt.rgba(0, 0, 0, 0.58)
 
         Item {
             x: 33
@@ -329,7 +329,7 @@ FocusScope {
                 color: Theme.label
                 font.family: Theme.displayFont
                 font.pixelSize: 28
-                font.weight: Font.Black
+                font.weight: Font.Bold
             }
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -355,12 +355,12 @@ FocusScope {
         Text {
             id: moveLabel
             anchors.centerIn: parent
-            text: qsTr("MOVE TILE  ·  D-PAD MOVE  ·  A PLACE  ·  B CANCEL")
+            text: qsTr("Move tile  ·  D-pad move  ·  A place  ·  B cancel")
             color: Theme.label
             font.family: Theme.bodyFont
             font.pixelSize: 14
-            font.weight: Font.Black
-            font.letterSpacing: 0.7
+            font.weight: Font.Bold
+            font.letterSpacing: 0
         }
     }
 

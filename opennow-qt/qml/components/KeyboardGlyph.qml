@@ -40,7 +40,7 @@ Row {
                     anchors.centerIn: parent
                     text: keycap.modelData
                     color: root.ink
-                    font.family: Theme.monoFont
+                    font.family: Theme.bodyFont
                     font.pixelSize: Math.max(9, root.keySize * 0.45)
                     font.weight: Font.DemiBold
                 }

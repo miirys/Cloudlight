@@ -722,12 +722,12 @@ ApplicationWindow {
             spacing: 10
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: window.targetDesktopSurface ? qsTr("COMPUTER MODE") : qsTr("CONSOLE MODE")
+                text: window.targetDesktopSurface ? qsTr("Computer mode") : qsTr("Console mode")
                 color: Theme.label
                 font.family: Theme.displayFont
                 font.pixelSize: 28
                 font.weight: Font.Black
-                font.letterSpacing: 1.2
+                font.letterSpacing: 0
             }
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter

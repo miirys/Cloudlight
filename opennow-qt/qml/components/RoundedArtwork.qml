@@ -6,7 +6,7 @@ Item {
     id: root
     property string artwork: ""
     property color fallbackColor: Theme.cartSteam
-    property real cornerRadius: 34
+    property real cornerRadius: Theme.radiusLarge
     property real scrimStart: 0.28
 
     property bool loadStarted: false

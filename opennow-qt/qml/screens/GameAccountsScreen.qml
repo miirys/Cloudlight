@@ -14,7 +14,7 @@ FocusScope {
         x: 96; y: 128; width: root.width * 0.56; height: root.height - 264; panelRadius: 40
         Column {
             anchors.fill: parent; anchors.margins: 34; spacing: 14
-            Text { text: qsTr("Connected game stores"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 36; font.weight: Font.Black }
+            Text { text: qsTr("Connected game stores"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 36; font.weight: Font.Bold }
             Text { text: qsTr("Link and sync your libraries directly with GeForce NOW."); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 16 }
             ListView {
                 id: accountList
@@ -32,16 +32,16 @@ FocusScope {
                     highlighted: ListView.isCurrentItem
                     onClicked: accountList.currentIndex = index
                     background: Rectangle {
-                        radius: 24; color: parent.highlighted ? Theme.glassStrong : Theme.glass
+                        radius: Theme.radiusLarge; color: parent.highlighted ? Theme.glassStrong : Theme.glass
                         border.color: parent.highlighted ? Theme.focus : Theme.seam
                         border.width: parent.highlighted ? 3 : 1
                     }
                     contentItem: Row {
                         spacing: 16
                         Rectangle {
-                            width: 52; height: 52; radius: 17
+                            width: 52; height: 52; radius: Theme.radiusLarge
                             color: modelData.isConnected ? Theme.mint : Theme.violet
-                            Text { anchors.centerIn: parent; text: String(modelData.label || "G").slice(0, 1); color: Theme.contrastText(modelData.isConnected ? Theme.mint : Theme.violet); font.pixelSize: 22; font.weight: Font.Black }
+                            Text { anchors.centerIn: parent; text: String(modelData.label || "G").slice(0, 1); color: Theme.contrastText(modelData.isConnected ? Theme.mint : Theme.violet); font.pixelSize: 22; font.weight: Font.Bold }
                         }
                         Column {
                             anchors.verticalCenter: parent.verticalCenter; width: parent.width - 205; spacing: 2
@@ -50,9 +50,9 @@ FocusScope {
                         }
                         Text {
                             anchors.verticalCenter: parent.verticalCenter
-                            text: modelData.status === "connected" ? qsTr("CONNECTED") : modelData.status === "sync_error" ? qsTr("SYNC ERROR") : modelData.status === "expired" ? qsTr("EXPIRED") : qsTr("AVAILABLE")
+                            text: modelData.status === "connected" ? qsTr("Connected") : modelData.status === "sync_error" ? qsTr("Sync error") : modelData.status === "expired" ? qsTr("Expired") : qsTr("Available")
                             color: modelData.status === "connected" ? Theme.mint : modelData.status === "not_connected" ? Theme.textMuted : Theme.coral
-                            font.family: Theme.monoFont; font.pixelSize: 11; font.weight: Font.Black
+                            font.family: Theme.bodyFont; font.pixelSize: 11; font.weight: Font.Bold
                         }
                     }
                 }
@@ -65,7 +65,7 @@ FocusScope {
         x: root.width * 0.69; y: 170; width: root.width * 0.24; height: 500; panelRadius: 36; strong: true
         Column {
             anchors.fill: parent; anchors.margins: 26; spacing: 13
-            Text { width: parent.width; text: root.selectedAccount ? root.selectedAccount.label : qsTr("Game accounts"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 27; font.weight: Font.Black; wrapMode: Text.WordWrap }
+            Text { width: parent.width; text: root.selectedAccount ? root.selectedAccount.label : qsTr("Game accounts"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 27; font.weight: Font.Bold; wrapMode: Text.WordWrap }
             Text { width: parent.width; text: ShellStore.gameAccountMessage || (root.selectedAccount && root.selectedAccount.isConnected ? qsTr("Your linked library is managed by NVIDIA.") : qsTr("Connect this store in your browser, then return to OpenNOW.")); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 15; wrapMode: Text.WordWrap; lineHeight: 1.2 }
             GlassButton {
                 id: actionButton; width: parent.width; glyph: "A"; primary: true

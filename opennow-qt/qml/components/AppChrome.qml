@@ -75,7 +75,7 @@ Item {
                     color: Theme.contrastText(Theme.violet)
                     font.family: Theme.displayFont
                     font.pixelSize: 16
-                    font.weight: Font.Black
+                    font.weight: Font.Bold
                 }
             }
             Text {
@@ -126,7 +126,7 @@ Item {
             color: Theme.label
             font.family: Theme.displayFont
             font.pixelSize: 20
-            font.weight: Font.Black
+            font.weight: Font.Bold
         }
     }
 
@@ -169,7 +169,7 @@ Item {
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
                     text: root.controllerStatus()
-                    color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 16; font.weight: Font.Black
+                    color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 16; font.weight: Font.Bold
                 }
                 Item {
                     visible: root.primaryController && Number(root.primaryController.batteryPercent) >= 0

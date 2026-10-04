@@ -110,7 +110,7 @@ FocusScope {
             color: Theme.label
             font.family: Theme.displayFont
             font.pixelSize: 24
-            font.weight: Font.Black
+            font.weight: Font.Bold
         }
         TextField {
             id: queryField
@@ -125,7 +125,7 @@ FocusScope {
             font.pixelSize: 19
             leftPadding: 22
             background: Rectangle {
-                radius: 29
+                radius: Theme.radiusLarge
                 color: Theme.glassStrong
                 border.color: Theme.seam
                 border.width: 1
@@ -156,7 +156,7 @@ FocusScope {
                     root.typeKey(modelData)
                 }
                 background: Rectangle {
-                    radius: 20
+                    radius: Theme.radiusLarge
                     color: keyDelegate.highlighted ? Theme.face : Theme.glass
                     border.color: keyDelegate.highlighted ? Theme.focus : Theme.seam
                     border.width: keyDelegate.highlighted ? 3 : 1
@@ -168,7 +168,7 @@ FocusScope {
                     color: keyDelegate.highlighted ? Theme.faceText : Theme.label
                     font.family: Theme.bodyFont
                     font.pixelSize: modelData.length > 1 ? 13 : 19
-                    font.weight: Font.Black
+                    font.weight: Font.Bold
                 }
             }
         }

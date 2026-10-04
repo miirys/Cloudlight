@@ -25,7 +25,7 @@ ItemDelegate {
 
     background: Rectangle {
         color: "transparent"
-        radius: 22
+        radius: Theme.radiusLarge
         border.color: root.highlighted ? Theme.focus : "transparent"
         border.width: root.highlighted ? 3 : 0
         Behavior on border.color { ColorAnimation { duration: Theme.focusDuration } }
@@ -51,7 +51,7 @@ ItemDelegate {
                 color: Theme.label
                 font.family: Theme.bodyFont
                 font.pixelSize: 18
-                font.weight: Font.ExtraBold
+                font.weight: Font.DemiBold
                 elide: Text.ElideRight
             }
             Text {
@@ -108,7 +108,7 @@ ItemDelegate {
                             root.rowData.values ? root.rowData.values[index] : undefined) < 0
                         height: 38
                         width: segmentLabel.implicitWidth + 28
-                        radius: 19
+                        radius: Theme.radiusLarge
                         color: index === root.selectedChoice ? Theme.face : "transparent"
                         border.color: index === root.selectedChoice ? "transparent" : Theme.seam
                         border.width: index === root.selectedChoice ? 0 : 1
@@ -120,7 +120,7 @@ ItemDelegate {
                             color: index === root.selectedChoice ? Theme.faceText : Theme.label
                             font.family: Theme.bodyFont
                             font.pixelSize: 14
-                            font.weight: Font.ExtraBold
+                            font.weight: Font.DemiBold
                         }
                     }
                 }
@@ -152,8 +152,8 @@ ItemDelegate {
                 spacing: 14
                 Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
-                    width: 240; height: 10; radius: 5
-                    color: Qt.rgba(1, 1, 1, 0.14)
+                    width: 240; height: 6; radius: 3
+                    color: Theme.surfaceStrong
                     Rectangle {
                         width: parent.width * Math.max(0, Math.min(1, Number(root.rowData.sliderPercent || 0)))
                         height: parent.height; radius: parent.radius; color: Theme.focus
@@ -166,7 +166,7 @@ ItemDelegate {
                     color: Theme.label
                     font.family: Theme.bodyFont
                     font.pixelSize: 15
-                    font.weight: Font.ExtraBold
+                    font.weight: Font.DemiBold
                 }
             }
 
@@ -174,14 +174,14 @@ ItemDelegate {
                 id: toggleVisual
                 visible: root.controlType === "toggle"
                 anchors.centerIn: parent
-                width: 60; height: 34; radius: 17
+                width: 60; height: 34; radius: Theme.radiusLarge
                 readonly property bool toggleOn: root.rowData.toggleState !== undefined ? Boolean(root.rowData.toggleState) : Boolean(ShellStore.settings[root.rowData.key])
-                color: toggleOn ? Theme.mint : Qt.rgba(1, 1, 1, 0.18)
+                color: toggleOn ? Theme.focus : Theme.surfaceStrong
                 Rectangle {
                     width: 26; height: 26; radius: 13
                     x: toggleVisual.toggleOn ? 30 : 4
                     anchors.verticalCenter: parent.verticalCenter
-                    color: Theme.face
+                    color: toggleVisual.toggleOn ? Theme.focusText : Theme.label
                     Behavior on x { NumberAnimation { duration: Theme.focusDuration; easing.type: Easing.OutCubic } }
                 }
             }
@@ -194,8 +194,8 @@ ItemDelegate {
                 width: Math.min(420, (root.rowData.shortcut ? shortcutValue.implicitWidth : valueLabel.implicitWidth)
                     + (root.controlType === "dropdown" ? 58 : 38))
                 height: 42
-                radius: 21
-                color: root.rowData.danger ? Qt.rgba(1, 0.3, 0.3, 0.12) : Theme.glassStrong
+                radius: Theme.radius
+                color: Theme.surfaceStrong
                 border.color: root.rowData.danger ? Theme.coral : Theme.seam
                 border.width: 1
                 Text {
@@ -210,7 +210,7 @@ ItemDelegate {
                     color: root.rowData.danger ? Theme.coral : Theme.label
                     font.family: Theme.bodyFont
                     font.pixelSize: 15
-                    font.weight: Font.ExtraBold
+                    font.weight: Font.DemiBold
                     elide: Text.ElideRight
                 }
                 KeyboardGlyph {
@@ -230,7 +230,7 @@ ItemDelegate {
                     color: Theme.textMuted
                     font.family: Theme.bodyFont
                     font.pixelSize: 18
-                    font.weight: Font.Black
+                    font.weight: Font.Bold
                 }
             }
         }
@@ -245,15 +245,15 @@ ItemDelegate {
                 width: 88; height: 88; radius: 44
                 color: Theme.violet
                 border.color: Theme.face; border.width: 3
-                Text { anchors.centerIn: parent; text: root.rowData.initial || "O"; color: Theme.faceText; font.family: Theme.displayFont; font.pixelSize: 34; font.weight: Font.Black }
+                Text { anchors.centerIn: parent; text: root.rowData.initial || "O"; color: Theme.faceText; font.family: Theme.displayFont; font.pixelSize: 34; font.weight: Font.Bold }
             }
             Column {
                 x: 112; anchors.verticalCenter: parent.verticalCenter; width: parent.width - 340; spacing: 5
                 Row {
                     spacing: 12
-                    Text { text: root.rowData.name || qsTr("OpenNOW profile"); color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 24; font.weight: Font.Black }
-                    Rectangle { anchors.verticalCenter: parent.verticalCenter; width: tierText.implicitWidth + 18; height: 28; radius: 14; color: Theme.yellow
-                        Text { id: tierText; anchors.centerIn: parent; text: root.rowData.tier || "—"; color: Theme.faceText; font.family: Theme.bodyFont; font.pixelSize: 12; font.weight: Font.Black }
+                    Text { text: root.rowData.name || qsTr("OpenNOW profile"); color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 24; font.weight: Font.Bold }
+                    Rectangle { anchors.verticalCenter: parent.verticalCenter; width: tierText.implicitWidth + 18; height: 28; radius: Theme.radiusLarge; color: Theme.yellow
+                        Text { id: tierText; anchors.centerIn: parent; text: root.rowData.tier || "—"; color: Theme.faceText; font.family: Theme.bodyFont; font.pixelSize: 12; font.weight: Font.Bold }
                     }
                 }
                 Text { width: parent.width; text: root.rowData.subtitle || qsTr("NVIDIA account"); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 15; font.weight: Font.DemiBold; elide: Text.ElideRight }
@@ -261,8 +261,8 @@ ItemDelegate {
             }
             Rectangle {
                 anchors.right: parent.right; anchors.rightMargin: 10; anchors.verticalCenter: parent.verticalCenter
-                width: 194; height: 42; radius: 21; color: Theme.glassStrong; border.color: Theme.seam; border.width: 1
-                Text { anchors.centerIn: parent; text: root.rowData.v || qsTr("Manage account"); color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 15; font.weight: Font.ExtraBold }
+                width: 194; height: 42; radius: Theme.radiusLarge; color: Theme.glassStrong; border.color: Theme.seam; border.width: 1
+                Text { anchors.centerIn: parent; text: root.rowData.v || qsTr("Manage account"); color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 15; font.weight: Font.DemiBold }
             }
         }
 
@@ -275,17 +275,17 @@ ItemDelegate {
                 Rectangle {
                     required property var modelData
                     width: (root.width - 12) / 2; height: 84; anchors.verticalCenter: parent.verticalCenter
-                    radius: 26; color: Theme.glassStrong; border.color: Theme.seam; border.width: 1
+                    radius: Theme.radiusLarge; color: Theme.glassStrong; border.color: Theme.seam; border.width: 1
                     Rectangle { x: 16; anchors.verticalCenter: parent.verticalCenter; width: 48; height: 48; radius: 24; color: modelData.connected ? Theme.face : Theme.glass
-                        Text { anchors.centerIn: parent; text: String(modelData.slot || "2"); color: modelData.connected ? Theme.faceText : Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 18; font.weight: Font.Black }
+                        Text { anchors.centerIn: parent; text: String(modelData.slot || "2"); color: modelData.connected ? Theme.faceText : Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 18; font.weight: Font.Bold }
                     }
                     ControllerGlyph { x: 76; anchors.verticalCenter: parent.verticalCenter; glyph: "controller"; label: ""; glyphSize: 36; opacity: modelData.connected ? 1 : 0.35 }
                     Column { x: 128; anchors.verticalCenter: parent.verticalCenter; width: parent.width - 220
-                        Text { width: parent.width; text: modelData.name; color: modelData.connected ? Theme.label : Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 17; font.weight: Font.ExtraBold; elide: Text.ElideRight }
+                        Text { width: parent.width; text: modelData.name; color: modelData.connected ? Theme.label : Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 17; font.weight: Font.DemiBold; elide: Text.ElideRight }
                         Text { width: parent.width; text: modelData.connected ? qsTr("Connected") : qsTr("Press a button to join"); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 13; font.weight: Font.DemiBold; elide: Text.ElideRight }
                     }
-                    Rectangle { anchors.right: parent.right; anchors.rightMargin: 16; anchors.verticalCenter: parent.verticalCenter; width: batteryLabel.implicitWidth + 18; height: 30; radius: 15; color: modelData.connected ? Theme.glass : "transparent"; border.color: Theme.seam; border.width: modelData.connected ? 1 : 0
-                        Text { id: batteryLabel; anchors.centerIn: parent; text: modelData.battery; color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 13; font.weight: Font.ExtraBold }
+                    Rectangle { anchors.right: parent.right; anchors.rightMargin: 16; anchors.verticalCenter: parent.verticalCenter; width: batteryLabel.implicitWidth + 18; height: 30; radius: Theme.radiusLarge; color: modelData.connected ? Theme.glass : "transparent"; border.color: Theme.seam; border.width: modelData.connected ? 1 : 0
+                        Text { id: batteryLabel; anchors.centerIn: parent; text: modelData.battery; color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 13; font.weight: Font.DemiBold }
                     }
                 }
             }

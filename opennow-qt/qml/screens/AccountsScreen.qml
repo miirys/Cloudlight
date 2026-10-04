@@ -15,7 +15,7 @@ FocusScope {
         x: 96; y: 128; width: root.width * 0.52; height: root.height - 264; panelRadius: 40
         Column {
             anchors.fill: parent; anchors.margins: 34; spacing: 14
-            Text { text: qsTr("Who’s playing?"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 38; font.weight: Font.Black }
+            Text { text: qsTr("Who’s playing?"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 38; font.weight: Font.Bold }
             Text { text: qsTr("Saved NVIDIA sessions stay protected by your operating system."); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 16 }
             ListView {
                 id: accountList
@@ -33,7 +33,7 @@ FocusScope {
                     highlighted: ListView.isCurrentItem
                     onClicked: accountList.currentIndex = index
                     background: Rectangle {
-                        radius: 26
+                        radius: Theme.radiusLarge
                         color: parent.highlighted ? Theme.glassStrong : Theme.glass
                         border.color: parent.highlighted ? Theme.focus : Theme.seam
                         border.width: parent.highlighted ? 3 : 1
@@ -41,8 +41,8 @@ FocusScope {
                     contentItem: Row {
                         spacing: 16
                         Rectangle {
-                            width: 58; height: 58; radius: 20; color: modelData.userId === root.activeUserId ? Theme.mint : Theme.violet
-                            Text { anchors.centerIn: parent; text: String(modelData.displayName || "P").slice(0, 1).toUpperCase(); color: Theme.contrastText(modelData.userId === root.activeUserId ? Theme.mint : Theme.violet); font.family: Theme.displayFont; font.pixelSize: 24; font.weight: Font.Black }
+                            width: 58; height: 58; radius: Theme.radiusLarge; color: modelData.userId === root.activeUserId ? Theme.mint : Theme.violet
+                            Text { anchors.centerIn: parent; text: String(modelData.displayName || "P").slice(0, 1).toUpperCase(); color: Theme.contrastText(modelData.userId === root.activeUserId ? Theme.mint : Theme.violet); font.family: Theme.displayFont; font.pixelSize: 24; font.weight: Font.Bold }
                         }
                         Column {
                             anchors.verticalCenter: parent.verticalCenter; width: parent.width - 190; spacing: 3
@@ -51,7 +51,7 @@ FocusScope {
                         }
                         GlassPanel {
                             anchors.verticalCenter: parent.verticalCenter; width: 92; height: 36; panelRadius: 18; strong: true
-                            Text { anchors.centerIn: parent; text: modelData.hasPin ? qsTr("PIN locked") : (modelData.userId === root.activeUserId ? qsTr("Active") : qsTr("Saved")); color: modelData.userId === root.activeUserId ? Theme.mint : Theme.label; font.family: Theme.bodyFont; font.pixelSize: 12; font.weight: Font.Black }
+                            Text { anchors.centerIn: parent; text: modelData.hasPin ? qsTr("PIN locked") : (modelData.userId === root.activeUserId ? qsTr("Active") : qsTr("Saved")); color: modelData.userId === root.activeUserId ? Theme.mint : Theme.label; font.family: Theme.bodyFont; font.pixelSize: 12; font.weight: Font.Bold }
                         }
                     }
                 }
@@ -64,7 +64,7 @@ FocusScope {
         Column {
             id: accountActions
             anchors.fill: parent; anchors.margins: 28; spacing: 13
-            Text { text: root.selectedAccount ? root.selectedAccount.displayName : qsTr("Add a profile"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 28; font.weight: Font.Black }
+            Text { text: root.selectedAccount ? root.selectedAccount.displayName : qsTr("Add a profile"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 28; font.weight: Font.Bold }
             Text { width: parent.width; wrapMode: Text.WordWrap; text: root.selectedAccount && root.selectedAccount.hasPin ? qsTr("A four-digit living-room PIN is required before this account can become active.") : qsTr("Profile PINs are local to this device and never sent to NVIDIA."); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 15; lineHeight: 1.2 }
             GlassButton {
                 id: switchButton; width: parent.width; glyph: "A"; primary: true
@@ -128,7 +128,7 @@ FocusScope {
         Keys.onEscapePressed: root.confirmLogoutAll = false
         Column {
             anchors.fill: parent; anchors.margins: 28; spacing: 15
-            Text { text: qsTr("Sign out every saved profile?"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 27; font.weight: Font.Black }
+            Text { text: qsTr("Sign out every saved profile?"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 27; font.weight: Font.Bold }
             Text { width: parent.width; wrapMode: Text.WordWrap; text: qsTr("This removes all saved NVIDIA sessions and every local profile PIN. Captures and settings stay on this device."); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 15 }
             Row {
                 spacing: 12

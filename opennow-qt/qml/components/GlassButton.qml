@@ -27,12 +27,12 @@ Button {
     }
 
     background: Rectangle {
-        radius: height / 2
-        color: root.primary ? Theme.face
-                            : root.danger ? Qt.rgba(1, 0.28, 0.3, root.activeFocus ? 0.32 : 0.16)
-                                          : root.highlighted ? Qt.rgba(1, 1, 1, 0.24) : Theme.glassStrong
-        border.color: root.highlighted ? Theme.focus : root.danger ? Theme.coral : Theme.seam
-        border.width: root.highlighted ? 4 : 1
+        radius: Theme.radius
+        color: root.primary ? Theme.focus
+                            : root.danger ? Theme.coral
+                                          : root.highlighted ? Theme.surfaceHover : Theme.surfaceStrong
+        border.color: Theme.label
+        border.width: root.highlighted ? 4 : 0
         Behavior on color { ColorAnimation { duration: Theme.focusDuration } }
         Behavior on border.color { ColorAnimation { duration: Theme.focusDuration } }
     }
@@ -45,12 +45,12 @@ Button {
             glyph: root.glyph
             label: ""
             glyphSize: 28
-            glyphColor: root.primary ? Theme.faceText : Theme.face
+            glyphColor: root.primary ? Theme.focusText : root.danger ? Theme.contrastText(Theme.coral) : Theme.label
         }
         Text {
             anchors.verticalCenter: parent.verticalCenter
             text: I18n.source(root.text, I18n.revision)
-            color: root.primary ? Theme.faceText : root.danger ? Theme.coral : Theme.label
+            color: root.primary ? Theme.focusText : root.danger ? Theme.contrastText(Theme.coral) : Theme.label
             font.family: Theme.bodyFont
             font.pixelSize: 17
             font.weight: Font.Bold
@@ -60,7 +60,7 @@ Button {
             anchors.verticalCenter: parent.verticalCenter
             shortcut: root.shortcutText
             keySize: 26
-            ink: root.primary ? Theme.faceText : Theme.label
+            ink: root.primary ? Theme.focusText : root.danger ? Theme.contrastText(Theme.coral) : Theme.label
         }
     }
 }

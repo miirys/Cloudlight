@@ -170,7 +170,7 @@ FocusScope {
                 KeyNavigation.down: catalog
                 onTextEdited: root.searchQuery = text
                 onAccepted: catalog.forceActiveFocus()
-                background: Rectangle { radius: 26; color: searchField.activeFocus ? Theme.glassStrong : Qt.rgba(1, 1, 1, 0.10); border.color: searchField.activeFocus ? Theme.focus : Theme.seam; border.width: searchField.activeFocus ? 3 : 1 }
+                background: Rectangle { radius: Theme.radiusLarge; color: searchField.activeFocus ? Theme.glassStrong : Theme.surfaceRaised; border.color: searchField.activeFocus ? Theme.focus : Theme.seam; border.width: searchField.activeFocus ? 3 : 1 }
                 ControllerGlyph {
                     x: 14; anchors.verticalCenter: parent.verticalCenter
                     glyph: "VIEW"; label: ""; glyphSize: 26
@@ -179,8 +179,8 @@ FocusScope {
                 Item {
                     x: 52; anchors.verticalCenter: parent.verticalCenter
                     width: 20; height: 20
-                    Rectangle { x: 2; y: 2; width: 13; height: 13; radius: 7; color: "transparent"; border.color: Qt.rgba(1,1,1,0.70); border.width: 2 }
-                    Rectangle { x: 14; y: 14; width: 7; height: 2; radius: 1; rotation: 45; color: Qt.rgba(1,1,1,0.70) }
+                    Rectangle { x: 2; y: 2; width: 13; height: 13; radius: Theme.radius; color: "transparent"; border.color: Theme.textMuted; border.width: 2 }
+                    Rectangle { x: 14; y: 14; width: 7; height: 2; radius: 1; rotation: 45; color: Theme.textMuted }
                 }
             }
             FilterDropdown {
@@ -263,7 +263,7 @@ FocusScope {
                         visible: ShellStore.isFavorite(modelData)
                         x: 102; y: 10
                         width: 28; height: 28; radius: 14; color: Theme.yellow
-                        Text { anchors.centerIn: parent; text: "★"; color: Theme.contrastText(Theme.yellow); font.pixelSize: 15; font.weight: Font.Black }
+                        Text { anchors.centerIn: parent; text: "★"; color: Theme.contrastText(Theme.yellow); font.pixelSize: 15; font.weight: Font.Bold }
                     }
                 }
             }
@@ -273,7 +273,7 @@ FocusScope {
             anchors.centerIn: parent
             spacing: 12
             visible: root.games.length === 0
-            Text { anchors.horizontalCenter: parent.horizontalCenter; text: ShellStore.catalogState === "error" ? qsTr("Couldn’t reach the catalog") : qsTr("Loading GeForce NOW games…"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 24; font.weight: Font.Black }
+            Text { anchors.horizontalCenter: parent.horizontalCenter; text: ShellStore.catalogState === "error" ? qsTr("Couldn’t reach the catalog") : qsTr("Loading GeForce NOW games…"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 24; font.weight: Font.Bold }
             Text { anchors.horizontalCenter: parent.horizontalCenter; text: ShellStore.catalogGames.length > 0 ? qsTr("No games match these filters.") : (ShellStore.catalogState === "error" ? ShellStore.lastError : qsTr("The shell stays responsive while the Rust core fetches NVIDIA’s public list.")); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 14 }
             GlassButton { anchors.horizontalCenter: parent.horizontalCenter; visible: ShellStore.catalogState === "error"; text: qsTr("Try again"); glyph: "A"; primary: true; onClicked: ShellStore.refreshCatalog("") }
         }
@@ -292,12 +292,12 @@ FocusScope {
             spacing: 18
             RoundedArtwork {
                 width: parent.width; height: 250
-                cornerRadius: 28
+                cornerRadius: Theme.radiusLarge
                 scrimStart: 1
                 fallbackColor: root.selectedGame ? root.storeColor(root.storeGlyph(root.selectedGame)) : Theme.cartSteam
                 artwork: root.selectedGame ? (root.selectedGame.heroImageUrl || root.selectedGame.imageUrl || "") : ""
             }
-            Text { width: parent.width; text: root.selectedGame ? root.selectedGame.title : qsTr("GeForce NOW catalog"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 28; font.weight: Font.Black; elide: Text.ElideRight }
+            Text { width: parent.width; text: root.selectedGame ? root.selectedGame.title : qsTr("GeForce NOW catalog"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 28; font.weight: Font.Bold; elide: Text.ElideRight }
             Text { width: parent.width; text: root.selectedGame ? qsTr("%1 · Available on GeForce NOW").arg(root.storeName(root.selectedGame)) : (ShellStore.catalogSource === "account-library" ? qsTr("%1 games in your library").arg(ShellStore.catalogTotalCount) : qsTr("%1 supported games").arg(ShellStore.catalogTotalCount)); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 15; elide: Text.ElideRight }
             Row {
                 spacing: 8

@@ -32,7 +32,7 @@ FocusScope {
         anchors.centerIn: parent; width: 690; height: 680; panelRadius: 44; strong: true
         Column {
             anchors.fill: parent; anchors.margins: 42; spacing: 18
-            Text { anchors.horizontalCenter: parent.horizontalCenter; text: I18n.source(root.heading, I18n.revision); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 34; font.weight: Font.Black }
+            Text { anchors.horizontalCenter: parent.horizontalCenter; text: I18n.source(root.heading, I18n.revision); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 34; font.weight: Font.Bold }
             Text { anchors.horizontalCenter: parent.horizontalCenter; text: I18n.source(root.instruction, I18n.revision); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 16 }
             Row {
                 anchors.horizontalCenter: parent.horizontalCenter; spacing: 16
@@ -40,7 +40,7 @@ FocusScope {
                     model: 4
                     Rectangle {
                         required property int index
-                        width: 56; height: 64; radius: 18
+                        width: 56; height: 64; radius: Theme.radiusLarge
                         color: index < root.entry.length ? Theme.focus : Theme.glassStrong
                         border.color: index === root.entry.length ? Theme.focus : Theme.seam
                         border.width: index === root.entry.length ? 3 : 1

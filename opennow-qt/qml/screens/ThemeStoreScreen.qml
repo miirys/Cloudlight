@@ -114,8 +114,8 @@ FocusScope {
                     required property int index
                     width: filterLabel.implicitWidth + 40
                     height: 40
-                    radius: 20
-                    color: root.filterIndex === index ? Theme.face : Qt.rgba(1, 1, 1, 0.08)
+                    radius: Theme.radiusLarge
+                    color: root.filterIndex === index ? Theme.face : Theme.surfaceRaised
                     border.color: root.filterIndex === index ? "transparent" : Theme.seam
                     Text {
                         id: filterLabel
@@ -124,7 +124,7 @@ FocusScope {
                         color: root.filterIndex === index ? Theme.faceText : Theme.label
                         font.family: Theme.bodyFont
                         font.pixelSize: 15
-                        font.weight: Font.Black
+                        font.weight: Font.Bold
                     }
                     MouseArea { anchors.fill: parent; onClicked: root.filterIndex = index }
                 }
@@ -138,7 +138,7 @@ FocusScope {
                 strong: true
                 Text {
                     anchors.centerIn: parent
-                    text: qsTr("BUILT IN")
+                    text: qsTr("Built in")
                     color: Theme.label
                     font.family: Theme.bodyFont
                     font.pixelSize: 13
@@ -179,8 +179,8 @@ FocusScope {
                     Rectangle {
                         anchors.fill: parent
                         anchors.margins: 10
-                        radius: 20
-                        color: Qt.rgba(1, 1, 1, 0.055)
+                        radius: Theme.radiusLarge
+                        color: Theme.surfaceRaised
                         border.color: root.selectedIndex === index ? Theme.focus : Theme.seam
                         border.width: root.selectedIndex === index ? 4 : 1
                         scale: AppController.reducedMotion || root.selectedIndex === index ? 1 : 0.97
@@ -192,8 +192,8 @@ FocusScope {
                             y: 12
                             width: parent.width - 24
                             height: Math.max(82, parent.height - 68)
-                            radius: 16
-                            border.color: Qt.rgba(1, 1, 1, 0.16)
+                            radius: Theme.radiusLarge
+                            border.color: Theme.surfaceStrong
                             gradient: Gradient {
                                 orientation: Gradient.Horizontal
                                 GradientStop { position: 0; color: modelData.bg }
@@ -206,9 +206,9 @@ FocusScope {
                                 anchors.margins: 10
                                 height: 22
                                 spacing: 6
-                                Rectangle { width: 18; height: 18; radius: 9; color: modelData.accent; Text { anchors.centerIn: parent; text: qsTr("Z"); color: "#0B0F1A"; font.pixelSize: 8; font.weight: Font.Black } }
-                                Rectangle { width: Math.max(54, preview.width - 150); height: 18; radius: 9; color: Qt.rgba(1, 1, 1, 0.14) }
-                                Rectangle { width: 62; height: 18; radius: 9; color: Qt.rgba(1, 1, 1, 0.18) }
+                                Rectangle { width: 18; height: 18; radius: 9; color: modelData.accent; Text { anchors.centerIn: parent; text: qsTr("Z"); color: "#141414"; font.pixelSize: 8; font.weight: Font.Bold } }
+                                Rectangle { width: Math.max(54, preview.width - 150); height: 18; radius: 9; color: Theme.surfaceStrong }
+                                Rectangle { width: 62; height: 18; radius: 9; color: Theme.surfaceStrong }
                             }
                             Row {
                                 anchors.centerIn: parent
@@ -219,9 +219,9 @@ FocusScope {
                                         required property int index
                                         width: index === 0 ? 76 : 44
                                         height: 58
-                                        radius: 9
+                                        radius: Theme.radius
                                         color: index === 1 ? card.modelData.accent : Qt.lighter(card.modelData.mid, 1.25 + index * 0.08)
-                                        border.color: Qt.rgba(1, 1, 1, 0.38)
+                                        border.color: Theme.surfaceStrong
                                         border.width: index === 1 ? 3 : 1
                                     }
                                 }
@@ -232,8 +232,8 @@ FocusScope {
                                 anchors.bottomMargin: 9
                                 width: 120
                                 height: 20
-                                radius: 10
-                                color: Qt.rgba(1, 1, 1, 0.16)
+                                radius: Theme.radius
+                                color: Theme.surfaceStrong
                                 Rectangle { anchors.centerIn: parent; width: 22; height: 3; radius: 2; color: modelData.accent }
                             }
                         }
@@ -243,8 +243,8 @@ FocusScope {
                             anchors.bottom: parent.bottom
                             anchors.bottomMargin: 10
                             spacing: 1
-                            Text { text: modelData.name; color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 17; font.weight: Font.Black }
-                            Text { text: qsTr("BY @") + modelData.author + " · " + I18n.source(modelData.detail, I18n.revision); color: Theme.textMuted; font.family: Theme.monoFont; font.pixelSize: 10; font.letterSpacing: 0.4 }
+                            Text { text: modelData.name; color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 17; font.weight: Font.Bold }
+                            Text { text: qsTr("BY @") + modelData.author + " · " + I18n.source(modelData.detail, I18n.revision); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 10; font.letterSpacing: 0 }
                         }
                         Rectangle {
                             anchors.right: parent.right
@@ -253,8 +253,8 @@ FocusScope {
                             anchors.bottomMargin: 12
                             width: installedText.implicitWidth + 22
                             height: 28
-                            radius: 14
-                            color: ShellStore.settings.themePack === modelData.id ? modelData.accent : Qt.rgba(1, 1, 1, 0.10)
+                            radius: Theme.radiusLarge
+                            color: ShellStore.settings.themePack === modelData.id ? modelData.accent : Theme.surfaceRaised
                             border.color: Theme.seam
                             Text {
                                 id: installedText
@@ -263,7 +263,7 @@ FocusScope {
                                 color: ShellStore.settings.themePack === modelData.id ? Theme.contrastText(parent.color) : Theme.label
                                 font.family: Theme.bodyFont
                                 font.pixelSize: 12
-                                font.weight: Font.Black
+                                font.weight: Font.Bold
                             }
                         }
                         MouseArea {
@@ -286,11 +286,11 @@ FocusScope {
                 Text {
                     anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
-                    text: root.statusMessage + qsTr("  ·  BUILT-IN OPENNOW PALETTES")
+                    text: root.statusMessage + qsTr("  ·  Built-in OpenNOW palettes")
                     color: Theme.textMuted
-                    font.family: Theme.monoFont
+                    font.family: Theme.bodyFont
                     font.pixelSize: 11
-                    font.letterSpacing: 0.7
+                    font.letterSpacing: 0
                 }
             }
         }

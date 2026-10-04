@@ -138,17 +138,17 @@ FocusScope {
 
     function resolutionDropdownItems() {
         return [
-            {kind:"heading", label:qsTr("16:9 STANDARD"), height:24},
+            {kind:"heading", label:qsTr("16:9 Standard"), height:24},
             {kind:"choice", label:"720p", detail:"1280×720", values:["1280x720"], height:38},
             {kind:"choice", label:"1080p", detail:"1920×1080", values:["1920x1080"], height:38},
             {kind:"choice", label:"1440p", detail:"2560×1440 · up to 120", values:["2560x1440"], height:38},
             {kind:"choice", label:"4K", detail:"3840×2160 · up to 120", values:["3840x2160"], height:38},
-            {kind:"heading", label:qsTr("16:10 WIDESCREEN"), height:28},
+            {kind:"heading", label:qsTr("16:10 Widescreen"), height:28},
             {kind:"choice", label:"720p · WXGA · WSXGA", detail:"1280×800 · 1440×900 · 1680×1050", values:["1280x800","1440x900","1680x1050"], height:38},
             {kind:"choice", label:"1200p · 1600p · 4K", detail:"1920×1200 · 2560×1600 · 3840×2400", values:["1920x1200","2560x1600","3840x2400"], height:38},
-            {kind:"heading", label:qsTr("21:9 ULTRAWIDE"), height:28},
+            {kind:"heading", label:qsTr("21:9 Ultrawide"), height:28},
             {kind:"choice", label:"UW 1080p · UW 1440p", detail:"2560×1080 · 3440×1440", values:["2560x1080","3440x1440"], height:38},
-            {kind:"heading", label:qsTr("32:9 SUPER ULTRAWIDE"), height:28},
+            {kind:"heading", label:qsTr("32:9 Super ultrawide"), height:28},
             {kind:"choice", label:qsTr("Super Ultrawide"), detail:"5120×1440", values:["5120x1440"], height:38}
         ]
     }
@@ -661,13 +661,13 @@ FocusScope {
                 Accessible.name: I18n.source(modelData.name, I18n.revision)
                 onClicked: { root.selectedSection = index; root.closeDropdown() }
                 highlighted: ListView.isCurrentItem
-                background: Rectangle { radius: 28; color: root.selectedSection === index ? Theme.face : "transparent"; border.color: parent.activeFocus ? Theme.focus : "transparent"; border.width: parent.activeFocus ? 3 : 0 }
+                background: Rectangle { radius: Theme.radiusLarge; color: root.selectedSection === index ? Theme.face : "transparent"; border.color: parent.activeFocus ? Theme.focus : "transparent"; border.width: parent.activeFocus ? 3 : 0 }
                 contentItem: Row {
                     spacing: 12
-                    Rectangle { width: 30; height: 30; radius: 10; color: modelData.color
+                    Rectangle { width: 30; height: 30; radius: Theme.radius; color: modelData.color
                         Image { anchors.centerIn: parent; width: modelData.icon === "settings-input.svg" ? 20 : 18; height: width; source: "qrc:/qt/qml/OpenNOW/res/icons/" + modelData.icon; sourceSize: Qt.size(width, height) }
                     }
-                    Text { anchors.verticalCenter: parent.verticalCenter; text: I18n.source(modelData.name, I18n.revision); color: root.selectedSection === index ? Theme.faceText : Theme.label; font.family: Theme.bodyFont; font.pixelSize: 17; font.weight: Font.ExtraBold }
+                    Text { anchors.verticalCenter: parent.verticalCenter; text: I18n.source(modelData.name, I18n.revision); color: root.selectedSection === index ? Theme.faceText : Theme.label; font.family: Theme.bodyFont; font.pixelSize: 17; font.weight: Font.DemiBold }
                 }
             }
         }
@@ -715,7 +715,7 @@ FocusScope {
         y: root.dropdownPanelY + 12
         width: 500
         height: root.dropdownPanelHeight
-        radius: 30
+        radius: Theme.radiusLarge
         color: Qt.rgba(0, 0, 0, 0.38)
         z: 20.5
         opacity: root.dropdownOpen ? 1 : 0
@@ -785,7 +785,7 @@ FocusScope {
                         }
 
                         background: Rectangle {
-                            radius: 19
+                            radius: Theme.radiusLarge
                             color: resolutionItem.highlighted ? Theme.face : "transparent"
                             border.color: resolutionItem.highlighted ? Theme.focus : "transparent"
                             border.width: resolutionItem.highlighted ? 3 : 0
@@ -803,8 +803,8 @@ FocusScope {
                                 color: Theme.textMuted
                                 font.family: Theme.bodyFont
                                 font.pixelSize: 11
-                                font.weight: Font.Black
-                                font.letterSpacing: 0.88
+                                font.weight: Font.Bold
+                                font.letterSpacing: 0
                             }
                             Row {
                                 visible: modelData.kind === "choice"
@@ -818,7 +818,7 @@ FocusScope {
                                     color: resolutionItem.highlighted ? Theme.faceText : Theme.label
                                     font.family: Theme.bodyFont
                                     font.pixelSize: 16
-                                    font.weight: Font.Black
+                                    font.weight: Font.Bold
                                 }
                                 Text {
                                     anchors.verticalCenter: parent.verticalCenter
@@ -826,7 +826,7 @@ FocusScope {
                                     color: resolutionItem.highlighted ? Theme.faceText : Theme.label
                                     font.family: Theme.bodyFont
                                     font.pixelSize: 15
-                                    font.weight: Font.Black
+                                    font.weight: Font.Bold
                                 }
                             }
                             Text {
@@ -836,7 +836,7 @@ FocusScope {
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: modelData.detail || ""
                                 color: resolutionItem.highlighted
-                                    ? Qt.rgba(0.043, 0.059, 0.102, 0.60) : Theme.textMuted
+                                    ? "#5C5C5C" : Theme.textMuted
                                 font.family: Theme.bodyFont
                                 font.pixelSize: 13
                                 font.weight: Font.Bold
@@ -876,8 +876,8 @@ FocusScope {
                 color: Theme.textMuted
                 font.family: Theme.bodyFont
                 font.pixelSize: 11
-                font.weight: Font.Black
-                font.letterSpacing: 0.88
+                font.weight: Font.Bold
+                font.letterSpacing: 0
             }
             ListView {
                 id: dropdownList
@@ -901,7 +901,7 @@ FocusScope {
                     opacity: enabled ? 1 : 0.42
                     onClicked: root.commitDropdownChoice(index)
                     background: Rectangle {
-                        radius: 19
+                        radius: Theme.radiusLarge
                         color: dropdownItem.highlighted ? Theme.face : "transparent"
                         border.color: dropdownItem.highlighted ? Theme.focus : "transparent"
                         border.width: dropdownItem.highlighted ? 3 : 0
@@ -915,7 +915,7 @@ FocusScope {
                             color: dropdownItem.highlighted ? Theme.faceText : Theme.label
                             font.family: Theme.bodyFont
                             font.pixelSize: 16
-                            font.weight: Font.Black
+                            font.weight: Font.Bold
                         }
                         Text {
                             x: root.dropdownChoiceSelected(index) ? 38 : 12
@@ -926,7 +926,7 @@ FocusScope {
                             color: dropdownItem.highlighted ? Theme.faceText : Theme.label
                             font.family: Theme.bodyFont
                             font.pixelSize: 15
-                            font.weight: Font.Black
+                            font.weight: Font.Bold
                             elide: Text.ElideRight
                         }
                         Text {
@@ -982,18 +982,18 @@ FocusScope {
         strong: true
         Column {
             anchors.fill: parent; anchors.margins: 26; spacing: 14
-            Text { text: qsTr("Session proxy"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 24; font.weight: Font.Black }
+            Text { text: qsTr("Session proxy"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 24; font.weight: Font.Bold }
             Text { width: parent.width; text: qsTr("Enter host:port or an explicit http, https, socks4 or socks5 URL."); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 14; wrapMode: Text.WordWrap }
             TextField {
                 id: proxyField
                 width: parent.width; height: 52
                 placeholderText: qsTr("proxy.example.com:8080")
                 color: Theme.label; placeholderTextColor: Theme.textMuted
-                font.family: Theme.monoFont; font.pixelSize: 14
+                font.family: Theme.bodyFont; font.pixelSize: 14
                 selectByMouse: true
                 inputMethodHints: Qt.ImhNoPredictiveText | Qt.ImhSensitiveData
                 Accessible.name: qsTr("Proxy address")
-                background: Rectangle { radius: 16; color: Theme.glass; border.color: proxyField.activeFocus ? Theme.focus : Theme.seam; border.width: proxyField.activeFocus ? 3 : 1 }
+                background: Rectangle { radius: Theme.radiusLarge; color: Theme.glass; border.color: proxyField.activeFocus ? Theme.focus : Theme.seam; border.width: proxyField.activeFocus ? 3 : 1 }
                 Keys.onEscapePressed: root.proxyEditorOpen = false
             }
             Row {
@@ -1038,12 +1038,12 @@ FocusScope {
             Keys.onPressed: event => root.captureShortcut(event)
             Column {
                 anchors.fill: parent; anchors.margins: 28; spacing: 16
-                Text { text: I18n.source(root.shortcutEditorTitle, I18n.revision); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 25; font.weight: Font.Black }
+                Text { text: I18n.source(root.shortcutEditorTitle, I18n.revision); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 25; font.weight: Font.Bold }
                 Rectangle {
-                    width: parent.width; height: 66; radius: 20; color: Theme.glass
+                    width: parent.width; height: 66; radius: Theme.radiusLarge; color: Theme.glass
                     border.color: shortcutCapture.activeFocus ? Theme.focus : Theme.seam
                     border.width: shortcutCapture.activeFocus ? 3 : 1
-                    Text { anchors.centerIn: parent; text: qsTr("Press a key combination…"); color: Theme.label; font.family: Theme.monoFont; font.pixelSize: 18; font.weight: Font.Bold }
+                    Text { anchors.centerIn: parent; text: qsTr("Press a key combination…"); color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 18; font.weight: Font.Bold }
                 }
                 Text { width: parent.width; text: I18n.source(root.shortcutEditorMessage, I18n.revision); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 13; wrapMode: Text.WordWrap }
                 Row {
