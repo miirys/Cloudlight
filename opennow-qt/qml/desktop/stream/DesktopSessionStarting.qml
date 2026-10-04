@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Window
 import OpenNOW
 
 FocusScope {
@@ -68,16 +69,31 @@ FocusScope {
         active: root.visible
     }
 
-    // GeForce NOW style launch screen: the game's key art fills the screen
-    // behind a left and bottom scrim, with the title block on the safe margin.
-    Rectangle { anchors.fill: parent; color: "#04060A" }
+    // Where the launch is, as one of four plain stages. Steps 5 and 6 (cleanup, storage)
+    // are waits, so they read as the queue stage.
+    readonly property var stages: [qsTr("Checking"), qsTr("In queue"), qsTr("Setting up your rig"), qsTr("Connecting")]
+    readonly property int stage: {
+        if (connecting) return 3
+        const step = setupProgress.setupStep
+        if (step >= 2 && step <= 4) return 2
+        if (setupProgress.queued || step === 1 || step === 5 || step === 6) return 1
+        return 0
+    }
+    readonly property bool showQueueNumber: setupProgress.queued && setupProgress.queuePosition > 0
+        && !failed && !stopping && width >= DesktopTokens.px(1000)
+
+    // The game's key art fills the screen behind a left and bottom scrim. The launch
+    // details sit on the safe margin, bottom left; the queue number and the mascot
+    // slot sit bottom right.
+    Rectangle { anchors.fill: parent; color: "#0B0A0E" }
     Image {
         anchors.fill: parent
         source: artwork.resolvedUrl
         fillMode: Image.PreserveAspectCrop
         asynchronous: true
         cache: true
-        opacity: status === Image.Ready ? 0.7 : 0
+        sourceSize: Qt.size(Math.ceil(width * Screen.devicePixelRatio), Math.ceil(height * Screen.devicePixelRatio))
+        opacity: status === Image.Ready ? 0.72 : 0
         scale: status === Image.Ready && !AppController.reducedMotion ? 1 : 1.04
         Behavior on opacity { NumberAnimation { duration: 700; easing.type: Easing.OutCubic } }
         Behavior on scale { NumberAnimation { duration: 1400; easing.type: Easing.OutCubic } }
@@ -86,24 +102,24 @@ FocusScope {
         anchors.fill: parent
         gradient: Gradient {
             orientation: Gradient.Horizontal
-            GradientStop { position: 0; color: "#F00A0A0A" }
-            GradientStop { position: 0.45; color: "#A00A0A0A" }
-            GradientStop { position: 1; color: "#300A0A0A" }
+            GradientStop { position: 0; color: "#F20B0A0E" }
+            GradientStop { position: 0.5; color: "#990B0A0E" }
+            GradientStop { position: 1; color: "#400B0A0E" }
         }
     }
     Rectangle {
         anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom
-        height: parent.height * 0.55
+        height: parent.height * 0.6
         gradient: Gradient {
-            GradientStop { position: 0; color: "#000A0A0A" }
-            GradientStop { position: 1; color: "#F20A0A0A" }
+            GradientStop { position: 0; color: "#000B0A0E" }
+            GradientStop { position: 1; color: "#F50B0A0E" }
         }
     }
 
     DesktopBrandLockup {
         x: DesktopTokens.safeX
         y: DesktopTokens.px(32)
-        markHeight: DesktopTokens.px(14)
+        markHeight: DesktopTokens.px(22)
         fontPixelSize: DesktopTokens.navSize
         spacing: DesktopTokens.px(10)
         ink: Theme.mediaForeground
@@ -111,10 +127,11 @@ FocusScope {
     }
 
     Column {
+        id: details
         x: DesktopTokens.safeX
         anchors.bottom: parent.bottom
         anchors.bottomMargin: DesktopTokens.px(72)
-        width: Math.min(DesktopTokens.px(720), root.width - DesktopTokens.safeX * 2)
+        width: Math.min(DesktopTokens.px(760), root.width - DesktopTokens.safeX * 2)
         spacing: 0
 
         Text {
@@ -132,65 +149,96 @@ FocusScope {
             text: String(root.game.title || qsTr("GeForce NOW"))
             color: Theme.mediaForeground
             font.family: DesktopTokens.displayFont
-            font.pixelSize: root.width < 800 ? DesktopTokens.titleSize : DesktopTokens.displaySize
+            font.pixelSize: root.width < 800 ? DesktopTokens.titleSize : DesktopTokens.px(64)
             font.weight: Font.Bold
             font.letterSpacing: -DesktopTokens.px(0.5)
             maximumLineCount: 2
             wrapMode: Text.WordWrap
             elide: Text.ElideRight
-            lineHeight: 1.05
+            lineHeight: 1.0
         }
-        Item { width: 1; height: DesktopTokens.px(28) }
+        Item { width: 1; height: DesktopTokens.px(36) }
+        // Four stages, each a segment of one bar: done segments are filled, the
+        // current one carries a short sweep, later ones are bare track.
+        Row {
+            id: stageRail
+            objectName: "sessionLaunchStages"
+            visible: !root.failed && !root.stopping
+            width: Math.min(parent.width, DesktopTokens.px(680))
+            height: visible ? implicitHeight + DesktopTokens.px(22) : 0
+            spacing: DesktopTokens.px(8)
+            Repeater {
+                model: root.stages
+                delegate: Column {
+                    id: stageItem
+                    required property string modelData
+                    required property int index
+                    readonly property bool done: index < root.stage
+                    readonly property bool current: index === root.stage
+                    width: Math.floor((stageRail.width - stageRail.spacing * 3) / 4)
+                    spacing: DesktopTokens.px(10)
+                    Rectangle {
+                        id: segment
+                        width: parent.width
+                        height: DesktopTokens.px(4)
+                        radius: height / 2
+                        color: "#33FFFFFF"
+                        clip: true
+                        Rectangle {
+                            anchors.fill: parent
+                            radius: parent.radius
+                            color: Theme.mediaAccent
+                            visible: stageItem.done
+                        }
+                        Rectangle {
+                            id: stageSweep
+                            visible: stageItem.current
+                            width: AppController.reducedMotion ? parent.width / 2 : parent.width * 0.45
+                            height: parent.height
+                            radius: parent.radius
+                            color: Theme.mediaAccent
+                            x: 0
+                            NumberAnimation on x {
+                                running: stageItem.current && root.visible && !root.failed && !AppController.reducedMotion
+                                loops: Animation.Infinite
+                                from: -stageSweep.width
+                                to: segment.width
+                                duration: 1500
+                                easing.type: Easing.InOutCubic
+                            }
+                        }
+                    }
+                    Text {
+                        width: parent.width
+                        text: stageItem.modelData
+                        color: stageItem.current ? Theme.mediaForeground : Theme.mediaMuted
+                        font.family: DesktopTokens.bodyFont
+                        font.pixelSize: DesktopTokens.captionSize
+                        font.weight: stageItem.current ? Font.Bold : Font.Normal
+                        elide: Text.ElideRight
+                    }
+                }
+            }
+        }
         Text {
             objectName: "sessionLaunchStatus"
             width: parent.width
             text: root.statusText
             color: root.failed ? DesktopTokens.danger : Theme.mediaForeground
             font.family: DesktopTokens.bodyFont
-            font.pixelSize: DesktopTokens.bodySize
+            font.pixelSize: DesktopTokens.headingSize
             font.weight: Font.DemiBold
             wrapMode: Text.WordWrap
         }
-        // Indeterminate progress: a short accent bar sweeping a thin track.
-        Item {
-            width: Math.min(parent.width, DesktopTokens.px(480))
-            height: visible ? DesktopTokens.px(16) + track.height : 0
-            visible: !root.failed
-            Rectangle {
-                id: track
-                y: DesktopTokens.px(16)
-                width: parent.width
-                height: DesktopTokens.px(4)
-                radius: height / 2
-                color: "#33FFFFFF"
-                clip: true
-                Rectangle {
-                    id: sweep
-                    width: parent.width * 0.3
-                    height: parent.height
-                    radius: height / 2
-                    color: DesktopTokens.focus
-                    x: AppController.reducedMotion ? 0 : -width
-                    NumberAnimation on x {
-                        running: root.visible && !root.failed && !AppController.reducedMotion
-                        loops: Animation.Infinite
-                        from: -sweep.width
-                        to: track.width
-                        duration: 1400
-                        easing.type: Easing.InOutCubic
-                    }
-                }
-            }
-        }
         Text {
             width: parent.width
-            topPadding: DesktopTokens.px(14)
+            topPadding: DesktopTokens.px(8)
             text: root.detailText
             visible: text !== ""
             color: Theme.mediaMuted
             font.family: DesktopTokens.bodyFont
-            font.pixelSize: DesktopTokens.captionSize
-            lineHeight: 1.35
+            font.pixelSize: DesktopTokens.bodySize
+            lineHeight: 1.3
             wrapMode: Text.WordWrap
             maximumLineCount: 5
             elide: Text.ElideRight
@@ -215,6 +263,48 @@ FocusScope {
                 text: root.failed && !ShellStore.activeSession ? qsTr("Back") : qsTr("Cancel session")
                 shortcutText: qsTr("Esc")
                 onClicked: root.cancelRequested()
+            }
+        }
+    }
+
+    // Bottom right: the mascot (only once its art ships) above the queue number.
+    Column {
+        anchors.right: parent.right
+        anchors.rightMargin: DesktopTokens.safeX
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: DesktopTokens.px(72)
+        spacing: DesktopTokens.px(12)
+        CloudlightMascot {
+            id: mascot
+            anchors.right: parent.right
+            pose: root.failed ? "error" : "loading"
+            visible: hasArt && root.width >= DesktopTokens.px(1000)
+            width: DesktopTokens.px(300)
+            height: DesktopTokens.px(300)
+        }
+        Column {
+            objectName: "sessionQueueNumber"
+            anchors.right: parent.right
+            visible: root.showQueueNumber
+            spacing: 0
+            Text {
+                anchors.right: parent.right
+                text: qsTr("IN QUEUE")
+                color: Theme.mediaMuted
+                font.family: DesktopTokens.bodyFont
+                font.pixelSize: DesktopTokens.captionSize
+                font.weight: Font.Bold
+                font.letterSpacing: DesktopTokens.px(2)
+            }
+            Text {
+                anchors.right: parent.right
+                text: Number(setupProgress.queuePosition).toLocaleString(Qt.locale(), "f", 0)
+                color: Theme.mediaForeground
+                font.family: Theme.brandFont
+                font.pixelSize: DesktopTokens.px(168)
+                font.weight: Font.Medium
+                font.features: { "lnum": 1, "tnum": 1 }
+                lineHeight: 0.85
             }
         }
     }
