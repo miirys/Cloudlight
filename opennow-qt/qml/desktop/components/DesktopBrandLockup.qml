@@ -32,7 +32,7 @@ Item {
         anchors.leftMargin: root.spacing
         visible: root.textReveal > 0
         opacity: root.textReveal
-        text: "OpenNOW"
+        text: "Cloudlight"
         color: root.ink
         font.family: DesktopTokens.displayFont
         font.pixelSize: root.fontPixelSize

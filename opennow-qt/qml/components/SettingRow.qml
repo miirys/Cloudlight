@@ -251,7 +251,7 @@ ItemDelegate {
                 x: 112; anchors.verticalCenter: parent.verticalCenter; width: parent.width - 340; spacing: 5
                 Row {
                     spacing: 12
-                    Text { text: root.rowData.name || qsTr("OpenNOW profile"); color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 24; font.weight: Font.Bold }
+                    Text { text: root.rowData.name || qsTr("Cloudlight profile"); color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 24; font.weight: Font.Bold }
                     Rectangle { anchors.verticalCenter: parent.verticalCenter; width: tierText.implicitWidth + 18; height: 28; radius: Theme.radiusLarge; color: Theme.yellow
                         Text { id: tierText; anchors.centerIn: parent; text: root.rowData.tier || "—"; color: Theme.faceText; font.family: Theme.bodyFont; font.pixelSize: 12; font.weight: Font.Bold }
                     }

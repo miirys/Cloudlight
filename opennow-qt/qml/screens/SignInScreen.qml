@@ -42,11 +42,11 @@ FocusScope {
                     width: parent.width
                     wrapMode: Text.WordWrap
                     text: root.connected
-                          ? qsTr("Signed in as %1. Your NVIDIA password never passes through OpenNOW.").arg(ShellStore.authSession.user.displayName)
+                          ? qsTr("Signed in as %1. Your NVIDIA password never passes through Cloudlight.").arg(ShellStore.authSession.user.displayName)
                           : ShellStore.providerDiscoveryDegraded
                               ? ShellStore.providers.length ? qsTr("Provider discovery is unavailable. Known providers are shown.")
                                   : qsTr("No providers are available. Refresh to try again.")
-                          : qsTr("OpenNOW connects to your GeForce NOW account without storing your NVIDIA password. Sign in from your phone, then come straight back to the controller.")
+                          : qsTr("Cloudlight connects to your GeForce NOW account without storing your NVIDIA password. Sign in from your phone, then come straight back to the controller.")
                     color: Theme.textMuted
                     font.family: Theme.bodyFont
                     font.pixelSize: 18
@@ -112,7 +112,7 @@ FocusScope {
                     Text {
                         width: 590
                         text: ShellStore.authState === "error" ? ShellStore.authMessage
-                              : ShellStore.authMessage || (ShellStore.ready ? qsTr("No password is entered in OpenNOW") : qsTr("Starting the secure OpenNOW core…"))
+                              : ShellStore.authMessage || (ShellStore.ready ? qsTr("No password is entered in Cloudlight") : qsTr("Starting the secure Cloudlight core…"))
                         color: ShellStore.authState === "error" ? Theme.coral : Theme.textMuted
                         elide: Text.ElideRight
                         font.family: Theme.bodyFont
@@ -183,5 +183,5 @@ FocusScope {
             }
         }
     }
-    AppChrome { anchors.fill: parent; title: qsTr("Welcome to OpenNOW"); currentRoute: "home"; bottomVisible: false }
+    AppChrome { anchors.fill: parent; title: qsTr("Welcome to Cloudlight"); currentRoute: "home"; bottomVisible: false }
 }

@@ -85,7 +85,7 @@ DesktopSettingsPanel {
     DesktopSettingsRow {
         width: parent.width; paperStyle: true; glyph: "wave"
         title: qsTr("Mute when out of focus")
-        description: qsTr("Silence stream audio while using another app. Audio returns when you switch back to OpenNOW.")
+        description: qsTr("Silence stream audio while using another app. Audio returns when you switch back to Cloudlight.")
         DesktopSettingsToggle {
             objectName: "muteWhenOutOfFocusToggle"
             checked: page.settingsScreen.valueSetting("muteWhenOutOfFocus", false) === true

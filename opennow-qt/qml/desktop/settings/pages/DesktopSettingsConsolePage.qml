@@ -23,7 +23,7 @@ Column {
         DesktopSettingsSection { text: qsTr("Startup") }
         DesktopSettingsRow {
             width: parent.width; paperStyle: true; glyph: "controller"; title: qsTr("Start in console mode")
-            description: qsTr("Remember this choice for the next time OpenNOW launches")
+            description: qsTr("Remember this choice for the next time Cloudlight launches")
             DesktopSettingsToggle { checked: page.settingsScreen.boolSetting("launchInConsoleMode",false); onValueChangedByUser: value => page.settingsScreen.setSetting("launchInConsoleMode",value) }
         }
         DesktopSettingsRow {

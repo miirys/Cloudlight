@@ -22,7 +22,7 @@ FocusScope {
         onAccepted: ShellStore.installUpdate(true)
         contentItem: Label {
             wrapMode: Text.WordWrap
-            text: qsTr("OpenNOW will prepare the verified update, close, replace this installation, and restart. Continue?")
+            text: qsTr("Cloudlight will prepare the verified update, close, replace this installation, and restart. Continue?")
         }
     }
 
@@ -39,13 +39,13 @@ FocusScope {
                 }
                 Column {
                     anchors.verticalCenter: parent.verticalCenter; spacing: 3
-                    Text { text: root.available ? qsTr("Update available") : qsTr("OpenNOW updates"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 31; font.weight: Font.Bold }
+                    Text { text: root.available ? qsTr("Update available") : qsTr("Cloudlight updates"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 31; font.weight: Font.Bold }
                     Text { text: qsTr("Installed version %1 · %2 channel").arg(root.state.currentVersion || qsTr("unknown")).arg(ShellStore.settings.updateChannel === "nightly" ? qsTr("Nightly") : qsTr("Stable")); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 12 }
                 }
             }
             Text {
                 width: parent.width; wrapMode: Text.WordWrap
-                text: ShellStore.updaterError || root.state.message || qsTr("Check GitHub Releases for a newer OpenNOW build.")
+                text: ShellStore.updaterError || root.state.message || qsTr("Check GitHub Releases for a newer Cloudlight build.")
                 color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 17
                 Accessible.role: Accessible.StaticText
                 Accessible.name: text

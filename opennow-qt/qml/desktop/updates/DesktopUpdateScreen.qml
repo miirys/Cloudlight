@@ -24,7 +24,7 @@ FocusScope {
         onAccepted: ShellStore.installUpdate(true)
         contentItem: Label {
             wrapMode: Text.WordWrap
-            text: qsTr("OpenNOW will prepare the verified update, close, replace this installation, and restart. Continue?")
+            text: qsTr("Cloudlight will prepare the verified update, close, replace this installation, and restart. Continue?")
         }
     }
 
@@ -53,7 +53,7 @@ FocusScope {
                     bottomPadding: DesktopTokens.px(24)
                     Text {
                         width: parent.width
-                        text: root.state.status === "available" ? qsTr("Update available") : qsTr("OpenNOW updates")
+                        text: root.state.status === "available" ? qsTr("Update available") : qsTr("Cloudlight updates")
                         color: Theme.label
                         font.family: Theme.displayFont
                         font.pixelSize: DesktopTokens.px(28)
@@ -79,7 +79,7 @@ FocusScope {
                     }
                     Text {
                         width: parent.width
-                        text: ShellStore.updaterError || root.state.message || qsTr("Check GitHub Releases for a newer OpenNOW build.")
+                        text: ShellStore.updaterError || root.state.message || qsTr("Check GitHub Releases for a newer Cloudlight build.")
                         textFormat: Text.PlainText
                         color: Theme.label
                         font.family: Theme.bodyFont

@@ -779,11 +779,11 @@ QtObject {
         if (sessionPersistence === "local-file")
             return qsTr("Your session tokens are saved unencrypted on disk because the OS keychain is unavailable. Anyone who can read this file can access your account.")
         if (sessionPersistence === "unavailable")
-            return qsTr("Your saved session could not be restored. Unlock your OS keychain and restart OpenNOW, or sign in again.")
+            return qsTr("Your saved session could not be restored. Unlock your OS keychain and restart Cloudlight, or sign in again.")
         if (sessionPersistence === "memory-only")
             return qsTr("This session is memory-only and will not last after you quit.")
         if (sessionPersistence === "migration-pending")
-            return qsTr("Secure account migration is pending. Unlock your system credential store and restart OpenNOW.")
+            return qsTr("Secure account migration is pending. Unlock your system credential store and restart Cloudlight.")
         if (authWarnings.length > 0)
             return qsTr("Account credential cleanup is pending. Your saved data has been retained for recovery.")
         return ""
@@ -894,7 +894,7 @@ QtObject {
             // while a decoder/transport worker is still alive is unsafe.
             root.sessionRecoveryPending = false
             root.streamState = "error"
-            root.streamMessage = qsTr("The previous native stream is still stopping. Retry after cleanup finishes, or restart OpenNOW.")
+            root.streamMessage = qsTr("The previous native stream is still stopping. Retry after cleanup finishes, or restart Cloudlight.")
             root.lastError = root.streamMessage
         }
     }
@@ -2442,7 +2442,7 @@ QtObject {
 
     function captureStreamScreenshot() {
         const rect = streamCaptureRect
-        const title = selectedGame && selectedGame.title ? selectedGame.title : "OpenNOW"
+        const title = selectedGame && selectedGame.title ? selectedGame.title : "Cloudlight"
         const path = AppController.captureScreenRegion(
             Number(rect.x || 0), Number(rect.y || 0),
             Number(rect.width || 0), Number(rect.height || 0), title)
@@ -2452,7 +2452,7 @@ QtObject {
             refreshMedia()
         } else {
             mediaMessage = qsTr("Screenshot capture failed")
-            lastError = qsTr("The desktop compositor did not allow OpenNOW to capture the stream.")
+            lastError = qsTr("The desktop compositor did not allow Cloudlight to capture the stream.")
             accessibilityMessage = lastError
         }
     }
@@ -2585,7 +2585,7 @@ QtObject {
         } else if (!streamReplayEnabled || !replayBufferRequested) {
             mediaMessage = qsTr("Enable replay buffering in Recording settings before starting a session")
         } else {
-            const title = selectedGame && selectedGame.title ? selectedGame.title : "OpenNOW"
+            const title = selectedGame && selectedGame.title ? selectedGame.title : "Cloudlight"
             mediaClipTargetRequestId = CoreClient.request("media.recording.target", {
                 gameTitle: title + "-clip"
             }, 5000)
@@ -2611,7 +2611,7 @@ QtObject {
             accessibilityMessage = mediaMessage
             return
         }
-        const title = selectedGame && selectedGame.title ? selectedGame.title : "OpenNOW"
+        const title = selectedGame && selectedGame.title ? selectedGame.title : "Cloudlight"
         AppController.showOverlay("")
         mediaRecordingTargetRequestId = CoreClient.request("media.recording.target", {
             gameTitle: title

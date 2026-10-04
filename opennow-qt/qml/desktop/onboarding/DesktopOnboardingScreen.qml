@@ -26,13 +26,13 @@ FocusScope {
     readonly property var titles: [qsTr("Fresh out of\nthe oven."),qsTr("Desk or couch?"),qsTr("Pick your picture."),
         qsTr("A little extra boost."),qsTr("Keep the lights on."),qsTr("You're set.")]
     readonly property var introductions: [
-        qsTr("Welcome to the native Qt build of OpenNOW. This is a beta, so bugs may occur. If something breaks, tell us what happened on GitHub. Let's make the client feel at home on your screen."),
+        qsTr("Welcome to the native Qt build of Cloudlight. This is a beta, so bugs may occur. If something breaks, tell us what happened on GitHub. Let's make the client feel at home on your screen."),
         qsTr("Both shells share one session, one library and one set of settings. Pick the one you'll open most. You can switch any time."),
         qsTr("Choose your stream preferences. Start with the defaults, or make them your own. You can change everything later."),
         store.onboardingAwdlController.state !== MacAwdlController.Unsupported
             ? qsTr("Complete the required network setup, then choose optional on-device picture processing.")
             : qsTr("Optional, on-device picture processing. Keep it simple now, or experiment with how your stream is presented."),
-        qsTr("OpenNOW is free and open source. If it helps you, consider supporting its development through GitHub Sponsors. You can also help by reporting bugs or contributing to the project. Sponsoring is entirely optional, and you can continue without donating."),
+        qsTr("Cloudlight is free and open source. If it helps you, consider supporting its development through GitHub Sponsors. You can also help by reporting bugs or contributing to the project. Sponsoring is entirely optional, and you can continue without donating."),
         qsTr("Here's what you picked. Finish setup to save your preferences, or go back to adjust anything.")]
 
     focus: true
@@ -610,7 +610,7 @@ FocusScope {
                     Repeater {
                         model: [
                             {glyph:"monitor",title:qsTr("Report what went wrong"),body:qsTr("If a stream, a setting or a screen misbehaves, tell us what happened and what you expected instead.")},
-                            {glyph:"sliders",title:qsTr("Help us reproduce the problem"),body:qsTr("Include the steps you took, your operating system and the OpenNOW version. Screenshots can help too.")},
+                            {glyph:"sliders",title:qsTr("Help us reproduce the problem"),body:qsTr("Include the steps you took, your operating system and the Cloudlight version. Screenshots can help too.")},
                             {glyph:"controller",title:qsTr("Make the client your own"),body:qsTr("Choose desktop or console mode, then adjust your picture. You can revisit all of these choices in Settings.")}
                         ]
                         delegate: Item {
@@ -847,7 +847,7 @@ FocusScope {
                                 model: [
                                     {title:qsTr("Sponsor"),detail:qsTr("See the available ways to contribute on GitHub."),url:"https://github.com/sponsors/zortos293"},
                                     {title:qsTr("Contribute"),detail:qsTr("Help improve the code, translations or documentation."),url:"https://github.com/OpenCloudGaming/OpenNOW"},
-                                    {title:qsTr("Report"),detail:qsTr("A clear bug report helps make OpenNOW better."),url:"https://github.com/OpenCloudGaming/OpenNOW/issues"}
+                                    {title:qsTr("Report"),detail:qsTr("A clear bug report helps make Cloudlight better."),url:"https://github.com/OpenCloudGaming/OpenNOW/issues"}
                                 ]
                                 delegate: AbstractButton {
                                     id: contributionOption
@@ -892,7 +892,7 @@ FocusScope {
                         Copy {
                             id: sponsorPromise
                             x: DesktopTokens.px(22); y: DesktopTokens.px(12); width: parent.width - DesktopTokens.px(44)
-                            text: qsTr("Sponsoring is optional. No payment is collected in OpenNOW.")
+                            text: qsTr("Sponsoring is optional. No payment is collected in Cloudlight.")
                             font.pixelSize: DesktopTokens.px(12); lineHeight: DesktopTokens.px(16)
                         }
                     }

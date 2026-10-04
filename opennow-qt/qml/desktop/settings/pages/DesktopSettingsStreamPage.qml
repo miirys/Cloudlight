@@ -67,8 +67,8 @@ Column {
             width: parent.width
             title: qsTr("Graphics processor")
             description: GraphicsDevices.savedDeviceUnavailable
-                ? qsTr("The saved graphics card isn't available, so the first one that can decode video is used. Takes effect after restarting OpenNOW.")
-                : qsTr("Graphics card used to decode and show the stream. Takes effect after restarting OpenNOW.")
+                ? qsTr("The saved graphics card isn't available, so the first one that can decode video is used. Takes effect after restarting Cloudlight.")
+                : qsTr("Graphics card used to decode and show the stream. Takes effect after restarting Cloudlight.")
             glyph: "monitor"
             items: GraphicsDevices.choices
             maximumColumns: 2

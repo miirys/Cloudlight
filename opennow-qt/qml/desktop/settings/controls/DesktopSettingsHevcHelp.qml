@@ -78,7 +78,7 @@ Item {
         }
         Text {
             width: parent.width
-            text: qsTr("Your GPU still needs hardware HEVC decoding support. Installing the extension will not make H.265 work on hardware that cannot decode it. Restart OpenNOW after installation to check again.")
+            text: qsTr("Your GPU still needs hardware HEVC decoding support. Installing the extension will not make H.265 work on hardware that cannot decode it. Restart Cloudlight after installation to check again.")
             color: Theme.textMuted
             font.family: Theme.bodyFont
             font.pixelSize: DesktopTokens.px(13)

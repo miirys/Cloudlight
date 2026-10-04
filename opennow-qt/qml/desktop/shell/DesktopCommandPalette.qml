@@ -26,7 +26,7 @@ FocusScope {
     readonly property string searchStatus: {
         if (!gamesQuery) return ""
         if (!ShellStore.signedIn) return qsTr("Sign in to search games.")
-        if (!ShellStore.ready) return qsTr("Game search is unavailable while OpenNOW reconnects.")
+        if (!ShellStore.ready) return qsTr("Game search is unavailable while Cloudlight reconnects.")
         if (searchState === "waiting") return qsTr("Waiting to search… Press Enter to search now.")
         if (searching) return qsTr("Searching GeForce NOW…")
         if (searchState === "error") return searchError
@@ -156,7 +156,7 @@ FocusScope {
         { icon: "desktop-nav-library.svg", name: qsTr("Open Library"), detail: qsTr("Browse all games"), route: "library", key: "2" },
         { icon: "desktop-nav-store.svg", name: qsTr("Open Store"), detail: qsTr("Discover games"), route: "store", key: "3" },
         { icon: "desktop-nav-friends.svg", name: qsTr("Friends and party"), detail: qsTr("See who is online"), route: "friends", key: "4" },
-        { icon: "desktop-nav-settings.svg", name: qsTr("Settings"), detail: qsTr("Configure OpenNOW"), route: "settings", key: "," },
+        { icon: "desktop-nav-settings.svg", name: qsTr("Settings"), detail: qsTr("Configure Cloudlight"), route: "settings", key: "," },
         { icon: "desktop-sliders.svg", name: qsTr("Stream settings"), detail: qsTr("Resolution, frame rate and codec"), route: "settings-streaming", key: "" },
         { icon: "desktop-play-stroke.svg", name: qsTr("Start last game"), detail: qsTr("Resume your previous session"), route: "game-detail", key: "Enter" }
     ]

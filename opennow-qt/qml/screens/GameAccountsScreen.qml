@@ -66,7 +66,7 @@ FocusScope {
         Column {
             anchors.fill: parent; anchors.margins: 26; spacing: 13
             Text { width: parent.width; text: root.selectedAccount ? root.selectedAccount.label : qsTr("Game accounts"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 27; font.weight: Font.Bold; wrapMode: Text.WordWrap }
-            Text { width: parent.width; text: ShellStore.gameAccountMessage || (root.selectedAccount && root.selectedAccount.isConnected ? qsTr("Your linked library is managed by NVIDIA.") : qsTr("Connect this store in your browser, then return to OpenNOW.")); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 15; wrapMode: Text.WordWrap; lineHeight: 1.2 }
+            Text { width: parent.width; text: ShellStore.gameAccountMessage || (root.selectedAccount && root.selectedAccount.isConnected ? qsTr("Your linked library is managed by NVIDIA.") : qsTr("Connect this store in your browser, then return to Cloudlight.")); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 15; wrapMode: Text.WordWrap; lineHeight: 1.2 }
             GlassButton {
                 id: actionButton; width: parent.width; glyph: "A"; primary: true
                 enabled: !ShellStore.syncOperation && root.primaryAction !== "none"

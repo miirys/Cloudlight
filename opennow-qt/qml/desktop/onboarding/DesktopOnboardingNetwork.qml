@@ -122,7 +122,7 @@ Rectangle {
                 Copy {
                     text: root.controller.state === MacAwdlController.Unavailable
                         ? qsTr("No AWDL interface is present, so no network change is required.")
-                        : qsTr("macOS may re-enable AWDL after sleep or restart. OpenNOW checks its status here and again before saving setup completion.")
+                        : qsTr("macOS may re-enable AWDL after sleep or restart. Cloudlight checks its status here and again before saving setup completion.")
                     font.pixelSize: DesktopTokens.px(12)
                     lineHeight: DesktopTokens.px(16)
                 }
@@ -188,7 +188,7 @@ Rectangle {
         contentItem: Copy {
             text: root.restoring
                 ? qsTr("macOS will ask for administrator authorization to bring awdl0 up. This lets AirDrop and related Apple features use AWDL again.")
-                : qsTr("macOS will ask for administrator authorization to bring awdl0 down for all users. AirDrop, AirPlay, Sidecar and other Continuity features may stop working. AWDL must be down to finish setup. OpenNOW will not keep it disabled in the background.")
+                : qsTr("macOS will ask for administrator authorization to bring awdl0 down for all users. AirDrop, AirPlay, Sidecar and other Continuity features may stop working. AWDL must be down to finish setup. Cloudlight will not keep it disabled in the background.")
         }
         footer: DialogButtonBox {
             padding: DesktopTokens.px(16)

@@ -94,6 +94,18 @@ jobs:
           app=$(find build/opennow-qt-release -maxdepth 3 -type f -name opennow-qt -perm -u+x | head -1)
           bash scripts/capture-gfn-ui.sh "$app" build/screens | tee build/screens/summary.txt || true
 
+      - name: Run the Qt test suite
+        run: |
+          set +e
+          xvfb-run -a -s '-screen 0 1920x1080x24' ctest --test-dir build/opennow-qt-release -C Release \
+            --output-on-failure --parallel 4 --timeout 300 --no-tests=error -LE interactive-desktop \
+            > build/screens/ctest.log 2>&1
+          echo "ctest exit $?" >> build/screens/ctest.log
+          grep -E "tests passed|tests failed|\*\*\*Failed|\*\*\*Timeout|Not Run|ctest exit" build/screens/ctest.log \
+            > build/screens/ctest-summary.txt
+          cat build/screens/ctest-summary.txt
+          true
+
       - name: Publish screenshots to the screens branch
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         run: |

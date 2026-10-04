@@ -20,7 +20,7 @@ FocusScope {
             Text { text: qsTr("Bring player two online"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 38; font.weight: Font.Bold }
             Text {
                 width: parent.width
-                text: qsTr("OpenNOW forwards up to four standard controllers directly to the active GeForce NOW session. Connect a second controller, then return to the game.")
+                text: qsTr("Cloudlight forwards up to four standard controllers directly to the active GeForce NOW session. Connect a second controller, then return to the game.")
                 wrapMode: Text.WordWrap
                 color: Theme.textMuted
                 font.family: Theme.bodyFont
@@ -70,7 +70,7 @@ FocusScope {
                     Text {
                         width: parent.width
                         text: root.playerTwoReady
-                              ? qsTr("Both controllers will be sent with distinct player slots. The Guide button remains reserved for the OpenNOW overlay.")
+                              ? qsTr("Both controllers will be sent with distinct player slots. The Guide button remains reserved for the Cloudlight overlay.")
                               : qsTr("SDL hot-plug detection is active. This page updates as soon as the second controller appears.")
                         wrapMode: Text.WordWrap; color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 15
                     }

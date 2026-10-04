@@ -25,7 +25,7 @@ Column {
         {h: qsTr("In stream"), rows: [{l: qsTr("Session menu"), k: "Ctrl+G", locked: true}]},
         {h: qsTr("APP"), rows: [{l: qsTr("Command palette"), k: "Ctrl  K"}, {l: qsTr("Search this page"), k: "/"},
             {l: qsTr("Collapse or expand the sidebar"), k: "Ctrl  B"}, {l: qsTr("Switch to console mode"), k: "F10"},
-            {l: qsTr("Settings"), k: "Ctrl  ,"}, {l: qsTr("Quit OpenNOW"), k: "Ctrl  Q"}]},
+            {l: qsTr("Settings"), k: "Ctrl  ,"}, {l: qsTr("Quit Cloudlight"), k: "Ctrl  Q"}]},
         {h: qsTr("Library and store"), rows: [{l: qsTr("Move through covers"), k: "Arrows"}, {l: qsTr("Play or resume"), k: "Enter"},
             {l: qsTr("Game details"), k: "Space"}, {l: qsTr("Toggle favourite"), k: "F"}, {l: qsTr("Context menu"), k: "Shift  F10"}]},
         {h: qsTr("Gamepad · console mode"), rows: [{l: qsTr("Select · back"), k: "A · B", gamepad: true},

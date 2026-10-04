@@ -34,7 +34,7 @@ FocusScope {
             }
             TextArea {
                 id: messageField; x: 0; y: root.bugMode ? 134 : 128; width: parent.width; height: root.bugMode ? 310 : 360
-                placeholderText: root.bugMode ? qsTr("What happened, what did you expect, and how can we reproduce it? (40–12,000 characters)") : qsTr("Tell us what would make OpenNOW better…")
+                placeholderText: root.bugMode ? qsTr("What happened, what did you expect, and how can we reproduce it? (40–12,000 characters)") : qsTr("Tell us what would make Cloudlight better…")
                 color: Theme.label; placeholderTextColor: Theme.textMuted; wrapMode: TextEdit.Wrap
                 font.family: Theme.bodyFont; font.pixelSize: 16; selectByMouse: true
                 background: Rectangle { radius: Theme.radiusLarge; color: Theme.glass; border.color: messageField.activeFocus ? Theme.focus : Theme.seam; border.width: messageField.activeFocus ? 3 : 1 }

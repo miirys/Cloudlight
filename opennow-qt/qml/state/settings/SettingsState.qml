@@ -71,7 +71,7 @@ QtObject {
         settings.decoderPreference, settings.enableHdr, settings.resolution])
     readonly property string gameLanguageDescription: qsTr("Requested when the game supports it; some games require an in-game change. Applies to the next session.")
     readonly property string keyboardLayoutDescription: qsTr("Physical key mapping requested from GeForce NOW. Applies to the next session.")
-    readonly property string interfaceLanguageDescription: qsTr("OpenNOW interface only. Community translated through Crowdin.")
+    readonly property string interfaceLanguageDescription: qsTr("Cloudlight interface only. Community translated through Crowdin.")
     readonly property string colorDescription: qsTr("Availability follows the current backend, codec and HDR output. Saved unsupported choices are preserved; launch validates the profile.")
     readonly property bool softwareDecodeRequested: {
         const backend = String(settings.nativeVideoBackend || "auto")
@@ -662,7 +662,7 @@ QtObject {
             consoleSurfaceDesiredValue = previous
             applySetting("launchInConsoleMode", previous)
             root.consoleSurfaceRequested(previous)
-            consoleSurfaceError = qsTr("Console mode could not be saved because the OpenNOW core is not ready. The previous mode was restored.")
+            consoleSurfaceError = qsTr("Console mode could not be saved because the Cloudlight core is not ready. The previous mode was restored.")
             errorReported(consoleSurfaceError)
             accessibilityAnnounced(lastError)
             return ""
@@ -695,7 +695,7 @@ QtObject {
         if (!ready) {
             if (!ownsConfirmedSetting(key) && Object.prototype.hasOwnProperty.call(confirmedSettings, key))
                 reconcileSetting(key, Object.keys(settingValues(key, value)).filter(changedKey => changedKey !== key))
-            errorReported(qsTr("The OpenNOW core is not ready"))
+            errorReported(qsTr("The Cloudlight core is not ready"))
             return ""
         }
         const id = beginSettingWrite(key, value)
@@ -712,7 +712,7 @@ QtObject {
             return ""
         shortcutUpdateError = ""
         if (!ready) {
-            shortcutUpdateError = qsTr("The OpenNOW core is not ready")
+            shortcutUpdateError = qsTr("The Cloudlight core is not ready")
             return ""
         }
         shortcutUpdateRequestId = coreClient.request("settings.shortcuts.update", {bindings: bindings}, 15000)
@@ -723,7 +723,7 @@ QtObject {
 
     function resetSettings() {
         if (!ready) {
-            errorReported(qsTr("The OpenNOW core is not ready"))
+            errorReported(qsTr("The Cloudlight core is not ready"))
             return
         }
         coreClient.request("settings.reset", {})

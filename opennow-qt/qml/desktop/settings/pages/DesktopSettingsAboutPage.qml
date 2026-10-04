@@ -15,12 +15,12 @@ Column {
     width: page.availableWidth; spacing: DesktopTokens.px(12)
     DesktopSettingsPanel {
         width: parent.width; paperStyle: true
-        DesktopSettingsSection { text: qsTr("OpenNOW") }
+        DesktopSettingsSection { text: qsTr("Cloudlight") }
         DesktopSettingsRow {
             width: parent.width; paperStyle: true
             leadingIcon: "qrc:/qt/qml/OpenNOW/res/brand/opennow-mark.png"
             leadingIconWidth: DesktopTokens.px(30)
-            title: "OpenNOW " + String(ShellStore.updaterState.currentVersion || qsTr("unknown"))
+            title: "Cloudlight " + String(ShellStore.updaterState.currentVersion || qsTr("unknown"))
             description: String(ShellStore.updaterState.message || ShellStore.updaterState.status || qsTr("idle"))
             DesktopSettingsButton { text: qsTr("Updates"); onClicked: AppController.navigate("updates") }
             DesktopSettingsButton { text: ShellStore.updaterState.status === "checking" ? qsTr("Checking…") : qsTr("Check for updates"); primary: true; enabled: !ShellStore.updaterBusy && ShellStore.updaterState.canCheck === true; onClicked: ShellStore.checkForUpdates() }
@@ -47,7 +47,7 @@ Column {
         }
         DesktopSettingsRow {
             width: parent.width; paperStyle: true; glyph: "arrows"; title: qsTr("Update channel")
-            description: qsTr("Choose which releases OpenNOW checks"); showDivider: false
+            description: qsTr("Choose which releases Cloudlight checks"); showDivider: false
             DesktopSettingsSegmented {
                 options: [{label:qsTr("Stable"),value:"stable"},{label:qsTr("Nightly"),value:"nightly"}]
                 objectName: "renewUpdateChannel"
@@ -95,7 +95,7 @@ Column {
         DesktopSettingsSection { text: qsTr("Legal") }
         DesktopSettingsRow {
             width: parent.width; paperStyle: true; glyph: "info"; title: qsTr("Independent client")
-            description: qsTr("OpenNOW is not affiliated with, endorsed by or supported by NVIDIA. GeForce NOW is a trademark of NVIDIA Corporation. You bring your own account and subscription.")
+            description: qsTr("Cloudlight is not affiliated with, endorsed by or supported by NVIDIA. GeForce NOW is a trademark of NVIDIA Corporation. You bring your own account and subscription.")
             showDivider: false
         }
     }
@@ -108,7 +108,7 @@ Column {
             description: ShellStore.onboardingReplayError || (ShellStore.activeSession || ShellStore.streamBusy
                 || ["idle", "error"].indexOf(ShellStore.streamState) < 0
                 ? qsTr("End your streaming session before replaying setup.")
-                : qsTr("Restart OpenNOW and walk through setup again. Your preferences are kept."))
+                : qsTr("Restart Cloudlight and walk through setup again. Your preferences are kept."))
             showDivider: false
             DesktopSettingsButton {
                 objectName: "replayOnboardingButton"
@@ -123,7 +123,7 @@ Column {
         width: parent.width; paperStyle: true
         DesktopSettingsRow {
             width: parent.width; paperStyle: true; glyph: "sliders"; title: qsTr("Reset all settings")
-            description: page.confirmReset ? qsTr("This resets all OpenNOW preferences. Continue?") : qsTr("Restore OpenNOW preferences to their defaults")
+            description: page.confirmReset ? qsTr("This resets all Cloudlight preferences. Continue?") : qsTr("Restore Cloudlight preferences to their defaults")
             showDivider: false
             DesktopSettingsButton { visible: page.confirmReset; text: qsTr("Cancel"); onClicked: page.confirmReset = false }
             DesktopSettingsButton { text: page.confirmReset ? qsTr("Confirm reset") : qsTr("Reset"); danger: true; onClicked: { if (page.confirmReset) { ShellStore.resetSettings(); page.confirmReset = false } else page.confirmReset = true } }
@@ -159,7 +159,7 @@ Column {
         contentItem: Text {
             id: replayCopy
             width: replayConfirmation.contentWidth
-            text: qsTr("OpenNOW will restart to show the introduction and setup steps. Your saved preferences and account will not be reset.")
+            text: qsTr("Cloudlight will restart to show the introduction and setup steps. Your saved preferences and account will not be reset.")
             color: Theme.textMuted
             font.family: Theme.bodyFont
             font.pixelSize: DesktopTokens.bodySize

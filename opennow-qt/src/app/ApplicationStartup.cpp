@@ -71,7 +71,10 @@ static int runApplicationSession(int argc, char *argv[], QString &restartExecuta
     qputenv("QT_TLS_BACKEND", "schannel");
     QElapsedTimer startupTimer;
     startupTimer.start();
+    // The application name keeps OpenNOW's settings and data paths; only the
+    // name people see is Cloudlight.
     QGuiApplication::setApplicationName(u"OpenNOW"_s);
+    QGuiApplication::setApplicationDisplayName(u"Cloudlight"_s);
     QGuiApplication::setOrganizationName(u"OpenCloudGaming"_s);
     QGuiApplication::setOrganizationDomain(u"opennow.app"_s);
     QGuiApplication::setApplicationVersion(QString::fromLatin1(OPENNOW_VERSION));

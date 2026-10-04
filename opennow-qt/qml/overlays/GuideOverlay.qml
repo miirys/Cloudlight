@@ -47,7 +47,7 @@ FocusScope {
     ]
     anchors.fill: parent
     focus: visible
-    Accessible.name: qsTr("OpenNOW session guide")
+    Accessible.name: qsTr("Cloudlight session guide")
     onPageChanged: if (visible) ShellStore.recordGuidePage(page)
     onVisibleChanged: if (visible) {
         ShellStore.recordGuidePage(page)

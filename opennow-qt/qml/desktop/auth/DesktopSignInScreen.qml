@@ -170,13 +170,13 @@ FocusScope {
             spacing: DesktopTokens.px(22)
             HeaderLink {
                 text: qsTr("Why an account?")
-                explanation: qsTr("OpenNOW is a native client for GeForce NOW and its alliance partners. Sign in with your provider to access your library, browse the stores and connect with friends.")
+                explanation: qsTr("Cloudlight is a native client for GeForce NOW and its alliance partners. Sign in with your provider to access your library, browse the stores and connect with friends.")
             }
             HeaderLink { text: qsTr("Source"); destination: "https://github.com/OpenCloudGaming/OpenNOW" }
             HeaderLink {
                 text: qsTr("Privacy")
-                explanation: qsTr("OpenNOW never sees your password. Sign-in happens on your provider's own page and only a session token comes back.")
-                    + "\n\n" + qsTr("OpenNOW prefers the OS keychain for saved session tokens. If it is unavailable, tokens are saved unencrypted on disk.")
+                explanation: qsTr("Cloudlight never sees your password. Sign-in happens on your provider's own page and only a session token comes back.")
+                    + "\n\n" + qsTr("Cloudlight prefers the OS keychain for saved session tokens. If it is unavailable, tokens are saved unencrypted on disk.")
             }
         }
     }
@@ -242,7 +242,7 @@ FocusScope {
                         BodyText {
                             width: parent.width
                             text: root.failed ? (ShellStore.authMessage || qsTr("Your provider returned without a usable session. Nothing was saved."))
-                                : root.waiting ? (root.qrRequested ? qsTr("Scan with your phone and approve the request on your provider. This screen moves on by itself.") : qsTr("A secure provider page is open. Approve it there and return to OpenNOW."))
+                                : root.waiting ? (root.qrRequested ? qsTr("Scan with your phone and approve the request on your provider. This screen moves on by itself.") : qsTr("A secure provider page is open. Approve it there and return to Cloudlight."))
                                 : qsTr("Nothing works until your provider tells us who you are.")
                         }
                     }
@@ -384,7 +384,7 @@ FocusScope {
                                 anchors.verticalCenter: parent.verticalCenter
                                 spacing: DesktopTokens.px(2)
                                 BodyText { width: parent.width; text: qsTr("Stay signed in on this PC"); color: DesktopTokens.text; font.weight: Font.DemiBold; lineHeight: DesktopTokens.px(17) }
-                                BodyText { width: parent.width; text: qsTr("OpenNOW prefers the OS keychain for saved session tokens. If it is unavailable, tokens are saved unencrypted on disk."); color: root.mutedInk; font.pixelSize: DesktopTokens.px(13); lineHeight: DesktopTokens.px(18) }
+                                BodyText { width: parent.width; text: qsTr("Cloudlight prefers the OS keychain for saved session tokens. If it is unavailable, tokens are saved unencrypted on disk."); color: root.mutedInk; font.pixelSize: DesktopTokens.px(13); lineHeight: DesktopTokens.px(18) }
                             }
                             DesktopSettingsToggle {
                                 anchors.right: parent.right
@@ -449,7 +449,7 @@ FocusScope {
                         }
                         BodyText {
                             width: parent.width - DesktopTokens.px(20)
-                            text: qsTr("OpenNOW never sees your password. Sign-in happens on your provider's own page and only a session token comes back.")
+                            text: qsTr("Cloudlight never sees your password. Sign-in happens on your provider's own page and only a session token comes back.")
                             color: root.faintInk
                             font.pixelSize: DesktopTokens.px(13)
                             lineHeight: DesktopTokens.px(18)

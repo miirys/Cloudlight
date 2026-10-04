@@ -125,7 +125,7 @@ QtObject {
         if (regionPingBusy)
             return
         if (!ready) {
-            regionPingMessage = qsTr("The OpenNOW core is not ready. Try again shortly.")
+            regionPingMessage = qsTr("The Cloudlight core is not ready. Try again shortly.")
             return
         }
         if (!signedIn) {

@@ -337,7 +337,7 @@ QtObject {
             return false
         collectionError = ""
         if (!ready) {
-            collectionError = qsTr("The OpenNOW core is not ready")
+            collectionError = qsTr("The Cloudlight core is not ready")
             return false
         }
         pendingCollectionId = collectionId

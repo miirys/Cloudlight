@@ -12,7 +12,7 @@ FocusScope {
     focus: opened
     MotionProgress { id: reveal; shown: root.opened }
     Accessible.role: Accessible.Dialog
-    Accessible.name: root.quittingApplication ? qsTr("Quit OpenNOW confirmation") : qsTr("End cloud session confirmation")
+    Accessible.name: root.quittingApplication ? qsTr("Quit Cloudlight confirmation") : qsTr("End cloud session confirmation")
 
     signal cancelRequested()
     signal confirmRequested()
@@ -50,7 +50,7 @@ FocusScope {
 
             Text {
                 width: parent.width
-                text: root.quittingApplication ? qsTr("Quit OpenNOW?") : qsTr("End this cloud session?")
+                text: root.quittingApplication ? qsTr("Quit Cloudlight?") : qsTr("End this cloud session?")
                 color: DesktopTokens.text
                 font.family: DesktopTokens.displayFont
                 font.pixelSize: DesktopTokens.titleSize
@@ -60,7 +60,7 @@ FocusScope {
                 width: parent.width
                 topPadding: DesktopTokens.px(14)
                 text: root.quittingApplication
-                    ? qsTr("OpenNOW will close and disconnect from any active cloud session.")
+                    ? qsTr("Cloudlight will close and disconnect from any active cloud session.")
                     : AppController.route === "inserting"
                     ? qsTr("Your session request will be cancelled and you will leave the queue.")
                     : qsTr("Your game will close on the remote rig. This session cannot be resumed after it ends.")
@@ -78,7 +78,7 @@ FocusScope {
                 DesktopButton {
                     id: keepPlayingButton
                     objectName: root.quittingApplication ? "quitConfirmKeepOpen" : "streamExitKeepPlaying"
-                    text: root.quittingApplication ? qsTr("Keep OpenNOW open")
+                    text: root.quittingApplication ? qsTr("Keep Cloudlight open")
                         : AppController.route === "inserting" ? qsTr("Keep waiting") : qsTr("Keep playing")
                     shortcutText: qsTr("Esc")
                     primary: true
@@ -88,7 +88,7 @@ FocusScope {
                 DesktopButton {
                     id: endButton
                     objectName: root.quittingApplication ? "quitConfirmQuit" : "streamExitEndSession"
-                    text: root.quittingApplication ? qsTr("Quit OpenNOW") : qsTr("End session")
+                    text: root.quittingApplication ? qsTr("Quit Cloudlight") : qsTr("End session")
                     shortcutText: qsTr("Enter")
                     danger: true
                     onClicked: root.confirmRequested()

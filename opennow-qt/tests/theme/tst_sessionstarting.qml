@@ -67,11 +67,11 @@ TestCase {
             appAccentColor: data.accent, themeAccentOverride: data.accent !== "pack"}
         compare(textItem("Dead by Daylight").color, Theme.mediaForeground)
         compare(textItem("Queue position 21").color, Theme.mediaForeground)
-        compare(textItem("OpenNOW").color, Theme.mediaForeground)
+        compare(textItem("Cloudlight").color, Theme.mediaForeground)
         compare(textItem(screen.detailText).color.toString(), Theme.mediaMuted.toString())
         compare(textItem("STARTING SESSION").color, Theme.mediaAccent)
         compare(textItem("Cancel session").color, Theme.mediaForeground)
-        for (const text of ["Dead by Daylight", "Queue position 21", "OpenNOW",
+        for (const text of ["Dead by Daylight", "Queue position 21", "Cloudlight",
                             screen.detailText, "STARTING SESSION", "Cancel session"])
             verify(contrastOnDark(textItem(text).color) >= 4.5, "Insufficient contrast: " + text)
 

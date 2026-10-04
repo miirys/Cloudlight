@@ -11,7 +11,7 @@ ApplicationWindow {
     visible: true
     visibility: ApplicationWindow.Windowed
     color: "black"
-    title: qsTr("OpenNOW")
+    title: qsTr("Cloudlight")
     property bool applicationCloseConfirmed: false
     onClosing: event => {
         if (!applicationCloseConfirmed) {
@@ -763,7 +763,7 @@ ApplicationWindow {
         width: 1
         height: 1
         opacity: 0.01
-        Accessible.name: qsTr("OpenNOW status")
+        Accessible.name: qsTr("Cloudlight status")
         Accessible.role: Accessible.StaticText
 
         function routeName(route) {

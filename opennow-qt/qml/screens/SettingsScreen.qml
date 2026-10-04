@@ -273,7 +273,7 @@ FocusScope {
         const settings = ShellStore.settings || ({})
         if (root.selectedSection === 0) {
             const user = ShellStore.authSession && ShellStore.authSession.user ? ShellStore.authSession.user : ({})
-            const accountName = String(user.displayName || qsTr("OpenNOW profile"))
+            const accountName = String(user.displayName || qsTr("Cloudlight profile"))
             const membership = ShellStore.subscription && ShellStore.subscription.membershipTier
                 ? String(ShellStore.subscription.membershipTier) : String(user.membershipTier || "—")
             return [
@@ -282,7 +282,7 @@ FocusScope {
                 {t:"Profile PIN", d:"Ask for a 4-digit PIN when switching to this profile", v:"Set up", route:"profile-pin"},
                 toggle(qsTr("Persistent in-game settings"), qsTr("Keep your in-game graphics settings between sessions for supported games and memberships. Applies to new sessions."), "enablePersistingInGameSettings"),
                 toggle("Discord Rich Presence", "Show what you're playing on Discord", "discordRichPresence"),
-                choice("Error reporting", "Send anonymous crash reports to help fix OpenNOW", "errorReportingConsent", ["denied","granted"], ["Off","Anonymous"], "segments"),
+                choice("Error reporting", "Send anonymous crash reports to help fix Cloudlight", "errorReportingConsent", ["denied","granted"], ["Off","Anonymous"], "segments"),
                 {t:"Sign out", d:"Removes the NVIDIA token from this PC; My games stay", v:"Sign out of NVIDIA", action:"sign-out", danger:true},
                 {t:"Game accounts", d:"Steam, Epic, Ubisoft and Xbox", v:qsTr("%1 detected").arg(ShellStore.gameAccounts.length), route:"game-accounts"},
                 {t:"Persistent storage", d:ShellStore.subscription && ShellStore.subscription.storageAddon ? (ShellStore.subscription.storageAddon.regionName || "Cloud storage active") : "Manage cloud storage locations", v:"Open", route:"persistent-storage"}
@@ -341,8 +341,8 @@ FocusScope {
             return [
                 ...(GraphicsDevices.selectorVisible ? [choice(qsTr("Graphics processor"),
                     GraphicsDevices.savedDeviceUnavailable
-                        ? qsTr("Saved GPU unavailable; using the first GPU that can hardware-decode. Changes apply after restarting OpenNOW.")
-                        : qsTr("Automatic uses the first GPU that can hardware-decode and lists each GPU's codecs. The same GPU decodes and displays. Changes apply after restarting OpenNOW."),
+                        ? qsTr("Saved GPU unavailable; using the first GPU that can hardware-decode. Changes apply after restarting Cloudlight.")
+                        : qsTr("Automatic uses the first GPU that can hardware-decode and lists each GPU's codecs. The same GPU decodes and displays. Changes apply after restarting Cloudlight."),
                     "windowsGpuDeviceId", GraphicsDevices.choices.map(item => item.value),
                     GraphicsDevices.choices.map(item => item.detail ? item.label + " — " + item.detail : item.label), "dropdown",
                     GraphicsDevices.choices.filter(item => item.disabled).map(item => item.value))] : []),
@@ -463,7 +463,7 @@ FocusScope {
             choice(qsTr("Microphone"), ShellStore.microphoneCaptureSupported ? ShellStore.microphoneDescription : qsTr("Microphone capture is unavailable in this build."),
                 "microphoneMode", ["disabled", "voice-activity"], [qsTr("Disabled"), qsTr("Open microphone")], "segments",
                 ShellStore.microphoneCaptureSupported ? [] : ["voice-activity"]),
-            choice("Updates", qsTr("OpenNOW %1 · signed update feed").arg(ShellStore.updaterState.currentVersion || ""), "updateChannel", ["stable","nightly"], ["Stable","Nightly"], "segments"),
+            choice("Updates", qsTr("Cloudlight %1 · signed update feed").arg(ShellStore.updaterState.currentVersion || ""), "updateChannel", ["stable","nightly"], ["Stable","Nightly"], "segments"),
             toggle(qsTr("Automatically check for updates"), qsTr("Check every six hours while no streaming session is active."), "autoCheckForUpdates"),
             toggle(qsTr("Automatically download updates"), qsTr("Download verified updates while idle. Installation always requires your confirmation."), "autoDownloadUpdates"),
             {t:"Reset all settings", d:"Keeps your account and My games", v:"Reset to defaults", action:"reset", danger:true}
@@ -571,7 +571,7 @@ FocusScope {
 
     FileDialog {
         id: streamerExecutableDialog
-        title: qsTr("Select OpenNOW native streamer")
+        title: qsTr("Select Cloudlight native streamer")
         fileMode: FileDialog.OpenFile
         nameFilters: Qt.platform.os === "windows"
             ? [qsTr("Applications (*.exe)"), qsTr("All files (*)")]

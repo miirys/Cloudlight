@@ -13,7 +13,7 @@ FocusScope {
     function sessionDescription() {
         const session = ShellStore.conflictSession
         if (!session)
-            return qsTr("OpenNOW found another session on your NVIDIA account.")
+            return qsTr("Cloudlight found another session on your NVIDIA account.")
         const title = ShellStore.sessionGameTitle(session)
         return title ? qsTr("Still running: %1").arg(title)
                      : qsTr("A game is still running on your GeForce NOW account.")

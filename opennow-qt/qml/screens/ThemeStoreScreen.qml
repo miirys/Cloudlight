@@ -32,7 +32,7 @@ FocusScope {
         if (!selectedTheme)
             return
         if (!ShellStore.ready) {
-            statusMessage = qsTr("The OpenNOW core is still starting")
+            statusMessage = qsTr("The Cloudlight core is still starting")
             return
         }
         ShellStore.applySetting("themePack", selectedTheme.id)
@@ -286,7 +286,7 @@ FocusScope {
                 Text {
                     anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
-                    text: root.statusMessage + qsTr("  ·  Built-in OpenNOW palettes")
+                    text: root.statusMessage + qsTr("  ·  Built-in Cloudlight palettes")
                     color: Theme.textMuted
                     font.family: Theme.bodyFont
                     font.pixelSize: 11

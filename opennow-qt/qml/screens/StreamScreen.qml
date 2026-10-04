@@ -185,7 +185,7 @@ FocusScope {
 
             Text {
                 width: parent.width
-                text: root.streamer.message || ShellStore.streamMessage || qsTr("GeForce NOW prepared the remote machine. OpenNOW is validating the negotiated media transport.")
+                text: root.streamer.message || ShellStore.streamMessage || qsTr("GeForce NOW prepared the remote machine. Cloudlight is validating the negotiated media transport.")
                 wrapMode: Text.WordWrap
                 color: Theme.textMuted
                 font.family: Theme.bodyFont

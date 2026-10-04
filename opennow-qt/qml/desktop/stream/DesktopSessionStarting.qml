@@ -119,7 +119,7 @@ FocusScope {
         Text {
             text: root.stopping ? qsTr("ENDING SESSION")
                 : root.failed ? qsTr("SESSION INTERRUPTED") : qsTr("STARTING SESSION")
-            color: root.failed ? DesktopTokens.danger : DesktopTokens.focus
+            color: root.failed ? DesktopTokens.danger : Theme.mediaAccent
             font.family: DesktopTokens.bodyFont
             font.pixelSize: DesktopTokens.captionSize
             font.weight: Font.Bold
