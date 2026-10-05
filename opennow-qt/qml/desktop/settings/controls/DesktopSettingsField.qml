@@ -11,7 +11,7 @@ TextField {
     selectionColor: Theme.focus
     selectedTextColor: Theme.focusText
     font.family: Theme.bodyFont
-    font.pixelSize: DesktopTokens.px(13)
+    font.pixelSize: DesktopTokens.px(14)
     leftPadding: DesktopTokens.px(14)
     rightPadding: DesktopTokens.px(14)
     selectByMouse: true

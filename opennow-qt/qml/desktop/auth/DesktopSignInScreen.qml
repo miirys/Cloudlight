@@ -134,7 +134,7 @@ FocusScope {
             padding: DesktopTokens.px(20)
             focus: true
             closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
-            background: Rectangle { radius: DesktopTokens.radiusLarge; color: Theme.surfaceRaised; border.color: Theme.seam }
+            background: Rectangle { radius: DesktopTokens.radiusLarge; color: Theme.surfaceRaised; border.width: 0; border.color: Theme.seam }
             contentItem: BodyText { text: link.explanation }
         }
     }
@@ -255,7 +255,7 @@ FocusScope {
                 text: qsTr("Why an account?")
                 explanation: qsTr("Cloudlight is a native client for GeForce NOW and its alliance partners. Sign in with your provider to access your library, browse the stores and connect with friends.")
             }
-            HeaderLink { text: qsTr("Source"); destination: "https://github.com/OpenCloudGaming/OpenNOW" }
+            HeaderLink { text: qsTr("Source"); destination: "https://github.com/miirys/OpenNOW" }
             HeaderLink {
                 text: qsTr("Privacy")
                 explanation: qsTr("Cloudlight never sees your password. Sign-in happens on your provider's own page and only a session token comes back.")

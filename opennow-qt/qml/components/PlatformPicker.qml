@@ -170,7 +170,7 @@ FocusScope {
         height: Math.min(304, 16 + root.variants.length * 56)
         radius: Theme.radiusLarge
         color: Theme.surfaceRaised
-        border.color: Theme.seam
+        border.width: 0; border.color: Theme.seam
         opacity: root.expanded ? 1 : 0
         scale: root.expanded ? 1 : 0.96
         transformOrigin: Item.TopRight

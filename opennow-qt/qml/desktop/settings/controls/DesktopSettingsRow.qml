@@ -17,7 +17,7 @@ Item {
     property string title: ""
     property string description: ""
     property string value: ""
-    property int rowHeight: DesktopTokens.px(56)
+    property int rowHeight: DesktopTokens.px(60)
     property bool showDivider: true
     property string leadingLetter: ""
     property url leadingIcon: ""
@@ -83,7 +83,7 @@ Item {
             text: root.title
             color: Theme.label
             font.family: Theme.bodyFont
-            font.pixelSize: DesktopTokens.px(14)
+            font.pixelSize: DesktopTokens.px(15)
             font.weight: Font.Medium
             wrapMode: Text.WordWrap
         }
@@ -93,8 +93,8 @@ Item {
             text: root.description
             color: Theme.textMuted
             font.family: Theme.bodyFont
-            font.pixelSize: DesktopTokens.px(12)
-            lineHeight: 1.15
+            font.pixelSize: DesktopTokens.px(13)
+            lineHeight: 1.2
             wrapMode: Text.WordWrap
         }
     }
@@ -161,6 +161,6 @@ Item {
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         height: 1
-        color: DesktopTokens.seamSoft
+        color: Qt.rgba(Theme.label.r, Theme.label.g, Theme.label.b, 0.06)
     }
 }

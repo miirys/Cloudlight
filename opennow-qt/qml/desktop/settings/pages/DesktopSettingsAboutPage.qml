@@ -155,7 +155,7 @@ Column {
             font.weight: Font.DemiBold
             wrapMode: Text.WordWrap
         }
-        background: Rectangle { radius: DesktopTokens.radiusLarge; color: Theme.shell; border.color: Theme.seam }
+        background: Rectangle { radius: DesktopTokens.radiusLarge; color: Theme.shell; border.width: 0; border.color: Theme.seam }
         contentItem: Text {
             id: replayCopy
             width: replayConfirmation.contentWidth

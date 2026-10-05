@@ -276,6 +276,7 @@ qt_add_qml_module(opennow-qt
         qml/desktop/settings/controls/DesktopSettingsAdvanced.qml
         qml/desktop/settings/controls/DesktopSettingsButton.qml
         qml/desktop/settings/controls/DesktopSettingsHevcHelp.qml
+        qml/desktop/settings/controls/DesktopSettingsNotice.qml
         qml/desktop/settings/controls/DesktopSettingsChoice.qml
         qml/desktop/settings/controls/DesktopSettingsDisclosure.qml
         qml/desktop/settings/controls/DesktopSettingsDropdown.qml
@@ -302,6 +303,7 @@ qt_add_qml_module(opennow-qt
         qml/desktop/settings/pages/DesktopSettingsNetworkPage.qml
         qml/desktop/settings/pages/DesktopSettingsProfilePage.qml
         qml/desktop/settings/pages/DesktopSettingsRecordingPage.qml
+        qml/desktop/settings/pages/DesktopSettingsExperimentalPage.qml
         qml/desktop/settings/pages/DesktopSettingsShortcutsPage.qml
         qml/desktop/settings/pages/DesktopSettingsStatsPage.qml
         qml/desktop/settings/pages/DesktopSettingsStoresPage.qml

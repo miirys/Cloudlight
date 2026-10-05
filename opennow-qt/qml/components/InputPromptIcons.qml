@@ -52,6 +52,28 @@ QtObject {
         return keyboardAliases.hasOwnProperty(normalized) ? "keyboard_" + keyboardAliases[normalized] : ""
     }
 
+    // Text drawn on a keycap. Keycaps are rendered natively (text on a
+    // rounded fill) so they stay sharp at any scale and DPI.
+    readonly property var keyLabels: ({
+        "ctrl": Qt.platform.os === "osx" ? "⌘" : "Ctrl", "control": Qt.platform.os === "osx" ? "⌘" : "Ctrl",
+        "cmd": "⌘", "command": "⌘", "⌘": "⌘", "option": "⌥",
+        "alt": Qt.platform.os === "osx" ? "⌥" : "Alt", "shift": Qt.platform.os === "osx" ? "⇧" : "Shift",
+        "win": "Win", "super": "Win", "meta": Qt.platform.os === "osx" ? "⌃" : "Win",
+        "esc": "Esc", "escape": "Esc", "enter": "Enter", "return": "Return", "tab": "Tab",
+        "space": "Space", "backspace": "⌫", "del": "Del", "delete": "Del", "ins": "Ins",
+        "insert": "Ins", "home": "Home", "end": "End", "pgup": "PgUp", "pageup": "PgUp",
+        "page up": "PgUp", "pgdown": "PgDn", "pgdn": "PgDn", "pagedown": "PgDn",
+        "page down": "PgDn", "pause": "Pause", "print": "PrtSc", "printscreen": "PrtSc",
+        "up": "↑", "down": "↓", "left": "←", "right": "→", "arrows": "↑↓←→", "↑ ↓": "↑↓"
+    })
+
+    function keyLabel(key: string): string {
+        const normalized = key.trim().toLowerCase()
+        if (keyLabels.hasOwnProperty(normalized))
+            return keyLabels[normalized]
+        return key.trim().length === 1 ? key.trim().toUpperCase() : key.trim()
+    }
+
     function keyboardSourceFor(key: string, ink: color): url {
         return assetSource(keyboardAsset(key), ink)
     }

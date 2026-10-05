@@ -49,7 +49,7 @@ Dialog {
     background: Rectangle {
         radius: DesktopTokens.radiusLarge
         color: Theme.shell
-        border.color: DesktopTokens.seam
+        border.width: 0; border.color: DesktopTokens.seam
     }
 
     Connections {
@@ -310,7 +310,7 @@ Dialog {
                 padding: DesktopTokens.px(3)
                 background: Rectangle {
                     color: "transparent"
-                    border.color: parent.activeFocus ? DesktopTokens.focus : "transparent"
+                    border.width: parent.activeFocus ? 2 : 0; border.color: parent.activeFocus ? DesktopTokens.focus : "transparent"
                     radius: DesktopTokens.px(3)
                 }
                 contentItem: Text {

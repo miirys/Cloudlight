@@ -11,7 +11,7 @@ Button {
     property string suffix: ""
     property string keySequence: ""
 
-    implicitHeight: compact ? DesktopTokens.px(28) : DesktopTokens.px(32)
+    implicitHeight: compact ? DesktopTokens.px(30) : DesktopTokens.px(34)
     implicitWidth: Math.max(DesktopTokens.px(compact ? 68 : 84), (keySequence !== "" ? bindingGlyph.implicitWidth : label.implicitWidth) + leftPadding + rightPadding
         + (menu ? DesktopTokens.px(22) : 0) + (suffix !== "" ? suffixGlyph.implicitWidth + DesktopTokens.px(8) : 0))
     hoverEnabled: true
@@ -25,7 +25,7 @@ Button {
         radius: DesktopTokens.radius
         color: control.primary ? (control.down ? Qt.darker(Theme.focus, 1.15) : control.hovered ? Qt.lighter(Theme.focus, 1.08) : Theme.focus)
              : control.down || control.hovered ? Theme.surfaceHover : Theme.surfaceRaised
-        border.width: control.activeFocus ? 2 : control.primary ? 0 : 0
+        border.width: control.activeFocus && AppController.inputMode !== "pointer" ? 2 : 0
         border.color: control.activeFocus ? Theme.label
                     : control.danger ? Theme.coral
                     : Theme.seam
@@ -49,7 +49,7 @@ Button {
                 elide: Text.ElideRight
                 color: control.primary ? Theme.focusText : control.danger ? Theme.coral : Theme.label
                 font.family: Theme.bodyFont
-                font.pixelSize: DesktopTokens.px(13)
+                font.pixelSize: DesktopTokens.px(14)
                 font.weight: control.primary ? Font.DemiBold : Font.Medium
                 anchors.verticalCenter: parent.verticalCenter
             }

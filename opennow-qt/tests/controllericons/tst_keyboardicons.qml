@@ -72,8 +72,7 @@ TestCase {
             compare(InputPromptIcons.keyboardSourceFor(key, "white").toString(), "")
             const glyph = createTemporaryObject(glyphComponent, testCase, {shortcut: key})
             const item = keyItems(glyph)[0]
-            compare(item.children[1].visible, true)
-            compare(item.children[1].children[0].text, key)
+            compare(item.label, key)
         }
         verify(InputPromptIcons.sourceFor("A", "white").toString().endsWith("xbox_button_a.svg"))
         verify(InputPromptIcons.keyboardSourceFor("A", "white").toString().endsWith("keyboard_a.svg"))
@@ -91,27 +90,29 @@ TestCase {
         const glyph = createTemporaryObject(glyphComponent, testCase, {shortcut: "Ctrl+K", keySize: 24})
         const items = keyItems(glyph)
         compare(items.length, 2)
-        for (const item of items)
-            tryCompare(item.children[0], "status", Image.Ready)
+        compare(items[0].label, Qt.platform.os === "osx" ? "⌘" : "Ctrl")
+        compare(items[1].label, "K")
         tryCompare(glyph, "height", 24)
-        compare(Math.round(items[0].width), Qt.platform.os === "osx" ? 24 : 32)
+        compare(Math.round(items[1].width), 24)
+        verify(items[0].width >= 24)
         verify(glyph.width > 48)
+        const wide = glyph.width
         ShellStore.settings = {appTheme: "light"}
-        tryVerify(() => items.every(item => item.children[0].source.toString().endsWith("-dark.svg")))
+        tryVerify(() => items.every(item => Qt.colorEqual(item.children[1].color, Theme.label)))
         glyph.keySize = 18
         tryCompare(glyph, "height", 18)
-        verify(glyph.width < 48)
+        verify(glyph.width < wide)
     }
 
     function test_translatedAccessibleLabel() {
         const hint = createTemporaryObject(hintComponent, testCase, {keyText: "Entrée", shortcut: "Enter", label: "Jouer"})
         const glyph = hint.children[0]
         compare(glyph.Accessible.name, "Entrée")
-        verify(keyItems(glyph)[0].children[0].source.toString().endsWith("keyboard_enter.svg"))
+        compare(keyItems(glyph)[0].label, "Enter")
         const button = createTemporaryObject(desktopButtonComponent, testCase, {shortcutText: "Entrée", shortcutSequence: "Enter"})
         const buttonGlyph = button.contentItem.children[0].children[3]
         compare(buttonGlyph.Accessible.name, "Entrée")
-        verify(keyItems(buttonGlyph)[0].children[0].source.toString().endsWith("keyboard_enter.svg"))
+        compare(keyItems(buttonGlyph)[0].label, "Enter")
     }
 
     function test_shortcutButtonActivation() {

@@ -68,7 +68,7 @@ Column {
         signal selected(int index, var value)
         implicitWidth: DesktopTokens.px(6) + options.length * DesktopTokens.px(optionWidth + 2)
         implicitHeight: DesktopTokens.px(36)
-        Rectangle { anchors.fill: parent; radius: DesktopTokens.radius; color: DesktopTokens.raised; border.color: DesktopTokens.seamSoft }
+        Rectangle { anchors.fill: parent; radius: DesktopTokens.radius; color: DesktopTokens.raised; border.width: 0; border.color: DesktopTokens.seamSoft }
         Row {
             x: DesktopTokens.px(3); y: DesktopTokens.px(3); spacing: DesktopTokens.px(2)
             Repeater {
@@ -98,7 +98,7 @@ Column {
         width: DesktopTokens.px(56); height: width
         radius: DesktopTokens.radius
         color: DesktopTokens.raised
-        border.color: Theme.seam
+        border.width: 0; border.color: Theme.seam
         Grid {
             anchors.fill: parent; anchors.margins: DesktopTokens.px(2)
             columns: checker.enhanced ? 6 : 4
@@ -177,7 +177,7 @@ Column {
                             spacing: DesktopTokens.px(6)
                             Rectangle { width: DesktopTokens.px(10); height: width; color: DesktopTokens.raisedStrong }
                             Text { text: qsTr("stream"); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.px(13) }
-                            Rectangle { width: DesktopTokens.px(10); height: width; color: "transparent"; border.color: root.mint }
+                            Rectangle { width: DesktopTokens.px(10); height: width; color: "transparent"; border.width: 0; border.color: root.mint }
                             Text { text: qsTr("generated"); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.px(13) }
                         }
                     }
@@ -356,7 +356,7 @@ Column {
     Rectangle {
         width: parent.width
         implicitHeight: Math.max(DesktopTokens.px(48), hints.implicitHeight + DesktopTokens.px(24))
-        radius: DesktopTokens.radiusLarge; color: Theme.surface; border.color: DesktopTokens.seamSoft
+        radius: DesktopTokens.radiusLarge; color: Theme.surface; border.width: 0; border.color: DesktopTokens.seamSoft
         Flow {
             id: hints
             x: DesktopTokens.px(18); y: DesktopTokens.px(12); width: parent.width - DesktopTokens.px(36)

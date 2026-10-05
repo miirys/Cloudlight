@@ -16,7 +16,6 @@ Item {
     signal selected(int index, var value)
 
     implicitWidth: options.reduce((total, option) => total + root.widthFor(option), 0)
-    implicitHeight: DesktopTokens.px(32)
 
     function optionValue(option) {
         return (typeof option === "object" && option !== null && option.value !== undefined)
@@ -62,16 +61,29 @@ Item {
         return false
     }
 
-    // Flat button group: one outlined box, hairline separators, selected = accent fill.
+    // Apple-style segmented control: a soft track with one raised thumb that
+    // springs to the selected option. No borders or separators.
+    implicitHeight: DesktopTokens.px(34)
     Rectangle {
         anchors.fill: parent
-        radius: DesktopTokens.radius
+        radius: DesktopTokens.px(9)
         color: Theme.surfaceRaised
-        border.width: 0
-        border.color: Theme.seam
+    }
+    Rectangle {
+        id: thumb
+        readonly property Item target: optionsRepeater.count > root.selectedIndex && root.selectedIndex >= 0
+            ? optionsRepeater.itemAt(root.selectedIndex) : null
+        visible: target !== null && !target.locked
+        x: target ? target.x + 2 : 0
+        y: 2
+        width: target ? target.width - 4 : 0
+        height: root.height - 4
+        radius: DesktopTokens.px(7)
+        color: Theme.focus
+        Behavior on x { enabled: !AppController.reducedMotion; NumberAnimation { duration: 380; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.spring } }
+        Behavior on width { enabled: !AppController.reducedMotion; NumberAnimation { duration: 380; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.spring } }
     }
     Row {
-        x: 1; y: 1
         spacing: 0
         Repeater {
             id: optionsRepeater
@@ -84,22 +96,17 @@ Item {
                 readonly property bool locked: root.isDisabled(modelData)
                 objectName: "settingsOption-" + String(root.optionValue(modelData))
                 readonly property string label: root.optionLabel(modelData)
-                width: root.widthFor(modelData) - (index === optionsRepeater.count - 1 ? 2 : 0)
-                height: root.height - 2
+                width: root.widthFor(modelData)
+                height: root.height
                 hoverEnabled: true
                 enabled: !locked
                 onClicked: root.selected(chip.index, chip.modelData)
                 background: Rectangle {
-                    radius: DesktopTokens.radius - 1
-                    color: chip.on ? Theme.focus : chip.hovered ? Theme.surfaceHover : "transparent"
-                    border.width: chip.activeFocus ? 2 : 0
+                    x: 2; y: 2; width: parent.width - 4; height: parent.height - 4
+                    radius: DesktopTokens.px(7)
+                    color: !chip.on && chip.hovered ? Theme.surfaceHover : "transparent"
+                    border.width: chip.activeFocus && AppController.inputMode !== "pointer" ? 2 : 0
                     border.color: Theme.label
-                    Rectangle {
-                        visible: chip.index > 0 && !chip.on
-                        x: 0; y: DesktopTokens.px(6)
-                        width: 1; height: parent.height - DesktopTokens.px(12)
-                        color: Theme.seam
-                    }
                 }
                 opacity: chip.locked ? 0.4 : 1
 
@@ -108,9 +115,10 @@ Item {
                     width: parent.width - DesktopTokens.px(8)
                     text: chip.label
                     color: chip.on ? Theme.focusText : Theme.label
+                    Behavior on color { ColorAnimation { duration: 160 } }
                     font.family: Theme.bodyFont
-                    font.pixelSize: DesktopTokens.px(13)
-                    font.weight: chip.on ? Font.DemiBold : Font.Normal
+                    font.pixelSize: DesktopTokens.px(14)
+                    font.weight: chip.on ? Font.DemiBold : Font.Medium
                     horizontalAlignment: Text.AlignHCenter
                     elide: Text.ElideRight
                 }

@@ -77,7 +77,7 @@ Column {
             ? qsTr("Remove this store version?") : qsTr("Do you already own this game?")
         closePolicy: Popup.CloseOnEscape
         onClosed: ShellStore.ownershipConfirmation = null
-        background: Rectangle { color: Theme.shell; radius: DesktopTokens.px(16); border.color: Theme.seam }
+        background: Rectangle { color: Theme.shell; radius: DesktopTokens.px(16); border.width: 0; border.color: Theme.seam }
         header: Label {
             text: confirmation.title
             color: Theme.label

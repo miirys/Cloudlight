@@ -10,6 +10,13 @@ Column {
     property bool statisticsOpen: false
 
     width: page.availableWidth; spacing: 0
+    DesktopSettingsNotice {
+        id: streamNotice
+        objectName: "streamCompatibilityNotice"
+        width: parent.width
+        messages: page.settingsScreen.compatibilityWarnings("stream")
+    }
+    Item { width: 1; height: DesktopTokens.px(12); visible: streamNotice.visible }
     DesktopSettingsPanel {
         width: parent.width; paperStyle: true
         DesktopSettingsSection { text: qsTr("Video"); description: qsTr("Applies to the next session you start.") }
@@ -157,16 +164,6 @@ Column {
                 onCommitted: value => page.settingsScreen.setSetting("upscalingDenoise", Math.round(value))
             }
         }
-        DesktopSettingsRow {
-            width: parent.width; paperStyle: true; glyph: "speed"; title: qsTr("Frame generation (Experimental)")
-            description: qsTr("Targets 120 displayed FPS from a 60 FPS stream. Requires a fast GPU and 120 Hz display; adds latency and artifacts.")
-            DesktopSettingsSegmented {
-                readonly property string current: String(page.settingsScreen.valueSetting("frameGeneration", "off")) === "2x" ? "2x" : "off"
-                options: [{label: qsTr("Off"), value: "off"}, {label: qsTr("2×"), value: "2x"}]
-                optionWidth: 64; selectedIndex: options.findIndex(item => item.value === current)
-                onSelected: (index,item) => page.settingsScreen.setSetting("frameGeneration", item.value)
-            }
-        }
     }
     DesktopSettingsPanel {
         width: parent.width; paperStyle: true
@@ -245,7 +242,7 @@ Column {
         sourceComponent: page.statsSettingsPageComponent
     }
     DesktopSettingsAdvanced {
-        detail: qsTr("Video decoder, Steam Deck identity")
+        detail: qsTr("Video decoder")
         expanded: page.settingsScreen.advancedOpen
         onClicked: page.settingsScreen.advancedOpen = !page.settingsScreen.advancedOpen
     }
@@ -262,10 +259,6 @@ Column {
                 items: ShellStore.videoBackendItems()
                 value: page.settingsScreen.valueSetting("nativeVideoBackend", "auto")
                 onSelected: value => page.settingsScreen.setSetting("nativeVideoBackend", value)
-            }
-            DesktopSettingsRow {
-                width: parent.width; paperStyle: true; glyph: "controller"; title: qsTr("Steam Deck identity"); description: qsTr("Identify as a Steam Deck to unlock its resolutions and 90 FPS.")
-                DesktopSettingsToggle { checked: page.settingsScreen.boolSetting("identifyAsSteamDeck",false); onValueChangedByUser: value => page.settingsScreen.setSetting("identifyAsSteamDeck",value) }
             }
         }
     }

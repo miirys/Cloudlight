@@ -207,7 +207,7 @@ FocusScope {
         implicitHeight: contents.implicitHeight + 2
         color: Theme.surface
         radius: DesktopTokens.radiusLarge
-        border.color: Theme.seam
+        border.width: 0; border.color: Theme.seam
         Column {
             id: contents
             x: 1; y: 1; width: parent.width - 2
@@ -494,7 +494,7 @@ FocusScope {
             implicitHeight: errorLabel.implicitHeight + DesktopTokens.px(24)
             radius: DesktopTokens.radiusLarge
             color: DesktopTokens.raised
-            border.color: root.coral
+            border.width: 0; border.color: root.coral
             Text {
                 id: errorLabel
                 x: DesktopTokens.px(12); y: DesktopTokens.px(12)
@@ -605,7 +605,7 @@ FocusScope {
                 }
                 Card {
                     width: parent.width
-                    border.color: root.amber
+                    border.width: 0; border.color: root.amber
                     CardHeading { text: qsTr("What beta means here"); ink: root.amber; note: qsTr("Bugs may occur") }
                     Repeater {
                         model: [
@@ -660,7 +660,7 @@ FocusScope {
                     }
                 }
                 Card {
-                    width: parent.width; border.color: DesktopTokens.seamSoft
+                    width: parent.width; border.width: 0; border.color: DesktopTokens.seamSoft
                     Item {
                         width: parent.width; height: privacyNote.implicitHeight + DesktopTokens.px(28)
                         Column {
@@ -729,7 +729,7 @@ FocusScope {
                         y: -DesktopTokens.px(24); width: DesktopTokens.px(75); height: DesktopTokens.px(38)
                         radius: DesktopTokens.radius; rotation: -7
                         color: Theme.surface; border.color: root.amber; border.width: 2
-                        Rectangle { anchors.fill: parent; anchors.margins: DesktopTokens.px(4); radius: DesktopTokens.px(3); color: "transparent"; border.color: root.amber }
+                        Rectangle { anchors.fill: parent; anchors.margins: DesktopTokens.px(4); radius: DesktopTokens.px(3); color: "transparent"; border.width: 0; border.color: root.amber }
                         Eyebrow { anchors.centerIn: parent; text: qsTr("Beta"); color: root.amber; font.pixelSize: DesktopTokens.px(14) }
                     }
                 }
@@ -818,7 +818,7 @@ FocusScope {
                 spacing: DesktopTokens.px(28)
                 Card {
                     width: parent.width
-                    border.color: root.coral
+                    border.width: 0; border.color: root.coral
                     Item {
                         width: parent.width; height: DesktopTokens.px(81)
                         Rectangle {

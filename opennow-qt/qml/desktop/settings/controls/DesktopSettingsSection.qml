@@ -13,7 +13,7 @@ Item {
     Column {
         id: heading
         x: 0
-        y: DesktopTokens.px(28)
+        y: DesktopTokens.px(36)
         width: Math.max(0, actionRow.x - x - DesktopTokens.px(16))
         spacing: DesktopTokens.px(4)
         Text {
@@ -21,8 +21,8 @@ Item {
             text: root.text
             color: Theme.label
             font.family: Theme.bodyFont
-            font.pixelSize: DesktopTokens.headingSize
-            font.weight: Font.Bold
+            font.pixelSize: DesktopTokens.px(18)
+            font.weight: Font.DemiBold
             wrapMode: Text.WordWrap
         }
         Text {

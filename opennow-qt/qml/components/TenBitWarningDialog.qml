@@ -40,7 +40,7 @@ Dialog {
     background: Rectangle {
         radius: DesktopTokens.px(16)
         color: Theme.shell
-        border.color: Theme.seam
+        border.width: 0; border.color: Theme.seam
     }
     contentItem: Column {
         id: copy

@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Effects
 import OpenNOW
 
 Item {
@@ -17,14 +18,14 @@ Item {
     property int keyboardIndex: -1
     signal chosen(var value)
 
-    readonly property int rowHeight: DesktopTokens.px(32)
+    readonly property int rowHeight: DesktopTokens.px(36)
     readonly property int headingHeight: DesktopTokens.px(24)
     readonly property int footerHeight: DesktopTokens.px(36)
     readonly property int menuWidth: Math.max(DesktopTokens.px(320), Math.min(root.width - DesktopTokens.px(24), DesktopTokens.px(400)))
     readonly property int menuMaxHeight: DesktopTokens.px(640)
     readonly property int menuMargin: DesktopTokens.px(8)
-    readonly property int menuRadius: DesktopTokens.radius
-    readonly property int rowRadius: DesktopTokens.px(3)
+    readonly property int menuRadius: DesktopTokens.px(12)
+    readonly property int rowRadius: DesktopTokens.px(7)
 
     readonly property int menuContentHeight: {
         let height = 0
@@ -91,14 +92,28 @@ Item {
         MouseArea { anchors.fill: parent; onClicked: root.dismiss() }
     }
 
+    // Soft popover shadow instead of an outline.
+    MultiEffect {
+        source: menu
+        anchors.fill: menu
+        scale: menu.scale
+        transformOrigin: menu.transformOrigin
+        opacity: menu.opacity
+        visible: root.presented
+        shadowEnabled: true
+        shadowColor: "#000000"
+        shadowOpacity: 0.55
+        shadowBlur: 1.0
+        shadowVerticalOffset: DesktopTokens.px(10)
+        autoPaddingEnabled: true
+    }
+
     Rectangle {
         id: menu
         width: root.menuWidth
         height: Math.min(Math.min(root.menuMaxHeight, root.height - DesktopTokens.px(24)), Math.max(DesktopTokens.px(48), root.menuContentHeight + root.menuMargin * 2))
         radius: root.menuRadius
-        color: Theme.shell
-        border.width: 0
-        border.color: Theme.seam
+        color: Theme.surfaceRaised
         enabled: root.opened
         opacity: reveal.progress
         scale: reveal.zoom
@@ -149,8 +164,6 @@ Item {
                             anchors.fill: parent
                             radius: root.rowRadius
                             color: rowHover.hovered || index === root.keyboardIndex ? DesktopTokens.hover : "transparent"
-                            border.width: on ? 1 : 0
-                            border.color: DesktopTokens.focus
 
                             Row {
                                 anchors.fill: parent
@@ -176,8 +189,8 @@ Item {
                                     text: modelData.label
                                     color: DesktopTokens.text
                                     font.family: DesktopTokens.bodyFont
-                                    font.pixelSize: DesktopTokens.captionSize
-                                    font.weight: Font.DemiBold
+                                    font.pixelSize: DesktopTokens.px(14)
+                                    font.weight: on ? Font.DemiBold : Font.Medium
                                     elide: Text.ElideRight
                                     verticalAlignment: Text.AlignVCenter
                                 }
@@ -188,8 +201,8 @@ Item {
                                     text: modelData.detail || ""
                                     color: modelData.detailColor || DesktopTokens.textMuted
                                     font.family: DesktopTokens.bodyFont
-                                    font.pixelSize: DesktopTokens.captionSize
-                                    font.weight: Font.DemiBold
+                                    font.pixelSize: DesktopTokens.px(13)
+                                    font.weight: Font.Normal
                                     verticalAlignment: Text.AlignVCenter
                                 }
                             }

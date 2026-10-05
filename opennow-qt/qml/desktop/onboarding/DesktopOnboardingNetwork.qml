@@ -16,7 +16,7 @@ Rectangle {
     implicitHeight: content.implicitHeight + DesktopTokens.px(40)
     radius: DesktopTokens.radiusLarge
     color: Theme.surface
-    border.color: accent
+    border.width: 0; border.color: accent
 
     function refreshIfVisible() {
         if (visible && !controller.busy)
@@ -184,7 +184,7 @@ Rectangle {
             font.weight: Font.Bold
             lineHeight: DesktopTokens.px(26)
         }
-        background: Rectangle { radius: DesktopTokens.radiusLarge; color: Theme.shell; border.color: Theme.seam }
+        background: Rectangle { radius: DesktopTokens.radiusLarge; color: Theme.shell; border.width: 0; border.color: Theme.seam }
         contentItem: Copy {
             text: root.restoring
                 ? qsTr("macOS will ask for administrator authorization to bring awdl0 up. This lets AirDrop and related Apple features use AWDL again.")

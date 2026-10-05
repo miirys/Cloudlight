@@ -92,10 +92,10 @@ QtObject {
     // Brand face: the Cloudlight wordmark and a few editorial headlines only.
     readonly property string brandFont: "Cormorant Garamond"
 
-    // Corner radii: small and consistent, no pills.
-    readonly property int radiusSmall: 3
-    readonly property int radius: 4
-    readonly property int radiusLarge: 6
+    // Corner radii: soft, continuous-looking corners in the Apple range.
+    readonly property int radiusSmall: 6
+    readonly property int radius: 8
+    readonly property int radiusLarge: 12
 
     readonly property int focusDuration: AppController.reducedMotion ? 0 : 100
     readonly property int enterDuration: AppController.reducedMotion ? 0 : 160

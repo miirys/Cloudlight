@@ -19,7 +19,20 @@ DesktopSettingsPanel {
         onSelected: value => page.settingsScreen.setChoice("appLanguage",value)
     }
     DesktopSettingsRow {
-        width: parent.width; paperStyle: true; glyph: "grid"; title: qsTr("Interface scale"); showDivider: false
+        width: parent.width; paperStyle: true; glyph: "grid"; title: qsTr("Interface scale")
+        showDivider: Qt.platform.os === "windows"
         DesktopSettingsSlider { from: 0.85; to: 1.25; stepSize: 0.05; decimals: 2; suffix: "×"; value: Number(page.settingsScreen.valueSetting("desktopUiScale",1)); onCommitted: value => page.settingsScreen.setSetting("desktopUiScale",value) }
+    }
+    DesktopSettingsRow {
+        objectName: "systemTitleBarRow"
+        visible: Qt.platform.os === "windows"
+        width: parent.width; paperStyle: true; glyph: "monitor"; title: qsTr("Use the Windows title bar")
+        description: qsTr("Show the standard Windows title bar instead of Cloudlight's own window controls.")
+        showDivider: false
+        DesktopSettingsToggle {
+            checked: page.settingsScreen.boolSetting("systemTitleBar", false)
+            Accessible.name: qsTr("Use the Windows title bar")
+            onValueChangedByUser: value => page.settingsScreen.setSetting("systemTitleBar", value)
+        }
     }
 }

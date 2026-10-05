@@ -29,7 +29,7 @@ Column {
         implicitHeight: DesktopTokens.px(28)
         radius: DesktopTokens.radius
         color: DesktopTokens.raised
-        border.color: DesktopTokens.seamSoft
+        border.width: 0; border.color: DesktopTokens.seamSoft
         Text {
             id: badgeText
             anchors.centerIn: parent
@@ -85,7 +85,7 @@ Column {
         function isDisabled(option) { return option.enabled === false || disabledValues.some(value => String(optionValue(value)) === String(optionValue(option))) }
         implicitWidth: DesktopTokens.px(6) + options.length * DesktopTokens.px(optionWidth + 2)
         implicitHeight: DesktopTokens.px(36)
-        Rectangle { anchors.fill: parent; radius: DesktopTokens.radius; color: DesktopTokens.raised; border.color: DesktopTokens.seamSoft }
+        Rectangle { anchors.fill: parent; radius: DesktopTokens.radius; color: DesktopTokens.raised; border.width: 0; border.color: DesktopTokens.seamSoft }
         Row {
             x: DesktopTokens.px(3); y: DesktopTokens.px(3); spacing: DesktopTokens.px(2)
             Repeater {
@@ -173,7 +173,7 @@ Column {
         Rectangle {
             Layout.fillWidth: true; Layout.minimumWidth: 0; Layout.alignment: Qt.AlignTop
             implicitHeight: rows.implicitHeight
-            radius: DesktopTokens.radiusLarge; color: root.panelColor; border.color: Theme.seam
+            radius: DesktopTokens.radiusLarge; color: root.panelColor; border.width: 0; border.color: Theme.seam
             Column {
                 id: rows
                 width: parent.width
@@ -266,7 +266,7 @@ Column {
             }
             Rectangle {
                 width: parent.width; height: DesktopTokens.px(232)
-                radius: DesktopTokens.radiusLarge; border.color: Theme.seam
+                radius: DesktopTokens.radiusLarge; border.width: 0; border.color: Theme.seam
                 gradient: Gradient {
                     GradientStop { position: 0; color: Theme.lightMode ? Theme.glass : "#172B2D" }
                     GradientStop { position: 0.7; color: Theme.lightMode ? Theme.shell : "#141414" }
@@ -315,7 +315,7 @@ Column {
             }
             Rectangle {
                 width: parent.width; implicitHeight: budget.implicitHeight + DesktopTokens.px(32)
-                radius: DesktopTokens.radiusLarge; color: root.panelColor; border.color: DesktopTokens.seamSoft
+                radius: DesktopTokens.radiusLarge; color: root.panelColor; border.width: 0; border.color: DesktopTokens.seamSoft
                 Column {
                     id: budget
                     x: DesktopTokens.px(18); y: DesktopTokens.px(16); width: parent.width - DesktopTokens.px(36); spacing: DesktopTokens.px(10)

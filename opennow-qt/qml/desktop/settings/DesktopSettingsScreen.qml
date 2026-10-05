@@ -28,16 +28,17 @@ FocusScope {
     readonly property var sections: [
         {label: qsTr("Account"), detail: qsTr("Profile, membership, game stores"), icon: "person", page: 0, keywords: "profile subscription membership stores steam epic xbox ubisoft battle gaijin privacy connections"},
         {label: qsTr("Streaming quality"), detail: qsTr("Resolution, frame rate, bit rate"), icon: "monitor", page: 3, keywords: "resolution fps frame rate hdr color precision stats overlay timer bitrate bit rate codec g-sync gsync vrr backend gpu directx vulkan steam big picture launch gamepad fullscreen session ready persistent in-game graphics settings background reminder afk taskbar upscaling"},
-        {label: qsTr("Server location"), detail: qsTr("Region, network test, proxy"), icon: "globe", page: 6, keywords: "server region location ping network test proxy l4s"},
+        {label: qsTr("Server location"), detail: qsTr("Region, network test, proxy"), icon: "globe", page: 6, keywords: "server region location ping network test proxy"},
         {label: qsTr("Audio"), detail: qsTr("Output and microphone"), icon: "wave", page: 4, keywords: "sound audio volume output microphone mute focus"},
         {label: qsTr("Controls"), detail: qsTr("Controllers, mouse, keyboard, shortcuts"), icon: "controller", page: 5, keywords: "controller gyroscope steam sensitivity mouse keyboard language shortcuts"},
         {label: qsTr("Capture"), detail: qsTr("Screenshots, recording, replay"), icon: "image", page: 12, keywords: "recording capture clip replay buffer memory duration folder resolution fps quality shortcuts F12 screenshot"},
         {label: qsTr("Interface"), detail: qsTr("Theme, accent colour, language"), icon: "palette", page: 8, keywords: "theme accent color colour interface language scale motion sidebar tiles appearance"},
         {label: qsTr("Console mode"), detail: qsTr("Controller-first full-screen interface"), icon: "controller", page: 9, keywords: "console fullscreen gamepad startup big screen tv"},
+        {label: qsTr("Experimental"), detail: qsTr("Features still being tested"), icon: "flask", page: 13, keywords: "experimental frame generation l4s steam deck beta preview test lab advanced"},
         {label: qsTr("About"), detail: qsTr("Version, updates, diagnostics"), icon: "info", page: 11, keywords: "version release update diagnostics onboarding introduction replay setup restart reset help support"}
     ]
-    readonly property var pageTitles: [qsTr("Account"), qsTr("Account"), qsTr("Account"), qsTr("Streaming quality"), qsTr("Audio"), qsTr("Controls"), qsTr("Server location"), qsTr("Interface"), qsTr("Interface"), qsTr("Console mode"), qsTr("Controls"), qsTr("About"), qsTr("Capture")]
-    readonly property var pageComponents: [accountGroup, accountGroup, accountGroup, streamPage, audioPage, controlsGroup, networkPage, lookGroup, lookGroup, consolePage, controlsGroup, aboutPage, recordingPage]
+    readonly property var pageTitles: [qsTr("Account"), qsTr("Account"), qsTr("Account"), qsTr("Streaming quality"), qsTr("Audio"), qsTr("Controls"), qsTr("Server location"), qsTr("Interface"), qsTr("Interface"), qsTr("Console mode"), qsTr("Controls"), qsTr("About"), qsTr("Capture"), qsTr("Experimental")]
+    readonly property var pageComponents: [accountGroup, accountGroup, accountGroup, streamPage, audioPage, controlsGroup, networkPage, lookGroup, lookGroup, consolePage, controlsGroup, aboutPage, recordingPage, experimentalPage]
 
     function matchesSection(section) {
         const query = searchQuery.trim().toLowerCase()
@@ -78,6 +79,44 @@ FocusScope {
 
     function colorQualityItems() {
         return ShellStore.settingsOwnerState.colorQualityItems
+    }
+
+    // Combinations the stream cannot honour as chosen. Each entry says what
+    // actually happens, so nothing silently differs from the settings page.
+    function compatibilityWarnings(area) {
+        const warnings = []
+        const push = (scope, text) => { if (!area || area === scope) warnings.push(text) }
+        const codec = String(root.valueSetting("codec", "auto"))
+        const color = String(root.valueSetting("colorQuality", "8bit_420"))
+        const hdr = root.boolSetting("enableHdr", false)
+        const tenBit = color.indexOf("10bit") === 0
+        const chroma444 = color.endsWith("_444")
+        if (codec === "h264" && (tenBit || chroma444))
+            push("stream", qsTr("H.264 only carries 8-bit 4:2:0 colour, so the stream will use 8-bit 4:2:0. Choose H.265 for this colour precision."))
+        else if (codec === "av1" && chroma444)
+            push("stream", qsTr("AV1 streams don't support 4:4:4, so the stream will use 4:2:0. Choose H.265 for 4:4:4."))
+        if (hdr && codec === "h264")
+            push("stream", qsTr("HDR needs H.265 or AV1. With H.264 the stream will be SDR."))
+        else if (hdr && ["software", "ffmpeg"].indexOf(String(root.valueSetting("nativeVideoBackend", "auto"))) >= 0)
+            push("stream", qsTr("HDR needs hardware video decoding. With the software decoder the stream will be SDR."))
+        else if (hdr && !tenBit)
+            push("stream", qsTr("HDR streams always use 10-bit colour, whatever colour precision is set here."))
+        if (hdr && Qt.platform.os !== "osx" && String(root.valueSetting("upscaling", "off")) !== "off")
+            push("stream", qsTr("Upscaling is skipped while HDR is on."))
+        const fps = Number(root.valueSetting("fps", 60))
+        if (fps > 0 && root.lockedFpsValues().some(value => Number(root.optionValueOf(value)) === fps))
+            push("stream", qsTr("%1 FPS isn't included in your membership at this resolution, so the stream will run at the highest rate your plan allows.").arg(fps))
+        if (String(root.valueSetting("frameGeneration", "off")) === "2x") {
+            if (fps > 60)
+                push("experimental", qsTr("Frame generation pauses while the stream runs above 60 FPS."))
+            if (hdr)
+                push("experimental", qsTr("Frame generation doesn't run on HDR streams."))
+        }
+        return warnings
+    }
+
+    function optionValueOf(option) {
+        return typeof option === "object" && option !== null && option.value !== undefined ? option.value : option
     }
 
     function colorQualityFooter() {
@@ -397,9 +436,9 @@ FocusScope {
         if (!link)
             return
         if (link.id === "source")
-            AppController.openExternalUrl("https://github.com/OpenCloudGaming/OpenNOW")
+            AppController.openExternalUrl("https://github.com/miirys/OpenNOW")
         else if (link.id === "issues")
-            AppController.openExternalUrl("https://github.com/OpenCloudGaming/OpenNOW/issues")
+            AppController.openExternalUrl("https://github.com/miirys/OpenNOW/issues")
         else if (link.id === "diagnostics")
             ShellStore.exportDiagnostics()
     }
@@ -415,7 +454,6 @@ FocusScope {
         width: settingsRail.x + settingsRail.width + DesktopTokens.px(16)
         height: root.height
         color: Theme.surface
-        Rectangle { anchors.right: parent.right; width: 1; height: parent.height; color: DesktopTokens.seamSoft }
     }
 
     Column {
@@ -446,7 +484,7 @@ FocusScope {
             color: Theme.label
             placeholderTextColor: Theme.textMuted
             font.family: Theme.bodyFont
-            font.pixelSize: DesktopTokens.px(13)
+            font.pixelSize: DesktopTokens.px(14)
             leftPadding: DesktopTokens.px(34)
             DesktopGlyph { x: DesktopTokens.px(12); anchors.verticalCenter: parent.verticalCenter; width: DesktopTokens.px(14); height: width; icon: "desktop-search.svg" }
             background: Rectangle { radius: DesktopTokens.radius; color: Theme.surfaceRaised; border.width: 0; border.color: settingsSearch.activeFocus ? Theme.focus : Theme.seam }
@@ -482,33 +520,49 @@ FocusScope {
                         Accessible.name: modelData.label
                         visible: root.matchesSection(modelData)
                         width: root.compactNavigation ? navLabel.implicitWidth + DesktopTokens.px(28) : settingsRail.width
-                        height: DesktopTokens.px(38)
+                        height: DesktopTokens.px(40)
                         padding: 0
                         hoverEnabled: true
                         onClicked: root.selectedSection = modelData.page
+                        // macOS System Settings style: a small icon tile and a
+                        // filled selection, no edge bars or outlines.
                         background: Rectangle {
-                            radius: DesktopTokens.radius
-                            color: navItem.current ? Theme.surfaceRaised : navItem.hovered ? DesktopTokens.hover : "transparent"
-                            border.width: navItem.activeFocus ? 2 : 0
-                            border.color: Theme.focus
-                            Rectangle {
-                                visible: navItem.current
-                                x: 0; y: DesktopTokens.px(8)
-                                width: DesktopTokens.px(3); height: parent.height - DesktopTokens.px(16)
-                                color: Theme.focus
-                            }
+                            radius: DesktopTokens.px(9)
+                            color: navItem.current ? Theme.focus : navItem.hovered ? DesktopTokens.hover : "transparent"
+                            border.width: navItem.activeFocus && AppController.inputMode !== "pointer" ? 2 : 0
+                            border.color: Theme.label
+                            Behavior on color { ColorAnimation { duration: 140 } }
                         }
-                        contentItem: Text {
-                            id: navLabel
-                            leftPadding: DesktopTokens.px(14)
-                            rightPadding: DesktopTokens.px(14)
-                            verticalAlignment: Text.AlignVCenter
-                            text: navItem.modelData.label
-                            color: navItem.current ? Theme.label : DesktopTokens.textBody
-                            font.family: Theme.bodyFont
-                            font.pixelSize: DesktopTokens.px(14)
-                            font.weight: navItem.current ? Font.DemiBold : Font.Medium
-                            elide: Text.ElideRight
+                        contentItem: Item {
+                            implicitWidth: navLabel.implicitWidth
+                            Rectangle {
+                                id: navTile
+                                visible: !root.compactNavigation
+                                x: DesktopTokens.px(8)
+                                anchors.verticalCenter: parent.verticalCenter
+                                width: DesktopTokens.px(26); height: width
+                                radius: DesktopTokens.px(7)
+                                color: navItem.current ? Qt.rgba(Theme.focusText.r, Theme.focusText.g, Theme.focusText.b, 0.12) : Theme.surfaceStrong
+                                DesktopSettingsIcon {
+                                    anchors.centerIn: parent
+                                    width: DesktopTokens.px(16); height: width
+                                    glyph: navItem.modelData.icon
+                                    ink: navItem.current ? Theme.focusText : Theme.label
+                                }
+                            }
+                            Text {
+                                id: navLabel
+                                anchors.fill: parent
+                                leftPadding: root.compactNavigation ? DesktopTokens.px(14) : DesktopTokens.px(44)
+                                rightPadding: DesktopTokens.px(14)
+                                verticalAlignment: Text.AlignVCenter
+                                text: navItem.modelData.label
+                                color: navItem.current ? Theme.focusText : Theme.label
+                                font.family: Theme.bodyFont
+                                font.pixelSize: DesktopTokens.px(14)
+                                font.weight: navItem.current ? Font.DemiBold : Font.Medium
+                                elide: Text.ElideRight
+                            }
                         }
                     }
                 }
@@ -530,7 +584,7 @@ FocusScope {
             text: root.pageTitles[root.selectedSection] || ""
             color: Theme.label
             font.family: Theme.displayFont
-            font.pixelSize: DesktopTokens.titleSize
+            font.pixelSize: DesktopTokens.px(28)
             font.weight: Font.Bold
         }
         Flickable {
@@ -687,6 +741,14 @@ FocusScope {
     Component {
         id: recordingPage
         DesktopSettingsRecordingPage {
+            availableWidth: contentFlick.width - DesktopTokens.px(16)
+            settingsScreen: root
+        }
+    }
+
+    Component {
+        id: experimentalPage
+        DesktopSettingsExperimentalPage {
             availableWidth: contentFlick.width - DesktopTokens.px(16)
             settingsScreen: root
         }
