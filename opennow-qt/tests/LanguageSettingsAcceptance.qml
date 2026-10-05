@@ -429,7 +429,7 @@ QtObject {
             check(JSON.stringify(screen.colorQualityItems()) === JSON.stringify(owner.colorQualityItems), "desktop shares color choices")
             picker.expanded = true
             if (Qt.application.arguments.indexOf("--language-keyboard-selection") >= 0) {
-                const filter = picker.children.find(child => child.placeholderText === picker.filterPlaceholder)
+                const filter = find(picker, "settingsChoiceFilter")
                 check(filter, "production filter exists")
                 filter.text = "es_419"
             }

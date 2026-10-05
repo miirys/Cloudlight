@@ -19,7 +19,7 @@ Item {
         if (!initialized) return
         // Pick the curve before progress changes: a binding on `shown` could still hold the
         // previous direction's duration when the Behavior starts.
-        animation.duration = shown ? Math.round(enterDuration * 1.3) : exitDuration
+        animation.duration = shown ? enterDuration : exitDuration
         animation.easing.bezierCurve = shown ? Theme.springSoft : [0.4, 0.0, 1.0, 1.0, 1, 1]
         progress = shown ? 1 : 0
     }

@@ -90,8 +90,9 @@ Item {
     }
     Rectangle {
         id: menuSurface
+        // Hidden items take no input, so the list needs no enabled gate; gating it
+        // would also report every option as disabled while the list is closed.
         visible: reveal.present
-        enabled: root.expanded
         readonly property real controlX: header.width - header.rightInset - header.controlWidth
         width: Math.max(header.controlWidth, DesktopTokens.px(260))
         x: Math.max(0, Math.min(controlX, header.width - width))
@@ -111,6 +112,7 @@ Item {
         MouseArea { anchors.fill: parent; acceptedButtons: Qt.AllButtons; onWheel: wheel => wheel.accepted = false }
         DesktopSettingsField {
             id: search
+            objectName: "settingsChoiceFilter"
             enabled: root.expanded
             x: DesktopTokens.px(8); y: DesktopTokens.px(8); width: parent.width - DesktopTokens.px(16)
             visible: root.items.length > 8
@@ -122,7 +124,6 @@ Item {
         }
         Flickable {
             id: scroll
-            enabled: root.expanded
             x: DesktopTokens.px(4); y: search.y + search.height + DesktopTokens.px(search.visible ? 4 : -2); width: parent.width - DesktopTokens.px(8)
             height: root.optionsHeight
             contentWidth: width; contentHeight: grid.implicitHeight
