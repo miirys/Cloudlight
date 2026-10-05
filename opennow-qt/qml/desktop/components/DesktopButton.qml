@@ -18,6 +18,11 @@ Button {
     leftPadding: DesktopTokens.px(20)
     rightPadding: DesktopTokens.px(20)
     focusPolicy: Qt.StrongFocus
+    hoverEnabled: true
+    // Select motion: the button lifts slightly toward the pointer on hover and
+    // settles back on a spring; pressing sinks it. Text stays sharp (curve text).
+    scale: !enabled || AppController.reducedMotion ? 1 : down ? 0.97 : hovered ? 1.03 : 1
+    Behavior on scale { NumberAnimation { duration: Theme.springDuration * 0.6; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.spring } }
     font.family: DesktopTokens.bodyFont
     font.pixelSize: DesktopTokens.captionSize
     font.weight: Font.DemiBold
@@ -41,7 +46,9 @@ Button {
             color: "transparent"
             border.width: DesktopTokens.px(3)
             border.color: root.onMediaBackground ? Theme.mediaForeground : Theme.label
-            visible: root.activeFocus
+            // Keyboard and controller focus only; a clicked or auto-focused button
+            // shows no ring under the mouse.
+            visible: root.activeFocus && AppController.inputMode !== "pointer"
         }
     }
     contentItem: Item {

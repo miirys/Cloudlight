@@ -15,6 +15,10 @@ Button {
     implicitWidth: Math.max(DesktopTokens.px(compact ? 68 : 84), (keySequence !== "" ? bindingGlyph.implicitWidth : label.implicitWidth) + leftPadding + rightPadding
         + (menu ? DesktopTokens.px(22) : 0) + (suffix !== "" ? suffixGlyph.implicitWidth + DesktopTokens.px(8) : 0))
     hoverEnabled: true
+    // Select motion: the button lifts slightly toward the pointer on hover and
+    // settles back on a spring; pressing sinks it. Text stays sharp (curve text).
+    scale: !enabled || AppController.reducedMotion ? 1 : down ? 0.97 : hovered ? 1.03 : 1
+    Behavior on scale { NumberAnimation { duration: Theme.springDuration * 0.6; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.spring } }
     padding: 0
     leftPadding: DesktopTokens.px(14)
     rightPadding: DesktopTokens.px(14)
