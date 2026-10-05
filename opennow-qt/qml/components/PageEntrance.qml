@@ -3,14 +3,14 @@ import OpenNOW
 
 // Animate only the incoming page, never the shell or native video surface.
 // Restarting replaces the previous transition; no delayed swaps or stale pages.
-// The page fades in quickly and settles from 98.5% scale on a spring curve,
-// the way macOS and iOS swap content. Nothing slides.
+// GeForce NOW swaps page content in place; the new page only cross-fades in
+// over a few frames so the swap is not a hard cut. Nothing scales or slides.
 Item {
     id: root
     property real progress: 1
-    readonly property real pageOpacity: Math.min(1, progress * 2.4)
-    readonly property real pageScale: 0.985 + 0.015 * progress
-    // Kept for older consumers; pages no longer travel.
+    readonly property real pageOpacity: progress
+    // Kept for older consumers; pages no longer scale or travel.
+    readonly property real pageScale: 1
     readonly property real offset: 0
 
     function restart() {
@@ -22,9 +22,8 @@ Item {
     NumberAnimation {
         id: entrance
         target: root; property: "progress"; to: 1
-        duration: Theme.springDuration
-        easing.type: Easing.BezierSpline
-        easing.bezierCurve: Theme.spring
+        duration: 140
+        easing.type: Easing.OutCubic
     }
     Connections {
         target: AppController

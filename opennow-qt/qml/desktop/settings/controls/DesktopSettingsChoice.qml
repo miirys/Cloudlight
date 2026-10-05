@@ -2,8 +2,8 @@ import QtQuick
 import QtQuick.Controls
 import OpenNOW
 
-// The same inline disclosure/tile pattern as the resolution picker, for
-// account-provided regions and longer lists such as interface languages.
+// A settings row whose value opens a floating dropdown list, like GeForce NOW's
+// settings menus. Lists longer than eight entries get a filter field.
 Item {
     id: root
     property string title: ""
@@ -33,27 +33,52 @@ Item {
     }
     readonly property real revealProgress: reveal.progress
     readonly property real optionsHeight: Math.min(maximumOptionsHeight, grid.implicitHeight + 12)
-    implicitHeight: header.height + (search.height + optionsHeight + DesktopTokens.px(28)) * reveal.progress
+    readonly property real menuHeight: search.height + optionsHeight + DesktopTokens.px(search.visible ? 20 : 12)
+    // GeForce NOW-style dropdown: the list floats over the rows below instead of
+    // pushing the page down. The row itself keeps its height.
+    implicitHeight: header.height
         + (footerContent.implicitHeight > 0 ? footerContent.implicitHeight + DesktopTokens.px(12) : 0)
-    clip: true
-    MotionProgress { id: reveal; shown: root.expanded; enterDuration: 200; exitDuration: 160 }
+    z: reveal.present ? 1000 : 0
+    property var raisedAncestors: []
+    // Lift the row's containers above later panels while the list is open so it
+    // is not painted under them; restored when it closes.
+    function raiseAncestors(raise) {
+        for (const entry of raisedAncestors) if (entry.item) entry.item.z = entry.z
+        raisedAncestors = []
+        if (!raise) return
+        const lifted = []
+        let item = root.parent
+        for (let depth = 0; item && depth < 6 && item.objectName !== "settingsPageLoader"; ++depth, item = item.parent) {
+            lifted.push({item: item, z: item.z})
+            item.z = 1000
+        }
+        raisedAncestors = lifted
+    }
+    MotionProgress { id: reveal; shown: root.expanded; enterDuration: 170; exitDuration: 130 }
     onExpandedChanged: {
-        if (expanded) { search.clear(); search.forceActiveFocus() }
+        if (expanded) { raiseAncestors(true); search.clear(); if (search.visible) search.forceActiveFocus(); else scroll.forceActiveFocus() }
         else selector.forceActiveFocus()
     }
-    Rectangle {
-        visible: reveal.present
-        opacity: reveal.progress
-        x: 0; y: header.height; width: parent.width; height: parent.height - header.height
-        radius: DesktopTokens.radius; color: Theme.surface
-        border.width: 0; border.color: Theme.seam
+    Connections {
+        target: reveal
+        function onPresentChanged() { if (!reveal.present) root.raiseAncestors(false) }
+    }
+    Component.onDestruction: raiseAncestors(false)
+    // Clicking anywhere outside the open list closes it.
+    MouseArea {
+        visible: root.expanded
+        readonly property point origin: visible ? root.mapToItem(null, 0, 0) : Qt.point(0, 0)
+        x: -origin.x; y: -origin.y
+        width: root.Window.width; height: root.Window.height
+        onClicked: root.expanded = false
+        onWheel: wheel => { root.expanded = false; wheel.accepted = false }
     }
     DesktopSettingsRow {
         id: header
         width: parent.width; paperStyle: true; glyph: root.glyph
         title: root.title; description: root.description
-        expanded: root.expanded
-        showDivider: root.showDivider && !root.expanded
+        expanded: false
+        showDivider: root.showDivider
         DesktopSettingsButton {
             id: selector
             width: header.controlWidth
@@ -63,47 +88,62 @@ Item {
             onClicked: root.expanded = !root.expanded
         }
     }
-    DesktopSettingsField {
-        id: search
-        enabled: root.expanded
-        opacity: reveal.progress
-        x: DesktopTokens.px(12); y: header.height + DesktopTokens.px(12); width: parent.width - DesktopTokens.px(24)
-        visible: reveal.present && root.items.length > 8
-        height: visible ? implicitHeight : 0
-        placeholderText: root.filterPlaceholder
-        onTextChanged: scroll.contentY = 0
-        Accessible.name: root.title + ": " + placeholderText
-        Keys.onEscapePressed: event => { root.expanded = false; event.accepted = true }
-    }
-    Flickable {
-        id: scroll
+    Rectangle {
+        id: menuSurface
         visible: reveal.present
         enabled: root.expanded
+        readonly property real controlX: header.width - header.rightInset - header.controlWidth
+        width: Math.max(header.controlWidth, DesktopTokens.px(260))
+        x: Math.max(0, Math.min(controlX, header.width - width))
+        y: header.height - DesktopTokens.px(10)
+        height: root.menuHeight
+        radius: DesktopTokens.px(10)
+        color: Theme.surfaceRaised
         opacity: reveal.progress
-        x: DesktopTokens.px(4); y: search.y + search.height + DesktopTokens.px(4); width: parent.width - DesktopTokens.px(8)
-        height: root.optionsHeight
-        contentWidth: width; contentHeight: grid.implicitHeight
-        clip: true; boundsBehavior: Flickable.StopAtBounds
-        ScrollBar.vertical: ScrollBar { policy: scroll.contentHeight > scroll.height ? ScrollBar.AlwaysOn : ScrollBar.AlwaysOff }
-        Keys.onEscapePressed: event => { root.expanded = false; event.accepted = true }
-        Column {
-            id: grid
-            width: parent.width - 12; spacing: DesktopTokens.px(6)
-            Repeater {
-                model: root.groups
-                delegate: Column {
-                    required property var modelData
-                    width: grid.width; spacing: 0
-                    Text {
-                        visible: modelData.label !== ""
-                        leftPadding: DesktopTokens.px(12); topPadding: DesktopTokens.px(6); bottomPadding: DesktopTokens.px(4)
-                        text: modelData.label; color: Theme.textMuted
-                        font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.px(12)
-                        font.weight: Font.DemiBold; font.capitalization: Font.Capitalize
-                    }
-                    Flow {
-                        width: parent.width; spacing: 0
-                        readonly property int columns: 1
+        transform: Translate { y: -DesktopTokens.px(6) * (1 - reveal.progress) }
+        // Soft shadow instead of an outline.
+        Rectangle {
+            z: -1
+            anchors.fill: parent; anchors.topMargin: DesktopTokens.px(6); anchors.margins: -DesktopTokens.px(2)
+            radius: parent.radius + DesktopTokens.px(2)
+            color: Qt.rgba(0, 0, 0, 0.35)
+        }
+        MouseArea { anchors.fill: parent; acceptedButtons: Qt.AllButtons; onWheel: wheel => wheel.accepted = false }
+        DesktopSettingsField {
+            id: search
+            enabled: root.expanded
+            x: DesktopTokens.px(8); y: DesktopTokens.px(8); width: parent.width - DesktopTokens.px(16)
+            visible: root.items.length > 8
+            height: visible ? implicitHeight : 0
+            placeholderText: root.filterPlaceholder
+            onTextChanged: scroll.contentY = 0
+            Accessible.name: root.title + ": " + placeholderText
+            Keys.onEscapePressed: event => { root.expanded = false; event.accepted = true }
+        }
+        Flickable {
+            id: scroll
+            enabled: root.expanded
+            x: DesktopTokens.px(4); y: search.y + search.height + DesktopTokens.px(search.visible ? 4 : -2); width: parent.width - DesktopTokens.px(8)
+            height: root.optionsHeight
+            contentWidth: width; contentHeight: grid.implicitHeight
+            clip: true; boundsBehavior: Flickable.StopAtBounds
+            ScrollBar.vertical: ScrollBar { policy: scroll.contentHeight > scroll.height ? ScrollBar.AlwaysOn : ScrollBar.AlwaysOff }
+            Keys.onEscapePressed: event => { root.expanded = false; event.accepted = true }
+            Column {
+                id: grid
+                width: parent.width - (scroll.contentHeight > scroll.height ? 12 : 0); spacing: DesktopTokens.px(4)
+                Repeater {
+                    model: root.groups
+                    delegate: Column {
+                        required property var modelData
+                        width: grid.width; spacing: 0
+                        Text {
+                            visible: modelData.label !== ""
+                            leftPadding: DesktopTokens.px(12); topPadding: DesktopTokens.px(6); bottomPadding: DesktopTokens.px(4)
+                            text: modelData.label; color: Theme.textMuted
+                            font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.px(12)
+                            font.weight: Font.DemiBold; font.capitalization: Font.Capitalize
+                        }
                         Repeater {
                             model: modelData.items
                             delegate: AbstractButton {
@@ -111,8 +151,8 @@ Item {
                                 required property var modelData
                                 readonly property bool chosen: enabled && String(modelData.value) === String(root.value)
                                 objectName: "settingsChoice-" + String(modelData.value)
-                                width: parent.width
-                                height: DesktopTokens.px(tile.modelData.detail ? 48 : 38)
+                                width: grid.width
+                                height: DesktopTokens.px(tile.modelData.detail ? 46 : 36)
                                 enabled: !modelData.disabled; opacity: enabled ? 1 : 0.45
                                 hoverEnabled: true
                                 Accessible.name: String(modelData.label) + " " + String(modelData.detail || "")
@@ -120,21 +160,24 @@ Item {
                                 Keys.onReturnPressed: event => { tile.clicked(); event.accepted = true }
                                 Keys.onEnterPressed: event => { tile.clicked(); event.accepted = true }
                                 Keys.onEscapePressed: event => { root.expanded = false; event.accepted = true }
+                                Keys.onUpPressed: event => { tile.nextItemInFocusChain(false).forceActiveFocus(); event.accepted = true }
+                                Keys.onDownPressed: event => { tile.nextItemInFocusChain(true).forceActiveFocus(); event.accepted = true }
                                 background: Rectangle {
-                                    radius: DesktopTokens.radius
+                                    radius: DesktopTokens.px(7)
                                     color: tile.hovered || tile.activeFocus ? DesktopTokens.hover : "transparent"
-                                    border.width: tile.activeFocus ? 2 : 0
-                                    border.color: Theme.focus
-                                    Rectangle {
-                                        visible: tile.chosen
-                                        x: 0; y: DesktopTokens.px(8); width: DesktopTokens.px(3); height: parent.height - DesktopTokens.px(16)
-                                        color: Theme.focus
-                                    }
+                                    Behavior on color { ColorAnimation { duration: Theme.focusDuration } }
+                                }
+                                DesktopGlyph {
+                                    anchors.left: parent.left; anchors.leftMargin: DesktopTokens.px(10)
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    width: DesktopTokens.px(12); height: DesktopTokens.px(10)
+                                    visible: tile.chosen
+                                    icon: "desktop-check-focus.svg"
                                 }
                                 DesktopSettingsIcon {
                                     id: optionIcon
                                     visible: !!tile.modelData.glyph
-                                    anchors.left: parent.left; anchors.leftMargin: 12
+                                    anchors.left: parent.left; anchors.leftMargin: DesktopTokens.px(30)
                                     anchors.verticalCenter: parent.verticalCenter
                                     width: 20; height: 20
                                     glyph: tile.modelData.glyph || "controller"
@@ -142,23 +185,23 @@ Item {
                                 }
                                 Column {
                                     anchors.verticalCenter: parent.verticalCenter
-                                    x: optionIcon.visible ? 42 : DesktopTokens.px(14)
-                                    width: parent.width - x - 12; spacing: 2
-                                    Text { width: parent.width; text: tile.modelData.label; color: tile.chosen ? Theme.focus : Theme.label; font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.px(14); font.weight: tile.chosen ? Font.DemiBold : Font.Normal; elide: Text.ElideRight }
+                                    x: optionIcon.visible ? DesktopTokens.px(58) : DesktopTokens.px(30)
+                                    width: parent.width - x - DesktopTokens.px(12); spacing: 2
+                                    Text { width: parent.width; text: tile.modelData.label; color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.px(14); font.weight: tile.chosen ? Font.DemiBold : Font.Medium; elide: Text.ElideRight }
                                     Text { visible: text !== ""; width: parent.width; text: tile.modelData.detail || ""; color: tile.modelData.detailColor || Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.px(12); elide: Text.ElideRight }
                                 }
                             }
                         }
                     }
                 }
+                Text { visible: root.groups.length === 0; leftPadding: DesktopTokens.px(12); text: qsTr("No matching options"); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.px(13) }
             }
-            Text { visible: root.groups.length === 0; text: qsTr("No matching options"); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.px(13) }
         }
     }
     Column {
         id: footerContent
         x: header.labelInset
-        y: header.height + (search.height + root.optionsHeight + DesktopTokens.px(28)) * reveal.progress
+        y: header.height
         width: parent.width - x - DesktopTokens.settingsInset
         spacing: DesktopTokens.px(8)
     }

@@ -19,8 +19,9 @@ DesktopSettingsPanel {
         DesktopSettingsButton { text: qsTr("Refresh status"); enabled: ShellStore.gameAccountsState !== "loading"; onClicked: ShellStore.refreshGameAccounts() }
     }
     RowLayout {
-        x: DesktopTokens.settingsInset
-        width: parent.width - DesktopTokens.settingsInset * 2
+        // Aligned with the section heading above it.
+        x: 0
+        width: parent.width
         spacing: DesktopTokens.px(12)
         Text {
             objectName: "storeSyncNotice"

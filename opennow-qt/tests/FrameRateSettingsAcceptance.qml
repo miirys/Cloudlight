@@ -54,7 +54,7 @@ QtObject {
             {width:width, height:height, fps:fps}]}
     }
     function optionEnabled(value) {
-        const option = find(shell, "settingsOption-" + value)
+        const option = find(shell, "settingsChoice-" + value)
         check(option !== null, "the rendered control exposes " + value)
         return option.enabled
     }

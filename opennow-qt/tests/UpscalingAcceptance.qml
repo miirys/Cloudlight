@@ -20,10 +20,10 @@ QtObject {
         const mode = mac ? "metalfx" : "fsr1"
         ShellStore.settings = Object.assign({}, ShellStore.settings, {upscaling: "off", fps: 60})
         const row = find(parent, "upscalingSettingsRow")
-        const selector = find(parent, "upscalingSelector")
+        const selector = row
         check(row && row.visible, "desktop upscaling setting is visible on every platform")
-        check(selector && selector.options.length === 2 && selector.selectedIndex === 0, "exactly two choices; default Off")
-        check(selector.options.map(item => item.value).join(",") === "off," + mode, "desktop offers the platform upscaler")
+        check(selector && selector.items.length === 2 && selector.value === "off", "exactly two choices; default Off")
+        check(selector.items.map(item => item.value).join(",") === "off," + mode, "desktop offers the platform upscaler")
         const clarityRow = find(parent, "upscalingSharpnessRow")
         const denoiseRow = find(parent, "upscalingDenoiseRow")
         const clarity = find(parent, "upscalingSharpnessSlider")
@@ -40,8 +40,8 @@ QtObject {
         const console = consoleStream.createObject(parent)
         const surfaces = [find(desktop, "streamSurfaceHost"), find(console, "streamSurfaceHost")]
         check(surfaces.every(surface => surface && !surface.metalFxUpscaling && !surface.fsrUpscaling), "both surfaces default off")
-        selector.selected(1, selector.options[1])
-        check(ShellStore.settings.upscaling === mode && selector.selectedIndex === 1, "selection persists the exact upscaler value")
+        selector.selected(mode)
+        check(ShellStore.settings.upscaling === mode && selector.value === mode, "selection persists the exact upscaler value")
         check(surfaces.every(surface => surface.metalFxUpscaling === mac && surface.fsrUpscaling === !mac), "both surfaces enable only the selected platform upscaler")
         check(clarityRow.enabled && denoiseRow.enabled === mac, "upscaling enables only applicable enhancement controls")
         check(clarityRow.visible && denoiseRow.visible === mac, "Clarity is cross-platform; Noise Reduction remains macOS-only")
@@ -58,7 +58,7 @@ QtObject {
             check(controls.length === 1 && controls[0].values.length === 16 && !controls[0].info, "FSR console exposes the enabled clarity range without denoise")
         }
         check(ShellStore.settings.fps === 60, "upscaling does not change source FPS")
-        selector.selected(0, selector.options[0])
+        selector.selected("off")
         check(ShellStore.settings.upscaling === "off", "Off selection persists")
         check(surfaces.every(surface => !surface.metalFxUpscaling && !surface.fsrUpscaling), "both surfaces return to normal scaling")
         check(ShellStore.settings.upscalingSharpness === 15 && ShellStore.settings.upscalingDenoise === 20, "Off retains enhancement preferences")
@@ -70,7 +70,7 @@ QtObject {
         if (Qt.application.arguments.indexOf("--screenshot") >= 0) {
             row.visible = true
             clarityRow.visible = true
-            selector.selected(1, selector.options[1])
+            selector.selected(mode)
             clarity.committed(10)
         }
         ShellStore.lastError = ""

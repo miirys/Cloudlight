@@ -81,9 +81,11 @@ static int runApplicationSession(int argc, char *argv[], QString &restartExecuta
     QGuiApplication::setApplicationVersion(QString::fromLatin1(OPENNOW_VERSION));
     QQuickWindow::setDefaultAlphaBuffer(true);
 #if defined(Q_OS_WIN)
-    // Distance-field glyphs are unhinted and gamma-light on Windows, so small
-    // text looked washed out. Native glyphs match the system's text contrast.
-    QQuickWindow::setTextRenderType(QQuickWindow::NativeTextRendering);
+    // Distance-field glyphs looked washed out on Windows, and native glyph bitmaps
+    // fringe and pixelate over the translucent shell surfaces and under any scale
+    // transform. Curve rendering draws the real outlines with exact coverage at
+    // every size and scale factor, like macOS text.
+    QQuickWindow::setTextRenderType(QQuickWindow::CurveTextRendering);
 #else
     QQuickWindow::setTextRenderType(QQuickWindow::QtTextRendering);
 #endif

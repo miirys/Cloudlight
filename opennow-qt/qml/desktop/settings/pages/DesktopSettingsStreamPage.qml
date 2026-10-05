@@ -27,11 +27,20 @@ Column {
             readonly property var current: page.settingsScreen.streamingModes.find(item => item.value === mode) || page.settingsScreen.streamingModes[4]
             width: parent.width; paperStyle: true; glyph: "sliders"; title: qsTr("Mode")
             description: current.detail + "\n" + qsTr("Data usage is ~%1 GB per hour. Actual data use will vary.").arg(page.settingsScreen.dataUsageGbPerHour())
-            DesktopSettingsSegmented {
+            // GeForce NOW's arrow selector: the arrows step through the modes and wrap.
+            DesktopSettingsStepper {
                 objectName: "streamingModeControl"
-                options: page.settingsScreen.streamingModes.map(item => ({label: item.label, value: item.value, width: 96}))
-                selectedIndex: options.findIndex(item => item.value === modeRow.mode)
-                onSelected: (index, item) => page.settingsScreen.applyStreamingMode(item.value)
+                readonly property var modes: page.settingsScreen.streamingModes
+                readonly property int index: Math.max(0, modes.findIndex(item => item.value === modeRow.mode))
+                width: Math.min(DesktopTokens.px(220), modeRow.controlWidth)
+                color: "transparent"
+                text: modeRow.current.label
+                function step(direction) {
+                    page.settingsScreen.applyStreamingMode(modes[(index + direction + modes.length) % modes.length].value)
+                }
+                onPrevious: step(-1)
+                onNext: step(1)
+                onOpenRequested: step(1)
             }
         }
     }
@@ -49,18 +58,19 @@ Column {
             valueLabel: value.replace("x", " × ")
             onSelected: value => page.settingsScreen.setSetting("resolution", value)
         }
-        DesktopSettingsRow {
-            width: parent.width; paperStyle: true; glyph: "speed"; title: qsTr("Frame rate")
+        DesktopSettingsChoice {
+            objectName: "desktopFrameRateControl"
+            readonly property var canonical: ShellStore.canonicalFpsValues().map(value => String(value))
+            readonly property string current: Number(page.settingsScreen.valueSetting("fps",60)) === 0 ? "AUTO" : String(page.settingsScreen.valueSetting("fps",60))
+            readonly property var locked: page.settingsScreen.lockedFpsValues().map(value => String(page.settingsScreen.optionValueOf(value)))
+            width: parent.width; glyph: "speed"; title: qsTr("Frame rate")
             description: page.settingsScreen.fpsEntitlementNote()
-            DesktopSettingsSegmented {
-                objectName: "desktopFrameRateControl"
-                readonly property var canonical: ShellStore.canonicalFpsValues().map(value => String(value))
-                readonly property string current: Number(page.settingsScreen.valueSetting("fps",60)) === 0 ? "AUTO" : String(page.settingsScreen.valueSetting("fps",60))
-                options: canonical.indexOf(current) >= 0 ? canonical : [current].concat(canonical)
-                optionWidth: 50; selectedIndex: options.indexOf(current)
-                disabledValues: page.settingsScreen.lockedFpsValues(); disabledHint: page.settingsScreen.fpsLockedHint()
-                onSelected: (index,value) => page.settingsScreen.setSetting("fps",value === "AUTO" ? 0 : Number(value))
-            }
+            items: (canonical.indexOf(current) >= 0 ? canonical : [current].concat(canonical)).map(value => ({
+                label: value === "AUTO" ? qsTr("Auto") : qsTr("%1 FPS").arg(value), value: value,
+                disabled: locked.indexOf(value) >= 0,
+                detail: locked.indexOf(value) >= 0 ? String(page.settingsScreen.fpsLockedHint() || "") : ""}))
+            value: current
+            onSelected: value => page.settingsScreen.setSetting("fps", value === "AUTO" ? 0 : Number(value))
         }
         DesktopSettingsRow {
             width: parent.width; paperStyle: true; glyph: "wave"; title: qsTr("Max bit rate"); description: qsTr("Upper limit for the stream. Higher looks better but needs a faster connection.")
@@ -70,16 +80,18 @@ Column {
                 onCommitted: value => page.settingsScreen.setSetting("maxBitrateMbps", Math.round(value * 100) / 100)
             }
         }
-        DesktopSettingsRow {
+        DesktopSettingsChoice {
             objectName: "codecSettingsRow"
-            width: parent.width; paperStyle: true; glyph: "chip"; title: qsTr("Video codec")
+            width: parent.width; glyph: "chip"; title: qsTr("Video codec")
             description: ShellStore.streamerDetectionMessage
-            DesktopSettingsSegmented {
-                options: [{label:qsTr("Auto"),value:"auto"},{label:"AV1",value:"av1",enabled:ShellStore.codecAvailable("av1") && !ShellStore.codecDisabledByProfile("av1")},{label:"H.265",value:"h265",enabled:ShellStore.codecAvailable("h265") && !ShellStore.codecDisabledByProfile("h265")},{label:"H.264",value:"h264",enabled:ShellStore.codecAvailable("h264") && !ShellStore.codecDisabledByProfile("h264")}]
-                disabledHint: qsTr("Not supported by your video decoder or colour precision setting")
-                optionWidth: 64; selectedIndex: options.findIndex(item => item.value === page.settingsScreen.valueSetting("codec","auto"))
-                onSelected: (index,item) => page.settingsScreen.setChoice("codec",item.value)
+            function codec(label, value) {
+                const usable = ShellStore.codecAvailable(value) && !ShellStore.codecDisabledByProfile(value)
+                return {label: label, value: value, disabled: !usable,
+                    detail: usable ? "" : qsTr("Not supported by your video decoder or colour precision setting")}
             }
+            items: [{label: qsTr("Auto"), value: "auto"}, codec("AV1", "av1"), codec("H.265", "h265"), codec("H.264", "h264")]
+            value: page.settingsScreen.valueSetting("codec", "auto")
+            onSelected: value => page.settingsScreen.setChoice("codec", value)
         }
         DesktopSettingsHevcHelp {
             width: parent.width
@@ -102,19 +114,17 @@ Column {
             value: items.some(item => item.value === preferredId && !item.disabled) ? preferredId : ""
             onSelected: value => ShellStore.setSetting("windowsGpuDeviceId", value)
         }
-        DesktopSettingsRow {
-            width: parent.width; paperStyle: true; glyph: "drop"; title: qsTr("Adjust for network conditions")
+        DesktopSettingsChoice {
+            objectName: "networkAdjustControl"
+            width: parent.width; glyph: "drop"; title: qsTr("Adjust for network conditions")
             description: String(page.settingsScreen.valueSetting("networkAdjust", "off")) === "quality"
                 ? qsTr("Keeps the resolution and lowers the frame rate when your connection can't keep up.")
                 : String(page.settingsScreen.valueSetting("networkAdjust", "off")) === "latency"
                 ? qsTr("Keeps the frame rate and lowers the resolution when your connection can't keep up.")
                 : qsTr("Holds your chosen quality. The stream may stutter if your connection can't keep up.")
-            DesktopSettingsSegmented {
-                objectName: "networkAdjustControl"
-                options: [{label: qsTr("Off"), value: "off", width: 64}, {label: qsTr("Optimal latency"), value: "latency", width: 128}, {label: qsTr("Optimal quality"), value: "quality", width: 128}]
-                selectedIndex: options.findIndex(item => item.value === String(page.settingsScreen.valueSetting("networkAdjust", "off")))
-                onSelected: (index, item) => page.settingsScreen.setSetting("networkAdjust", item.value)
-            }
+            items: [{label: qsTr("Off"), value: "off"}, {label: qsTr("Optimal latency"), value: "latency"}, {label: qsTr("Optimal quality"), value: "quality"}]
+            value: String(page.settingsScreen.valueSetting("networkAdjust", "off"))
+            onSelected: value => page.settingsScreen.setSetting("networkAdjust", value)
         }
         DesktopSettingsRow {
             width: parent.width; paperStyle: true; glyph: "sun"; title: qsTr("HDR")
@@ -155,20 +165,16 @@ Column {
     DesktopSettingsPanel {
         width: parent.width; paperStyle: true
         DesktopSettingsSection { text: qsTr("Display") }
-        DesktopSettingsRow {
+        DesktopSettingsChoice {
             objectName: "upscalingSettingsRow"
-            width: parent.width; paperStyle: true; glyph: "monitor"; title: qsTr("Upscaling")
+            readonly property string mode: Qt.platform.os === "osx" ? "metalfx" : "fsr1"
+            width: parent.width; glyph: "monitor"; title: qsTr("Upscaling")
             description: Qt.platform.os === "osx"
                 ? qsTr("Sharper upscaling when the stream is smaller than your display. Uses extra GPU time.")
                 : qsTr("Sharper upscaling (FSR 1) when the stream is smaller than your display. Uses extra GPU time; not used with HDR.")
-            DesktopSettingsSegmented {
-                objectName: "upscalingSelector"
-                readonly property string mode: Qt.platform.os === "osx" ? "metalfx" : "fsr1"
-                readonly property string current: String(page.settingsScreen.valueSetting("upscaling", "off")) === mode ? mode : "off"
-                options: [{label: qsTr("Off"), value: "off"}, {label: Qt.platform.os === "osx" ? "MetalFX" : "FSR 1", value: mode}]
-                optionWidth: 90; selectedIndex: options.findIndex(item => item.value === current)
-                onSelected: (index,item) => page.settingsScreen.setSetting("upscaling", item.value)
-            }
+            items: [{label: qsTr("Off"), value: "off"}, {label: Qt.platform.os === "osx" ? "MetalFX" : "FSR 1", value: mode}]
+            value: String(page.settingsScreen.valueSetting("upscaling", "off")) === mode ? mode : "off"
+            onSelected: value => page.settingsScreen.setSetting("upscaling", value)
         }
         DesktopSettingsRow {
             objectName: "upscalingSharpnessRow"

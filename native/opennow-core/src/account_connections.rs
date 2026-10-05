@@ -71,6 +71,9 @@ impl AccountContext<'_> {
                     serde_json::from_value::<crate::catalog_types::StoreDefinition>(item.clone())
                         .ok()
                 })
+                // The store catalogue includes the enum sentinels UNKNOWN and NONE;
+                // they are not stores and must not be offered for linking.
+                .filter(|definition| !is_sentinel_store(&definition.store))
                 .map(|definition| {
                     let mut value = definition.connection_definition();
                     value["capabilitySource"] = self.definitions["stores"]["status"].clone();
@@ -635,6 +638,13 @@ fn bind_callback() -> Result<(TcpListener, u16), ServiceError> {
     Err(upstream("No account-linking callback port is available"))
 }
 
+fn is_sentinel_store(store: &str) -> bool {
+    matches!(
+        store.trim().to_ascii_uppercase().as_str(),
+        "" | "UNKNOWN" | "NONE"
+    )
+}
+
 fn connection_from_store(definition: &Value, store: Option<&Value>, fetched_at: i64) -> Value {
     let linking = store.map(|value| &value["accountLinkingData"]);
     let sync = linking.map(|value| &value["accountSyncingData"]);
@@ -941,6 +951,33 @@ mod tests {
             json!([{"id":"store-subscription"}])
         );
         worker.join().unwrap();
+    }
+
+    #[test]
+    fn store_catalogue_sentinels_are_not_offered_as_stores() {
+        let client = reqwest::blocking::Client::builder()
+            .no_proxy()
+            .build()
+            .unwrap();
+        let auth = crate::gfn::tests::auth_fixture("account-a");
+        let definitions = json!({"stores":{"status":"success","items":[
+            {"store":"UNKNOWN","label":"UNKNOWN"},{"store":"NONE","label":"NONE"},
+            {"store":"STEAM","label":"Steam"}]}});
+        let requests = crate::store_requests::StoreRequests::default();
+        let url = "http://127.0.0.1:9/".to_string();
+        let context = AccountContext {
+            client: &client,
+            auth: &auth,
+            generation: 1,
+            graphql: &url,
+            als: &url,
+            definitions: &definitions,
+            requests: &requests,
+            check: &|| Ok(()),
+        };
+        let providers = context.providers();
+        assert_eq!(providers.len(), 1);
+        assert_eq!(providers[0]["provider"], "STEAM");
     }
 
     #[test]

@@ -32,7 +32,7 @@ QtObject {
         ShellStore.settings = Object.assign({}, ShellStore.settings, {resolution: "1920x1080", fps: 60})
         const control = find(parent, "networkAdjustControl")
         check(control, "desktop exposes the network adjustment choice")
-        const current = () => control.options[control.selectedIndex].value
+        const current = () => control.value
         check(current() === "off", "desktop preference defaults off, so fixed quality stays the wire default")
         ShellStore.settings = Object.assign({}, ShellStore.settings, {saveBandwidth:true, networkAdjust:"latency"})
         const consolePage = consoleSettings.createObject(parent)
@@ -40,8 +40,8 @@ QtObject {
         check(consoleRow() && consoleRow().toggle && consoleRow().v === "On"
             && consoleRow().t === "Save bandwidth", "console exposes the same preference")
         for (const choice of ["off", "quality", "latency"]) {
-            const index = control.options.findIndex(item => item.value === choice)
-            control.selected(index, control.options[index])
+            check(control.items.some(item => item.value === choice), "desktop offers " + choice)
+            control.selected(choice)
             const write = client.calls[client.calls.length - 1]
             check(write.method === "settings.set" && write.params.key === "networkAdjust"
                 && write.params.value === choice, "desktop requests the persisted preference")
