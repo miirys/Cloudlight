@@ -45,6 +45,8 @@ public:
     Q_INVOKABLE bool copyScreenshotTo(const QString &sourcePath,
                                       const QString &destinationUrlOrPath) const;
     Q_INVOKABLE bool openThemeDirectory() const;
+    // file:// URL of <app data>/mascot/<pose>.png when the user supplied one, else empty.
+    Q_INVOKABLE QString mascotOverrideUrl(const QString &pose) const;
     Q_INVOKABLE QString captureScreenRegion(int x, int y, int width, int height,
                                             const QString &gameTitle) const;
     Q_INVOKABLE bool captureScreenRegionTo(int x, int y, int width, int height,

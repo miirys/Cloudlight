@@ -11,7 +11,7 @@ Item {
     property real textReveal: 1
     // Over game art or the launch screen the background is always dark.
     property bool onMedia: false
-    readonly property real markAspect: 720 / 713
+    readonly property real markAspect: 1440 / 1184
     implicitWidth: mark.width + (root.textReveal > 0 ? root.spacing + label.implicitWidth * root.textReveal : 0)
     implicitHeight: Math.max(mark.height, label.implicitHeight)
     width: implicitWidth

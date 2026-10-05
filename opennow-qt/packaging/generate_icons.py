@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Generate the Qt application's platform icons from repository-root logo.png."""
+"""Generate the Qt application's platform icons from repository-root logo.png.
+
+Sizes up to 32 px come from packaging/logo-small.png, the same icon drawn with a larger
+mark so it stays readable in title bars and taskbars.
+"""
 
 import argparse
 import base64
@@ -11,19 +15,27 @@ from PIL import Image, ImageDraw
 
 PACKAGING = Path(__file__).resolve().parent
 SIZES = (16, 24, 32, 48, 64, 128, 256, 512, 1024)
+SMALL_SIZES = (16, 24, 32)
 
 
-def generate_assets():
-    with Image.open(PACKAGING.parents[1] / "logo.png") as source:
+def master_from(path):
+    with Image.open(path) as source:
         source = source.convert("RGBA")
         bounds = source.getchannel("A").getbbox()
         if bounds is None:
-            raise ValueError("logo.png must contain visible artwork")
+            raise ValueError(f"{path.name} must contain visible artwork")
         mark = source.crop(bounds)
     mark.thumbnail((896, 896), Image.Resampling.LANCZOS)
     master = Image.new("RGBA", (1024, 1024))
     master.paste(mark, ((1024 - mark.width) // 2, (1024 - mark.height) // 2))
-    images = {size: master.resize((size, size), Image.Resampling.LANCZOS) for size in SIZES}
+    return master
+
+
+def generate_assets():
+    master = master_from(PACKAGING.parents[1] / "logo.png")
+    small = master_from(PACKAGING / "logo-small.png")
+    images = {size: (small if size in SMALL_SIZES else master).resize((size, size), Image.Resampling.LANCZOS)
+              for size in SIZES}
     assets = {}
     for size, image in images.items():
         output = io.BytesIO()

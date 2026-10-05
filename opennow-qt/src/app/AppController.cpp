@@ -321,6 +321,21 @@ bool AppController::openThemeDirectory() const
     return QDesktopServices::openUrl(QUrl::fromLocalFile(directory.filePath(u"themes"_s)));
 }
 
+QString AppController::mascotOverrideUrl(const QString &pose) const
+{
+    // Local art stays on the device: it is read from the user's data folder and never
+    // bundled. Pose names are plain words so a binding can never reach outside it.
+    static const QRegularExpression poseName(u"^[a-z][a-z0-9-]{0,31}$"_s);
+    if (!poseName.match(pose).hasMatch()) return {};
+    const auto base = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    if (base.isEmpty()) return {};
+    const QFileInfo file(QDir(base).filePath(u"mascot/"_s + pose + u".png"_s));
+    constexpr qint64 maximumBytes = 64LL * 1024 * 1024;
+    if (!file.isFile() || !file.isReadable() || file.size() <= 0 || file.size() > maximumBytes)
+        return {};
+    return QUrl::fromLocalFile(file.absoluteFilePath()).toString();
+}
+
 QString AppController::captureScreenRegion(int x, int y, int width, int height,
                                            const QString &gameTitle) const
 {

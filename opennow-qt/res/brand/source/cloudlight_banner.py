@@ -28,13 +28,13 @@ def sparkle(p, cx, cy, r, color):
 img = QImage(W, H, QImage.Format_ARGB32_Premultiplied)
 p = QPainter(img)
 p.setRenderHint(QPainter.Antialiasing)
-p.fillRect(img.rect(), QColor("#100E13"))
+p.fillRect(img.rect(), QColor("#0D0D10"))
 glow = QRadialGradient(QPointF(W * 0.30, H * 0.48), W * 0.42)
-glow.setColorAt(0, QColor(42, 35, 54, 255))
-glow.setColorAt(1, QColor(16, 14, 19, 0))
+glow.setColorAt(0, QColor(40, 41, 47, 255))
+glow.setColorAt(1, QColor(13, 13, 16, 0))
 p.fillRect(img.rect(), glow)
 
-ink = QColor("#B9A9D9")
+ink = QColor("#C9CAD2")
 for x, y, r, a in [(0.08, 0.20, 20, 0.8), (0.17, 0.78, 12, 0.6), (0.46, 0.16, 14, 0.7), (0.53, 0.82, 24, 0.8),
                    (0.88, 0.22, 16, 0.6), (0.94, 0.70, 10, 0.5), (0.70, 0.12, 9, 0.5)]:
     c = QColor(ink)
@@ -42,20 +42,22 @@ for x, y, r, a in [(0.08, 0.20, 20, 0.8), (0.17, 0.78, 12, 0.6), (0.46, 0.16, 14
     sparkle(p, W * x, H * y, r * 1.6, c)
 
 mark = QSvgRenderer("opennow-qt/res/brand/source/cloudlight-mark.svg")
-size = 760
-mark.render(p, QRectF(W * 0.30 - size / 2, H * 0.5 - size / 2 - 20, size, size))
+box = mark.viewBoxF()
+width = 820
+height = width * box.height() / box.width()
+mark.render(p, QRectF(W * 0.30 - width / 2, H * 0.5 - height / 2 - 20, width, height))
 
 font = QFont(family)
 font.setPixelSize(260)
 font.setWeight(QFont.Medium)
 p.setFont(font)
-p.setPen(QColor("#F4F1F8"))
+p.setPen(QColor("#F4F4F6"))
 p.drawText(QRectF(W * 0.50, H * 0.26, W * 0.48, 320), Qt.AlignLeft | Qt.AlignVCenter, "Cloudlight")
 
 body = QFont(inter)
 body.setPixelSize(56)
 p.setFont(body)
-p.setPen(QColor("#A39CAD"))
+p.setPen(QColor("#A2A3AB"))
 p.drawText(QRectF(W * 0.505, H * 0.56, W * 0.46, 200), Qt.AlignLeft | Qt.TextWordWrap,
            "Your GeForce NOW library,\non the big screen.")
 p.end()

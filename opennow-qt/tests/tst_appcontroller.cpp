@@ -84,6 +84,7 @@ private slots:
     void screenshotExportIsScoped();
     void screenshotExportHonorsPicturesOverride();
     void screenshotExportRefusesUnavailablePicturesRoot();
+    void mascotOverrideReadsOnlyLocalPoseFiles();
 };
 
 void AppControllerTest::rejectsUnknownRoutes()
@@ -342,6 +343,27 @@ void AppControllerTest::screenshotExportRefusesUnavailablePicturesRoot()
     QVERIFY(!controller.copyScreenshotTo(source, QUrl::fromLocalFile(target).toString()));
     QVERIFY(!QFileInfo::exists(target));
     QFile::remove(source);
+}
+
+void AppControllerTest::mascotOverrideReadsOnlyLocalPoseFiles()
+{
+    QStandardPaths::setTestModeEnabled(true);
+    const auto restoreTestMode = qScopeGuard([] { QStandardPaths::setTestModeEnabled(false); });
+    QDir root(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
+    QVERIFY(root.mkpath(QStringLiteral("mascot")));
+    const auto path = root.filePath(QStringLiteral("mascot/login.png"));
+    const auto removeFixture = qScopeGuard([&] { QFile::remove(path); });
+    AppController controller;
+    QVERIFY(controller.mascotOverrideUrl(QStringLiteral("login")).isEmpty());
+    QFile file(path);
+    QVERIFY(file.open(QIODevice::WriteOnly));
+    QCOMPARE(file.write("fixture"), 7);
+    file.close();
+    QCOMPARE(controller.mascotOverrideUrl(QStringLiteral("login")),
+             QUrl::fromLocalFile(QFileInfo(path).absoluteFilePath()).toString());
+    QVERIFY(controller.mascotOverrideUrl(QStringLiteral("../mascot/login")).isEmpty());
+    QVERIFY(controller.mascotOverrideUrl(QStringLiteral("Login")).isEmpty());
+    QVERIFY(controller.mascotOverrideUrl(QString()).isEmpty());
 }
 
 QTEST_MAIN(AppControllerTest)

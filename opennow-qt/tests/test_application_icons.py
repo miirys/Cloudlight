@@ -23,17 +23,22 @@ class ApplicationIconTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_pngs_preserve_canonical_brand_and_transparency(self):
-        with Image.open(QT_ROOT.parent / "logo.png") as source:
-            source = source.convert("RGBA")
-            mark = source.crop(source.getchannel("A").getbbox())
-        mark.thumbnail((896, 896), Image.Resampling.LANCZOS)
-        master = Image.new("RGBA", (1024, 1024))
-        master.paste(mark, ((1024 - mark.width) // 2, (1024 - mark.height) // 2))
+        def master_from(path):
+            with Image.open(path) as source:
+                source = source.convert("RGBA")
+                mark = source.crop(source.getchannel("A").getbbox())
+            mark.thumbnail((896, 896), Image.Resampling.LANCZOS)
+            master = Image.new("RGBA", (1024, 1024))
+            master.paste(mark, ((1024 - mark.width) // 2, (1024 - mark.height) // 2))
+            return master
+        master = master_from(QT_ROOT.parent / "logo.png")
+        small = master_from(PACKAGING / "logo-small.png")
         for size in SIZES:
             with self.subTest(size=size), Image.open(ICONS / f"opennow-{size}.png") as image:
                 self.assertEqual(image.mode, "RGBA")
                 self.assertEqual(image.size, (size, size))
-                expected = master.resize((size, size), Image.Resampling.LANCZOS)
+                source = small if size <= 32 else master
+                expected = source.resize((size, size), Image.Resampling.LANCZOS)
                 self.assertIsNone(ImageChops.difference(image, expected).getbbox(alpha_only=False))
                 self.assertEqual(image.getpixel((0, 0))[3], 0)
                 self.assertGreater(image.getchannel("A").getextrema()[1], 240)

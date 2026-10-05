@@ -3,7 +3,10 @@
 The repository-root `logo.png` is the source for every Qt application icon. The
 generator trims transparent padding, fits the unmodified cloud into a centered
 896-pixel area on a transparent 1024-pixel canvas, and downsamples with Lanczos.
-It does not redraw, recolor, or add a background to the artwork.
+It does not redraw, recolor, or add a background to the artwork. The 16, 24 and
+32-pixel sizes come from `opennow-qt/packaging/logo-small.png` instead, the same icon
+drawn with a larger mark so it stays readable in title bars and taskbars. Both sources
+are rendered from vectors by `opennow-qt/res/brand/source/cloudlight_icon.py`.
 
 From the repository root, generate and check the assets with the pinned Pillow
 version:
