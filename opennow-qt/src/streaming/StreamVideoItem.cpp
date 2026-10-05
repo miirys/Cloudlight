@@ -326,17 +326,17 @@ void StreamVideoItem::setUpscalingDenoise(int value)
     update();
 }
 
-QVariantMap StreamVideoItem::videoFilter() const
+QVariantList StreamVideoItem::videoFilterChain() const
 {
-    return m_videoFilter.toVariantMap();
+    return m_videoFilter.toVariantList();
 }
 
-void StreamVideoItem::setVideoFilter(const QVariantMap &filter)
+void StreamVideoItem::setVideoFilterChain(const QVariantList &chain)
 {
-    const auto normalized = StreamVideoFilter::fromVariantMap(filter);
+    const auto normalized = StreamVideoFilter::fromVariantList(chain);
     if (m_videoFilter == normalized) return;
     m_videoFilter = normalized;
-    emit videoFilterChanged();
+    emit videoFilterChainChanged();
     update();
 }
 

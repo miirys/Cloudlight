@@ -22,6 +22,7 @@ set(OPENNOW_STREAM_PRESENTATION_SOURCES
     src/streaming/rendering/StreamVideoItemRendering.cpp
     src/streaming/rendering/StreamVideoRenderCallback.h
     src/streaming/rendering/StreamVideoFilter.h
+    src/streaming/rendering/StreamGameFilterChain.h
     src/streaming/rendering/StreamPresentTimings.h
     src/streaming/rendering/StreamVideoTextureRenderer.h
     src/streaming/rendering/StreamFrameInterpolator.cpp

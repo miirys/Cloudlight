@@ -850,8 +850,7 @@ pub fn measure_path(
         }
         measurement.sent += 1;
         let sequence = u32::try_from(index + 1).unwrap_or(u32::MAX);
-        if let Some(elapsed) =
-            round_trip(
+        if let Some(elapsed) = round_trip(
             socket,
             peer,
             key,
@@ -860,10 +859,11 @@ pub fn measure_path(
             PROBE_FLOOR_BYTES,
             reply_wait,
             deadline,
-        )
-        {
+        ) {
             measurement.received += 1;
-            measurement.round_trips_ms.push(elapsed.as_secs_f64() * 1000.0);
+            measurement
+                .round_trips_ms
+                .push(elapsed.as_secs_f64() * 1000.0);
         }
         let spent = started.elapsed();
         if spent < interval {

@@ -146,7 +146,7 @@ public:
         if (!m_runtime || !m_runtime->presentationAllowed()
             || m_presentationGeneration != m_runtime->presentationGeneration()
             || !m_graphicsReady || !m_rhi || !commandBuffer) return;
-        m_textures.prepareUpscaling(commandBuffer, m_upscalingTarget, m_fsrUpscaling,
+        m_textures.preparePostProcessing(commandBuffer, m_upscalingTarget, m_fsrUpscaling,
             m_sourceColorSpace == OPENNOW_STREAMER_COLOR_SPACE_SDR709, m_upscalingSharpness);
     }
 

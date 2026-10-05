@@ -98,7 +98,7 @@ private:
         QRhiReadbackResult result;
         bool completed = false;
         if (ready) {
-            renderer.prepareUpscaling(cb, size, enabled, sdr, sharpness);
+            renderer.preparePostProcessing(cb, size, enabled, sdr, sharpness);
             cb->beginPass(target.get(), Qt::transparent, {1.0f, 0});
             cb->setViewport(QRhiViewport(0, 0, size.width(), size.height()));
             cb->setScissor(QRhiScissor(0, 0, size.width(), size.height()));

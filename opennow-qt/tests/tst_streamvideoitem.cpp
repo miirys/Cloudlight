@@ -2581,97 +2581,86 @@ private slots:
         QCOMPARE(item.renderCallback(), callback);
     }
 
-    void videoFilterIsBoundedNeutralByDefaultAndPreservesPresenter()
+    void videoFilterChainIsBoundedOrderedAndPreservesPresenter()
     {
         StreamVideoItem item;
         const auto callback = std::make_shared<TestRenderCallback>();
         item.setRenderCallback(callback);
         item.setVideoSize(QSize(1920, 1080));
-        QSignalSpy changes(&item, &StreamVideoItem::videoFilterChanged);
+        QSignalSpy changes(&item, &StreamVideoItem::videoFilterChainChanged);
         const StreamVideoFilter &state = item.videoFilterState();
         QVERIFY(state == StreamVideoFilter{});
         QVERIFY(!state.active());
-        QCOMPARE(item.videoFilter().value(QStringLiteral("contrast")).toDouble(), 1.0);
-        QCOMPARE(item.videoFilter().value(QStringLiteral("saturation")).toDouble(), 1.0);
-        QCOMPARE(item.videoFilter().value(QStringLiteral("active")).toBool(), false);
+        QVERIFY(item.videoFilterChain().isEmpty());
 
-        // Neutral, non-finite, non-numeric and unknown values never activate the filter.
-        item.setVideoFilter({{QStringLiteral("contrast"), 1.0},
-                             {QStringLiteral("brightness"), qQNaN()},
-                             {QStringLiteral("saturation"), qInf()},
-                             {QStringLiteral("vibrance"), -qInf()},
-                             {QStringLiteral("sepia"), QStringLiteral("strong")},
-                             {QStringLiteral("unknown"), 5},
-                             {QStringLiteral("grain"), 0.00001}});
+        // Unknown types and non-object entries never activate the chain.
+        item.setVideoFilterChain({QVariantMap{{QStringLiteral("type"), QStringLiteral("unknown")}},
+                                  QStringLiteral("sharpen"), 5,
+                                  QVariantMap{{QStringLiteral("amount"), 50}}});
         QCOMPARE(changes.size(), 0);
-        QVERIFY(state == StreamVideoFilter{});
-
-        item.setVideoFilter({{QStringLiteral("brightness"), 5.0},
-                             {QStringLiteral("contrast"), -3.0},
-                             {QStringLiteral("saturation"), 1.5},
-                             {QStringLiteral("vibrance"), -9},
-                             {QStringLiteral("temperature"), 0.25},
-                             {QStringLiteral("grayscale"), 2},
-                             {QStringLiteral("sepia"), -1},
-                             {QStringLiteral("vignette"), 0.5},
-                             {QStringLiteral("sharpen"), 3},
-                             {QStringLiteral("details"), 0.75},
-                             {QStringLiteral("grain"), 0.25},
-                             {QStringLiteral("nightMode"), 1.0},
-                             {QStringLiteral("letterbox"), 7},
-                             {QStringLiteral("colorblindMode"), 9},
-                             {QStringLiteral("colorblindStrength"), 0.5}});
-        QCOMPARE(changes.size(), 1);
-        QVERIFY(state.active());
-        QCOMPARE(state.brightness, 1.0f);
-        QCOMPARE(state.contrast, 0.0f);
-        QCOMPARE(state.saturation, 1.5f);
-        QCOMPARE(state.vibrance, -1.0f);
-        QCOMPARE(state.temperature, 0.25f);
-        QCOMPARE(state.grayscale, 1.0f);
-        QCOMPARE(state.sepia, 0.0f);
-        QCOMPARE(state.vignette, 0.5f);
-        QCOMPARE(state.sharpen, 1.0f);
-        QCOMPARE(state.details, 0.75f);
-        QCOMPARE(state.grain, 0.25f);
-        QCOMPARE(state.nightMode, 1.0f);
-        QCOMPARE(state.letterbox, 1.0f);
-        QCOMPARE(state.colorblindMode, 0);
-        QCOMPARE(state.colorblindStrength, 0.5f);
-        QVERIFY(!state.colorblindActive());
-        QCOMPARE(item.videoFilter().value(QStringLiteral("brightness")).toDouble(), 1.0);
-        QCOMPARE(item.videoFilter().value(QStringLiteral("active")).toBool(), true);
-
-        // Reading the normalized map back and writing it again is idempotent.
-        item.setVideoFilter(item.videoFilter());
-        QCOMPARE(changes.size(), 1);
-
-        item.setVideoFilter({{QStringLiteral("colorblindMode"), 3.4},
-                             {QStringLiteral("colorblindStrength"), 1}});
-        QCOMPARE(changes.size(), 2);
-        QCOMPARE(state.colorblindMode, 3);
-        QVERIFY(state.colorblindActive());
-        QVERIFY(state.active());
-
-        // A correction mode without strength costs nothing.
-        item.setVideoFilter({{QStringLiteral("colorblindMode"), 1}});
-        QCOMPARE(changes.size(), 3);
         QVERIFY(!state.active());
 
-        item.setVideoFilter({});
-        QCOMPARE(changes.size(), 4);
+        // Order is kept; values are clamped to NVIDIA's ranges, and missing, non-numeric or
+        // non-finite values take the defaults a filter starts with.
+        item.setVideoFilterChain({
+            QVariantMap{{QStringLiteral("type"), QStringLiteral("vignette")},
+                        {QStringLiteral("intensity"), 140}},
+            QVariantMap{{QStringLiteral("type"), QStringLiteral("brightness-contrast")},
+                        {QStringLiteral("exposure"), qQNaN()},
+                        {QStringLiteral("contrast"), -300},
+                        {QStringLiteral("gamma"), QStringLiteral("high")},
+                        {QStringLiteral("shadows"), 12.6}},
+            QVariantMap{{QStringLiteral("type"), QStringLiteral("letterbox")},
+                        {QStringLiteral("horizontal"), 0}, {QStringLiteral("vertical"), qInf()}},
+            QVariantMap{{QStringLiteral("type"), QStringLiteral("old-film")},
+                        {QStringLiteral("contrast"), 100}}});
+        QCOMPARE(changes.size(), 1);
+        QVERIFY(state.active());
+        QCOMPARE(state.count, 4);
+        QCOMPARE(state.stages[0].type, int(StreamVideoFilterStage::Vignette));
+        QCOMPARE(state.stages[0].values[0], 100);
+        QCOMPARE(state.stages[1].type, int(StreamVideoFilterStage::BrightnessContrast));
+        const std::array<int, 5> tone = {0, -100, 20, 13, 0};
+        for (size_t index = 0; index < tone.size(); ++index)
+            QCOMPARE(state.stages[1].values[index], tone[index]);
+        QCOMPARE(state.stages[2].values[0], 1);
+        QCOMPARE(state.stages[2].values[1], 9);
+        QVERIFY(state.animated());
+        // Old film's contrast slider maps 0..100 onto Freestyle's 0..4.
+        QCOMPARE(state.stages[3].shaderValues()[2], 4.0f);
+        QCOMPARE(state.stages[2].shaderValues()[0], 1.0f);
+        QCOMPARE(state.stages[1].shaderValues()[1], -1.0f);
+        const auto chain = item.videoFilterChain();
+        QCOMPARE(chain.size(), 4);
+        QCOMPARE(chain[0].toMap().value(QStringLiteral("type")).toString(), QStringLiteral("vignette"));
+        QCOMPARE(chain[1].toMap().value(QStringLiteral("highlights")).toInt(), 20);
+
+        // Reading the normalized chain back and writing it again is idempotent.
+        item.setVideoFilterChain(item.videoFilterChain());
+        QCOMPARE(changes.size(), 1);
+
+        QVariantList many;
+        for (int index = 0; index < 12; ++index)
+            many.append(QVariantMap{{QStringLiteral("type"), QStringLiteral("sharpen")},
+                                    {QStringLiteral("sharpen"), index}});
+        item.setVideoFilterChain(many);
+        QCOMPARE(changes.size(), 2);
+        QCOMPARE(state.count, StreamVideoFilter::maxStages);
+        QCOMPARE(state.stages[7].values[0], 7);
+        QCOMPARE(state.stages[7].values[1], 15);
+        QVERIFY(!state.animated());
+
+        item.setVideoFilterChain({});
+        QCOMPARE(changes.size(), 3);
         QVERIFY(state == StreamVideoFilter{});
         QCOMPARE(item.renderCallback(), callback);
         QCOMPARE(item.videoSize(), QSize(1920, 1080));
 
-        // The render-thread packing only raises the shader flag for an active filter.
         StreamVideoTextureRenderer renderer;
         QVERIFY(!renderer.filterActive());
-        auto active = StreamVideoFilter::fromVariantMap({{QStringLiteral("grayscale"), 1.0}});
-        renderer.setFilter(active);
+        renderer.setFilter(StreamVideoFilter::fromVariantList(
+            {QVariantMap{{QStringLiteral("type"), QStringLiteral("black-white")}}}));
         QVERIFY(renderer.filterActive());
-        renderer.setFilter(StreamVideoFilter::fromVariantMap({{QStringLiteral("colorblindMode"), 2}}));
-        QVERIFY(!renderer.filterActive());
         renderer.setFilter(StreamVideoFilter{});
         QVERIFY(!renderer.filterActive());
     }

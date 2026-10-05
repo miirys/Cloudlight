@@ -1083,15 +1083,24 @@ command to another, clearing, resetting one binding, and resetting all bindings.
 `active` is an integer clamped to 0–3 (0 means no style is applied). `styles` always has
 exactly three entries; each `name` is trimmed and limited to 30 characters, and each
 `filters` list keeps at most eight objects. Every filter has a `type` and only that type's
-integer parameters, clamped as follows; unknown types and parameters are dropped:
-`black-white` (`intensity` 0–100, default 100), `brightness-contrast` (`brightness` and
-`contrast` −100–100, default 0), `color` (`saturation`, `vibrance` and `temperature`
-−100–100, default 0), `colorblind` (`mode` `protanopia`/`deuteranopia`/`tritanopia`,
-default `deuteranopia`; `strength` 0–100, default 100), `details`, `letterbox`, `sharpen`
-and `vignette` (`amount` 0–100, default 50), `night-mode` (`intensity` 0–100, default 50)
-and `old-film` (`intensity` 0–100, default 60). `shortcutGameFilter1`–`shortcutGameFilter3`
+integer parameters, clamped as follows (NVIDIA Freestyle's slider ranges; missing values take
+the default a filter starts with when added); unknown types and parameters are dropped:
+`black-white` (`intensity` 0–100, default 100), `brightness-contrast` (`exposure`, `contrast`,
+`highlights`, `shadows`, `gamma` −100–100, defaults 0/30/20/−30/0), `color` (`tintColor` and
+`tintIntensity` 0–100, defaults 20/30; `temperature` and `vibrance` −100–100, default 0),
+`colorblind` (`protanopia`, `deuteranopia`, `tritanopia` 0–100, defaults 0/100/0), `details`
+(`sharpen` 0–100, default 50; `clarity` and `hdrToning` −100–100, defaults 70/60; `bloom`
+0–100, default 15), `letterbox` (`horizontal` and `vertical` 1–30, defaults 21/9),
+`night-mode` (`intensity` 0–100, default 30), `old-film` (`gamma`, `exposure`, `contrast`,
+`vignette` 0–100, default 50; `strength` and `dirt` 0–100, default 100), `sharpen`
+(`sharpen` 0–100, default 50; `ignoreGrain` 0–100, default 15) and `vignette` (`intensity`
+0–100, default 70). Filters saved by the earlier schema migrate: `sharpen.amount` becomes
+`sharpen`, `vignette.amount` becomes `intensity`, and a colorblind `mode`/`strength` pair sets
+that mode's slider to the strength and the others to 0; every other old value is replaced by
+the default. `shortcutGameFilter1`–`shortcutGameFilter3`
 select a style and default to `""` (unbound); they follow the shortcut rules above.
-Filters are applied by the Qt presenter only; they are not sent to the streamer.
+Filters are applied by the Qt presenter only, one pass per filter in list order at the stream's
+resolution; they are not sent to the streamer.
 
 Each successful settings write publishes `settings.changed` before its own
 response. A client that starts its next per-key write from that response has

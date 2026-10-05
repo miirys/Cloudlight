@@ -349,7 +349,8 @@ if(BUILD_TESTING)
         Qt6::Test Qt6::Core Qt6::Gui Qt6::GuiPrivate)
     qt_add_shaders(opennow-streamcolor-tests "opennow-streamcolor-test-shaders"
         PREFIX "/opennow/shaders" BASE "shaders"
-        FILES shaders/streamvideo.vert shaders/streamvideo.frag)
+        FILES shaders/framegen.vert shaders/streamvideo.vert shaders/streamvideo.frag)
+    opennow_add_fsr_shaders(opennow-streamcolor-tests)
     if(OPENNOW_XVFB_RUN)
         add_test(NAME opennow-streamcolor-tests
             COMMAND "${OPENNOW_XVFB_RUN}" -a "$<TARGET_FILE:opennow-streamcolor-tests>" -o -,txt)

@@ -1,21 +1,27 @@
 import QtQuick
 import OpenNOW
 
-// Flat slider row for filter strengths: label and value above a thin track. Left and
-// Right step by `step`; dragging or clicking the track sets the value directly.
+// Flat slider row for filter strengths: label and value above a thin track. Values sit on
+// a `step` grid counted from `from` (NVIDIA's bipolar sliders move in twos); Left and Right
+// move one step, and dragging or clicking the track snaps to the nearest step.
 OverlayFocusable {
     id: root
     property string title: ""
     property int from: 0
     property int to: 100
-    property int step: 5
+    property int step: 1
     property int value: 0
+    // Shown after the number, e.g. "°" for angles. Bipolar values carry an explicit sign.
+    property string suffix: ""
     signal moved(int value)
     width: parent ? parent.width : 0
     height: OverlayStyle.u(84)
     Accessible.role: Accessible.Slider
     Accessible.name: title
-    function clamp(next) { return Math.max(from, Math.min(to, Math.round(next))) }
+    function clamp(next) {
+        const snapped = from + Math.round((next - from) / Math.max(1, step)) * Math.max(1, step)
+        return Math.max(from, Math.min(to, snapped))
+    }
     onStepped: direction => { const next = clamp(value + direction * step); if (next !== value) moved(next) }
 
     Text {
@@ -31,7 +37,7 @@ OverlayFocusable {
         anchors.right: parent.right
         anchors.rightMargin: OverlayStyle.gutter
         y: OverlayStyle.u(14)
-        text: root.from < 0 && root.value > 0 ? "+" + root.value : String(root.value)
+        text: (root.from < 0 && root.value > 0 ? "+" + root.value : String(root.value)) + root.suffix
         color: OverlayStyle.subtitle
         font.family: Theme.bodyFont
         font.pixelSize: OverlayStyle.subtitleSize

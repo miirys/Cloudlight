@@ -101,6 +101,7 @@ private:
         QRhiReadbackResult result;
         bool completed = false;
         if (ready) {
+            renderer.preparePostProcessing(cb, size, false, true, 0);
             cb->beginPass(target.target.get(), QColor(255, 0, 255), {1.0f, 0});
             cb->setViewport(QRhiViewport(0, 0, float(size.width()), float(size.height())));
             cb->setScissor(QRhiScissor(0, 0, size.width(), size.height()));
@@ -124,6 +125,12 @@ private:
             for (int x = 0; x < tileSize; ++x)
                 sum += quint8(data[(y * patchCount * tileSize + patch * tileSize + x) * 4]);
         return double(sum) / (tileSize * tileSize);
+    }
+
+    static QVariantMap filter(const char *type, QVariantMap values = {})
+    {
+        values.insert(QStringLiteral("type"), QString::fromLatin1(type));
+        return values;
     }
 
 private slots:
@@ -365,13 +372,12 @@ private slots:
         QVERIFY(target);
         const auto expected = patches(codes, false);
         StreamVideoTextureRenderer renderer;
-        renderer.setFilter(StreamVideoFilter::fromVariantMap({{QStringLiteral("contrast"), 1.0},
-                                                             {QStringLiteral("grain"), qQNaN()}}));
+        renderer.setFilter(StreamVideoFilter::fromVariantList({filter("unknown")}));
         QVERIFY(!renderer.filterActive());
         QCOMPARE(render(renderer, source.get(), *target), expected);
-        // Grayscale is the identity on gray input, so the filtered decode/encode path must
-        // reproduce the unfiltered composition.
-        renderer.setFilter(StreamVideoFilter::fromVariantMap({{QStringLiteral("grayscale"), 1.0}}));
+        // Black & White is the identity on gray input (Rec.709 weights sum to one), so the
+        // filter pass and its RGBA8 intermediate must reproduce the unfiltered composition.
+        renderer.setFilter(StreamVideoFilter::fromVariantList({filter("black-white")}));
         QVERIFY(renderer.filterActive());
         const auto filtered = render(renderer, source.get(), *target);
         QCOMPARE(filtered.size(), expected.size());
@@ -383,6 +389,38 @@ private slots:
         QCOMPARE(render(renderer, source.get(), *target), expected);
     }
 
+    void gameFiltersRunInStackOrderAndClampBetweenPasses()
+    {
+        auto source = makeSource({255}, false);
+        QVERIFY(source);
+        auto target = makeTarget(QRhiTexture::RGBA8, source->pixelSize());
+        QVERIFY(target);
+        const auto night = filter("night-mode", {{QStringLiteral("intensity"), 100}});
+        const auto gray = filter("black-white");
+        const auto pixelAt = [](const QByteArray &data, int index) {
+            return std::array<int, 3>{quint8(data[index * 4]), quint8(data[index * 4 + 1]),
+                                      quint8(data[index * 4 + 2])};
+        };
+        StreamVideoTextureRenderer renderer;
+        // Night mode at 100 % keeps red, scales green by 0.05^0.4 and drives blue negative,
+        // which the UNORM intermediate clamps to 0 before Black & White reads it.
+        renderer.setFilter(StreamVideoFilter::fromVariantList({night, gray}));
+        auto data = render(renderer, source.get(), *target);
+        QCOMPARE(data.size(), tileSize * tileSize * 4);
+        const int luma = int(std::lround((0.2126 + 0.7152 * std::pow(0.05, 0.4)) * 255.0));
+        for (int index = 0; index < tileSize * tileSize; ++index)
+            for (int channel : pixelAt(data, index)) QVERIFY(std::abs(channel - luma) <= 1);
+        renderer.setFilter(StreamVideoFilter::fromVariantList({gray, night}));
+        data = render(renderer, source.get(), *target);
+        const int green = int(std::lround(std::pow(0.05, 0.4) * 255.0));
+        for (int index = 0; index < tileSize * tileSize; ++index) {
+            const auto pixel = pixelAt(data, index);
+            QCOMPARE(pixel[0], 255);
+            QVERIFY(std::abs(pixel[1] - green) <= 1);
+            QCOMPARE(pixel[2], 0);
+        }
+    }
+
     void letterboxFilterBlacksOnlyTheBars()
     {
         auto source = makeSource({512});
@@ -390,10 +428,10 @@ private slots:
         auto target = makeTarget(QRhiTexture::RGBA8, source->pixelSize());
         QVERIFY(target);
         StreamVideoTextureRenderer renderer;
-        renderer.setFilter(StreamVideoFilter::fromVariantMap({{QStringLiteral("letterbox"), 1.0}}));
+        renderer.setFilter(StreamVideoFilter::fromVariantList({filter("letterbox")}));
         const auto data = render(renderer, source.get(), *target);
         QCOMPARE(data.size(), tileSize * tileSize * 4);
-        // A square video keeps a centred 2.39:1 band: 8 * (1 - 1 / 2.39) / 2 = 2.33 rows per bar.
+        // NVIDIA's default 21:9 on a square frame keeps |2y - 1| < 9/21: rows 2..5 of 8.
         for (int row : {0, 1, tileSize - 2, tileSize - 1}) {
             for (int x = 0; x < tileSize; ++x) {
                 const char *pixel = data.constData() + (row * tileSize + x) * 4;
@@ -404,9 +442,34 @@ private slots:
             }
         }
         const double expected = 512.0 * 255.0 / 1023.0;
-        for (int row = 3; row <= 4; ++row)
+        for (int row = 2; row <= 5; ++row)
             for (int x = 0; x < tileSize; ++x)
                 QVERIFY(std::abs(quint8(data[(row * tileSize + x) * 4]) - expected) <= 1.0);
+    }
+
+    void everyGameFilterRendersFiniteOutput()
+    {
+        QList<int> codes;
+        for (int code = 0; code <= 1020; code += 60) codes.append(code);
+        auto source = makeSource(codes);
+        QVERIFY(source);
+        auto target = makeTarget(QRhiTexture::RGBA8, source->pixelSize());
+        QVERIFY(target);
+        const auto unfiltered = [&] {
+            StreamVideoTextureRenderer plain;
+            return render(plain, source.get(), *target);
+        }();
+        QVERIFY(!unfiltered.isEmpty());
+        for (const auto &entry : StreamVideoFilterStage::catalogue()) {
+            StreamVideoTextureRenderer renderer;
+            renderer.setFilter(StreamVideoFilter::fromVariantList({filter(entry.name)}));
+            const auto data = render(renderer, source.get(), *target);
+            QVERIFY2(data.size() == unfiltered.size(), entry.name);
+            // The composition clear colour (magenta) must never show through.
+            for (qsizetype index = 0; index < data.size(); index += 4)
+                QVERIFY2(!(quint8(data[index]) == 255 && quint8(data[index + 1]) == 0
+                           && quint8(data[index + 2]) == 255), entry.name);
+        }
     }
 };
 

@@ -87,7 +87,7 @@ QtObject {
     property alias settings: settingsOwner.settings
     readonly property string selectedRegion: settingsOwner.selectedRegion
     property alias keyboardLayoutItems: settingsOwner.keyboardLayoutItems
-    readonly property var gameFilterUniforms: settingsOwner.gameFilterUniforms
+    readonly property var gameFilterChain: settingsOwner.gameFilterChain
     property var onboardingAwdlController: MacAwdl
     readonly property bool onboardingAwdlReady: !onboardingAwdlController.busy
         && [MacAwdlController.Unsupported, MacAwdlController.Unavailable, MacAwdlController.Disabled]

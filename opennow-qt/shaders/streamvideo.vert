@@ -6,11 +6,6 @@ layout(std140, binding = 0) uniform Composition {
     vec4 videoRect;
     vec4 parameters;
     vec4 colorParameters;
-    vec4 filterTone;
-    vec4 filterColor;
-    vec4 filterDetail;
-    vec4 filterFrame;
-    vec4 filterTexel;
 };
 void main()
 {

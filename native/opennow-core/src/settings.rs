@@ -505,7 +505,13 @@ impl SettingsStore {
         normalize_choice(
             &mut self.values,
             "streamingMode",
-            &["datasaver", "balanced", "competitive", "cinematic", "custom"],
+            &[
+                "datasaver",
+                "balanced",
+                "competitive",
+                "cinematic",
+                "custom",
+            ],
             "custom",
         );
         normalize_choice(
@@ -544,7 +550,13 @@ impl SettingsStore {
             normalize_choice(
                 &mut self.values,
                 key,
-                &["top-left", "top-right", "bottom-left", "bottom-right", "none"],
+                &[
+                    "top-left",
+                    "top-right",
+                    "bottom-left",
+                    "bottom-right",
+                    "none",
+                ],
                 fallback,
             );
         }
@@ -566,8 +578,16 @@ impl SettingsStore {
             &mut self.values,
             "themePack",
             &[
-                "default", "nocturne", "aurora", "kraft", "phosphor", "bone", "cobalt", "hibiscus",
-                "chapel", "cloudlight",
+                "default",
+                "nocturne",
+                "aurora",
+                "kraft",
+                "phosphor",
+                "bone",
+                "cobalt",
+                "hibiscus",
+                "chapel",
+                "cloudlight",
             ],
             "cloudlight",
         );
@@ -1115,35 +1135,93 @@ fn normalize_game_filter_style(style: &Value) -> Value {
     json!({"name": name, "filters": filters})
 }
 
+// NVIDIA Freestyle's slider ranges and the defaults a filter starts with when added
+// (UI integers; the renderer converts them). Filters saved before these sliders existed
+// keep the one value that still has a meaning and take NVIDIA's defaults for the rest.
+fn game_filter_parameters(kind: &str) -> Option<&'static [(&'static str, i64, i64, i64)]> {
+    Some(match kind {
+        "black-white" => &[("intensity", 100, 0, 100)],
+        "brightness-contrast" => &[
+            ("exposure", 0, -100, 100),
+            ("contrast", 30, -100, 100),
+            ("highlights", 20, -100, 100),
+            ("shadows", -30, -100, 100),
+            ("gamma", 0, -100, 100),
+        ],
+        "color" => &[
+            ("tintColor", 20, 0, 100),
+            ("tintIntensity", 30, 0, 100),
+            ("temperature", 0, -100, 100),
+            ("vibrance", 0, -100, 100),
+        ],
+        "colorblind" => &[
+            ("protanopia", 0, 0, 100),
+            ("deuteranopia", 100, 0, 100),
+            ("tritanopia", 0, 0, 100),
+        ],
+        "details" => &[
+            ("sharpen", 50, 0, 100),
+            ("clarity", 70, -100, 100),
+            ("hdrToning", 60, -100, 100),
+            ("bloom", 15, 0, 100),
+        ],
+        "letterbox" => &[("horizontal", 21, 1, 30), ("vertical", 9, 1, 30)],
+        "night-mode" => &[("intensity", 30, 0, 100)],
+        "old-film" => &[
+            ("gamma", 50, 0, 100),
+            ("exposure", 50, 0, 100),
+            ("contrast", 50, 0, 100),
+            ("vignette", 50, 0, 100),
+            ("strength", 100, 0, 100),
+            ("dirt", 100, 0, 100),
+        ],
+        "sharpen" => &[("sharpen", 50, 0, 100), ("ignoreGrain", 15, 0, 100)],
+        "vignette" => &[("intensity", 70, 0, 100)],
+        _ => return None,
+    })
+}
+
 fn normalize_game_filter(filter: &Value) -> Option<Value> {
     let filter = filter.as_object()?;
     let kind = filter.get("type")?.as_str()?;
-    let parameters: &[(&str, i64, i64, i64)] = match kind {
-        "black-white" => &[("intensity", 100, 0, 100)],
-        "brightness-contrast" => &[("brightness", 0, -100, 100), ("contrast", 0, -100, 100)],
-        "color" => &[
-            ("saturation", 0, -100, 100),
-            ("vibrance", 0, -100, 100),
-            ("temperature", 0, -100, 100),
-        ],
-        "colorblind" => &[("strength", 100, 0, 100)],
-        "details" | "letterbox" | "sharpen" | "vignette" => &[("amount", 50, 0, 100)],
-        "night-mode" => &[("intensity", 50, 0, 100)],
-        "old-film" => &[("intensity", 60, 0, 100)],
-        _ => return None,
-    };
+    let parameters = game_filter_parameters(kind)?;
+    let mut source = filter.clone();
+    // Schema 1 migration: one "amount"/"strength" slider per filter.
+    match kind {
+        "sharpen" if !source.contains_key("sharpen") => {
+            if let Some(amount) = filter.get("amount") {
+                source.insert("sharpen".to_owned(), amount.clone());
+            }
+        }
+        "vignette" if !source.contains_key("intensity") => {
+            if let Some(amount) = filter.get("amount") {
+                source.insert("intensity".to_owned(), amount.clone());
+            }
+        }
+        "colorblind" => {
+            if let Some(mode) = filter
+                .get("mode")
+                .and_then(Value::as_str)
+                .filter(|mode| GAME_FILTER_COLORBLIND_MODES.contains(mode))
+            {
+                let strength = filter.get("strength").cloned().unwrap_or(json!(100));
+                for other in GAME_FILTER_COLORBLIND_MODES {
+                    source.entry(other.to_owned()).or_insert_with(|| {
+                        if other == mode {
+                            strength.clone()
+                        } else {
+                            json!(0)
+                        }
+                    });
+                }
+            }
+        }
+        _ => {}
+    }
     let mut normalized = Map::new();
     normalized.insert("type".to_owned(), Value::String(kind.to_owned()));
-    if kind == "colorblind" {
-        let mode = filter
-            .get("mode")
-            .and_then(Value::as_str)
-            .filter(|mode| GAME_FILTER_COLORBLIND_MODES.contains(mode))
-            .unwrap_or("deuteranopia");
-        normalized.insert("mode".to_owned(), Value::String(mode.to_owned()));
-    }
     for (key, fallback, minimum, maximum) in parameters {
-        let value = bounded_integer(filter.get(*key), *fallback, *minimum, *maximum);
+        let value = bounded_integer(source.get(*key), *fallback, *minimum, *maximum);
         normalized.insert((*key).to_owned(), Value::Number(value.into()));
     }
     Some(Value::Object(normalized))
@@ -1865,23 +1943,46 @@ mod tests {
         for (index, filter) in first.iter().enumerate() {
             assert_eq!(
                 filter,
-                &json!({"type":"sharpen","amount":(index as i64 * 20).min(100)})
+                &json!({"type":"sharpen","sharpen":(index as i64 * 20).min(100),"ignoreGrain":15})
             );
         }
 
         assert_eq!(
             styles[1],
             json!({"name":"","filters":[
-                {"type":"brightness-contrast","brightness":-100,"contrast":13},
-                {"type":"color","saturation":0,"vibrance":100,"temperature":-100},
-                {"type":"colorblind","mode":"deuteranopia","strength":0},
-                {"type":"colorblind","mode":"tritanopia","strength":100},
+                {"type":"brightness-contrast","exposure":0,"contrast":13,"highlights":20,"shadows":-30,"gamma":0},
+                {"type":"color","tintColor":20,"tintIntensity":30,"temperature":-100,"vibrance":100},
+                {"type":"colorblind","protanopia":0,"deuteranopia":100,"tritanopia":0},
+                {"type":"colorblind","protanopia":0,"deuteranopia":0,"tritanopia":100},
                 {"type":"black-white","intensity":100},
-                {"type":"old-film","intensity":100},
-                {"type":"night-mode","intensity":50},
-                {"type":"letterbox","amount":0}
+                {"type":"old-film","gamma":50,"exposure":50,"contrast":50,"vignette":50,"strength":100,"dirt":100},
+                {"type":"night-mode","intensity":30},
+                {"type":"letterbox","horizontal":21,"vertical":9}
             ]})
         );
+
+        store
+            .set(
+                "gameFilters",
+                json!({"active":1,"styles":[{"name":"Exact","filters":[
+                    {"type":"details","sharpen":101,"clarity":-101,"hdrToning":40.4,"bloom":-1},
+                    {"type":"letterbox","horizontal":0,"vertical":31},
+                    {"type":"vignette","amount":80},
+                    {"type":"sharpen","sharpen":20,"ignoreGrain":100,"amount":90},
+                    {"type":"special-fx","retro":50}
+                ]}]}),
+            )
+            .unwrap();
+        assert_eq!(
+            store.all()["gameFilters"]["styles"][0]["filters"],
+            json!([
+                {"type":"details","sharpen":100,"clarity":-100,"hdrToning":40,"bloom":0},
+                {"type":"letterbox","horizontal":1,"vertical":30},
+                {"type":"vignette","intensity":80},
+                {"type":"sharpen","sharpen":20,"ignoreGrain":100}
+            ])
+        );
+        store.set("gameFilters", filters.clone()).unwrap();
         assert_eq!(styles[2], json!({"name":"Third","filters":[]}));
 
         let reloaded = SettingsStore::load(Some(directory.path().to_owned())).unwrap();
@@ -2065,7 +2166,14 @@ mod tests {
         let directory = env::temp_dir().join(format!("opennow-theme-policy-{unique}"));
         let mut store = SettingsStore::load(Some(directory.clone())).unwrap();
         for pack in [
-            "nocturne", "aurora", "kraft", "phosphor", "bone", "cobalt", "hibiscus", "chapel",
+            "nocturne",
+            "aurora",
+            "kraft",
+            "phosphor",
+            "bone",
+            "cobalt",
+            "hibiscus",
+            "chapel",
             "cloudlight",
         ] {
             store.set("appAccentColor", json!("rose")).unwrap();
@@ -2177,7 +2285,10 @@ mod tests {
         assert_eq!(store.all()["networkAdjust"], json!("quality"));
         store.set("saveBandwidth", json!(false)).unwrap();
         assert_eq!(store.all()["networkAdjust"], json!("off"));
-        assert_eq!(store.set("networkAdjust", json!("sideways")).unwrap(), json!("off"));
+        assert_eq!(
+            store.set("networkAdjust", json!("sideways")).unwrap(),
+            json!("off")
+        );
 
         let legacy = tempfile::tempdir().unwrap();
         std::fs::write(
