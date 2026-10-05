@@ -18,7 +18,7 @@ Column {
         DesktopSettingsRow {
             width: parent.width; paperStyle: true; glyph: "folder"
             title: qsTr("Save location")
-            description: ShellStore.mediaRootPath ? ShellStore.mediaRootPath + "/Recordings" : qsTr("Pictures/OpenNOW/Recordings")
+            description: ShellStore.mediaRootPath ? ShellStore.mediaRootPath + "/Recordings" : qsTr("Pictures/Cloudlight/Recordings")
             DesktopSettingsButton {
                 objectName: "openRecordingsFolder"
                 text: qsTr("Open folder")
@@ -29,7 +29,7 @@ Column {
         DesktopSettingsRow {
             width: parent.width; paperStyle: true; glyph: "folder"
             title: qsTr("Captures folder")
-            description: ShellStore.mediaRootPath || qsTr("Pictures/OpenNOW")
+            description: ShellStore.mediaRootPath || qsTr("Pictures/Cloudlight")
             showDivider: false
             DesktopSettingsButton {
                 objectName: "openCapturesFolder"

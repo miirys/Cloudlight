@@ -34,10 +34,10 @@ def verify_apprun(appdir):
 
 
 def verify_package(bin_dir):
-    helper = bin_dir / "opennow-update-helper"
+    helper = bin_dir / "cloudlight-update-helper"
     if not helper.is_file() or not os.access(helper, os.X_OK):
         raise ValueError("The package is missing its executable update helper")
-    for name in ("opennow-streamer", "libopennow_streamer_ffi.so"):
+    for name in ("cloudlight-streamer", "libcloudlight_streamer_ffi.so"):
         binary = bin_dir / name
         dependencies = subprocess.check_output(["readelf", "-d", binary], text=True)
         for library in ("libva.so.2", "libva-drm.so.2"):
@@ -51,7 +51,7 @@ def verify_package(bin_dir):
         {"id": "package-shutdown", "type": "shutdown"},
     ]
     probe = subprocess.run(
-        [bin_dir / "opennow-streamer"],
+        [bin_dir / "cloudlight-streamer"],
         input="".join(json.dumps(command) + "\n" for command in commands),
         text=True,
         capture_output=True,

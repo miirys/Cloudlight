@@ -50,6 +50,7 @@ void Localization::setLocale(const QString &locale)
     m_locale = requested;
     m_effectiveLocale = effective;
     m_active = effective == u"en"_s ? m_fallback : loadLocale(effective);
+    if (effective != u"en"_s) applyCurrentProductName(&m_active, m_fallback);
     m_sourceToKey.clear();
     auto fallbackKeys = m_fallback.keys();
     fallbackKeys.sort();
@@ -117,6 +118,23 @@ void Localization::flatten(const QJsonObject &object,
         } else if (iterator->isObject()) {
             flatten(iterator->toObject(), key, target);
         }
+    }
+}
+
+// Crowdin translations can lag behind the English source after the product was
+// renamed from OpenNOW to Cloudlight. When the English text of a string no longer
+// names OpenNOW, a translation that still does shows the current name instead.
+// Strings whose English source still says OpenNOW (attribution, repository
+// links) are left exactly as translated.
+void Localization::applyCurrentProductName(QHash<QString, QString> *translations,
+                                           const QHash<QString, QString> &english)
+{
+    for (auto iterator = translations->begin(); iterator != translations->end(); ++iterator) {
+        if (!iterator->contains(u"OpenNOW"_s) && !iterator->contains(u"OPENNOW"_s)) continue;
+        const auto source = english.value(iterator.key());
+        if (source.isEmpty() || source.contains(u"OpenNOW"_s, Qt::CaseInsensitive)) continue;
+        iterator->replace(u"OpenNOW"_s, u"Cloudlight"_s);
+        iterator->replace(u"OPENNOW"_s, u"CLOUDLIGHT"_s);
     }
 }
 

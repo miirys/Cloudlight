@@ -44,12 +44,12 @@ def generate_assets():
     output = io.BytesIO()
     images[256].save(output, format="ICO", sizes=[(s, s) for s in SIZES if s <= 256],
                      append_images=[images[s] for s in SIZES if s < 256])
-    assets["icons/OpenNOW.ico"] = output.getvalue()
+    assets["icons/Cloudlight.ico"] = output.getvalue()
     output = io.BytesIO()
     master.save(output, format="ICNS", append_images=list(images.values()))
-    assets["icons/OpenNOW.icns"] = output.getvalue()
+    assets["icons/Cloudlight.icns"] = output.getvalue()
     png = base64.b64encode(assets["icons/opennow-512.png"]).decode("ascii")
-    assets["io.github.opencloudgaming.OpenNOW.svg"] = (
+    assets["io.github.miirys.Cloudlight.svg"] = (
         '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" '
         'width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Cloudlight">\n'
         f'  <image width="512" height="512" xlink:href="data:image/png;base64,{png}"/>\n'

@@ -107,13 +107,17 @@ pub(super) fn extract_dmg(package: &Path, destination: &Path) -> Result<(), Stri
                     path.extension().is_some_and(|value| value == "app") && path.is_dir()
                 })
                 .collect();
-            if apps.len() != 1 || apps[0].file_name().is_none_or(|name| name != "OpenNOW.app") {
-                return Err("DMG must contain exactly one OpenNOW.app bundle".to_owned());
+            if apps.len() != 1
+                || apps[0]
+                    .file_name()
+                    .is_none_or(|name| name != "Cloudlight.app")
+            {
+                return Err("DMG must contain exactly one Cloudlight.app bundle".to_owned());
             }
             std::fs::create_dir(destination).map_err(|error| error.to_string())?;
             copy_tree(
                 &apps[0],
-                &destination.join("OpenNOW.app"),
+                &destination.join("Cloudlight.app"),
                 &mut CopyBudget::new(),
                 CopyPolicy::Bundle,
             )

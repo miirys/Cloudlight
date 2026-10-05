@@ -6,10 +6,10 @@ fn main() {
         (Some(flag), Some(path), None) if flag == "--apply" => {
             update_apply::run_helper(std::path::Path::new(&path))
         }
-        _ => Err("Usage: opennow-update-helper --apply <prepared-plan.json>".to_owned()),
+        _ => Err("Usage: cloudlight-update-helper --apply <prepared-plan.json>".to_owned()),
     };
     if let Err(error) = result {
-        eprintln!("opennow-update-helper: {error}");
+        eprintln!("cloudlight-update-helper: {error}");
         std::process::exit(1);
     }
 }

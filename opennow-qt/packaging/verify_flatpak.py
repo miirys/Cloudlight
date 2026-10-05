@@ -5,7 +5,7 @@ import subprocess
 from verify_linux_package import verify_capabilities
 
 
-APP_ID = "io.github.opencloudgaming.OpenNOW"
+APP_ID = "io.github.miirys.Cloudlight"
 
 
 def flatpak_command(command, *arguments):
@@ -14,16 +14,16 @@ def flatpak_command(command, *arguments):
 
 def verify_flatpak():
     probe = subprocess.run(
-        flatpak_command("opennow-streamer"),
+        flatpak_command("cloudlight-streamer"),
         input='{"id":"package-probe","type":"hello","protocolVersion":7}\n'
               '{"id":"package-shutdown","type":"shutdown"}\n',
         text=True, capture_output=True, check=True, timeout=45,
     )
     messages = [json.loads(line) for line in probe.stdout.splitlines()]
     verify_capabilities(next(message for message in messages if message.get("id") == "package-probe"))
-    subprocess.run(flatpak_command("opennow-acceptance-verify", "--help"), check=True, timeout=30)
+    subprocess.run(flatpak_command("cloudlight-acceptance-verify", "--help"), check=True, timeout=30)
     core = subprocess.Popen(
-        flatpak_command("opennow-core", "--data-dir", "/tmp/opennow-flatpak-check"),
+        flatpak_command("cloudlight-core", "--data-dir", "/tmp/opennow-flatpak-check"),
         stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True,
     )
     try:

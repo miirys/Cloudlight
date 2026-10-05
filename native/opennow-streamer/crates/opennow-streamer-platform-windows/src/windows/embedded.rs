@@ -78,7 +78,8 @@ impl DecoderWorkerLease {
             }
         }
         Err(BackendError::Startup(
-            "Previous decoder workers are still stopping; restart OpenNOW before retrying".into(),
+            "Previous decoder workers are still stopping; restart Cloudlight before retrying"
+                .into(),
         ))
     }
 }

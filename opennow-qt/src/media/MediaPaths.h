@@ -14,14 +14,29 @@ inline QString mediaPicturesRoot()
     return QDir::cleanPath(QFileInfo(overridePath).absoluteFilePath());
 }
 
-inline QString mediaScreenshotsDirectory()
+// The core renames Pictures/OpenNOW to Pictures/Cloudlight once at startup. When
+// that rename was not possible the core keeps the OpenNOW folder, so follow the
+// same choice and never create a second, empty Cloudlight folder beside it.
+inline QString mediaFolder()
 {
     const auto root = mediaPicturesRoot();
-    return root.isEmpty() ? QString{} : QDir(root).filePath(QStringLiteral("OpenNOW/Screenshots"));
+    if (root.isEmpty()) return {};
+    const QDir pictures(root);
+    const auto current = QStringLiteral("Cloudlight");
+    const auto legacy = QStringLiteral("OpenNOW");
+    const bool useLegacy = !QFileInfo::exists(pictures.filePath(current))
+        && QFileInfo(pictures.filePath(legacy)).isDir();
+    return pictures.filePath(useLegacy ? legacy : current);
+}
+
+inline QString mediaScreenshotsDirectory()
+{
+    const auto folder = mediaFolder();
+    return folder.isEmpty() ? QString{} : QDir(folder).filePath(QStringLiteral("Screenshots"));
 }
 
 inline QString mediaRecordingsDirectory()
 {
-    const auto root = mediaPicturesRoot();
-    return root.isEmpty() ? QString{} : QDir(root).filePath(QStringLiteral("OpenNOW/Recordings"));
+    const auto folder = mediaFolder();
+    return folder.isEmpty() ? QString{} : QDir(folder).filePath(QStringLiteral("Recordings"));
 }

@@ -23,7 +23,7 @@ class BuildMetadataTest(unittest.TestCase):
                 }.items())
                 + f'\ninclude("{MODULE.as_posix()}")\n'
                 + 'if(WIN32)\n'
-                + 'set(CPACK_PACKAGE_NAME "OpenNOW")\n'
+                + 'set(CPACK_PACKAGE_NAME "Cloudlight")\n'
                 + f'include("{(MODULE.parent / "WindowsInstaller.cmake").as_posix()}")\n'
                 + 'message("MSI=${CPACK_PACKAGE_VERSION}|${CPACK_PACKAGE_NAME}|${CPACK_PACKAGE_INSTALL_DIRECTORY}|${CPACK_WIX_UPGRADE_GUID}")\n'
                 + 'message("LAUNCHER=${CPACK_PACKAGE_EXECUTABLES}")\n'
@@ -45,29 +45,29 @@ class BuildMetadataTest(unittest.TestCase):
     def test_stable_version_defaults_to_project(self):
         result = self.metadata()
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertIn("RESULT=1.0.0|1.0.0|1.0.0|OpenNOW-Qt-1.0.0-Linux-x64|amd64", result.stderr)
+        self.assertIn("RESULT=1.0.0|1.0.0|1.0.0|Cloudlight-Qt-1.0.0-Linux-x64|amd64", result.stderr)
 
     def test_nightly_keeps_identity_and_debian_ordering(self):
         result = self.metadata(OPENNOW_BUILD_VERSION="1.0.0-nightly.23.2", CMAKE_SYSTEM_PROCESSOR="aarch64")
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertIn("1.0.0-nightly.23.2|1.0.0|1.0.0~nightly.23.2|OpenNOW-Qt-1.0.0-nightly.23.2-Linux-arm64|arm64", result.stderr)
+        self.assertIn("1.0.0-nightly.23.2|1.0.0|1.0.0~nightly.23.2|Cloudlight-Qt-1.0.0-nightly.23.2-Linux-arm64|arm64", result.stderr)
 
     def test_windows_cross_compiler_overrides_host(self):
         for arch, expected in (("ARM64", "arm64"), ("x64", "x64")):
             with self.subTest(arch=arch):
                 result = self.metadata(WIN32="TRUE", CMAKE_SYSTEM_NAME="Windows", CMAKE_SYSTEM_PROCESSOR="AMD64", CMAKE_CXX_COMPILER_ARCHITECTURE_ID=arch)
                 self.assertEqual(result.returncode, 0, result.stderr)
-                self.assertIn(f"OpenNOW-Qt-1.0.0-Windows-{expected}", result.stderr)
+                self.assertIn(f"Cloudlight-Qt-1.0.0-Windows-{expected}", result.stderr)
 
     def test_windows_generator_platform_fallback(self):
         result = self.metadata(WIN32="TRUE", CMAKE_SYSTEM_NAME="Windows", CMAKE_GENERATOR_PLATFORM="ARM64")
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertIn("OpenNOW-Qt-1.0.0-Windows-arm64", result.stderr)
+        self.assertIn("Cloudlight-Qt-1.0.0-Windows-arm64", result.stderr)
 
     def test_macos_cross_target_overrides_host(self):
         result = self.metadata(APPLE="TRUE", CMAKE_SYSTEM_NAME="Darwin", CMAKE_OSX_ARCHITECTURES="arm64")
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertIn("OpenNOW-Qt-1.0.0-Darwin-arm64", result.stderr)
+        self.assertIn("Cloudlight-Qt-1.0.0-Darwin-arm64", result.stderr)
 
     def windows_installer(self, version):
         result = self.metadata(WIN32="TRUE", OPENNOW_BUILD_VERSION=version)
@@ -88,10 +88,10 @@ class BuildMetadataTest(unittest.TestCase):
         nightly = self.windows_installer("1.0.0-nightly.256.1")
         supporter = self.windows_installer("1.0.0-supporter.256.1")
         self.assertEqual(stable[0], "1.0.0")
-        self.assertEqual(stable[1:3], ["OpenNOW", ""])
+        self.assertEqual(stable[1:3], ["Cloudlight", ""])
         self.assertEqual(stable[3], "6E81F7AE-B19D-4E87-A94A-2B2F01EBF762")
-        self.assertEqual(nightly[1:3], ["OpenNOW Nightly", "OpenNOW Nightly"])
-        self.assertEqual(supporter[1:3], ["OpenNOW Supporter", "OpenNOW Supporter"])
+        self.assertEqual(nightly[1:3], ["Cloudlight Nightly", "Cloudlight Nightly"])
+        self.assertEqual(supporter[1:3], ["Cloudlight Supporter", "Cloudlight Supporter"])
         self.assertEqual(len({stable[3], nightly[3], supporter[3]}), 3)
 
     def test_msi_version_limits_fail_closed(self):
@@ -131,13 +131,13 @@ class BuildMetadataTest(unittest.TestCase):
 
     def test_msi_launcher_label_and_license_follow_the_package(self):
         license_digest = hashlib.sha256((MODULE.parents[2] / "LICENSE").read_bytes()).hexdigest()
-        for version, label in (("1.0.0", "OpenNOW"),
-                               ("1.0.0-nightly.256.1", "OpenNOW Nightly"),
-                               ("1.0.0-supporter.256.1", "OpenNOW Supporter")):
+        for version, label in (("1.0.0", "Cloudlight"),
+                               ("1.0.0-nightly.256.1", "Cloudlight Nightly"),
+                               ("1.0.0-supporter.256.1", "Cloudlight Supporter")):
             with self.subTest(version=version):
                 result = self.metadata(WIN32="TRUE", OPENNOW_BUILD_VERSION=version)
                 self.assertEqual(result.returncode, 0, result.stderr)
-                self.assertIn(f"LAUNCHER=OpenNOW;{label}", result.stderr)
+                self.assertIn(f"LAUNCHER=Cloudlight;{label}", result.stderr)
                 self.assertIn(f"LICENSE={license_digest}", result.stderr)
 
     def test_invalid_versions_and_architectures_fail_closed(self):

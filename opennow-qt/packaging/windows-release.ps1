@@ -11,7 +11,7 @@ function Resolve-OpenNowSetupPayload {
     $roots = @($candidates | Where-Object {
         $candidate = $_
         if ($candidate.Attributes -band [IO.FileAttributes]::ReparsePoint) { return $false }
-        foreach ($relative in @("bin\OpenNOW.exe", "bin\opennow-core.exe", "bin\opennow-update-helper.exe")) {
+        foreach ($relative in @("bin\Cloudlight.exe", "bin\cloudlight-core.exe", "bin\cloudlight-update-helper.exe")) {
             if (-not (Test-Path -LiteralPath (Join-Path $candidate.FullName $relative) -PathType Leaf)) {
                 return $false
             }
@@ -41,7 +41,7 @@ function Get-OpenNowReleaseBinaries {
         if ($matches.Count -ne 1) {
             throw "Expected exactly one $name under $Root, found $($matches.Count)"
         }
-        if ($name -eq "opennow-update-helper.exe") {
+        if ($name -eq "cloudlight-update-helper.exe") {
             Assert-OpenNowStandaloneUpdateHelper -Path $matches[0].FullName
         }
         $matches[0]

@@ -67,8 +67,8 @@ function Assert-Payload {
     if ((Get-Content (Join-Path $Directory "fixture.txt") -Raw).Trim() -ne $Version) {
         throw "Installed payload does not match $Version"
     }
-    $label = if ($Version -like "*-nightly.*") { "OpenNOW Nightly" } else { "OpenNOW" }
-    $menu = "OpenNOW MSI Contract $testNamespace $label"
+    $label = if ($Version -like "*-nightly.*") { "Cloudlight Nightly" } else { "Cloudlight" }
+    $menu = "Cloudlight MSI Contract $testNamespace $label"
     $links = @(@("CommonPrograms", "Programs") | ForEach-Object {
         $path = Join-Path ([Environment]::GetFolderPath($_)) "$menu/$label.lnk"
         if (Test-Path $path) { $path }
@@ -77,9 +77,9 @@ function Assert-Payload {
     $shell = New-Object -ComObject WScript.Shell
     $shortcut = $shell.CreateShortcut($links[0])
     $workingDirectory = [IO.Path]::GetFullPath($shortcut.WorkingDirectory).TrimEnd([IO.Path]::DirectorySeparatorChar)
-    if ($shortcut.TargetPath -ne [IO.Path]::GetFullPath("$Directory/bin/OpenNOW.exe") -or
+    if ($shortcut.TargetPath -ne [IO.Path]::GetFullPath("$Directory/bin/Cloudlight.exe") -or
         $workingDirectory -ne [IO.Path]::GetFullPath("$Directory/bin")) {
-        throw "Start Menu launcher does not target the installed bin/OpenNOW.exe"
+        throw "Start Menu launcher does not target the installed bin/Cloudlight.exe"
     }
 }
 
@@ -88,7 +88,7 @@ try {
     foreach ($version in @("1.0.0-nightly.255.1", "1.0.0-nightly.256.1", "1.0.0-nightly.256.2", "1.0.0")) {
         $source = New-Item -ItemType Directory "$root/$version"
         New-Item -ItemType Directory "$source/packaging/icons" -Force | Out-Null
-        Copy-Item "$PSScriptRoot/../packaging/icons/OpenNOW.ico" "$source/packaging/icons/OpenNOW.ico"
+        Copy-Item "$PSScriptRoot/../packaging/icons/Cloudlight.ico" "$source/packaging/icons/Cloudlight.ico"
         Set-Content "$source/fixture.txt" $version
         @"
 cmake_minimum_required(VERSION 3.24)
@@ -97,16 +97,16 @@ set(CMAKE_SYSTEM_PROCESSOR AMD64)
 set(CMAKE_SIZEOF_VOID_P 8)
 set(OPENNOW_BUILD_VERSION "$version")
 include("$metadata")
-set(CPACK_PACKAGE_NAME OpenNOW)
-set(CPACK_PACKAGE_VENDOR OpenCloudGaming)
+set(CPACK_PACKAGE_NAME Cloudlight)
+set(CPACK_PACKAGE_VENDOR Cloudlight)
 set(CPACK_PACKAGE_FILE_NAME "fixture-$version")
 include("$policy")
-set(CPACK_WIX_PROGRAM_MENU_FOLDER "OpenNOW MSI Contract $testNamespace `${CPACK_PACKAGE_NAME}")
+set(CPACK_WIX_PROGRAM_MENU_FOLDER "Cloudlight MSI Contract $testNamespace `${CPACK_PACKAGE_NAME}")
 string(UUID CPACK_WIX_UPGRADE_GUID NAMESPACE "$testNamespace"
     NAME "`${CPACK_WIX_UPGRADE_GUID}" TYPE SHA1 UPPER)
-set(CPACK_PACKAGE_NAME "OpenNOW MSI Contract `${CPACK_PACKAGE_NAME}")
+set(CPACK_PACKAGE_NAME "Cloudlight MSI Contract `${CPACK_PACKAGE_NAME}")
 install(FILES "`${CMAKE_CURRENT_SOURCE_DIR}/fixture.txt" DESTINATION .)
-install(FILES "`${CMAKE_CURRENT_SOURCE_DIR}/fixture.txt" DESTINATION bin RENAME OpenNOW.exe)
+install(FILES "`${CMAKE_CURRENT_SOURCE_DIR}/fixture.txt" DESTINATION bin RENAME Cloudlight.exe)
 include(CPack)
 "@ | Set-Content "$source/CMakeLists.txt"
         cmake -S $source -B "$source/build"
@@ -153,8 +153,8 @@ include(CPack)
         if ($msi.Count -ne 1) { throw "Expected one fixture MSI" }
         $packages += $msi[0].FullName
     }
-    $nightly = "$root/installed/OpenNOW Nightly"
-    $stable = "$root/installed/OpenNOW"
+    $nightly = "$root/installed/Cloudlight Nightly"
+    $stable = "$root/installed/Cloudlight"
     Invoke-Installer $packages[0] $nightly
     Assert-Payload $nightly "1.0.0-nightly.255.1"
     Invoke-Installer $packages[3] $stable

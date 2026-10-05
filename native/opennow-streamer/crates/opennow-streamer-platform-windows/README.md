@@ -129,7 +129,7 @@ MFT, actual decoded texture, and converter is authoritative; neither old documen
 a GPU model name alone establishes support. Unsupported combinations report their failure stage.
 AV1 4:4:4 and HDR 4:4:4 are not advertised. No alternative FFmpeg or NVDEC decoder is bundled.
 
-When Qt disables H.265, `%APPDATA%\OpenNOW\diagnostics\native-streamer.log` records
+When Qt disables H.265, `%APPDATA%\Cloudlight\diagnostics\native-streamer.log` records
 `Windows hardware decoder probe failed` with `codec=H.265` and the decoder error, even if H.264
 remains available. `OPENNOW_DATA_DIR` overrides the data directory. Configuration failures include
 the MFT name and activation, D3D manager, or input-type stage where applicable.

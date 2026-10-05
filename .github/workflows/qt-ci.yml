@@ -225,7 +225,7 @@ jobs:
         run: |
           gh release create "v$RELEASE_VERSION" nightly-release/* \
             --repo "$GITHUB_REPOSITORY" --target "$SOURCE_SHA" \
-            --title "OpenNOW v$RELEASE_VERSION" --generate-notes \
+            --title "Cloudlight v$RELEASE_VERSION" --generate-notes \
             --draft --prerelease --latest=false
       - name: Require a nightly base newer than the published stable
         shell: bash

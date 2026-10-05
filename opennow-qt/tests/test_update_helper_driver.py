@@ -66,7 +66,7 @@ class UpdateHelperDriverTest(unittest.TestCase):
         ], environment))
         self.assertEqual(run.call_args_list[1].args, ([
             "cargo", "build", "--locked", "--manifest-path", str(MANIFEST),
-            "--lib", "--bin", "opennow-update-helper",
+            "--lib", "--bin", "cloudlight-update-helper",
         ], environment))
 
     @patch("run_update_helper_integration.run")
@@ -75,7 +75,7 @@ class UpdateHelperDriverTest(unittest.TestCase):
         build_update_helper(environment)
         run.assert_called_once_with([
             "cargo", "build", "--locked", "--manifest-path", str(MANIFEST),
-            "--lib", "--bin", "opennow-update-helper",
+            "--lib", "--bin", "cloudlight-update-helper",
         ], environment)
 
     @patch("run_update_helper_integration.run")

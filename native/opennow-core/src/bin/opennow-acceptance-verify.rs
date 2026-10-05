@@ -85,7 +85,7 @@ fn main() -> ExitCode {
 
 fn usage() -> &'static str {
     concat!(
-        "Usage: opennow-acceptance-verify \\\n",
+        "Usage: cloudlight-acceptance-verify \\\n",
         "  --live <live.json> --performance-1080p <1080p.json> \\\n",
         "  --performance-4k <4k.json> --attestations <attestations.json> \\\n",
         "  --package <artifact> [--package <artifact> ...] --output <result.json>"
@@ -1049,7 +1049,7 @@ mod tests {
         let perf_1080p = root.join("1080p.json");
         let perf_4k = root.join("4k.json");
         let attestations = root.join("attestations.json");
-        let appimage = root.join("OpenNOW.AppImage");
+        let appimage = root.join("Cloudlight.AppImage");
         let deb = root.join("opennow.deb");
         fs::write(&appimage, b"appimage").unwrap();
         fs::write(&deb, b"deb").unwrap();

@@ -17,9 +17,9 @@ SPEC.loader.exec_module(PREPARE)
 
 class FlatpakTests(unittest.TestCase):
     def test_manifest_preserves_application_identity_and_offline_build(self):
-        manifest = json.loads((PACKAGING / "io.github.opencloudgaming.OpenNOW.json").read_text())
-        self.assertEqual(manifest["app-id"], "io.github.opencloudgaming.OpenNOW")
-        self.assertEqual(manifest["command"], "opennow-qt")
+        manifest = json.loads((PACKAGING / "io.github.miirys.Cloudlight.json").read_text())
+        self.assertEqual(manifest["app-id"], "io.github.miirys.Cloudlight")
+        self.assertEqual(manifest["command"], "cloudlight")
         application = manifest["modules"][-1]
         self.assertEqual(application["build-options"]["env"]["CARGO_NET_OFFLINE"], "true")
         self.assertEqual(application["build-options"]["env"]["CARGO_HOME"], "/run/build/opennow/cargo")
@@ -32,12 +32,12 @@ class FlatpakTests(unittest.TestCase):
         self.assertEqual(len(archive["sha256"]), 64)
 
     def test_sandbox_supports_native_streaming_without_host_filesystem_access(self):
-        manifest = json.loads((PACKAGING / "io.github.opencloudgaming.OpenNOW.json").read_text())
+        manifest = json.loads((PACKAGING / "io.github.miirys.Cloudlight.json").read_text())
         permissions = set(manifest["finish-args"])
         self.assertTrue({"--share=network", "--device=all", "--socket=wayland",
                          "--socket=fallback-x11", "--socket=pulseaudio",
                          "--filesystem=xdg-run/pipewire-0",
-                         "--filesystem=xdg-pictures/OpenNOW:create",
+                         "--filesystem=xdg-pictures/Cloudlight:create",
                          "--talk-name=org.freedesktop.secrets"}.issubset(permissions))
         self.assertFalse({"--filesystem=host", "--filesystem=home",
                           "--socket=session-bus", "--socket=system-bus"} & permissions)

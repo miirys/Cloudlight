@@ -6,14 +6,14 @@ import QtQuick
 // light/dark base); the pack ids are fixed because opennow-core validates them.
 QtObject {
     readonly property var packs: [
-        {id:"nocturne", name:"Graphite", author:"OPENNOW", category:"Dark", detail:"BLUE", bg:"#141414", lightBg:"#F2F2F2", mid:"#2A2A2A", accent:"#4C9EFF", lightAccent:"#1764C0"},
-        {id:"aurora", name:"Graphite Green", author:"OPENNOW", category:"Dark", detail:"GREEN", bg:"#141414", lightBg:"#F2F2F2", mid:"#2A2A2A", accent:"#76B900", lightAccent:"#4A7A00"},
-        {id:"kraft", name:"Graphite Amber", author:"OPENNOW", category:"Dark", detail:"AMBER", bg:"#141414", lightBg:"#F2F2F2", mid:"#2A2A2A", accent:"#E8A33D", lightAccent:"#8A5A0B"},
-        {id:"phosphor", name:"High Contrast", author:"OPENNOW", category:"High contrast", detail:"WHITE", bg:"#000000", lightBg:"#FFFFFF", mid:"#1F1F1F", accent:"#FFFFFF", lightAccent:"#000000"},
-        {id:"bone", name:"Light", author:"OPENNOW", category:"Light", detail:"WARM", bg:"#F2F2F2", darkBg:"#141414", mid:"#D6D6D6", accent:"#8A5A0B", darkAccent:"#E8A33D"},
-        {id:"cobalt", name:"Light Blue", author:"OPENNOW", category:"Light", detail:"BLUE", bg:"#F2F2F2", darkBg:"#141414", mid:"#D6D6D6", accent:"#1764C0", darkAccent:"#4C9EFF"},
-        {id:"hibiscus", name:"Graphite Rose", author:"OPENNOW", category:"Dark", detail:"ROSE", bg:"#141414", lightBg:"#F2F2F2", mid:"#2A2A2A", accent:"#F0607F", lightAccent:"#A8243F"},
-        {id:"chapel", name:"Graphite Violet", author:"OPENNOW", category:"Dark", detail:"VIOLET", bg:"#141414", lightBg:"#F2F2F2", mid:"#2A2A2A", accent:"#9B7BFF", lightAccent:"#5B3FC0"},
+        {id:"nocturne", name:"Graphite", author:"CLOUDLIGHT", category:"Dark", detail:"BLUE", bg:"#141414", lightBg:"#F2F2F2", mid:"#2A2A2A", accent:"#4C9EFF", lightAccent:"#1764C0"},
+        {id:"aurora", name:"Graphite Green", author:"CLOUDLIGHT", category:"Dark", detail:"GREEN", bg:"#141414", lightBg:"#F2F2F2", mid:"#2A2A2A", accent:"#76B900", lightAccent:"#4A7A00"},
+        {id:"kraft", name:"Graphite Amber", author:"CLOUDLIGHT", category:"Dark", detail:"AMBER", bg:"#141414", lightBg:"#F2F2F2", mid:"#2A2A2A", accent:"#E8A33D", lightAccent:"#8A5A0B"},
+        {id:"phosphor", name:"High Contrast", author:"CLOUDLIGHT", category:"High contrast", detail:"WHITE", bg:"#000000", lightBg:"#FFFFFF", mid:"#1F1F1F", accent:"#FFFFFF", lightAccent:"#000000"},
+        {id:"bone", name:"Light", author:"CLOUDLIGHT", category:"Light", detail:"WARM", bg:"#F2F2F2", darkBg:"#141414", mid:"#D6D6D6", accent:"#8A5A0B", darkAccent:"#E8A33D"},
+        {id:"cobalt", name:"Light Blue", author:"CLOUDLIGHT", category:"Light", detail:"BLUE", bg:"#F2F2F2", darkBg:"#141414", mid:"#D6D6D6", accent:"#1764C0", darkAccent:"#4C9EFF"},
+        {id:"hibiscus", name:"Graphite Rose", author:"CLOUDLIGHT", category:"Dark", detail:"ROSE", bg:"#141414", lightBg:"#F2F2F2", mid:"#2A2A2A", accent:"#F0607F", lightAccent:"#A8243F"},
+        {id:"chapel", name:"Graphite Violet", author:"CLOUDLIGHT", category:"Dark", detail:"VIOLET", bg:"#141414", lightBg:"#F2F2F2", mid:"#2A2A2A", accent:"#9B7BFF", lightAccent:"#5B3FC0"},
         // Cloudlight's house theme: a black dress and white hair. Neutrals carry a faint
         // lilac cast in both modes, and the accent is pearl on dark, ink on light.
         {id:"cloudlight", name:"Cloudlight", author:"CLOUDLIGHT", category:"Dark", detail:"PEARL", bg:"#100E13", lightBg:"#F4F2F7", mid:"#2A2530", accent:"#ECE6F5", lightAccent:"#1D1823",

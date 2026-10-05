@@ -82,31 +82,31 @@ fn deb_identity(package: &Path, target: &Path, version: &str) -> Result<Identity
         .trim_start_matches('v')
         .replace("-nightly.", "~nightly.")
         .replace("-supporter.", "~supporter.");
-    if name != "opennow" || architecture != expected_arch || field("Version")? != version {
+    if name != "cloudlight" || architecture != expected_arch || field("Version")? != version {
         return Err(
-            "DEB package identity does not match OpenNOW, architecture, or signed version"
+            "DEB package identity does not match Cloudlight, architecture, or signed version"
                 .to_owned(),
         );
     }
     let files = deb_file_owners(target)?;
     if !deb_owns_file(&files, target) {
         return Err(
-            "Running application is not owned by the installed OpenNOW DEB package".to_owned(),
+            "Running application is not owned by the installed Cloudlight DEB package".to_owned(),
         );
     }
     let installed = output(Command::new("/usr/bin/dpkg-query").args([
         "--show",
         "--showformat=${db:Status-Status}\t${Architecture}",
-        "opennow",
+        "cloudlight",
     ]))?;
     if installed != format!("installed\t{expected_arch}") {
-        return Err("Installed OpenNOW DEB is not configured for this architecture".to_owned());
+        return Err("Installed Cloudlight DEB is not configured for this architecture".to_owned());
     }
     Ok(Identity {
         package: name,
         version,
         architecture,
-        installed_product: "opennow".to_owned(),
+        installed_product: "cloudlight".to_owned(),
     })
 }
 
@@ -128,7 +128,7 @@ fn deb_owns_file(files: &str, target: &Path) -> bool {
         return false;
     };
     files.lines().any(|line| {
-        line.strip_prefix("opennow: ").is_some_and(|file| {
+        line.strip_prefix("cloudlight: ").is_some_and(|file| {
             Path::new(file).is_absolute()
                 && super::canonical_file(Path::new(file)).is_ok_and(|path| path == target)
         })
@@ -292,9 +292,9 @@ mod windows {
             let product = String::from_utf16(&product[..38]).map_err(|error| error.to_string())?;
             let location = registered(&product, "InstallLocation")?;
             if location.is_empty() {
-                return Err("An OpenNOW MSI registration has no installation location; repair it before updating".to_owned());
+                return Err("A Cloudlight MSI registration has no installation location; repair it before updating".to_owned());
             }
-            let location = std::fs::canonicalize(location).map_err(|_| "An OpenNOW MSI registration points to an unavailable installation; repair it before updating")?;
+            let location = std::fs::canonicalize(location).map_err(|_| "A Cloudlight MSI registration points to an unavailable installation; repair it before updating")?;
             if location == target {
                 return Ok(Some(product));
             }
@@ -312,7 +312,7 @@ mod windows {
             .map_err(|error| error.to_string())?;
         let (name, expected_version) = if parsed.pre.is_empty() {
             (
-                "OpenNOW",
+                "Cloudlight",
                 format!("{}.{}.{}", parsed.major, parsed.minor, parsed.patch),
             )
         } else {
@@ -329,18 +329,18 @@ mod windows {
             }
             (
                 if parts[0] == "nightly" {
-                    "OpenNOW Nightly"
+                    "Cloudlight Nightly"
                 } else {
-                    "OpenNOW Supporter"
+                    "Cloudlight Supporter"
                 },
                 format!("{}.{}.{}", run / 256, run % 256, attempt),
             )
         };
         if !property(package, "UpgradeCode")?.eq_ignore_ascii_case(upgrade)
             || property(package, "ProductName")? != name
-            || property(package, "Manufacturer")? != "OpenCloudGaming"
+            || property(package, "Manufacturer")? != "Cloudlight"
         {
-            return Err("MSI product family or channel does not match OpenNOW".to_owned());
+            return Err("MSI product family or channel does not match Cloudlight".to_owned());
         }
         let arch = architecture(package)?;
         let expected_arch = if cfg!(target_arch = "aarch64") {
@@ -604,7 +604,7 @@ pub(super) fn verify_installed(
                         .as_bytes()
             {
                 return Err(
-                    "The OpenNOW DEB is not configured at the expected version and architecture."
+                    "The Cloudlight DEB is not configured at the expected version and architecture."
                         .to_owned(),
                 );
             }
@@ -612,7 +612,7 @@ pub(super) fn verify_installed(
             {
                 let files = deb_file_owners(target)?;
                 if !deb_owns_file(&files, target) {
-                    return Err("Installed OpenNOW DEB does not own the application".to_owned());
+                    return Err("Installed Cloudlight DEB does not own the application".to_owned());
                 }
             }
             Ok(())
@@ -702,13 +702,14 @@ mod tests {
     fn msi_install_root_quotes_only_the_value_for_msiexec() {
         #[cfg(windows)]
         let argument =
-            windows::install_root_argument(Path::new(r"C:\Program Files\OpenNOW Nightly")).unwrap();
+            windows::install_root_argument(Path::new(r"C:\Program Files\Cloudlight Nightly"))
+                .unwrap();
         #[cfg(not(windows))]
         let argument =
-            msi_install_root_argument(Path::new(r"C:\Program Files\OpenNOW Nightly")).unwrap();
+            msi_install_root_argument(Path::new(r"C:\Program Files\Cloudlight Nightly")).unwrap();
         assert_eq!(
             argument,
-            r#"INSTALL_ROOT="C:\Program Files\OpenNOW Nightly""#
+            r#"INSTALL_ROOT="C:\Program Files\Cloudlight Nightly""#
         );
         #[cfg(windows)]
         let stripped = windows::install_root_argument(Path::new(r"\\?\C:\OpenNOW")).unwrap();
@@ -727,12 +728,12 @@ mod tests {
         let directory = tempfile::tempdir().unwrap();
         let actual = directory.path().join("usr/bin");
         std::fs::create_dir_all(&actual).unwrap();
-        let target = actual.join("opennow-qt");
+        let target = actual.join("cloudlight");
         std::fs::write(&target, b"application").unwrap();
         let alias = directory.path().join("bin");
         std::os::unix::fs::symlink(&actual, &alias).unwrap();
-        let registered = alias.join("opennow-qt");
-        let owners = format!("opennow: {}", registered.display());
+        let registered = alias.join("cloudlight");
+        let owners = format!("cloudlight: {}", registered.display());
         assert!(deb_owns_file(&owners, &target));
         let unrelated = directory.path().join("unrelated");
         std::fs::write(&unrelated, b"other application").unwrap();
@@ -740,17 +741,17 @@ mod tests {
         let link = actual.join("opennow-link");
         std::os::unix::fs::symlink(&unrelated, &link).unwrap();
         assert!(!deb_owns_file(
-            &format!("opennow: {}", link.display()),
+            &format!("cloudlight: {}", link.display()),
             &unrelated
         ));
         assert!(!deb_owns_file(
-            &format!("opennow: {}", unrelated.display()),
+            &format!("cloudlight: {}", unrelated.display()),
             &link
         ));
         assert!(!deb_owns_file(
             &format!("other-package: {}", target.display()),
             &target
         ));
-        assert!(!deb_owns_file("opennow: relative/path", &target));
+        assert!(!deb_owns_file("cloudlight: relative/path", &target));
     }
 }

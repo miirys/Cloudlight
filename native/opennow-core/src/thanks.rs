@@ -8,7 +8,7 @@ use std::time::Duration;
 use url::Url;
 
 const CONTRIBUTORS_URL: &str =
-    "https://api.github.com/repos/OpenCloudGaming/OpenNOW/contributors?per_page=100";
+    "https://api.github.com/repos/miirys/OpenNOW/contributors?per_page=100";
 const SUPPORTERS_URL: &str = "https://github.com/sponsors/zortos293";
 const MAXIMUM_RESPONSE_BYTES: u64 = 4 * 1024 * 1024;
 
@@ -59,7 +59,7 @@ impl ThanksService {
             .client
             .get(CONTRIBUTORS_URL)
             .header("Accept", "application/vnd.github+json")
-            .header("User-Agent", "OpenNOW-DesktopClient")
+            .header("User-Agent", "Cloudlight-DesktopClient")
             .send()
             .map_err(|_| "Unable to load contributors right now".to_owned())?;
         if !response.status().is_success()
@@ -90,7 +90,7 @@ impl ThanksService {
             .client
             .get(SUPPORTERS_URL)
             .header("Accept", "text/html,application/xhtml+xml")
-            .header("User-Agent", "OpenNOW-DesktopClient")
+            .header("User-Agent", "Cloudlight-DesktopClient")
             .send()
             .map_err(|_| "Unable to load supporters right now".to_owned())?;
         if !response.status().is_success()

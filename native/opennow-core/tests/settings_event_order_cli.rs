@@ -7,7 +7,7 @@ use std::time::Duration;
 #[test]
 fn settings_events_precede_acknowledgements_and_other_events_keep_their_order() {
     let directory = tempfile::tempdir().unwrap();
-    let mut child = Command::new(env!("CARGO_BIN_EXE_opennow-core"))
+    let mut child = Command::new(env!("CARGO_BIN_EXE_cloudlight-core"))
         .args(["--data-dir", directory.path().to_str().unwrap()])
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())

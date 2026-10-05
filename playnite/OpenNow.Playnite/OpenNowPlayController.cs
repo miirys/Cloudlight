@@ -39,7 +39,7 @@ namespace OpenNow.Playnite
 
         private static bool IsOpenNowRunning()
         {
-            return Process.GetProcessesByName("OpenNOW").Length > 0;
+            return Process.GetProcessesByName("Cloudlight").Length > 0 || Process.GetProcessesByName("OpenNOW").Length > 0;
         }
 
         private async void StartWatching()

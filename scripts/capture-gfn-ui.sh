@@ -5,7 +5,7 @@
 set -uo pipefail
 
 if [[ $# -ne 2 ]]; then
-    printf 'Usage: bash %s <built-opennow-qt> <output-directory>\n' "$0" >&2
+    printf 'Usage: bash %s <built-cloudlight-executable> <output-directory>\n' "$0" >&2
     exit 2
 fi
 

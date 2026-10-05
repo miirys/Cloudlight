@@ -1,4 +1,5 @@
 #include "app/AppController.h"
+#include "diagnostics/DiagnosticsPaths.h"
 #include "media/MediaPaths.h"
 
 #include <algorithm>
@@ -312,13 +313,43 @@ bool AppController::copyScreenshotTo(const QString &sourcePath,
     return output.commit();
 }
 
+namespace {
+// Themes and local mascot art live in the profile directory. Before the Cloudlight
+// rename they were kept in Qt's OpenCloudGaming/OpenNOW application data folder.
+QString legacyUserContentDirectory(const QString &name)
+{
+    const auto current = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    if (current.isEmpty()) return {};
+    // AppDataLocation ends with [<organization>/]<application>.
+    auto base = QFileInfo(current).path();
+    if (!QCoreApplication::organizationName().isEmpty()) base = QFileInfo(base).path();
+    return QDir(base).filePath(u"OpenCloudGaming/OpenNOW/"_s + name);
+}
+
+// Returns the folder for `name`. A pre-rename folder is moved into the profile
+// directory when the caller is about to create content there; read-only callers
+// keep reading it in place. Nothing is removed when the move fails.
+QString userContentDirectory(const QString &name, bool create)
+{
+    const auto root = coreDiagnosticsDataRoot();
+    if (root.isEmpty()) return {};
+    const auto target = QDir(root).filePath(name);
+    if (QFileInfo::exists(target)) return target;
+    const auto legacy = legacyUserContentDirectory(name);
+    if (!legacy.isEmpty() && QFileInfo(legacy).isDir()) {
+        if (create && QDir().mkpath(root) && QDir().rename(legacy, target)) return target;
+        return legacy;
+    }
+    if (create && !QDir().mkpath(target)) return {};
+    return target;
+}
+}
+
 bool AppController::openThemeDirectory() const
 {
-    const auto base = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    if (base.isEmpty()) return false;
-    QDir directory(base);
-    if (!directory.mkpath(u"themes"_s)) return false;
-    return QDesktopServices::openUrl(QUrl::fromLocalFile(directory.filePath(u"themes"_s)));
+    const auto directory = userContentDirectory(u"themes"_s, true);
+    if (directory.isEmpty()) return false;
+    return QDesktopServices::openUrl(QUrl::fromLocalFile(directory));
 }
 
 QString AppController::mascotOverrideUrl(const QString &pose) const
@@ -327,9 +358,9 @@ QString AppController::mascotOverrideUrl(const QString &pose) const
     // bundled. Pose names are plain words so a binding can never reach outside it.
     static const QRegularExpression poseName(u"^[a-z][a-z0-9-]{0,31}$"_s);
     if (!poseName.match(pose).hasMatch()) return {};
-    const auto base = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    if (base.isEmpty()) return {};
-    const QFileInfo file(QDir(base).filePath(u"mascot/"_s + pose + u".png"_s));
+    const auto directory = userContentDirectory(u"mascot"_s, false);
+    if (directory.isEmpty()) return {};
+    const QFileInfo file(QDir(directory).filePath(pose + u".png"_s));
     constexpr qint64 maximumBytes = 64LL * 1024 * 1024;
     if (!file.isFile() || !file.isReadable() || file.size() <= 0 || file.size() > maximumBytes)
         return {};
@@ -357,7 +388,7 @@ QString AppController::captureScreenRegion(int x, int y, int width, int height,
     auto safeTitle = gameTitle.trimmed();
     safeTitle.replace(QRegularExpression(uR"([^A-Za-z0-9._-]+)"_s), u"-"_s);
     safeTitle = safeTitle.left(72).trimmed();
-    if (safeTitle.isEmpty()) safeTitle = u"OpenNOW"_s;
+    if (safeTitle.isEmpty()) safeTitle = u"Cloudlight"_s;
     const auto stamp = QDateTime::currentDateTimeUtc().toString(u"yyyyMMdd-HHmmss-zzz"_s);
     const auto path = directory.filePath(safeTitle + u"-"_s + stamp + u".png"_s);
     QSaveFile file(path);
@@ -408,7 +439,7 @@ bool AppController::ensureDirectLaunchAssociation() const
     if (executable.isEmpty()) return false;
     QSettings protocol(u"HKEY_CURRENT_USER\\Software\\Classes\\opennow"_s,
                        QSettings::NativeFormat);
-    protocol.setValue(u"."_s, u"URL:OpenNOW Protocol"_s);
+    protocol.setValue(u"."_s, u"URL:Cloudlight Protocol"_s);
     protocol.setValue(u"URL Protocol"_s, QString());
     protocol.setValue(u"DefaultIcon/."_s, u"\"%1\",0"_s.arg(executable));
     protocol.setValue(u"shell/open/command/."_s, u"\"%1\" \"%2\""_s.arg(executable, u"%1"_s));

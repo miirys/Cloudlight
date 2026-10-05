@@ -5,6 +5,10 @@ edition.workspace = true
 license.workspace = true
 rust-version.workspace = true
 
+[[bin]]
+name = "cloudlight-streamer"
+path = "src/main.rs"
+
 [features]
 default = []
 linux-vaapi = ["opennow-streamer-platform/linux-vaapi"]

@@ -1,7 +1,7 @@
 # Build and install the Flatpak
 
 Build the Qt/native application as a local Flatpak bundle on Linux x86_64.
-This does not publish OpenNOW to Flathub or change the existing signed release packages.
+This does not publish Cloudlight to Flathub or change the existing signed release packages.
 
 ## Install the build tools
 
@@ -30,9 +30,9 @@ Run these commands from the repository root:
 python3 opennow-qt/packaging/flatpak/prepare_sources.py
 flatpak-builder --user --force-clean --jobs=4 \
 	--state-dir=build/flatpak/state --repo=build/flatpak/repo \
-	build/flatpak/app opennow-qt/packaging/flatpak/io.github.opencloudgaming.OpenNOW.json
-flatpak build-bundle build/flatpak/repo build/flatpak/OpenNOW-x86_64.flatpak \
-	io.github.opencloudgaming.OpenNOW master \
+	build/flatpak/app opennow-qt/packaging/flatpak/io.github.miirys.Cloudlight.json
+flatpak build-bundle build/flatpak/repo build/flatpak/Cloudlight-x86_64.flatpak \
+	io.github.miirys.Cloudlight master \
 	--runtime-repo=https://flathub.org/repo/flathub.flatpakrepo
 ```
 
@@ -54,9 +54,9 @@ create a GitHub release or require release-signing credentials.
 ## Install and check the bundle
 
 ```sh
-flatpak install --user -y build/flatpak/OpenNOW-x86_64.flatpak
+flatpak install --user -y build/flatpak/Cloudlight-x86_64.flatpak
 python3 opennow-qt/packaging/verify_flatpak.py
-flatpak run io.github.opencloudgaming.OpenNOW
+flatpak run io.github.miirys.Cloudlight
 ```
 
 The verification command checks the installed streamer's VAAPI and FFmpeg capabilities,
@@ -69,7 +69,7 @@ The sandbox grants network access for GFN, display sockets for Qt, and device ac
 GPU decoding and SDL controllers. `--device=all` keeps controller support on Flatpak versions
 that lack the newer `input` permission. It is broader than GPU-only access. PipeWire uses
 the host's `pipewire-0` socket, and PulseAudio compatibility uses its standard Flatpak socket.
-Only the `OpenNOW` subdirectory of your Pictures directory is writable for captures. The
+Only the `Cloudlight` subdirectory of your Pictures directory is writable for captures. The
 manifest grants neither your entire home directory nor unrestricted D-Bus access.
 
 ## Update or remove the package
@@ -78,18 +78,18 @@ The in-app self-updater is disabled in Flatpak. If you install from a Flatpak re
 update through your software manager or run:
 
 ```sh
-flatpak update io.github.opencloudgaming.OpenNOW
+flatpak update io.github.miirys.Cloudlight
 ```
 
 A standalone local bundle has no update feed. Rebuild it from the desired source revision
-and install the new bundle with `flatpak install --user -y build/flatpak/OpenNOW-x86_64.flatpak`.
+and install the new bundle with `flatpak install --user -y build/flatpak/Cloudlight-x86_64.flatpak`.
 
 To remove the app while retaining its settings:
 
 ```sh
-flatpak uninstall io.github.opencloudgaming.OpenNOW
+flatpak uninstall io.github.miirys.Cloudlight
 ```
 
-Flatpak keeps application data under `~/.var/app/io.github.opencloudgaming.OpenNOW/`.
-The package does not import settings from a native OpenNOW installation. Use `--delete-data`
+Flatpak keeps application data under `~/.var/app/io.github.miirys.Cloudlight/`.
+The package does not import settings from a native Cloudlight or OpenNOW installation. Use `--delete-data`
 with `flatpak uninstall` only if you also want to remove the sandbox's saved data.

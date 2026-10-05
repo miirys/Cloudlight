@@ -67,7 +67,7 @@ fn run() -> Result<(), String> {
         .map_err(|error| format!("could not read {}: {error}", base.display()))?;
     notice.push_str("\n\nGenerated Rust dependency notices\n=================================\n\n");
     notice.push_str(
-        "This section is generated from the exact Cargo dependency graphs used by the OpenNOW application core and native streamer. Packages sharing identical license text are grouped together.\n",
+        "This section is generated from the exact Cargo dependency graphs used by the Cloudlight application core and native streamer. Packages sharing identical license text are grouped together.\n",
     );
     for (index, (license_text, labels)) in texts.into_iter().enumerate() {
         notice.push_str(&format!(

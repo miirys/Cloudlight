@@ -9,8 +9,17 @@ public static class OpenNowPathTests
     {
         var candidates = OpenNowPath.GetDefaultCandidatePaths().ToList();
         var local = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        Require(candidates[0] == Path.Combine(local, "OpenNOW", "bin", "OpenNOW.exe"),
-            "The current per-user Qt installation must be tried first");
+        Require(candidates[0] == Path.Combine(local, "Cloudlight", "bin", "Cloudlight.exe"),
+            "The current per-user Cloudlight installation must be tried first");
+        Require(candidates.Contains(Path.Combine(local, "Programs", "Cloudlight", "bin", "Cloudlight.exe")),
+            "Missing the per-user Programs Cloudlight layout");
+        Require(candidates.Contains(Path.Combine(local, "OpenNOW", "bin", "Cloudlight.exe")),
+            "An upgraded pre-rename per-user installation must be found");
+        Require(candidates.IndexOf(Path.Combine(local, "OpenNOW", "bin", "Cloudlight.exe"))
+                < candidates.IndexOf(Path.Combine(local, "OpenNOW", "bin", "OpenNOW.exe")),
+            "Cloudlight.exe must win over a leftover OpenNOW.exe in the same installation");
+        Require(candidates.Contains(Path.Combine(local, "OpenNOW", "bin", "OpenNOW.exe")),
+            "Pre-rename per-user installations must still be found");
         Require(candidates.Contains(Path.Combine(local, "Programs", "OpenNOW", "bin", "OpenNOW.exe")),
             "Missing the per-user Programs Qt layout");
         foreach (var folder in new[] { Environment.SpecialFolder.ProgramFiles, Environment.SpecialFolder.ProgramFilesX86 })
@@ -20,10 +29,17 @@ public static class OpenNowPathTests
             {
                 continue;
             }
+            foreach (var channel in new[] { "Cloudlight", "Cloudlight Nightly", "Cloudlight Supporter" })
+            {
+                Require(candidates.Contains(Path.Combine(directory, channel, "bin", "Cloudlight.exe")),
+                    "Missing Cloudlight MSI layout: " + directory + "/" + channel);
+            }
             foreach (var channel in new[] { "OpenNOW", "OpenNOW Nightly", "OpenNOW Supporter" })
             {
                 Require(candidates.Contains(Path.Combine(directory, channel, "bin", "OpenNOW.exe")),
                     "Missing Qt MSI layout: " + directory + "/" + channel);
+                Require(candidates.Contains(Path.Combine(directory, channel, "bin", "Cloudlight.exe")),
+                    "Missing upgraded MSI layout: " + directory + "/" + channel);
             }
             Require(candidates.Contains(Path.Combine(directory, "OpenNOW", "OpenNOW.exe")),
                 "Existing executable discovery candidates must be preserved");
@@ -63,6 +79,15 @@ public static class OpenNowPathTests
                 "Supporter MSI installation was not detected");
             Require(!machine.Contains(Path.Combine(root, "OpenNOW unrelated", "bin", "OpenNOW.exe")),
                 "An unrelated directory was accepted as a versioned installation");
+            foreach (var name in new[] { "Cloudlight 2.0.1", "Cloudlight 2.0.3" })
+            {
+                var bin = Path.Combine(root, name, "bin");
+                Directory.CreateDirectory(bin);
+                File.WriteAllText(Path.Combine(bin, "Cloudlight.exe"), "fixture");
+            }
+            machine = OpenNowPath.GetMachineCandidatePaths(root).ToList();
+            Require(machine.Where(File.Exists).First() == Path.Combine(root, "Cloudlight 2.0.3", "bin", "Cloudlight.exe"),
+                "Cloudlight installations must be preferred over pre-rename OpenNOW installations");
             Require(!OpenNowPath.GetMachineCandidatePaths("").Any(),
                 "Missing system directories must not produce relative candidates");
             Require(OpenNowPath.GetMachineCandidatePaths(Path.Combine(root, "absent")).Any(),

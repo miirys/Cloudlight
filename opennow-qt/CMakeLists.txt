@@ -66,16 +66,16 @@ include(cmake/Sources.cmake)
 include(cmake/Resources.cmake)
 
 if(WIN32 OR APPLE)
-    set(OPENNOW_EXECUTABLE_NAME "OpenNOW")
+    set(OPENNOW_EXECUTABLE_NAME "Cloudlight")
 else()
-    set(OPENNOW_EXECUTABLE_NAME "opennow-qt")
+    set(OPENNOW_EXECUTABLE_NAME "cloudlight")
 endif()
 set_target_properties(opennow-qt PROPERTIES
     OUTPUT_NAME "${OPENNOW_EXECUTABLE_NAME}"
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
-    MACOSX_BUNDLE_BUNDLE_NAME "OpenNOW"
-    MACOSX_BUNDLE_GUI_IDENTIFIER "io.github.opencloudgaming.OpenNOW"
+    MACOSX_BUNDLE_BUNDLE_NAME "Cloudlight"
+    MACOSX_BUNDLE_GUI_IDENTIFIER "io.github.miirys.Cloudlight"
     MACOSX_BUNDLE_SHORT_VERSION_STRING "${OPENNOW_NUMERIC_VERSION}"
     MACOSX_BUNDLE_BUNDLE_VERSION "${OPENNOW_NUMERIC_VERSION}"
     MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/packaging/Info.plist.in"

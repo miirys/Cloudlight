@@ -125,7 +125,7 @@ struct Acknowledgement {
     application: ProcessIdentity,
 }
 
-pub const WINDOWS_INSTALLER_REPLACEMENT_MESSAGE: &str = "This OpenNOW installation is registered with Windows Installer. Replace it once with setup.exe. In-app updates do not run Windows Installer.";
+pub const WINDOWS_INSTALLER_REPLACEMENT_MESSAGE: &str = "This Cloudlight installation is registered with Windows Installer. Replace it once with setup.exe. In-app updates do not run Windows Installer.";
 
 pub fn windows_installer_replacement_message() -> Result<Option<&'static str>, String> {
     #[cfg(windows)]
@@ -165,7 +165,7 @@ pub fn external_update_message() -> Option<&'static str> {
         )
     {
         Some(
-            "OpenNOW is managed by Flatpak. Update it through your software manager or run `flatpak update io.github.opencloudgaming.OpenNOW` on the host, then restart OpenNOW.",
+            "Cloudlight is managed by Flatpak. Update it through your software manager or run `flatpak update io.github.miirys.Cloudlight` on the host, then restart Cloudlight.",
         )
     } else {
         None
@@ -312,9 +312,9 @@ pub fn prepare_update(request: PrepareRequest) -> Result<PreparedUpdate, String>
             .parent()
             .ok_or("Core has no executable directory")?
             .join(if cfg!(windows) {
-                "opennow-update-helper.exe"
+                "cloudlight-update-helper.exe"
             } else {
-                "opennow-update-helper"
+                "cloudlight-update-helper"
             });
         copy_synced(
             &canonical_file(&helper)?,
@@ -375,9 +375,9 @@ pub fn launch_prepared_update(prepared: &PreparedUpdate) -> Result<u32, String> 
         .parent()
         .ok_or("Update plan has no directory")?;
     let helper = directory.join(if cfg!(windows) {
-        "opennow-update-helper.exe"
+        "cloudlight-update-helper.exe"
     } else {
-        "opennow-update-helper"
+        "cloudlight-update-helper"
     });
     let mut command = Command::new(helper);
     command
@@ -1031,18 +1031,18 @@ fn prepare_payload(plan: &Plan, destination: &Path) -> Result<PathBuf, String> {
                 .parent()
                 .ok_or("Missing update executable directory")?
                 .join(if cfg!(windows) {
-                    "opennow-core.exe"
+                    "cloudlight-core.exe"
                 } else {
-                    "opennow-core"
+                    "cloudlight-core"
                 });
             canonical_file(&core)?;
             let helper = executable
                 .parent()
                 .ok_or("Missing update executable directory")?
                 .join(if cfg!(windows) {
-                    "opennow-update-helper.exe"
+                    "cloudlight-update-helper.exe"
                 } else {
-                    "opennow-update-helper"
+                    "cloudlight-update-helper"
                 });
             canonical_file(&helper)?;
             for path in [&executable, &core, &helper] {
@@ -1231,10 +1231,10 @@ fn installation_target(kind: InstallKind, executable: &Path) -> Result<PathBuf, 
             if parent.file_name().is_none_or(|name| name != "bin")
                 || executable
                     .file_name()
-                    .is_none_or(|name| name != "OpenNOW.exe")
+                    .is_none_or(|name| name != "Cloudlight.exe")
             {
                 return Err(
-                    "Application does not use the supported Windows bin/OpenNOW.exe layout"
+                    "Application does not use the supported Windows bin/Cloudlight.exe layout"
                         .to_owned(),
                 );
             }

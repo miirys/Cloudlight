@@ -44,7 +44,7 @@ class ApplicationIconTests(unittest.TestCase):
                 self.assertGreater(image.getchannel("A").getextrema()[1], 240)
 
     def test_windows_icon_contains_all_taskbar_sizes(self):
-        with Image.open(ICONS / "OpenNOW.ico") as icon:
+        with Image.open(ICONS / "Cloudlight.ico") as icon:
             self.assertEqual(icon.ico.sizes(), {(size, size) for size in SIZES if size <= 256})
             for size in sorted(icon.ico.sizes()):
                 image = icon.ico.getimage(size).convert("RGBA")
@@ -53,11 +53,11 @@ class ApplicationIconTests(unittest.TestCase):
 
     def test_windows_installer_uses_the_application_icon(self):
         installer = (QT_ROOT / "cmake/WindowsInstaller.cmake").read_text()
-        self.assertIn('set(CPACK_WIX_PRODUCT_ICON "${CMAKE_CURRENT_SOURCE_DIR}/packaging/icons/OpenNOW.ico")',
+        self.assertIn('set(CPACK_WIX_PRODUCT_ICON "${CMAKE_CURRENT_SOURCE_DIR}/packaging/icons/Cloudlight.ico")',
                       installer)
 
     def test_macos_icon_contains_standard_and_retina_images(self):
-        with Image.open(ICONS / "OpenNOW.icns") as icon:
+        with Image.open(ICONS / "Cloudlight.icns") as icon:
             sizes = icon.info["sizes"]
             self.assertIn((512, 512, 2), sizes)
             self.assertIn((16, 16, 2), sizes)
@@ -68,7 +68,7 @@ class ApplicationIconTests(unittest.TestCase):
                     self.assertEqual(image.convert("RGBA").tobytes(), expected.tobytes())
 
     def test_linux_svg_embeds_the_same_brand_without_external_files(self):
-        svg = ET.parse(PACKAGING / "io.github.opencloudgaming.OpenNOW.svg").getroot()
+        svg = ET.parse(PACKAGING / "io.github.miirys.Cloudlight.svg").getroot()
         image = svg.find("{http://www.w3.org/2000/svg}image")
         data = image.attrib["{http://www.w3.org/1999/xlink}href"]
         self.assertTrue(data.startswith("data:image/png;base64,"))
@@ -79,8 +79,8 @@ class ApplicationIconTests(unittest.TestCase):
         plist = plistlib.loads((PACKAGING / "Info.plist.in").read_bytes())
         self.assertEqual(plist["CFBundleIdentifier"], "${MACOSX_BUNDLE_GUI_IDENTIFIER}")
         self.assertEqual(plist["CFBundleIconFile"], "${MACOSX_BUNDLE_ICON_FILE}")
-        desktop = (PACKAGING / "io.github.opencloudgaming.OpenNOW.desktop").read_text()
-        self.assertIn("Icon=io.github.opencloudgaming.OpenNOW\n", desktop)
+        desktop = (PACKAGING / "io.github.miirys.Cloudlight.desktop").read_text()
+        self.assertIn("Icon=io.github.miirys.Cloudlight\n", desktop)
 
 
 if __name__ == "__main__":

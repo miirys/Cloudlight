@@ -45,12 +45,12 @@ class SupporterBuildTest(unittest.TestCase):
         destination = self.root / "complete"
         for arch in ("x64", "arm64"):
             for platform, extension in (("Windows", "msi"), ("Windows", "zip"), ("Linux", "AppImage"), ("Linux", "AppImage.zsync"), ("Linux", "deb")):
-                package = source / arch / f"OpenNOW-Qt-{self.version}-{platform}-{arch}.{extension}"
+                package = source / arch / f"Cloudlight-Qt-{self.version}-{platform}-{arch}.{extension}"
                 package.parent.mkdir(parents=True, exist_ok=True)
                 package.write_bytes(f"fixture {platform} {arch}".encode())
-            package = source / arch / f"OpenNOW-Qt-{self.version}-Windows-{arch}-setup.exe"
+            package = source / arch / f"Cloudlight-Qt-{self.version}-Windows-{arch}-setup.exe"
             package.write_bytes(f"fixture setup {arch}".encode())
-        (source / f"OpenNOW-Qt-{self.version}-Darwin-arm64.dmg").write_bytes(b"fixture Darwin arm64")
+        (source / f"Cloudlight-Qt-{self.version}-Darwin-arm64.dmg").write_bytes(b"fixture Darwin arm64")
         result = subprocess.run(
             [sys.executable, str(SCRIPT), "assemble", "--source", str(source),
              "--destination", str(destination), "--version", self.version,
@@ -66,8 +66,8 @@ class SupporterBuildTest(unittest.TestCase):
         self.assertEqual(len(metadata["assets"]), 13)
         self.assertEqual(
             [asset["name"] for asset in metadata["assets"] if asset["name"].endswith("-setup.exe")],
-            [f"OpenNOW-Qt-{self.version}-Windows-arm64-setup.exe",
-             f"OpenNOW-Qt-{self.version}-Windows-x64-setup.exe"])
+            [f"Cloudlight-Qt-{self.version}-Windows-arm64-setup.exe",
+             f"Cloudlight-Qt-{self.version}-Windows-x64-setup.exe"])
         sums = (destination / "SHA256SUMS").read_text().splitlines()
         self.assertEqual(len(sums), 14)
         for line in sums:
@@ -90,7 +90,7 @@ class SupporterBuildTest(unittest.TestCase):
         result = test_release_metadata.BuildMetadataTest().metadata(OPENNOW_BUILD_VERSION=self.version)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn(
-            f"{self.version}|1.0.0|1.0.0~supporter.123.2|OpenNOW-Qt-{self.version}-Linux-x64|amd64",
+            f"{self.version}|1.0.0|1.0.0~supporter.123.2|Cloudlight-Qt-{self.version}-Linux-x64|amd64",
             result.stderr,
         )
         for version in ("1.0.0-supporter", "1.0.0-supporter.01.1", "1.0.0-supporter.1.0"):

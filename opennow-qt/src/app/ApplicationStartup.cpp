@@ -72,12 +72,12 @@ static int runApplicationSession(int argc, char *argv[], QString &restartExecuta
     qputenv("QT_TLS_BACKEND", "schannel");
     QElapsedTimer startupTimer;
     startupTimer.start();
-    // The application name keeps OpenNOW's settings and data paths; only the
-    // name people see is Cloudlight.
-    QGuiApplication::setApplicationName(u"OpenNOW"_s);
+    // Qt-owned paths (cache, single-instance scope) follow these names. The core
+    // owns the profile directory and moves a pre-rename OpenNOW profile itself.
+    QGuiApplication::setApplicationName(u"Cloudlight"_s);
     QGuiApplication::setApplicationDisplayName(u"Cloudlight"_s);
-    QGuiApplication::setOrganizationName(u"OpenCloudGaming"_s);
-    QGuiApplication::setOrganizationDomain(u"opennow.app"_s);
+    QGuiApplication::setOrganizationName(u"Cloudlight"_s);
+    QGuiApplication::setOrganizationDomain(u"miirys.github.io"_s);
     QGuiApplication::setApplicationVersion(QString::fromLatin1(OPENNOW_VERSION));
     QQuickWindow::setDefaultAlphaBuffer(true);
 #if defined(Q_OS_WIN)
@@ -99,7 +99,7 @@ static int runApplicationSession(int argc, char *argv[], QString &restartExecuta
     QQuickStyle::setStyle(u"Basic"_s);
 
     QGuiApplication application(argc, argv);
-    QGuiApplication::setDesktopFileName(u"io.github.opencloudgaming.OpenNOW"_s);
+    QGuiApplication::setDesktopFileName(u"io.github.miirys.Cloudlight"_s);
     QIcon applicationIcon;
     for (const int size : {16, 24, 32, 48, 64, 128, 256, 512, 1024})
         applicationIcon.addFile(u":/icons/opennow-%1.png"_s.arg(size), QSize(size, size));
@@ -357,7 +357,7 @@ int runApplication(int argc, char *argv[])
     if (restartExecutable.isEmpty())
         return exitCode;
     if (!QProcess::startDetached(restartExecutable, {}, QFileInfo(restartExecutable).absolutePath())) {
-        qCritical("Could not restart OpenNOW. Reopen the application to continue setup.");
+        qCritical("Could not restart Cloudlight. Reopen the application to continue setup.");
         return EXIT_FAILURE;
     }
     return exitCode;

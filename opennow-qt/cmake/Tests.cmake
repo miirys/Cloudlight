@@ -729,7 +729,7 @@ if(BUILD_TESTING)
     target_include_directories(opennow-coreclient-tests PRIVATE src)
     target_link_libraries(opennow-coreclient-tests PRIVATE Qt6::Test Qt6::Core)
     target_compile_definitions(opennow-coreclient-tests PRIVATE
-        OPENNOW_TEST_CORE_PATH="$<TARGET_FILE_DIR:opennow-qt>/opennow-core${CMAKE_EXECUTABLE_SUFFIX}")
+        OPENNOW_TEST_CORE_PATH="$<TARGET_FILE_DIR:opennow-qt>/cloudlight-core${CMAKE_EXECUTABLE_SUFFIX}")
     add_dependencies(opennow-coreclient-tests opennow-fake-core opennow-core)
     add_test(NAME opennow-coreclient-tests COMMAND opennow-coreclient-tests -o -,txt)
 
@@ -1430,7 +1430,7 @@ if(BUILD_TESTING)
         TIMEOUT 5
     )
     add_test(NAME opennow-acceptance-verifier-help
-             COMMAND "$<TARGET_FILE_DIR:opennow-qt>/opennow-acceptance-verify${OPENNOW_CORE_SUFFIX}"
+             COMMAND "$<TARGET_FILE_DIR:opennow-qt>/cloudlight-acceptance-verify${OPENNOW_CORE_SUFFIX}"
                      --help)
     set_tests_properties(opennow-acceptance-verifier-help PROPERTIES TIMEOUT 5)
 endif()

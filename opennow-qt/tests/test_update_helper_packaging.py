@@ -24,7 +24,7 @@ from pathlib import Path
 args = sys.argv[1:]
 target_dir = Path(args[args.index("--target-dir") + 1])
 target = args[args.index("--target") + 1]
-artifact = target_dir / target / "release/opennow-update-helper.exe"
+artifact = target_dir / target / "release/cloudlight-update-helper.exe"
 artifact.parent.mkdir(parents=True, exist_ok=True)
 artifact.write_bytes(b"helper deployment fixture")
 (target_dir / "environment.json").write_text(json.dumps({{
@@ -53,8 +53,8 @@ include("{(ROOT / 'opennow-qt/cmake/NativeRuntime.cmake').as_posix()}")
                 self.assertIn("--unset=CARGO_ENCODED_RUSTFLAGS", helper)
                 self.assertIn("target-feature=+crt-static", helper)
                 self.assertIn(f"--target {target}", helper)
-                self.assertIn(f"update-helper-rust-target/{target}/release/opennow-update-helper.exe", helper)
-                self.assertIn("--bin opennow-update-helper", helper)
+                self.assertIn(f"update-helper-rust-target/{target}/release/cloudlight-update-helper.exe", helper)
+                self.assertIn("--bin cloudlight-update-helper", helper)
                 for name in ("opennow-core", "opennow-streamer-ffi-build", "opennow-streamer-bin-build"):
                     rule = (build / f"CMakeFiles/{name}.dir/build.make").read_text()
                     self.assertNotIn("crt-static", rule)
@@ -67,11 +67,11 @@ include("{(ROOT / 'opennow-qt/cmake/NativeRuntime.cmake').as_posix()}")
                 self.assertEqual(json.loads((build / "update-helper-rust-target/environment.json").read_text()), {
                     "RUSTFLAGS": "-C target-feature=+crt-static", "CARGO_ENCODED_RUSTFLAGS": None,
                 })
-                self.assertEqual((build / "opennow-update-helper.exe").read_bytes(), b"helper deployment fixture")
+                self.assertEqual((build / "cloudlight-update-helper.exe").read_bytes(), b"helper deployment fixture")
 
     def test_windows_authoritative_list_drives_installation_and_both_package_checks(self):
         names = (PACKAGING / "windows-release-binaries.txt").read_text().splitlines()
-        self.assertEqual(names.count("opennow-update-helper.exe"), 1)
+        self.assertEqual(names.count("cloudlight-update-helper.exe"), 1)
         install = (PACKAGING / "WindowsReleaseBinaries.cmake").read_text()
         self.assertIn('file(STRINGS "${CMAKE_CURRENT_LIST_DIR}/windows-release-binaries.txt"', install)
         self.assertIn('"$<TARGET_FILE_DIR:opennow-qt>/${OPENNOW_WINDOWS_RELEASE_BINARY}"', install)
@@ -92,9 +92,9 @@ include("{(ROOT / 'opennow-qt/cmake/NativeRuntime.cmake').as_posix()}")
     def test_final_macos_dmg_validates_helper_architecture_and_dependencies(self):
         workflow = (ROOT / ".github/workflows/qt-build.yml").read_text()
         validation = workflow.split("      - name: Test relocated bundle without development libraries", 1)[1]
-        self.assertIn('for app in "$zip_app" "$RUNNER_TEMP/dmg-relocated/OpenNOW.app"; do', validation)
-        self.assertIn("opennow-acceptance-verify opennow-update-helper opennow-streamer; do", validation)
-        self.assertIn('"opennow-update-helper", "opennow-streamer", "libopennow_streamer_ffi.dylib"', validation)
+        self.assertIn('for app in "$zip_app" "$RUNNER_TEMP/dmg-relocated/Cloudlight.app"; do', validation)
+        self.assertIn("cloudlight-acceptance-verify cloudlight-update-helper cloudlight-streamer; do", validation)
+        self.assertIn('"cloudlight-update-helper", "cloudlight-streamer", "libcloudlight_streamer_ffi.dylib"', validation)
 
 
 if __name__ == "__main__":

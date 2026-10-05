@@ -46,12 +46,12 @@ def expected_packages(version, commit, channel="nightly"):
     if not re.fullmatch(r"[0-9a-f]{40}", commit):
         raise ValueError("Expected an immutable source commit")
     expected = {
-        f"OpenNOW-Qt-{version}-{platform}-{arch}.{extension}"
+        f"Cloudlight-Qt-{version}-{platform}-{arch}.{extension}"
         for arch in ("x64", "arm64")
         for platform, extension in (("Windows", "msi"), ("Windows", "zip"), ("Linux", "AppImage"), ("Linux", "deb"))
     }
-    expected.update(f"OpenNOW-Qt-{version}-Windows-{arch}-setup.exe" for arch in ("x64", "arm64"))
-    expected.add(f"OpenNOW-Qt-{version}-Darwin-arm64.dmg")
+    expected.update(f"Cloudlight-Qt-{version}-Windows-{arch}-setup.exe" for arch in ("x64", "arm64"))
+    expected.add(f"Cloudlight-Qt-{version}-Darwin-arm64.dmg")
     expected.update(name + ".zsync" for name in tuple(expected) if name.endswith(".AppImage"))
     return expected
 

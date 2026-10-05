@@ -5,6 +5,20 @@ edition = "2024"
 license = "MIT"
 rust-version = "1.85"
 
+# Shipped executables carry the Cloudlight name; the package and source paths
+# keep their historical names.
+[[bin]]
+name = "cloudlight-core"
+path = "src/main.rs"
+
+[[bin]]
+name = "cloudlight-update-helper"
+path = "src/bin/opennow-update-helper.rs"
+
+[[bin]]
+name = "cloudlight-acceptance-verify"
+path = "src/bin/opennow-acceptance-verify.rs"
+
 [dependencies]
 aes-gcm = "0.10"
 base64 = "0.22"

@@ -55,8 +55,8 @@ class SignedNightlyReleaseTest(unittest.TestCase):
         self.verify()
         self.assertEqual(len(list(self.destination.iterdir())), 28)
         self.assertEqual(len((self.destination / "SHA256SUMS").read_text().splitlines()), 27)
-        self.assertTrue((self.destination / f"OpenNOW-Qt-{self.version}-Windows-x64-setup.exe.manifest.json").is_file())
-        self.assertTrue((self.destination / f"OpenNOW-Qt-{self.version}-Windows-arm64-setup.exe.manifest.json").is_file())
+        self.assertTrue((self.destination / f"Cloudlight-Qt-{self.version}-Windows-x64-setup.exe.manifest.json").is_file())
+        self.assertTrue((self.destination / f"Cloudlight-Qt-{self.version}-Windows-arm64-setup.exe.manifest.json").is_file())
         info = json.loads((self.destination / "RELEASE-INFO.json").read_text())
         self.assertEqual(info["updates"], "signed-manifest")
         self.assertEqual(info["platformSigning"], "unsigned")
@@ -84,7 +84,7 @@ class SignedNightlyReleaseTest(unittest.TestCase):
                 package.write_bytes(content)
 
     def test_rejects_extra_package_validation_zip_and_symbolic_link(self):
-        for name in ("unexpected.zip", f"OpenNOW-Qt-{self.version}-Darwin-arm64.zip"):
+        for name in ("unexpected.zip", f"Cloudlight-Qt-{self.version}-Darwin-arm64.zip"):
             extra = self.source / name
             extra.write_bytes(b"not public")
             with self.assertRaises(ValueError):
@@ -196,7 +196,7 @@ class SignedNightlyReleaseTest(unittest.TestCase):
         for forbidden in ("cargo ", "cmake ", "unsigned-release/", "signed-release/"):
             self.assertNotIn("run: " + forbidden, signer)
         self.assertIn("update_public_key: ${{ inputs.public_key }}", workflow)
-        self.assertIn('--title "OpenNOW v$RELEASE_VERSION" --generate-notes', publisher)
+        self.assertIn('--title "Cloudlight v$RELEASE_VERSION" --generate-notes', publisher)
         self.assertNotIn("--notes-file", publisher)
         self.assertNotIn("nightly-notes.md", publisher)
         preflight = workflow.split("  preflight:\n", 1)[1].split("  contracts:\n", 1)[0]

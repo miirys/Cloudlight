@@ -20,12 +20,12 @@ fn graphics_preferences_cli_prints_one_exact_json_line_without_mutating_settings
     .unwrap();
     fs::write(&path, &persisted).unwrap();
 
-    let mut explicit = Command::new(env!("CARGO_BIN_EXE_opennow-core"));
+    let mut explicit = Command::new(env!("CARGO_BIN_EXE_cloudlight-core"));
     explicit
         .arg("--graphics-preferences")
         .arg("--data-dir")
         .arg(&directory);
-    let mut environment = Command::new(env!("CARGO_BIN_EXE_opennow-core"));
+    let mut environment = Command::new(env!("CARGO_BIN_EXE_cloudlight-core"));
     environment
         .arg("--graphics-preferences")
         .env("OPENNOW_DATA_DIR", &directory);

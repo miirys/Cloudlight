@@ -2,7 +2,7 @@ name: GFN UI build (linux-x64)
 
 # Slim build for the GFN-style UI fork: Linux x64 only, GitHub-hosted runner,
 # no signing or packaging. Produces the installed usr/ tree as an artifact so the
-# kiosk can swap in the rebuilt opennow-qt binary next to its existing runtime.
+# kiosk can swap in the rebuilt Cloudlight binary next to its existing runtime.
 
 on:
   push:
@@ -91,7 +91,7 @@ jobs:
             libxcb-shape0 libxcb-xinerama0 libxcb-xkb1 libegl1 libgl1 fonts-noto-color-emoji \
             mesa-vulkan-drivers libvulkan1 libgl1-mesa-dri
           mkdir -p build/screens
-          app=$(find build/opennow-qt-release -maxdepth 3 -type f -name opennow-qt -perm -u+x | head -1)
+          app=$(find build/opennow-qt-release -maxdepth 3 -type f -name cloudlight -perm -u+x | head -1)
           bash scripts/capture-gfn-ui.sh "$app" build/screens | tee build/screens/summary.txt || true
 
       - name: Run the Qt test suite
@@ -237,7 +237,7 @@ jobs:
         continue-on-error: true
         run: |
           Set-Location "O:\"
-          $app = Get-ChildItem -Recurse -Filter OpenNOW.exe build/opennow-qt-release | Select-Object -First 1
+          $app = Get-ChildItem -Recurse -Filter Cloudlight.exe build/opennow-qt-release | Select-Object -First 1
           New-Item -ItemType Directory -Force build/screens-windows | Out-Null
           $out = (Resolve-Path build/screens-windows).Path
           $env:PATH = "$env:QT_ROOT_DIR\bin;$($app.DirectoryName);$env:PATH"

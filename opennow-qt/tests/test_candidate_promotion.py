@@ -43,7 +43,7 @@ class CandidatePromotionTest(unittest.TestCase):
         packages = self.source / "packages"
         packages.mkdir(parents=True)
         self.version, self.commit = "1.2.3", "a" * 40
-        names = expected_packages(self.version, self.commit, "stable") | {"OpenNOW-Qt-1.2.3-Darwin-arm64.zip"}
+        names = expected_packages(self.version, self.commit, "stable") | {"Cloudlight-Qt-1.2.3-Darwin-arm64.zip"}
         for name in names:
             (packages / name).write_bytes(name.encode())
         (packages / "SHA256SUMS").write_text("".join(
@@ -82,8 +82,8 @@ class CandidatePromotionTest(unittest.TestCase):
         self.assertEqual(info["windowsSigningMode"], "unsigned")
         self.assertEqual(info["updates"], "signed-manifest")
         self.assertEqual([asset["name"] for asset in info["assets"] if asset["name"].endswith("-setup.exe")], [
-            "OpenNOW-Qt-1.2.3-Windows-arm64-setup.exe",
-            "OpenNOW-Qt-1.2.3-Windows-x64-setup.exe",
+            "Cloudlight-Qt-1.2.3-Windows-arm64-setup.exe",
+            "Cloudlight-Qt-1.2.3-Windows-x64-setup.exe",
         ])
         self.assertEqual(len(info["assets"]), 14)
         self.assertEqual(len(list(self.destination.iterdir())), 30)

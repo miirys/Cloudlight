@@ -15,7 +15,7 @@ struct Session {
 impl Session {
     fn start(environment: &[(&str, &str)]) -> Self {
         let directory = TempDir::new().unwrap();
-        let mut command = Command::new(env!("CARGO_BIN_EXE_opennow-core"));
+        let mut command = Command::new(env!("CARGO_BIN_EXE_cloudlight-core"));
         command
             .arg("--data-dir")
             .arg(directory.path())
@@ -104,8 +104,34 @@ fn explicit_pictures_override_is_published_by_the_running_core() {
         assert_eq!(media["ok"], true);
         assert_eq!(
             media["result"]["path"],
-            directory.path().join("OpenNOW").to_string_lossy().as_ref()
+            directory
+                .path()
+                .join("Cloudlight")
+                .to_string_lossy()
+                .as_ref()
         );
+    }
+}
+
+#[test]
+fn pre_rename_captures_move_to_the_cloudlight_folder_once() {
+    let directory = TempDir::new().unwrap();
+    let legacy = directory.path().join("OpenNOW");
+    std::fs::create_dir_all(legacy.join("Screenshots")).unwrap();
+    std::fs::write(legacy.join("Screenshots/old.png"), b"png").unwrap();
+    {
+        let mut session =
+            Session::start(&[("OPENNOW_PICTURES_DIR", directory.path().to_str().unwrap())]);
+        session.handshake();
+        let media = session.request("media", "media.root.get", json!({}));
+        assert_eq!(media["ok"], true);
+        let current = directory.path().join("Cloudlight");
+        assert_eq!(media["result"]["path"], current.to_string_lossy().as_ref());
+        assert_eq!(
+            std::fs::read(current.join("Screenshots/old.png")).unwrap(),
+            b"png"
+        );
+        assert!(!legacy.exists());
     }
 }
 
@@ -124,7 +150,7 @@ fn absent_pictures_override_keeps_the_platform_fallback() {
             media["result"]["path"],
             home.path()
                 .join("Pictures")
-                .join("OpenNOW")
+                .join("Cloudlight")
                 .to_string_lossy()
                 .as_ref()
         );

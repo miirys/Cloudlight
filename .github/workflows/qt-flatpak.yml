@@ -31,18 +31,18 @@ jobs:
         run: |
           flatpak-builder --user --force-clean --jobs=4 \
             --state-dir=build/flatpak/state --repo=build/flatpak/repo \
-            build/flatpak/app opennow-qt/packaging/flatpak/io.github.opencloudgaming.OpenNOW.json
-          flatpak build-bundle build/flatpak/repo build/flatpak/OpenNOW-x86_64.flatpak \
-            io.github.opencloudgaming.OpenNOW master \
+            build/flatpak/app opennow-qt/packaging/flatpak/io.github.miirys.Cloudlight.json
+          flatpak build-bundle build/flatpak/repo build/flatpak/Cloudlight-x86_64.flatpak \
+            io.github.miirys.Cloudlight master \
             --runtime-repo=https://flathub.org/repo/flathub.flatpakrepo
       - name: Install and verify the exported bundle
         run: |
-          flatpak install --user --noninteractive -y build/flatpak/OpenNOW-x86_64.flatpak
+          flatpak install --user --noninteractive -y build/flatpak/Cloudlight-x86_64.flatpak
           python3 opennow-qt/packaging/verify_flatpak.py
       - uses: actions/upload-artifact@v4
         with:
           name: opennow-qt-flatpak-x86_64
-          path: build/flatpak/OpenNOW-x86_64.flatpak
+          path: build/flatpak/Cloudlight-x86_64.flatpak
           if-no-files-found: error
           retention-days: 14
           compression-level: 0

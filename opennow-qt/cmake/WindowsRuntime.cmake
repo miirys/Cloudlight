@@ -4,7 +4,7 @@ if(WIN32)
         COMMAND "${CMAKE_COMMAND}" -E copy_if_different
                 "$<TARGET_FILE:${OPENNOW_SDL3_RUNTIME_TARGET}>"
                 "$<TARGET_FILE_DIR:opennow-qt>"
-        COMMENT "Copying SDL3 next to the OpenNOW executable")
+        COMMENT "Copying SDL3 next to the Cloudlight executable")
     get_filename_component(OPENNOW_QT_TARGET_BIN "${Qt6_DIR}/../../../bin" ABSOLUTE)
     set(OPENNOW_WINDEPLOYQT_ARGS
         --no-translations

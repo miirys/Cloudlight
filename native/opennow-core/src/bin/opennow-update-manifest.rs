@@ -178,7 +178,7 @@ mod tests {
         let manifest = Manifest {
             schema_version: 1,
             version: "1.2.3".to_owned(),
-            asset: "OpenNOW-Qt-1.2.3.deb".to_owned(),
+            asset: "Cloudlight-Qt-1.2.3.deb".to_owned(),
             size: 42,
             sha256: "0".repeat(64),
             signature: String::new(),
@@ -208,7 +208,7 @@ mod tests {
             version: semver::Version::parse("1.0.0-nightly.123456.2")
                 .unwrap()
                 .to_string(),
-            asset: "OpenNOW-Qt-1.0.0-nightly.123456.2-Linux-x64.deb".to_owned(),
+            asset: "Cloudlight-Qt-1.0.0-nightly.123456.2-Linux-x64.deb".to_owned(),
             size: 42,
             sha256: "0".repeat(64),
             signature: String::new(),

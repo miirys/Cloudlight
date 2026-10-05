@@ -15,7 +15,7 @@ class AppImageUpdatesTest(unittest.TestCase):
     def setUp(self):
         directory = tempfile.TemporaryDirectory()
         self.addCleanup(directory.cleanup)
-        self.appimage = Path(directory.name) / "OpenNOW-Qt-1.2.3-Linux-x64.AppImage"
+        self.appimage = Path(directory.name) / "Cloudlight-Qt-1.2.3-Linux-x64.AppImage"
         self.appimage.write_bytes(b"AppImage fixture")
         self.sidecar = self.appimage.with_name(self.appimage.name + ".zsync")
         self.headers = (f"zsync: 0.6.2\nFilename: {self.appimage.name}\n"
@@ -27,10 +27,10 @@ class AppImageUpdatesTest(unittest.TestCase):
         for arch in ("x64", "arm64"):
             stable = update_information("stable", arch)
             nightly = update_information("nightly", arch)
-            self.assertEqual(stable, "gh-releases-zsync|OpenCloudGaming|OpenNOW|latest|"
-                             f"OpenNOW-Qt-*-Linux-{arch}.AppImage.zsync")
-            self.assertEqual(nightly, "gh-releases-zsync|OpenCloudGaming|OpenNOW|latest-pre|"
-                             f"OpenNOW-Qt-*-nightly.*-Linux-{arch}.AppImage.zsync")
+            self.assertEqual(stable, "gh-releases-zsync|miirys|OpenNOW|latest|"
+                             f"Cloudlight-Qt-*-Linux-{arch}.AppImage.zsync")
+            self.assertEqual(nightly, "gh-releases-zsync|miirys|OpenNOW|latest-pre|"
+                             f"Cloudlight-Qt-*-nightly.*-Linux-{arch}.AppImage.zsync")
         for channel, arch in (("beta", "x64"), ("stable", "x86_64")):
             with self.assertRaises(ValueError):
                 update_information(channel, arch)
@@ -68,7 +68,7 @@ class AppImageUpdatesTest(unittest.TestCase):
             workflow = (ROOT / ".github/workflows" / name).read_text()
             self.assertIn("LDAI_UPDATE_INFORMATION=$(python3 opennow-qt/packaging/appimage_updates.py information", workflow)
             self.assertIn("appimage_updates.py verify", workflow)
-            self.assertIn("OpenNOW-Qt-*.AppImage.zsync", workflow)
+            self.assertIn("Cloudlight-Qt-*.AppImage.zsync", workflow)
             self.assertIn("/*.AppImage.zsync", workflow)
 
     def test_publication_workflows_use_the_existing_production_key(self):

@@ -11,9 +11,14 @@ use std::sync::Mutex;
 mod encrypted_secret_store;
 mod json_secret_store;
 
-const SERVICE_NAME: &str = "app.opennow.auth";
+const SERVICE_NAME: &str = "io.github.miirys.cloudlight.auth";
 #[cfg(windows)]
-const KEY_SERVICE_NAME: &str = "app.opennow.auth.session-keys";
+const KEY_SERVICE_NAME: &str = "io.github.miirys.cloudlight.auth.session-keys";
+/// Credential service names used before the Cloudlight rename. Entries saved under
+/// them are moved to the current names the first time they are read.
+const LEGACY_SERVICE_NAME: &str = "app.opennow.auth";
+#[cfg(windows)]
+const LEGACY_KEY_SERVICE_NAME: &str = "app.opennow.auth.session-keys";
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -95,6 +100,55 @@ impl SecretStore for OsSecretStore {
     }
 }
 
+/// Moves entries from a store's pre-rename service name to its current one. The
+/// legacy entry is removed only after the copy under the current name reads back
+/// intact; if that cannot be done the legacy entry keeps being used.
+struct RenamedSecretStore {
+    current: Box<dyn SecretStore>,
+    legacy: Box<dyn SecretStore>,
+}
+
+impl RenamedSecretStore {
+    fn os(service: &'static str, legacy_service: &'static str) -> Self {
+        Self {
+            current: Box::new(OsSecretStore { service }),
+            legacy: Box::new(OsSecretStore {
+                service: legacy_service,
+            }),
+        }
+    }
+}
+
+impl SecretStore for RenamedSecretStore {
+    fn get(&self, user_id: &str) -> Result<Option<String>, String> {
+        if let Some(value) = self.current.get(user_id)? {
+            return Ok(Some(value));
+        }
+        let Some(value) = self.legacy.get(user_id)? else {
+            return Ok(None);
+        };
+        let moved = self.current.set(user_id, &value).is_ok()
+            && self.current.get(user_id).ok().flatten().as_deref() == Some(value.as_str());
+        if moved {
+            let _ = self.legacy.delete(user_id);
+        }
+        Ok(Some(value))
+    }
+
+    fn set(&self, user_id: &str, encoded: &str) -> Result<(), String> {
+        self.current.set(user_id, encoded)?;
+        // A stale legacy entry must not reappear once the current one is removed.
+        let _ = self.legacy.delete(user_id);
+        Ok(())
+    }
+
+    fn delete(&self, user_id: &str) -> Result<(), String> {
+        let current = self.current.delete(user_id);
+        let legacy = self.legacy.delete(user_id);
+        current.and(legacy)
+    }
+}
+
 impl CredentialVault {
     #[cfg(test)]
     pub(crate) fn memory(data_dir: PathBuf) -> Self {
@@ -117,17 +171,14 @@ impl CredentialVault {
         #[cfg(windows)]
         let store = Box::new(encrypted_secret_store::EncryptedSecretStore::new(
             data_dir.join("secure-sessions"),
-            Box::new(OsSecretStore {
-                service: KEY_SERVICE_NAME,
-            }),
-            Box::new(OsSecretStore {
-                service: SERVICE_NAME,
-            }),
+            Box::new(RenamedSecretStore::os(
+                KEY_SERVICE_NAME,
+                LEGACY_KEY_SERVICE_NAME,
+            )),
+            Box::new(RenamedSecretStore::os(SERVICE_NAME, LEGACY_SERVICE_NAME)),
         ));
         #[cfg(not(windows))]
-        let store = Box::new(OsSecretStore {
-            service: SERVICE_NAME,
-        });
+        let store = Box::new(RenamedSecretStore::os(SERVICE_NAME, LEGACY_SERVICE_NAME));
         Self::with_store(data_dir, store)
     }
 
@@ -816,6 +867,96 @@ fn write_private_file(path: &Path, data: &[u8]) -> io::Result<()> {
 mod tests {
     use super::*;
     use serde_json::json;
+
+    /// Shares one in-memory store between a renamed store and the test.
+    struct Shared(std::sync::Arc<MemorySecretStore>, bool);
+
+    impl SecretStore for Shared {
+        fn get(&self, user_id: &str) -> Result<Option<String>, String> {
+            self.0.get(user_id)
+        }
+        fn set(&self, user_id: &str, encoded: &str) -> Result<(), String> {
+            if self.1 {
+                return Err("read-only".into());
+            }
+            self.0.set(user_id, encoded)
+        }
+        fn delete(&self, user_id: &str) -> Result<(), String> {
+            self.0.delete(user_id)
+        }
+    }
+
+    fn renamed(
+        current_writable: bool,
+    ) -> (
+        RenamedSecretStore,
+        std::sync::Arc<MemorySecretStore>,
+        std::sync::Arc<MemorySecretStore>,
+    ) {
+        let current = std::sync::Arc::new(MemorySecretStore::default());
+        let legacy = std::sync::Arc::new(MemorySecretStore::default());
+        let store = RenamedSecretStore {
+            current: Box::new(Shared(current.clone(), !current_writable)),
+            legacy: Box::new(Shared(legacy.clone(), false)),
+        };
+        (store, current, legacy)
+    }
+
+    #[test]
+    fn legacy_credentials_move_to_the_cloudlight_service_on_first_read() {
+        let (store, current, legacy) = renamed(true);
+        legacy.set("user", "session").unwrap();
+
+        assert_eq!(store.get("user").unwrap().as_deref(), Some("session"));
+        assert_eq!(current.get("user").unwrap().as_deref(), Some("session"));
+        assert_eq!(legacy.get("user").unwrap(), None);
+        assert_eq!(store.get("user").unwrap().as_deref(), Some("session"));
+        assert_eq!(store.get("missing").unwrap(), None);
+    }
+
+    #[test]
+    fn legacy_credentials_stay_when_the_cloudlight_service_cannot_be_written() {
+        let (store, current, legacy) = renamed(false);
+        legacy.set("user", "session").unwrap();
+
+        assert_eq!(store.get("user").unwrap().as_deref(), Some("session"));
+        assert_eq!(current.get("user").unwrap(), None);
+        assert_eq!(legacy.get("user").unwrap().as_deref(), Some("session"));
+    }
+
+    #[test]
+    fn current_credentials_win_and_removal_clears_both_service_names() {
+        let (store, current, legacy) = renamed(true);
+        legacy.set("user", "stale").unwrap();
+        current.set("user", "fresh").unwrap();
+        assert_eq!(store.get("user").unwrap().as_deref(), Some("fresh"));
+        assert_eq!(legacy.get("user").unwrap().as_deref(), Some("stale"));
+
+        store.delete("user").unwrap();
+        assert_eq!(store.get("user").unwrap(), None);
+        assert_eq!(legacy.get("user").unwrap(), None);
+
+        legacy.set("other", "stale").unwrap();
+        store.set("other", "fresh").unwrap();
+        assert_eq!(legacy.get("other").unwrap(), None);
+        store.delete("other").unwrap();
+        assert_eq!(store.get("other").unwrap(), None);
+    }
+
+    #[test]
+    fn a_locked_cloudlight_service_is_not_treated_as_missing() {
+        let legacy = std::sync::Arc::new(MemorySecretStore::default());
+        legacy.set("user", "session").unwrap();
+        let store = RenamedSecretStore {
+            current: Box::new(MemorySecretStore {
+                unavailable: true,
+                ..Default::default()
+            }),
+            legacy: Box::new(Shared(legacy.clone(), false)),
+        };
+        assert!(store.get("user").is_err());
+        assert_eq!(legacy.get("user").unwrap().as_deref(), Some("session"));
+    }
 
     #[test]
     fn unavailable_vault_persists_and_restores_json_after_restart() {

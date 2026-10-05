@@ -26,18 +26,18 @@ add_custom_target(opennow-core ALL
             "${CARGO_EXECUTABLE}" build
             --manifest-path "${CMAKE_CURRENT_SOURCE_DIR}/../native/opennow-core/Cargo.toml"
             --target-dir "${OPENNOW_CORE_TARGET_DIR}"
-            --bin opennow-core
-            --bin opennow-acceptance-verify
+            --bin cloudlight-core
+            --bin cloudlight-acceptance-verify
             ${OPENNOW_RUST_TARGET_ARGS}
             $<$<CONFIG:Release>:--release>
     COMMAND "${CMAKE_COMMAND}" -E copy_if_different
-            "${OPENNOW_CORE_ARTIFACT_ROOT}/${OPENNOW_CORE_PROFILE}/opennow-core${OPENNOW_CORE_SUFFIX}"
-            "$<TARGET_FILE_DIR:opennow-qt>/opennow-core${OPENNOW_CORE_SUFFIX}"
+            "${OPENNOW_CORE_ARTIFACT_ROOT}/${OPENNOW_CORE_PROFILE}/cloudlight-core${OPENNOW_CORE_SUFFIX}"
+            "$<TARGET_FILE_DIR:opennow-qt>/cloudlight-core${OPENNOW_CORE_SUFFIX}"
     COMMAND "${CMAKE_COMMAND}" -E copy_if_different
-            "${OPENNOW_CORE_ARTIFACT_ROOT}/${OPENNOW_CORE_PROFILE}/opennow-acceptance-verify${OPENNOW_CORE_SUFFIX}"
-            "$<TARGET_FILE_DIR:opennow-qt>/opennow-acceptance-verify${OPENNOW_CORE_SUFFIX}"
+            "${OPENNOW_CORE_ARTIFACT_ROOT}/${OPENNOW_CORE_PROFILE}/cloudlight-acceptance-verify${OPENNOW_CORE_SUFFIX}"
+            "$<TARGET_FILE_DIR:opennow-qt>/cloudlight-acceptance-verify${OPENNOW_CORE_SUFFIX}"
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../native/opennow-core"
-    COMMENT "Building and bundling the OpenNOW Rust application core"
+    COMMENT "Building and bundling the Cloudlight Rust application core"
     COMMAND_EXPAND_LISTS
     VERBATIM
 )
@@ -141,12 +141,12 @@ add_custom_target(opennow-update-helper-build ALL
             "${CARGO_EXECUTABLE}" build
             --manifest-path "${CMAKE_CURRENT_SOURCE_DIR}/../native/opennow-core/Cargo.toml"
             --target-dir "${OPENNOW_UPDATE_HELPER_TARGET_DIR}"
-            --bin opennow-update-helper
+            --bin cloudlight-update-helper
             ${OPENNOW_UPDATE_HELPER_TARGET_ARGS}
             $<$<CONFIG:Release>:--release>
     COMMAND "${CMAKE_COMMAND}" -E copy_if_different
-            "${OPENNOW_UPDATE_HELPER_ARTIFACT_ROOT}/${OPENNOW_CORE_PROFILE}/opennow-update-helper${OPENNOW_CORE_SUFFIX}"
-            "$<TARGET_FILE_DIR:opennow-qt>/opennow-update-helper${OPENNOW_CORE_SUFFIX}"
+            "${OPENNOW_UPDATE_HELPER_ARTIFACT_ROOT}/${OPENNOW_CORE_PROFILE}/cloudlight-update-helper${OPENNOW_CORE_SUFFIX}"
+            "$<TARGET_FILE_DIR:opennow-qt>/cloudlight-update-helper${OPENNOW_CORE_SUFFIX}"
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../native/opennow-core"
     COMMAND_EXPAND_LISTS
     VERBATIM
@@ -199,18 +199,18 @@ if(WIN32 AND MINGW AND OPENNOW_RUST_EFFECTIVE_TARGET MATCHES "-msvc$")
     install(FILES ${OPENNOW_MSVC_RUNTIME_FILES} DESTINATION "${CMAKE_INSTALL_BINDIR}")
 endif()
 if(WIN32 AND OPENNOW_RUST_EFFECTIVE_TARGET MATCHES "-msvc$")
-    set(OPENNOW_STREAMER_FFI_RUNTIME_NAME "opennow_streamer_ffi.dll")
-    set(OPENNOW_STREAMER_FFI_LINK_NAME "opennow_streamer_ffi.dll.lib")
+    set(OPENNOW_STREAMER_FFI_RUNTIME_NAME "cloudlight_streamer_ffi.dll")
+    set(OPENNOW_STREAMER_FFI_LINK_NAME "cloudlight_streamer_ffi.dll.lib")
 elseif(WIN32)
     # MinGW ld links directly against the DLL; current rustc no longer emits
     # a separate GNU import library for cdylib targets.
-    set(OPENNOW_STREAMER_FFI_RUNTIME_NAME "opennow_streamer_ffi.dll")
+    set(OPENNOW_STREAMER_FFI_RUNTIME_NAME "cloudlight_streamer_ffi.dll")
     set(OPENNOW_STREAMER_FFI_LINK_NAME "${OPENNOW_STREAMER_FFI_RUNTIME_NAME}")
 elseif(APPLE)
-    set(OPENNOW_STREAMER_FFI_RUNTIME_NAME "libopennow_streamer_ffi.dylib")
+    set(OPENNOW_STREAMER_FFI_RUNTIME_NAME "libcloudlight_streamer_ffi.dylib")
     set(OPENNOW_STREAMER_FFI_LINK_NAME "${OPENNOW_STREAMER_FFI_RUNTIME_NAME}")
 else()
-    set(OPENNOW_STREAMER_FFI_RUNTIME_NAME "libopennow_streamer_ffi.so")
+    set(OPENNOW_STREAMER_FFI_RUNTIME_NAME "libcloudlight_streamer_ffi.so")
     set(OPENNOW_STREAMER_FFI_LINK_NAME "${OPENNOW_STREAMER_FFI_RUNTIME_NAME}")
 endif()
 set(OPENNOW_STREAMER_FFI_RUNTIME
@@ -248,7 +248,7 @@ add_custom_command(
         "${CMAKE_CURRENT_SOURCE_DIR}/../native/opennow-streamer/crates/opennow-streamer-ffi/include/opennow_streamer_ffi.h"
         ${OPENNOW_STREAMER_RUST_SOURCES}
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../native/opennow-streamer"
-    COMMENT "Building the embedded OpenNOW streamer library"
+    COMMENT "Building the embedded Cloudlight streamer library"
     COMMAND_EXPAND_LISTS
     VERBATIM
 )
@@ -289,13 +289,13 @@ add_custom_target(opennow-streamer-peer-probe
     DEPENDS "${OPENNOW_STREAMER_PEER_PROBE}")
 
 # The Rust core still probes streamer capabilities through the standalone
-# streamer executable next to opennow-core, so build and ship it alongside
+# streamer executable next to cloudlight-core, so build and ship it alongside
 # the in-process FFI library. Always release: a debug streamer is too slow
 # for real-time use and would only bloat dev trees and packages.
 if(WIN32)
-    set(OPENNOW_STREAMER_BIN_NAME "opennow-streamer.exe")
+    set(OPENNOW_STREAMER_BIN_NAME "cloudlight-streamer.exe")
 else()
-    set(OPENNOW_STREAMER_BIN_NAME "opennow-streamer")
+    set(OPENNOW_STREAMER_BIN_NAME "cloudlight-streamer")
 endif()
 set(OPENNOW_STREAMER_BIN_ARTIFACT
     "${OPENNOW_STREAMER_ARTIFACT_ROOT}/${OPENNOW_STREAMER_PROFILE}/${OPENNOW_STREAMER_BIN_NAME}")
@@ -307,7 +307,7 @@ add_custom_command(
             --manifest-path "${CMAKE_CURRENT_SOURCE_DIR}/../native/opennow-streamer/Cargo.toml"
             --target-dir "${OPENNOW_STREAMER_TARGET_DIR}"
             --package opennow-streamer
-            --bin opennow-streamer
+            --bin cloudlight-streamer
             ${OPENNOW_RUST_TARGET_ARGS}
             ${OPENNOW_STREAMER_CARGO_FEATURE_ARGS}
             --release
@@ -316,7 +316,7 @@ add_custom_command(
         "${CMAKE_CURRENT_SOURCE_DIR}/../native/opennow-streamer/Cargo.toml"
         ${OPENNOW_STREAMER_RUST_SOURCES}
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../native/opennow-streamer"
-    COMMENT "Building the standalone OpenNOW streamer executable"
+    COMMENT "Building the standalone Cloudlight streamer executable"
     COMMAND_EXPAND_LISTS
     VERBATIM
 )
@@ -348,14 +348,14 @@ add_custom_command(TARGET opennow-qt POST_BUILD
             "$<TARGET_FILE_DIR:opennow-qt>/${OPENNOW_STREAMER_FFI_RUNTIME_NAME}"
     VERBATIM)
 # POST_BUILD only runs when the C++ executable itself relinks. Rust-only edits rebuild the FFI
-# artifact without relinking OpenNOW, which previously left a stale streamer DLL beside the app.
+# artifact without relinking Cloudlight, which previously left a stale streamer DLL beside the app.
 # Keep the post-build hook for target-specific builds and add an always-considered deployment
 # target for normal/default builds; copy_if_different makes the up-to-date case inexpensive.
 add_custom_target(opennow-streamer-ffi-deploy ALL
     COMMAND "${CMAKE_COMMAND}" -E copy_if_different
             "${OPENNOW_STREAMER_FFI_RUNTIME}"
             "$<TARGET_FILE_DIR:opennow-qt>/${OPENNOW_STREAMER_FFI_RUNTIME_NAME}"
-    COMMENT "Deploying the embedded OpenNOW streamer runtime"
+    COMMENT "Deploying the embedded Cloudlight streamer runtime"
     VERBATIM)
 add_dependencies(opennow-streamer-ffi-deploy opennow-streamer-ffi-build opennow-qt)
 if(APPLE)
