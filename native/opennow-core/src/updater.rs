@@ -15,9 +15,9 @@ use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use std::time::Duration;
 
-const RELEASES_URL: &str = "https://api.github.com/repos/OpenCloudGaming/OpenNOW/releases";
-const RELEASES_PAGE: &str = "https://github.com/OpenCloudGaming/OpenNOW/releases";
-const RELEASE_ASSET_PREFIX: &str = "https://github.com/OpenCloudGaming/OpenNOW/releases/download/";
+const RELEASES_URL: &str = "https://api.github.com/repos/miirys/OpenNOW/releases";
+const RELEASES_PAGE: &str = "https://github.com/miirys/OpenNOW/releases";
+const RELEASE_ASSET_PREFIX: &str = "https://github.com/miirys/OpenNOW/releases/download/";
 const MAXIMUM_RELEASE_METADATA_BYTES: u64 = 8 * 1024 * 1024;
 
 #[derive(Clone)]
@@ -251,14 +251,14 @@ impl UpdaterService {
                     });
             state.message = if state.available.is_none() {
                 format!(
-                    "OpenNOW {version} is available; this release has no signed Qt update package for this platform."
+                    "Cloudlight {version} is available; this release has no signed Qt update package for this platform."
                 )
             } else if embedded_update_key().is_err() {
                 format!(
-                    "OpenNOW {version} is available; this build has no pinned update signing key. Install a signed-update build manually once to enable future automatic updates."
+                    "Cloudlight {version} is available; this build has no pinned update signing key. Install a signed-update build manually once to enable future automatic updates."
                 )
             } else {
-                format!("OpenNOW {version} is available with signed update metadata.")
+                format!("Cloudlight {version} is available with signed update metadata.")
             };
         } else {
             let has_release = select_latest_release(&releases, channel).is_some();
@@ -270,7 +270,7 @@ impl UpdaterService {
             state.available_version = None;
             state.available = None;
             state.message = if has_release {
-                "OpenNOW is up to date.".to_owned()
+                "Cloudlight is up to date.".to_owned()
             } else {
                 format!(
                     "No published releases were found for the {channel} update channel. Try again later."
@@ -332,7 +332,7 @@ impl UpdaterService {
             embedded_update_key()?;
             state.status = "downloading";
             state.transaction = None;
-            state.message = format!("Downloading OpenNOW {}…", available.version);
+            state.message = format!("Downloading Cloudlight {}…", available.version);
             available
         };
         let _ = fs::remove_file(self.staging_dir.join("active-apply.json"));
@@ -341,7 +341,7 @@ impl UpdaterService {
                 let mut state = self.state.lock().expect("updater state poisoned");
                 state.status = "downloaded";
                 state.message = format!(
-                    "OpenNOW {} downloaded and verified. Ready to install.",
+                    "Cloudlight {} downloaded and verified. Ready to install.",
                     downloaded.version
                 );
                 state.downloaded = Some(downloaded);
@@ -406,7 +406,7 @@ impl UpdaterService {
         if let Err(error) = result {
             let mut state = self.state.lock().expect("updater state poisoned");
             state.status = "failed";
-            state.message = format!("Update preparation failed; OpenNOW remains open: {error}");
+            state.message = format!("Update preparation failed; Cloudlight remains open: {error}");
             state.transaction = None;
             let _ = fs::remove_file(self.staging_dir.join("active-apply.json"));
             return Err(error);
@@ -418,7 +418,7 @@ impl UpdaterService {
         let state = self.state.lock().expect("updater state poisoned");
         json!({
             "version": state.notes_version,
-            "title": state.notes_version.as_ref().map(|version| format!("OpenNOW {version}")),
+            "title": state.notes_version.as_ref().map(|version| format!("Cloudlight {version}")),
             "bodyMarkdown": state.notes,
             "releaseUrl": state.release_url
         })
@@ -665,7 +665,7 @@ fn reconcile_transaction(state: &mut State, staging_dir: &Path) {
             Ok(true) => (),
             Ok(false) => {
                 state.status = "failed";
-                state.message = "The update helper stopped before completing the transaction. OpenNOW will not close automatically.".to_owned();
+                state.message = "The update helper stopped before completing the transaction. Cloudlight will not close automatically.".to_owned();
                 clear_finished_transaction(state, staging_dir);
                 return;
             }
@@ -715,7 +715,7 @@ fn restore_downloaded_status(state: &mut State) {
     if let Some(downloaded) = &state.downloaded {
         state.status = "downloaded";
         state.message = format!(
-            "OpenNOW {} remains downloaded and verified. Ready to install.",
+            "Cloudlight {} remains downloaded and verified. Ready to install.",
             downloaded.version
         );
     }
@@ -936,7 +936,7 @@ fn parse_version(value: &str) -> Option<Version> {
 
 fn trusted_release_url(value: &str) -> bool {
     value
-        .strip_prefix("https://github.com/OpenCloudGaming/OpenNOW/releases/")
+        .strip_prefix("https://github.com/miirys/OpenNOW/releases/")
         .is_some_and(|suffix| !suffix.is_empty())
 }
 
@@ -1435,7 +1435,7 @@ mod tests {
     fn release(version: &str, prerelease: bool) -> Release {
         Release {
             tag_name: version.to_owned(),
-            html_url: format!("https://github.com/OpenCloudGaming/OpenNOW/releases/tag/{version}"),
+            html_url: format!("https://github.com/miirys/OpenNOW/releases/tag/{version}"),
             body: None,
             draft: false,
             prerelease,
@@ -1874,7 +1874,7 @@ mod tests {
     #[test]
     fn update_urls_assets_and_names_are_strictly_scoped() {
         assert!(trusted_release_url(
-            "https://github.com/OpenCloudGaming/OpenNOW/releases/tag/v1.0.0"
+            "https://github.com/miirys/OpenNOW/releases/tag/v1.0.0"
         ));
         assert!(!trusted_release_url("https://example.com/releases/tag/v1"));
         assert!(safe_asset_name("OpenNOW-Qt-linux-x64.AppImage"));

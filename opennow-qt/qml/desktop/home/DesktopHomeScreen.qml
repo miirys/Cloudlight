@@ -71,8 +71,11 @@ FocusScope {
     readonly property int safeX: DesktopTokens.safeX
     readonly property int railGap: DesktopTokens.px(16)
     // Five landscape tiles across, with the sixth peeking in to show the rail scrolls.
-    readonly property int tileWidth: Math.floor((root.width - root.safeX * 2 - root.railGap * 4) / 5.3)
-    readonly property int tileHeight: Math.round(root.tileWidth * 9 / 16)
+    // Portrait box art, as GeForce NOW's rails use: the store's landscape images
+    // are hero backgrounds and crop badly. Cards fall back to landscape art only
+    // when a game has no box art (DesktopTokens.artworkUrl).
+    readonly property int tileWidth: Math.floor((root.width - root.safeX * 2 - root.railGap * 6) / 7.3)
+    readonly property int tileHeight: Math.round(root.tileWidth * 4 / 3)
     readonly property int heroHeight: Math.max(DesktopTokens.px(380), Math.round(root.height * 0.7))
 
     // reveal runs linearly over revealSpan ms; each element eases its own slice.
@@ -235,6 +238,15 @@ FocusScope {
         duration: DesktopTokens.motionDuration
         easing.type: Easing.BezierSpline
         easing.bezierCurve: [0.2, 0, 0, 1, 1, 1]
+    }
+
+    // Below the hero the page is a calm, solid theme surface rather than a dimmed
+    // repeat of the background art.
+    Rectangle {
+        objectName: "desktopHomeSurface"
+        anchors.fill: parent
+        z: -1
+        color: DesktopTokens.shell
     }
 
     Flickable {
@@ -490,8 +502,8 @@ FocusScope {
             id: list
             y: header.height + DesktopTokens.px(14)
             width: parent.width
-            // Room below the art for the title line.
-            height: root.tileHeight + DesktopTokens.px(52)
+            // Room for the hover lift.
+            height: root.tileHeight + DesktopTokens.px(20)
             orientation: ListView.Horizontal
             spacing: root.railGap
             leftMargin: root.safeX
@@ -505,7 +517,7 @@ FocusScope {
                 required property var modelData
                 required property int index
                 game: modelData
-                landscape: true
+                landscape: false
                 tileWidth: root.tileWidth
                 tileHeight: root.tileHeight
                 current: root.focusZone === rail.zone && root.focusIndex === index
