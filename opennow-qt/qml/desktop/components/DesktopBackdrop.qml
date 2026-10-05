@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Window
+import QtQuick.Effects
 import OpenNOW
 
 Item {
@@ -21,32 +22,54 @@ Item {
 
     Rectangle { anchors.fill: parent; color: root.signIn ? Theme.shell : DesktopTokens.shell }
 
+    // Behind dense pages such as Settings the picture is blurred and dimmed so the
+    // text over it stays readable; the blur only runs while it is needed.
+    property bool blurred: false
+    property real blurAmount: blurred ? 1 : 0
+    Behavior on blurAmount { NumberAnimation { duration: DesktopTokens.motionDuration; easing.type: Easing.OutCubic } }
     Item {
+        id: picture
         anchors.fill: parent
-        clip: true
+        layer.enabled: root.blurAmount > 0
+        layer.effect: MultiEffect {
+            blurEnabled: true
+            blur: root.blurAmount
+            blurMax: 64
+            autoPaddingEnabled: false
+        }
+        Item {
+            anchors.fill: parent
+            clip: true
+            Image {
+                id: art
+                width: parent.width
+                height: parent.height * (root.signIn ? 1.18 : 1)
+                y: root.signIn ? -parent.height * 0.12 : 0
+                source: artworkSource.resolvedUrl
+                asynchronous: true
+                cache: true
+                fillMode: Image.PreserveAspectCrop
+                sourceSize: Qt.size(Math.ceil(width * Screen.devicePixelRatio), Math.ceil(height * Screen.devicePixelRatio))
+                opacity: status === Image.Ready && (root.signIn || String(ShellStore.settings.desktopBackground || "solid") === "art") ? 1 : 0
+                Behavior on opacity { NumberAnimation { duration: DesktopTokens.revealDuration } }
+            }
+        }
+
         Image {
-            id: art
-            width: parent.width
-            height: parent.height * (root.signIn ? 1.18 : 1)
-            y: root.signIn ? -parent.height * 0.12 : 0
-            source: artworkSource.resolvedUrl
-            asynchronous: true
-            cache: true
-            fillMode: Image.PreserveAspectCrop
+            objectName: "customDesktopBackground"
+            anchors.fill: parent
+            source: root.visible && root.customBackground ? String(ShellStore.settings.desktopBackgroundImage || "") : ""
             sourceSize: Qt.size(Math.ceil(width * Screen.devicePixelRatio), Math.ceil(height * Screen.devicePixelRatio))
-            opacity: status === Image.Ready && (root.signIn || String(ShellStore.settings.desktopBackground || "solid") === "art") ? 1 : 0
-            Behavior on opacity { NumberAnimation { duration: DesktopTokens.revealDuration } }
+            asynchronous: true
+            fillMode: Image.PreserveAspectCrop
+            opacity: status === Image.Ready ? Number(ShellStore.settings.desktopBackgroundOpacity ?? 30) / 100 : 0
         }
     }
-
-    Image {
-        objectName: "customDesktopBackground"
+    Rectangle {
         anchors.fill: parent
-        source: root.visible && root.customBackground ? String(ShellStore.settings.desktopBackgroundImage || "") : ""
-        sourceSize: Qt.size(Math.ceil(width * Screen.devicePixelRatio), Math.ceil(height * Screen.devicePixelRatio))
-        asynchronous: true
-        fillMode: Image.PreserveAspectCrop
-        opacity: status === Image.Ready ? Number(ShellStore.settings.desktopBackgroundOpacity ?? 30) / 100 : 0
+        color: DesktopTokens.shell
+        opacity: 0.4 * root.blurAmount
+        visible: opacity > 0
     }
 
     Rectangle {

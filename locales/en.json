@@ -4088,6 +4088,8 @@
     "s_cl_128": "You can change all of this later in settings",
     "s_cl_129": "Your rig is getting ready",
     "s_cl_130": "Your setup",
-    "s_cl_131": "macOS only"
+    "s_cl_131": "macOS only",
+    "s_cl_132": "No settings match “%1”",
+    "s_cl_133": "Results for “%1”"
   }
 }

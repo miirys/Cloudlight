@@ -68,7 +68,7 @@ FocusScope {
             : qsTr("Active session running · Resume?")
     }
 
-    DesktopBackdrop { anchors.fill: parent }
+    DesktopBackdrop { anchors.fill: parent; blurred: root.route === "settings" }
 
     // GeForce NOW layout: one opaque top bar (section tabs, search,
     // account) over full-width content. No sidebar, no footer.
@@ -110,6 +110,7 @@ FocusScope {
                 height: parent.height
                 spacing: DesktopTokens.px(root.headerCompact ? 0 : 8)
                 Repeater {
+                    id: tabRepeater
                     model: root.navItems
                     delegate: ItemDelegate {
                         id: tab
@@ -133,14 +134,6 @@ FocusScope {
                                 border.color: Theme.label
                                 Behavior on color { ColorAnimation { duration: DesktopTokens.quickDuration } }
                             }
-                            Rectangle {
-                                anchors.bottom: parent.bottom
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                height: DesktopTokens.px(3)
-                                width: tab.selected ? parent.width - DesktopTokens.px(24) : 0
-                                color: DesktopTokens.focus
-                                Behavior on width { NumberAnimation { duration: DesktopTokens.motionDuration; easing.type: Easing.OutCubic } }
-                            }
                         }
                         contentItem: Text {
                             text: tab.modelData.name
@@ -158,6 +151,23 @@ FocusScope {
                         }
                     }
                 }
+            }
+
+            // One underline that springs from the old tab to the new one.
+            Rectangle {
+                id: tabUnderline
+                objectName: "desktopTabUnderline"
+                readonly property int selectedIndex: root.navItems.findIndex(item => root.routeSelected(item.route))
+                readonly property Item target: selectedIndex >= 0 && tabRepeater.count > selectedIndex ? tabRepeater.itemAt(selectedIndex) : null
+                visible: target !== null
+                x: target ? tabs.x + target.x + DesktopTokens.px(12) : 0
+                y: tabs.y + tabs.height - height
+                width: target ? target.width - DesktopTokens.px(24) : 0
+                height: DesktopTokens.px(3)
+                radius: height / 2
+                color: DesktopTokens.focus
+                Behavior on x { enabled: !AppController.reducedMotion; NumberAnimation { duration: Theme.springDuration * 0.75; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.spring } }
+                Behavior on width { enabled: !AppController.reducedMotion; NumberAnimation { duration: Theme.springDuration * 0.75; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.spring } }
             }
 
             TextField {

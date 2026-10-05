@@ -40,6 +40,139 @@ FocusScope {
     readonly property var pageTitles: [qsTr("Account"), qsTr("Account"), qsTr("Account"), qsTr("Streaming quality"), qsTr("Audio"), qsTr("Controls"), qsTr("Server location"), qsTr("Interface"), qsTr("Interface"), qsTr("Console mode"), qsTr("Controls"), qsTr("About"), qsTr("Capture"), qsTr("Experimental")]
     readonly property var pageComponents: [accountGroup, accountGroup, accountGroup, streamPage, audioPage, controlsGroup, networkPage, lookGroup, lookGroup, consolePage, controlsGroup, aboutPage, recordingPage, experimentalPage]
 
+    // Every setting row by page, so search finds individual settings on pages that
+    // are not loaded. tst_embeddedorchestration keeps it in step with the pages.
+    readonly property var searchIndex: [
+        {title: qsTr("Profiles"), detail: qsTr("Manage saved account profiles"), page: 0},
+        {title: qsTr("Show what I am playing"), detail: qsTr("Discord activity sharing"), page: 0},
+        {title: qsTr("Crash reports"), detail: qsTr("Optional error reporting"), page: 0},
+        {title: qsTr("Sign out"), detail: "", page: 0},
+        {title: qsTr("Mode"), detail: "", page: 3},
+        {title: qsTr("Resolution"), detail: qsTr("Stream resolution. The picture is scaled to fit your display."), page: 3},
+        {title: qsTr("Frame rate"), detail: "", page: 3},
+        {title: qsTr("Max bit rate"), detail: qsTr("Upper limit for the stream. Higher looks better but needs a faster connection."), page: 3},
+        {title: qsTr("Video codec"), detail: "", page: 3},
+        {title: qsTr("Graphics processor"), detail: "", page: 3},
+        {title: qsTr("Adjust for network conditions"), detail: "", page: 3},
+        {title: qsTr("HDR"), detail: "", page: 3},
+        {title: qsTr("Color precision"), detail: "", page: 3},
+        {title: qsTr("Reset details"), detail: "", page: 3},
+        {title: qsTr("Upscaling"), detail: "", page: 3},
+        {title: qsTr("Clarity"), detail: "", page: 3},
+        {title: qsTr("Noise Reduction"), detail: qsTr("Smooth noise before MetalFX upscaling. Set to 0 to disable."), page: 3},
+        {title: qsTr("Reflex"), detail: "", page: 3},
+        {title: qsTr("Cloud G-SYNC"), detail: qsTr("Variable frame pacing with lower latency. Only turn this on if your display and graphics driver run variable refresh rate (G-SYNC or FreeSync); on a fixed-refresh display it causes stutter."), page: 3},
+        {title: qsTr("Full screen when a game starts"), detail: qsTr("Press F11 to switch between full screen and window while playing."), page: 3},
+        {title: qsTr("Steam Big Picture mode"), detail: qsTr("Open Steam games in Big Picture mode, for controller play."), page: 3},
+        {title: qsTr("Save in-game settings"), detail: qsTr("Keep your in-game graphics settings between sessions, in supported games."), page: 3},
+        {title: qsTr("Background stream reminder"), detail: qsTr("Flash the taskbar every 5 minutes while a game streams in the background. Doesn't prevent idle timeouts."), page: 3},
+        {title: qsTr("Overlay contents and position"), detail: qsTr("Press Ctrl+N while playing to show or hide it."), page: 3},
+        {title: qsTr("Video decoder"), detail: "", page: 3},
+        {title: qsTr("Show on stream launch"), detail: qsTr("Cycle compact bar, extended panel and off with your statistics shortcut"), page: 3},
+        {title: qsTr("Position"), detail: "", page: 3},
+        {title: qsTr("Overlay scale"), detail: "", page: 3},
+        {title: qsTr("Background opacity"), detail: "", page: 3},
+        {title: qsTr("Standalone session timer"), detail: qsTr("Show a small timer while playing, independently of the statistics overlay."), page: 3},
+        {title: qsTr("Customize metrics"), detail: "", page: 3},
+        {title: qsTr("Output device"), detail: qsTr("Applies to your next streaming session. A fixed device must be available when the session starts."), page: 4},
+        {title: qsTr("Microphone"), detail: "", page: 4},
+        {title: qsTr("Mute when out of focus"), detail: qsTr("Silence stream audio while using another app. Audio returns when you switch back to Cloudlight."), page: 4},
+        {title: qsTr("Mouse sensitivity"), detail: qsTr("Applied to native relative mouse input"), page: 5},
+        {title: qsTr("Keyboard layout"), detail: "", page: 5},
+        {title: qsTr("Clipboard paste"), detail: qsTr("Paste local text into the stream with Ctrl+V (Command+V on macOS). Up to 64 KiB per paste. No automatic clipboard sync."), page: 5},
+        {title: qsTr("Game language"), detail: "", page: 5},
+        {title: qsTr("Shortcuts"), detail: qsTr("Local shortcuts are consumed before gameplay input"), page: 5},
+        {title: qsTr("Cursor overlay"), detail: "", page: 5},
+        {title: qsTr("Controller input"), detail: qsTr("%1 connected"), page: 5},
+        {title: qsTr("Controller input source"), detail: qsTr("Choose one device as Player 1 if a controller appears twice. Selection lasts until app restart; select again after reconnecting."), page: 5},
+        {title: qsTr("No controllers connected"), detail: qsTr("Connect a controller to assign a player"), page: 5},
+        {title: qsTr("Left stick dead zone"), detail: qsTr("Ignore stick drift during gameplay. Default: 5%. The remaining travel is rescaled to full range."), page: 5},
+        {title: qsTr("Right stick dead zone"), detail: qsTr("Ignore stick drift during gameplay. Default: 5%. Set to 0% to leave dead zones to the game."), page: 5},
+        {title: qsTr("Controller vibration"), detail: qsTr("Scale game vibration on supported controllers. Set to 0% to disable."), page: 5},
+        {title: qsTr("Gyroscope"), detail: qsTr("Motion aiming on supported pads"), page: 5},
+        {title: qsTr("Server region"), detail: "", page: 6},
+        {title: qsTr("Region latency"), detail: "", page: 6},
+        {title: qsTr("Network test"), detail: qsTr("Check latency and packet loss to the GeForce NOW server you'll play on."), page: 6},
+        {title: qsTr("Free-tier queue selector"), detail: qsTr("Compare queues and latency before launching a game"), page: 6},
+        {title: qsTr("Test network before each launch"), detail: qsTr("Measure this zone's UDP payload reachability before streaming · selected zones only"), page: 6},
+        {title: qsTr("Use proxy"), detail: qsTr("Applies to API calls only · the stream always goes direct"), page: 6},
+        {title: qsTr("Proxy address"), detail: qsTr("Leave empty to use a direct connection"), page: 6},
+        {title: qsTr("Choose a background image"), detail: "", page: 8},
+        {title: qsTr("Theme"), detail: qsTr("Applies the pack's appearance, accent and surfaces"), page: 8},
+        {title: qsTr("Appearance"), detail: "", page: 8},
+        {title: qsTr("Accent"), detail: qsTr("Selection, toggles and keyboard focus"), page: 8},
+        {title: qsTr("Translucent interface"), detail: qsTr("Use translucent shell surfaces when supported"), page: 8},
+        {title: qsTr("Background"), detail: qsTr("A solid color, game art, gradient or your own image"), page: 8},
+        {title: qsTr("Custom image"), detail: "", page: 8},
+        {title: qsTr("Image opacity"), detail: qsTr("0% hides the image · 100% shows the full image"), page: 8},
+        {title: qsTr("Library tiles"), detail: qsTr("How much art you see per row"), page: 8},
+        {title: qsTr("Reduce motion"), detail: qsTr("Cuts parallax and cover animations · follows your OS by default"), page: 8},
+        {title: qsTr("Interface language"), detail: "", page: 8},
+        {title: qsTr("Interface scale"), detail: "", page: 8},
+        {title: qsTr("Use the Windows title bar"), detail: qsTr("Show the standard Windows title bar instead of Cloudlight's own window controls."), page: 8},
+        {title: qsTr("One app, two shells"), detail: qsTr("Same session, settings and themes · switching does not restart the stream"), page: 9},
+        {title: qsTr("Start in console mode"), detail: qsTr("Remember this choice for the next time Cloudlight launches"), page: 9},
+        {title: qsTr("Controller profile picker"), detail: qsTr("Choose a saved profile when console mode starts"), page: 9},
+        {title: qsTr("Enter console mode when a gamepad is the only input"), detail: qsTr("Ignored while a mouse has moved in the last 30 seconds"), page: 9},
+        {title: qsTr("Leave console mode on keyboard or mouse input"), detail: qsTr("Keeps your place in the grid when the shell swaps"), page: 9},
+        {title: qsTr("Automatically check for updates"), detail: qsTr("Check every six hours while no streaming session is active."), page: 11},
+        {title: qsTr("Automatically download updates"), detail: qsTr("Download verified updates while idle. Installation always requires your confirmation."), page: 11},
+        {title: qsTr("Update channel"), detail: qsTr("Choose which releases Cloudlight checks"), page: 11},
+        {title: qsTr("Release notes"), detail: "", page: 11},
+        {title: qsTr("Independent client"), detail: qsTr("Cloudlight is not affiliated with, endorsed by or supported by NVIDIA. GeForce NOW is a trademark of NVIDIA Corporation. You bring your own account and subscription."), page: 11},
+        {title: qsTr("Replay onboarding"), detail: "", page: 11},
+        {title: qsTr("Reset all settings"), detail: "", page: 11},
+        {title: qsTr("Replay onboarding?"), detail: "", page: 11},
+        {title: qsTr("Save location"), detail: "", page: 12},
+        {title: qsTr("Captures folder"), detail: "", page: 12},
+        {title: qsTr("Enable replay buffer"), detail: qsTr("Off by default. Keep recent source video and audio in memory to save a clip. Enabling takes effect next session; disabling clears the buffer immediately."), page: 12},
+        {title: qsTr("Replay duration"), detail: qsTr("Target clip length. Memory limits and source keyframes may shorten clips or require waiting for a new keyframe. Changes apply next session."), page: 12},
+        {title: qsTr("Replay memory limit"), detail: qsTr("Maximum memory for buffered media. Higher stream bitrates fill it sooner. Changes take effect next session."), page: 12},
+        {title: qsTr("Frame generation"), detail: qsTr("Targets 120 displayed FPS from a 60 FPS stream. Requires a fast GPU and 120 Hz display; adds latency and artifacts."), page: 13},
+        {title: qsTr("L4S"), detail: qsTr("Request scalable low-latency transport for the next session"), page: 13},
+        {title: qsTr("Steam Deck identity"), detail: qsTr("Identify as a Steam Deck to unlock its resolutions and 90 FPS."), page: 13}
+    ]
+    readonly property var searchResults: {
+        const query = searchQuery.trim().toLowerCase()
+        if (!query) return []
+        const words = query.split(/\s+/)
+        const results = []
+        for (const entry of searchIndex) {
+            const section = sections.find(item => item.page === entry.page) || {label: ""}
+            const haystack = (entry.title + " " + entry.detail + " " + section.label).toLowerCase()
+            if (!words.every(word => haystack.indexOf(word) >= 0)) continue
+            const titleHit = entry.title.toLowerCase().indexOf(query) >= 0
+            results.push({title: entry.title, detail: entry.detail, page: entry.page, section: section.label,
+                          score: (entry.title.toLowerCase().startsWith(query) ? 0 : titleHit ? 1 : 2)})
+        }
+        return results.sort((a, b) => a.score - b.score)
+    }
+    property string pendingReveal: ""
+    function openSearchResult(result) {
+        pendingReveal = result.title
+        searchQuery = ""
+        if (selectedSection === result.page) revealPendingSetting()
+        else selectedSection = result.page
+    }
+    function findTitled(item, title) {
+        if (!item) return null
+        if (item.title === title && item.visible) return item
+        for (const child of item.children || []) {
+            const found = findTitled(child, title)
+            if (found) return found
+        }
+        return null
+    }
+    function revealPendingSetting() {
+        const title = pendingReveal
+        pendingReveal = ""
+        if (!title || !pageLoader.item) return
+        const target = findTitled(pageLoader.item, title)
+        if (!target) return
+        const y = target.mapToItem(pageLoader, 0, 0).y
+        contentFlick.contentY = Math.max(0, Math.min(contentFlick.contentHeight - contentFlick.height, y - DesktopTokens.px(24)))
+    }
+
     function matchesSection(section) {
         const query = searchQuery.trim().toLowerCase()
         return !query || (section.label + " " + section.detail + " " + section.keywords).toLowerCase().indexOf(query) >= 0
@@ -532,26 +665,27 @@ FocusScope {
 
     Column {
         id: settingsRail
-        x: DesktopTokens.px(16)
-        y: DesktopTokens.px(20)
-        width: root.compactNavigation ? root.width - x * 2 : DesktopTokens.px(232)
-        spacing: DesktopTokens.px(12)
+        x: DesktopTokens.px(20)
+        y: DesktopTokens.px(28)
+        width: root.compactNavigation ? root.width - x * 2 : DesktopTokens.px(240)
+        spacing: DesktopTokens.px(14)
 
         Text {
             visible: !root.compactNavigation
-            leftPadding: DesktopTokens.px(12)
+            leftPadding: DesktopTokens.px(10)
+            bottomPadding: DesktopTokens.px(2)
             text: qsTr("Settings")
             color: Theme.label
             font.family: Theme.displayFont
-            font.pixelSize: DesktopTokens.titleSize
-            font.weight: Font.Bold
+            font.pixelSize: DesktopTokens.px(26)
+            font.weight: Font.DemiBold
         }
 
         TextField {
             id: settingsSearch
             objectName: "settingsSearch"
             width: parent.width
-            height: DesktopTokens.px(34)
+            height: DesktopTokens.px(36)
             placeholderText: qsTr("Search settings")
             text: root.searchQuery
             onTextEdited: root.searchQuery = text
@@ -561,8 +695,9 @@ FocusScope {
             font.pixelSize: DesktopTokens.px(14)
             leftPadding: DesktopTokens.px(34)
             DesktopGlyph { x: DesktopTokens.px(12); anchors.verticalCenter: parent.verticalCenter; width: DesktopTokens.px(14); height: width; icon: "desktop-search.svg" }
-            background: Rectangle { radius: DesktopTokens.radius; color: Theme.surfaceRaised; border.width: 0; border.color: settingsSearch.activeFocus ? Theme.focus : Theme.seam }
+            background: Rectangle { radius: DesktopTokens.px(10); color: settingsSearch.activeFocus ? Theme.surfaceHover : Theme.surfaceRaised; Behavior on color { ColorAnimation { duration: 140 } } }
             onAccepted: {
+                if (root.searchResults.length) { root.openSearchResult(root.searchResults[0]); return }
                 for (let i = 0; i < root.sections.length; ++i) {
                     if (root.matchesSection(root.sections[i])) {
                         root.selectedSection = root.sections[i].page
@@ -578,12 +713,31 @@ FocusScope {
             contentHeight: navigation.implicitHeight
             clip: true
             boundsBehavior: Flickable.StopAtBounds
+            // One selection pill that springs between entries instead of each entry
+            // switching its own fill, so changing section reads as a move.
+            Rectangle {
+                id: selectionPill
+                objectName: "settingsSelectionPill"
+                readonly property Item target: navRepeater.count > root.selectedGroup && root.selectedGroup >= 0
+                    ? navRepeater.itemAt(root.selectedGroup) : null
+                visible: target !== null && target.visible
+                x: target ? target.x : 0
+                y: target ? target.y : 0
+                width: target ? target.width : 0
+                height: target ? target.height : 0
+                radius: DesktopTokens.px(10)
+                color: Theme.focus
+                Behavior on y { enabled: !AppController.reducedMotion; NumberAnimation { duration: Theme.springDuration * 0.75; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.spring } }
+                Behavior on x { enabled: !AppController.reducedMotion; NumberAnimation { duration: Theme.springDuration * 0.75; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.spring } }
+                Behavior on width { enabled: !AppController.reducedMotion; NumberAnimation { duration: Theme.springDuration * 0.75; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.spring } }
+            }
             Flow {
                 id: navigation
                 width: parent.width
                 height: implicitHeight
-                spacing: root.compactNavigation ? DesktopTokens.px(4) : 0
+                spacing: DesktopTokens.px(root.compactNavigation ? 4 : 2)
                 Repeater {
+                    id: navRepeater
                     model: root.sections
                     delegate: Button {
                         id: navItem
@@ -594,32 +748,30 @@ FocusScope {
                         Accessible.name: modelData.label
                         visible: root.matchesSection(modelData)
                         width: root.compactNavigation ? navLabel.implicitWidth + DesktopTokens.px(28) : settingsRail.width
-                        height: DesktopTokens.px(40)
+                        height: DesktopTokens.px(38)
                         padding: 0
                         hoverEnabled: true
                         onClicked: root.selectedSection = modelData.page
                         // macOS System Settings style: a small icon tile and a
                         // filled selection, no edge bars or outlines.
                         background: Rectangle {
-                            radius: DesktopTokens.px(9)
-                            color: navItem.current ? Theme.focus : navItem.hovered ? DesktopTokens.hover : "transparent"
+                            radius: DesktopTokens.px(10)
+                            color: !navItem.current && navItem.hovered ? DesktopTokens.hover : "transparent"
                             border.width: navItem.activeFocus && AppController.inputMode !== "pointer" ? 2 : 0
                             border.color: Theme.label
                             Behavior on color { ColorAnimation { duration: 140 } }
                         }
                         contentItem: Item {
                             implicitWidth: navLabel.implicitWidth
-                            Rectangle {
+                            Item {
                                 id: navTile
                                 visible: !root.compactNavigation
-                                x: DesktopTokens.px(8)
+                                x: DesktopTokens.px(10)
                                 anchors.verticalCenter: parent.verticalCenter
-                                width: DesktopTokens.px(26); height: width
-                                radius: DesktopTokens.px(7)
-                                color: navItem.current ? Qt.rgba(Theme.focusText.r, Theme.focusText.g, Theme.focusText.b, 0.12) : Theme.surfaceStrong
+                                width: DesktopTokens.px(22); height: width
                                 DesktopSettingsIcon {
                                     anchors.centerIn: parent
-                                    width: DesktopTokens.px(16); height: width
+                                    width: DesktopTokens.px(18); height: width
                                     glyph: navItem.modelData.icon
                                     ink: navItem.current ? Theme.focusText : Theme.label
                                 }
@@ -627,7 +779,7 @@ FocusScope {
                             Text {
                                 id: navLabel
                                 anchors.fill: parent
-                                leftPadding: root.compactNavigation ? DesktopTokens.px(14) : DesktopTokens.px(44)
+                                leftPadding: root.compactNavigation ? DesktopTokens.px(14) : DesktopTokens.px(42)
                                 rightPadding: DesktopTokens.px(14)
                                 verticalAlignment: Text.AlignVCenter
                                 text: navItem.modelData.label
@@ -656,6 +808,7 @@ FocusScope {
             visible: !root.compactNavigation
             width: parent.width
             text: root.pageTitles[root.selectedSection] || ""
+            opacity: searchResultsView.visible ? 0 : 1
             color: Theme.label
             font.family: Theme.displayFont
             font.pixelSize: DesktopTokens.px(28)
@@ -665,6 +818,7 @@ FocusScope {
             id: contentFlick
             objectName: "desktopSettingsContent"
             anchors.fill: parent
+            visible: !searchResultsView.visible
             anchors.topMargin: pageTitle.visible ? pageTitle.height + DesktopTokens.px(4) : 0
             contentWidth: width
             contentHeight: pageLoader.height + DesktopTokens.px(48)
@@ -681,7 +835,72 @@ FocusScope {
                 scale: sectionEntrance.pageScale
                 transformOrigin: Item.Top
                 PageEntrance { id: sectionEntrance; objectName: "settingsPageEntrance" }
-                onLoaded: { contentFlick.contentY = 0; sectionEntrance.restart() }
+                onLoaded: {
+                    contentFlick.contentY = 0
+                    sectionEntrance.restart()
+                    if (root.pendingReveal !== "") Qt.callLater(root.revealPendingSetting)
+                }
+            }
+        }
+        // Search results replace the page while a query is typed, like GeForce NOW.
+        Rectangle {
+            id: searchResultsView
+            objectName: "settingsSearchResults"
+            visible: root.searchQuery.trim() !== ""
+            anchors.fill: contentFlick
+            anchors.topMargin: -(pageTitle.visible ? pageTitle.height + DesktopTokens.px(4) : 0)
+            color: "transparent"
+            Text {
+                id: resultsHeading
+                text: root.searchResults.length
+                    ? qsTr("Results for \u201c%1\u201d").arg(root.searchQuery.trim())
+                    : qsTr("No settings match \u201c%1\u201d").arg(root.searchQuery.trim())
+                color: Theme.label
+                font.family: Theme.displayFont
+                font.pixelSize: DesktopTokens.px(28)
+                font.weight: Font.Bold
+                width: parent.width
+                elide: Text.ElideRight
+            }
+            ListView {
+                id: resultsList
+                anchors.fill: parent
+                anchors.topMargin: resultsHeading.height + DesktopTokens.px(16)
+                clip: true
+                spacing: DesktopTokens.px(4)
+                boundsBehavior: Flickable.StopAtBounds
+                model: root.searchResults
+                ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
+                delegate: AbstractButton {
+                    id: result
+                    required property var modelData
+                    objectName: "settingsSearchResult-" + modelData.title
+                    width: resultsList.width
+                    height: DesktopTokens.px(modelData.detail ? 62 : 46)
+                    hoverEnabled: true
+                    Accessible.name: modelData.section + ", " + modelData.title
+                    onClicked: root.openSearchResult(modelData)
+                    Keys.onReturnPressed: event => { result.clicked(); event.accepted = true }
+                    background: Rectangle {
+                        radius: DesktopTokens.px(10)
+                        color: result.hovered || result.activeFocus ? DesktopTokens.hover : Qt.rgba(Theme.surface.r, Theme.surface.g, Theme.surface.b, 0.6)
+                        Behavior on color { ColorAnimation { duration: 140 } }
+                    }
+                    Column {
+                        anchors.verticalCenter: parent.verticalCenter
+                        x: DesktopTokens.px(16); width: parent.width - DesktopTokens.px(32) - sectionTag.width
+                        spacing: DesktopTokens.px(3)
+                        Text { width: parent.width; text: result.modelData.title; color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.px(15); font.weight: Font.DemiBold; elide: Text.ElideRight }
+                        Text { visible: text !== ""; width: parent.width; text: result.modelData.detail; color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.px(12); elide: Text.ElideRight }
+                    }
+                    Text {
+                        id: sectionTag
+                        anchors.right: parent.right; anchors.rightMargin: DesktopTokens.px(16)
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: result.modelData.section
+                        color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: DesktopTokens.px(12)
+                    }
+                }
             }
         }
     }

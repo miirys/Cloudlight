@@ -1,4 +1,5 @@
 #include <QFile>
+#include <QDir>
 #include <QJSEngine>
 #include <QRegularExpression>
 #include <QTest>
@@ -1835,6 +1836,26 @@ private slots:
         QVERIFY(!host.contains(QStringLiteral("visible: root.statsVisible\n        color:")));
         const auto menu = source(QStringLiteral("qml/desktop/stream/DesktopInStreamMenu.qml"));
         QVERIFY(!menu.contains(QStringLiteral("Stream quality")));
+    }
+
+    void settingsSearchIndexCoversEveryLiteralSettingTitle()
+    {
+        // Search lists settings on pages that are not loaded, so every row title in
+        // the settings pages must be in the screen's search index.
+        const auto screen = source(QStringLiteral("qml/desktop/settings/DesktopSettingsScreen.qml"));
+        const QDir pages(QStringLiteral(OPENNOW_QT_SOURCE_DIR "/qml/desktop/settings/pages"));
+        const QRegularExpression title(QStringLiteral("\\btitle:\\s*qsTr\\(\"((?:[^\"\\\\]|\\\\.)*)\"\\)\\s*[\\n;]"));
+        int checked = 0;
+        for (const auto &file : pages.entryList({QStringLiteral("*.qml")})) {
+            const auto qml = source(QStringLiteral("qml/desktop/settings/pages/") + file);
+            for (auto it = title.globalMatch(qml); it.hasNext();) {
+                const auto text = it.next().captured(1);
+                QVERIFY2(screen.contains(QStringLiteral("{title: qsTr(\"") + text + QStringLiteral("\")")),
+                         qPrintable(file + QStringLiteral(": ") + text));
+                ++checked;
+            }
+        }
+        QVERIFY(checked > 50);
     }
 
     void inStreamMenuRowTapsDoNotReachTheDimLayer()
