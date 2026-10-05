@@ -2,6 +2,7 @@
 
 #include <QGuiApplication>
 #include <QTest>
+#include <QtNumeric>
 #include <qfloat16.h>
 #include <rhi/qrhi.h>
 #include <rhi/qrhi_platform.h>
@@ -352,6 +353,60 @@ private slots:
             QVERIFY(highPrecision);
             QCOMPARE(render(renderer, source.get(), *highPrecision, external.get()), patches(codes, true));
         }
+    }
+
+    void neutralGameFilterKeepsTheUnfilteredPathExact()
+    {
+        QList<int> codes;
+        for (int code = 0; code <= 255; code += 5) codes.append(code);
+        auto source = makeSource(codes, false);
+        QVERIFY(source);
+        auto target = makeTarget(QRhiTexture::RGBA8, source->pixelSize());
+        QVERIFY(target);
+        const auto expected = patches(codes, false);
+        StreamVideoTextureRenderer renderer;
+        renderer.setFilter(StreamVideoFilter::fromVariantMap({{QStringLiteral("contrast"), 1.0},
+                                                             {QStringLiteral("grain"), qQNaN()}}));
+        QVERIFY(!renderer.filterActive());
+        QCOMPARE(render(renderer, source.get(), *target), expected);
+        // Grayscale is the identity on gray input, so the filtered decode/encode path must
+        // reproduce the unfiltered composition.
+        renderer.setFilter(StreamVideoFilter::fromVariantMap({{QStringLiteral("grayscale"), 1.0}}));
+        QVERIFY(renderer.filterActive());
+        const auto filtered = render(renderer, source.get(), *target);
+        QCOMPARE(filtered.size(), expected.size());
+        for (qsizetype index = 0; index < filtered.size(); ++index)
+            QVERIFY2(std::abs(int(quint8(filtered[index])) - int(quint8(expected[index]))) <= 1,
+                     qPrintable(QString("byte %1: %2, expected %3").arg(index)
+                                    .arg(quint8(filtered[index])).arg(quint8(expected[index]))));
+        renderer.setFilter(StreamVideoFilter{});
+        QCOMPARE(render(renderer, source.get(), *target), expected);
+    }
+
+    void letterboxFilterBlacksOnlyTheBars()
+    {
+        auto source = makeSource({512});
+        QVERIFY(source);
+        auto target = makeTarget(QRhiTexture::RGBA8, source->pixelSize());
+        QVERIFY(target);
+        StreamVideoTextureRenderer renderer;
+        renderer.setFilter(StreamVideoFilter::fromVariantMap({{QStringLiteral("letterbox"), 1.0}}));
+        const auto data = render(renderer, source.get(), *target);
+        QCOMPARE(data.size(), tileSize * tileSize * 4);
+        // A square video keeps a centred 2.39:1 band: 8 * (1 - 1 / 2.39) / 2 = 2.33 rows per bar.
+        for (int row : {0, 1, tileSize - 2, tileSize - 1}) {
+            for (int x = 0; x < tileSize; ++x) {
+                const char *pixel = data.constData() + (row * tileSize + x) * 4;
+                QCOMPARE(quint8(pixel[0]), quint8(0));
+                QCOMPARE(quint8(pixel[1]), quint8(0));
+                QCOMPARE(quint8(pixel[2]), quint8(0));
+                QCOMPARE(quint8(pixel[3]), quint8(255));
+            }
+        }
+        const double expected = 512.0 * 255.0 / 1023.0;
+        for (int row = 3; row <= 4; ++row)
+            for (int x = 0; x < tileSize; ++x)
+                QVERIFY(std::abs(quint8(data[(row * tileSize + x) * 4]) - expected) <= 1.0);
     }
 };
 

@@ -87,6 +87,7 @@ QtObject {
     property alias settings: settingsOwner.settings
     readonly property string selectedRegion: settingsOwner.selectedRegion
     property alias keyboardLayoutItems: settingsOwner.keyboardLayoutItems
+    readonly property var gameFilterUniforms: settingsOwner.gameFilterUniforms
     property var onboardingAwdlController: MacAwdl
     readonly property bool onboardingAwdlReady: !onboardingAwdlController.busy
         && [MacAwdlController.Unsupported, MacAwdlController.Unavailable, MacAwdlController.Disabled]
@@ -713,7 +714,7 @@ QtObject {
     readonly property bool replayBufferRequested: settings.replayBufferEnabled === true
     onReplayBufferRequestedChanged: {
         if (!replayBufferRequested)
-            disableStreamReplay()
+            disableStreamReplay(true)
     }
     property bool streamRecordingActive: false
     property double streamRecordingElapsedMs: 0
@@ -795,6 +796,21 @@ QtObject {
     signal fullscreenToggleRequested()
     signal pointerLockToggleRequested()
     signal streamCaptureAnnounced(string message)
+    // In-stream notices the player can switch off in the overlay's Notifications page.
+    readonly property var streamNoticeSettings: ({
+        "connection": "notifyConnection", "controller": "notifyController",
+        "color-format": "notifyColorFormat", "screenshot": "notifyScreenshotSaved",
+        "recording-saved": "notifyRecordingSaved", "recording-started": "notifyRecordingStarted",
+        "replay-saved": "notifyReplaySaved", "replay-state": "notifyReplayState"
+    })
+    function streamNoticeAllowed(kind) {
+        const key = streamNoticeSettings[kind]
+        return settings.streamNotifications !== false && (!key || settings[key] !== false)
+    }
+    function announceStreamNotice(kind, message) {
+        if (streamNoticeAllowed(kind))
+            streamCaptureAnnounced(message)
+    }
     readonly property var resumableSession: {
         if (root.activeSession) {
             const localStatus = Number(root.activeSession.status || 0)
@@ -2449,6 +2465,7 @@ QtObject {
         if (path) {
             mediaMessage = qsTr("Screenshot saved")
             accessibilityMessage = qsTr("Screenshot saved to %1").arg(path)
+            announceStreamNotice("screenshot", mediaMessage)
             refreshMedia()
         } else {
             mediaMessage = qsTr("Screenshot capture failed")
@@ -2476,8 +2493,22 @@ QtObject {
                 ? [String(settings.shortcutToggleMicrophone ?? "Ctrl+Shift+M")] : [],
             "screenshot": [String(settings.shortcutScreenshot ?? "Ctrl+F11")],
             "toggle-recording": [String(settings.shortcutToggleRecording ?? "F12")],
-            "save-clip": [String(settings.shortcutSaveClip ?? "Ctrl+F12")]
+            "save-clip": [String(settings.shortcutSaveClip ?? "Ctrl+F12")],
+            "toggle-filter-1": [String(settings.shortcutGameFilter1 ?? "")],
+            "toggle-filter-2": [String(settings.shortcutGameFilter2 ?? "")],
+            "toggle-filter-3": [String(settings.shortcutGameFilter3 ?? "")]
         }
+    }
+
+    // Switches game filter style 1-3 on, or back off when it is already the active one.
+    function toggleGameFilterStyle(slot) {
+        const filters = settings.gameFilters || ({})
+        const active = Number(filters.active || 0) === slot ? 0 : slot
+        setSetting("gameFilters", Object.assign({}, filters, {active: active}))
+        const style = (filters.styles || [])[slot - 1] || ({})
+        const name = String(style.name || "") || qsTr("Style %1").arg(slot)
+        streamControlMessage = active ? qsTr("%1 on").arg(name) : qsTr("%1 off").arg(name)
+        accessibilityMessage = streamControlMessage
     }
 
     function isStreamStatsOverlay(overlay) {
@@ -2543,6 +2574,10 @@ QtObject {
             saveStreamClip()
         } else if (action === "toggle-microphone") {
             toggleMicrophone()
+        } else if (action.startsWith("toggle-filter-")) {
+            const slot = Number(action.slice(14))
+            if (slot >= 1 && slot <= 3)
+                toggleGameFilterStyle(slot)
         }
     }
 
@@ -2560,7 +2595,7 @@ QtObject {
         streamClipRequestId = ""
     }
 
-    function disableStreamReplay() {
+    function disableStreamReplay(announce) {
         if (!streamReplayEnabled)
             return
         if (NativeStreamRuntime.running) {
@@ -2575,6 +2610,8 @@ QtObject {
         streamReplayEnabled = false
         mediaClipTargetRequestId = ""
         streamClipRequestId = ""
+        if (announce === true)
+            announceStreamNotice("replay-state", qsTr("Instant Replay is off"))
     }
 
     function saveStreamClip() {
@@ -3043,6 +3080,8 @@ QtObject {
             streamReplayEnabled = response.replayEnabled === true
             if (!replayBufferRequested)
                 disableStreamReplay()
+            else if (streamReplayEnabled)
+                announceStreamNotice("replay-state", qsTr("Instant Replay is on"))
             updateStreamerFields({
                 status: "streaming",
                 message: qsTr("Native-owned NVST media transport is active"),
@@ -3102,6 +3141,7 @@ QtObject {
             }
             mediaMessage = qsTr("Recording source video + stream audio")
             accessibilityMessage = qsTr("Recording started")
+            announceStreamNotice("recording-started", accessibilityMessage)
         } else if (pending.operation === "recording-stop") {
             streamRecordingStopRequestId = ""
             streamRecordingActive = false
@@ -3112,6 +3152,7 @@ QtObject {
             mediaMessage = response.path ? qsTr("Recording saved") : qsTr("Recording stopped")
             accessibilityMessage = response.path
                 ? qsTr("Recording saved to %1").arg(response.path) : mediaMessage
+            announceStreamNotice("recording-saved", mediaMessage)
             refreshMedia()
         }
     }
@@ -3274,7 +3315,10 @@ QtObject {
                     : String(event.message || qsTr("Clip failed"))
                 accessibilityMessage = event.state === "saved"
                     ? qsTr("Clip saved to %1").arg(String(event.path || "")) : mediaMessage
-                streamCaptureAnnounced(mediaMessage)
+                if (event.state === "saved")
+                    announceStreamNotice("replay-saved", mediaMessage)
+                else
+                    streamCaptureAnnounced(mediaMessage)
                 if (event.state === "failed")
                     lastError = mediaMessage
                 refreshMedia()
@@ -3286,8 +3330,12 @@ QtObject {
                 mediaMessage = event.state === "saved"
                     ? qsTr("Recording saved")
                     : String(event.message || qsTr("Recording failed"))
-                if (event.state === "failed")
+                if (event.state === "failed") {
                     lastError = mediaMessage
+                    streamCaptureAnnounced(mediaMessage)
+                } else {
+                    announceStreamNotice("recording-saved", mediaMessage)
+                }
                 refreshMedia()
             }
         } else if (type === "overlay-request") {

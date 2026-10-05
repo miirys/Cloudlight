@@ -819,6 +819,15 @@ video encoder or GPU readback. Packet bookkeeping, container muxing and disk I/O
 still consume CPU and bandwidth; zero CPU usage or zero performance impact is not
 a supported guarantee.
 
+### Controller overlay preference
+
+`settings.get` / `settings.set` expose `controllerHoldStartOverlay`, a persisted
+boolean with default `true` and the standard boolean normalization. It is a Qt shell
+preference only: `ControllerInput` opens the in-stream menu when Start is held alone for
+800 ms on a controller that owns gameplay input. Short Start presses are forwarded to the
+game unchanged, and a completed hold reports Start released to the stream until it is
+physically released. The native streamer does not interpret this value.
+
 ### HDR session contract
 
 `settings.enableHdr` is a persisted boolean with default `false`; HDR requires explicit user
@@ -1067,6 +1076,21 @@ the whole map in one save and rolls it back in memory if the save fails. The res
 `{"bindings":{...applied}}`; the `settings.changed` event names the first applied
 key and carries the full map in `changes`. Qt uses this for moving a chord from one
 command to another, clearing, resetting one binding, and resetting all bindings.
+
+`gameFilters` persists the in-stream game filter styles. The default is
+`{"active":0,"styles":[{"name":"","filters":[]},{"name":"","filters":[]},{"name":"","filters":[]}]}`.
+`active` is an integer clamped to 0–3 (0 means no style is applied). `styles` always has
+exactly three entries; each `name` is trimmed and limited to 30 characters, and each
+`filters` list keeps at most eight objects. Every filter has a `type` and only that type's
+integer parameters, clamped as follows; unknown types and parameters are dropped:
+`black-white` (`intensity` 0–100, default 100), `brightness-contrast` (`brightness` and
+`contrast` −100–100, default 0), `color` (`saturation`, `vibrance` and `temperature`
+−100–100, default 0), `colorblind` (`mode` `protanopia`/`deuteranopia`/`tritanopia`,
+default `deuteranopia`; `strength` 0–100, default 100), `details`, `letterbox`, `sharpen`
+and `vignette` (`amount` 0–100, default 50), `night-mode` (`intensity` 0–100, default 50)
+and `old-film` (`intensity` 0–100, default 60). `shortcutGameFilter1`–`shortcutGameFilter3`
+select a style and default to `""` (unbound); they follow the shortcut rules above.
+Filters are applied by the Qt presenter only; they are not sent to the streamer.
 
 Each successful settings write publishes `settings.changed` before its own
 response. A client that starts its next per-key write from that response has

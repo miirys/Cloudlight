@@ -26,6 +26,18 @@ FocusScope {
     function closeOverlay() {
         AppController.showOverlay("")
     }
+    // Statistics hide while the panel is open; its Statistics stepper picks what returns.
+    property string statsMode: "off"
+    onOverlayChanged: {
+        if (overlay === "desktop-stream-stats") statsMode = "compact"
+        else if (overlay === "desktop-stream-stats-expanded") statsMode = "expanded"
+        else if (overlay === "") statsMode = "off"
+    }
+    function resumeFromMenu() {
+        const mode = statsMode
+        AppController.showOverlay(mode === "compact" ? "desktop-stream-stats"
+            : mode === "expanded" ? "desktop-stream-stats-expanded" : "")
+    }
     function cycleStats() {
         const prefix = overlay.startsWith("desktop-") ? "desktop-stream-stats" : "stream-stats"
         if (overlay === prefix)
@@ -46,7 +58,9 @@ FocusScope {
         id: menuView
         anchors.fill: parent
         opened: root.menuVisible
-        onResumeRequested: root.closeOverlay()
+        statsMode: root.statsMode
+        onStatsModeRequested: mode => root.statsMode = mode
+        onResumeRequested: root.resumeFromMenu()
         onInviteRequested: if (ShellStore.socialCapabilities
                 && ShellStore.socialCapabilities.invitesAvailable)
             AppController.showOverlay("friends")
@@ -84,6 +98,13 @@ FocusScope {
         onCycleRequested: root.cycleStats()
         onCloseRequested: root.closeOverlay()
         onCopyRequested: root.copyStatsToClipboard()
+    }
+
+    DesktopStreamHud {
+        anchors.fill: parent
+        visible: root.notificationsEnabled && !root.menuVisible
+        statsCorner: statsView.visible ? statsView.position : ""
+        statsHeight: statsView.occupiedHeight
     }
 
     DesktopStreamToasts {

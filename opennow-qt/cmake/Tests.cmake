@@ -931,7 +931,7 @@ if(BUILD_TESTING)
              COMMAND opennow-controllerinput-tests -o -,txt)
     set_tests_properties(opennow-controllerinput-tests PROPERTIES
         ENVIRONMENT "QT_QPA_PLATFORM=offscreen"
-        TIMEOUT 8
+        TIMEOUT 20
     )
     qt_add_executable(opennow-controllernavigation-tests
         tests/tst_controllernavigation.cpp

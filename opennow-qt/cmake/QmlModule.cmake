@@ -2,6 +2,7 @@ set_source_files_properties(qml/theme/Theme.qml PROPERTIES QT_QML_SINGLETON_TYPE
 set_source_files_properties(qml/state/ShellStore.qml PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
 set_source_files_properties(qml/desktop/components/DesktopTokens.qml PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
 set_source_files_properties(qml/components/InputPromptIcons.qml PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
+set_source_files_properties(qml/desktop/stream/overlay/OverlayStyle.qml PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
 
 set(OPENNOW_CONTROLLER_ICON_FILES
     res/input-prompts/controller_playstation5-dark.svg
@@ -317,11 +318,40 @@ qt_add_qml_module(opennow-qt
         qml/desktop/stream/DesktopInStreamMenu.qml
         qml/desktop/stream/DesktopSessionStarting.qml
         qml/desktop/stream/DesktopStreamExitConfirm.qml
+        qml/desktop/stream/DesktopStreamHud.qml
         qml/desktop/stream/DesktopStreamOverlayHost.qml
         qml/desktop/stream/DesktopStreamScreen.qml
         qml/desktop/stream/DesktopStreamStats.qml
         qml/desktop/stream/DesktopStreamToast.qml
         qml/desktop/stream/DesktopStreamToasts.qml
+        qml/desktop/stream/overlay/OverlayCapturePage.qml
+        qml/desktop/stream/overlay/OverlayCheckRow.qml
+        qml/desktop/stream/overlay/OverlayChoiceMenu.qml
+        qml/desktop/stream/overlay/OverlayDescribedToggle.qml
+        qml/desktop/stream/overlay/OverlayDivider.qml
+        qml/desktop/stream/overlay/OverlayDropdown.qml
+        qml/desktop/stream/overlay/OverlayFilesPage.qml
+        qml/desktop/stream/overlay/OverlayFiltersPage.qml
+        qml/desktop/stream/overlay/OverlayFocusable.qml
+        qml/desktop/stream/overlay/OverlayGalleryPage.qml
+        qml/desktop/stream/overlay/OverlayGameplayPage.qml
+        qml/desktop/stream/overlay/OverlayGeneralPage.qml
+        qml/desktop/stream/overlay/OverlayHeader.qml
+        qml/desktop/stream/overlay/OverlayHudPage.qml
+        qml/desktop/stream/overlay/OverlayIcon.qml
+        qml/desktop/stream/overlay/OverlayKeyField.qml
+        qml/desktop/stream/overlay/OverlayMainPage.qml
+        qml/desktop/stream/overlay/OverlayNotificationsPage.qml
+        qml/desktop/stream/overlay/OverlayPage.qml
+        qml/desktop/stream/overlay/OverlayRow.qml
+        qml/desktop/stream/overlay/OverlaySectionLabel.qml
+        qml/desktop/stream/overlay/OverlaySettingsPage.qml
+        qml/desktop/stream/overlay/OverlayShortcutsPage.qml
+        qml/desktop/stream/overlay/OverlaySlider.qml
+        qml/desktop/stream/overlay/OverlayStepper.qml
+        qml/desktop/stream/overlay/OverlayStyle.qml
+        qml/desktop/stream/overlay/OverlaySystemPage.qml
+        qml/desktop/stream/overlay/OverlayToggle.qml
         qml/desktop/updates/DesktopUpdateScreen.qml
         qml/overlays/FriendsOverlay.qml
         qml/overlays/GuideOverlay.qml

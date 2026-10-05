@@ -200,6 +200,11 @@ ApplicationWindow {
         property: "vibrationIntensity"
         value: Number(ShellStore.settings.controllerVibrationIntensity ?? 100)
     }
+    Binding {
+        target: ControllerInput
+        property: "holdStartOpensOverlay"
+        value: ShellStore.settings.controllerHoldStartOverlay !== false
+    }
 
     Shortcut {
         objectName: "configuredStreamStatsShortcut"

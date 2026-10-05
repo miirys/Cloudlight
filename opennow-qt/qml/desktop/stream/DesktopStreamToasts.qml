@@ -33,8 +33,12 @@ Column {
         knownControllerIds = controllers.map(controller => controller.instanceId)
     }
 
+    readonly property bool controllerNotices: connectionNotificationsEnabled && ShellStore.streamNoticeAllowed("controller")
+    readonly property bool connectionNotices: connectionNotificationsEnabled && ShellStore.streamNoticeAllowed("connection")
+    readonly property bool colorNotices: ShellStore.streamNoticeAllowed("color-format")
+
     function observeControllers() {
-        if (!active || !connectionNotificationsEnabled) {
+        if (!active || !controllerNotices) {
             knownControllerIds = controllers.map(controller => controller.instanceId)
             return
         }
@@ -55,7 +59,7 @@ Column {
     }
 
     function observeTelemetry() {
-        if (!active || !connectionNotificationsEnabled) return
+        if (!active || !connectionNotices) return
         if (health.status !== "unstable") {
             lossAnimation.stop()
             lossNotice = false
@@ -74,7 +78,7 @@ Column {
 
     onControllersChanged: observeControllers()
     function observeColorFormat() {
-        if (!active || !colorFormat || colorFormat.sessionId !== sessionId
+        if (!active || !colorNotices || !colorFormat || colorFormat.sessionId !== sessionId
                 || ShellStore.streamColorNoticeShown || ShellStore.streamerStopExpected) return
         ShellStore.streamColorNoticeShown = true
         colorNotice = true
@@ -130,7 +134,7 @@ Column {
     DesktopStreamToast {
         objectName: "streamColorFormatToast"
         width: root.width
-        visible: root.active && root.colorNotice && !ShellStore.streamerStopExpected
+        visible: root.active && root.colorNotices && root.colorNotice && !ShellStore.streamerStopExpected
         formatNotice: true
         title: qsTr("Stream color format changed")
         subtitle: !root.colorFormat ? "" : (root.colorFormat.source === "server"
@@ -144,7 +148,7 @@ Column {
     DesktopStreamToast {
         objectName: "streamControllerToast"
         width: root.width
-        visible: root.active && root.connectionNotificationsEnabled && root.controllerNotice !== null
+        visible: root.active && root.controllerNotices && root.controllerNotice !== null
         title: qsTr("Controller connected")
         subtitle: root.controllerNotice
             ? root.controllerNotice.name + " · " + qsTr("Player %1").arg(root.controllerNotice.slot) : ""
@@ -162,7 +166,7 @@ Column {
     DesktopStreamToast {
         objectName: "streamPacketLossToast"
         width: root.width
-        visible: root.active && root.connectionNotificationsEnabled && root.lossNotice
+        visible: root.active && root.connectionNotices && root.lossNotice
         warning: true
         title: qsTr("Connection unstable")
         subtitle: root.lastLoss === null ? "" : qsTr("Packet loss · %1%").arg(Number(root.lastLoss).toFixed(1))

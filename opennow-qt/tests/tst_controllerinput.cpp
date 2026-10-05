@@ -1,6 +1,7 @@
 #include "input/ControllerInput.h"
 
 #include <QCoreApplication>
+#include <QElapsedTimer>
 #include <QEvent>
 #include <QKeyEvent>
 #include <QSignalSpy>
@@ -32,6 +33,56 @@ static ControllerInput::SonySnapshot latestSony(const QSignalSpy &spy)
     if (spy.isEmpty()) return ControllerInput::SonySnapshot{};
     return spy.last().at(0).value<ControllerInput::SonySnapshot>();
 }
+
+constexpr uint startButtonBit = 0x0010;
+constexpr uint southButtonBit = 0x1000;
+constexpr uint noSnapshot = 0xffffffffu;
+// Long enough past the hold threshold to prove that no overlay request follows.
+constexpr int startHoldSettleMs = static_cast<int>(ControllerInput::startHoldOverlayMs) + 150;
+
+static uint lastGamepadButtons(const QSignalSpy &spy)
+{
+    return spy.isEmpty() ? noSnapshot : spy.last().at(2).toUInt();
+}
+
+static bool sawGamepadButtons(const QSignalSpy &spy, uint buttons)
+{
+    for (const auto &record : spy) {
+        if (record.at(2).toUInt() == buttons) return true;
+    }
+    return false;
+}
+
+class StartHoldPad final
+{
+public:
+    StartHoldPad()
+    {
+        SDL_VirtualJoystickDesc descriptor{};
+        SDL_INIT_INTERFACE(&descriptor);
+        descriptor.type = SDL_JOYSTICK_TYPE_GAMEPAD;
+        descriptor.naxes = SDL_GAMEPAD_AXIS_COUNT;
+        descriptor.nbuttons = SDL_GAMEPAD_BUTTON_COUNT;
+        descriptor.button_mask = (1u << SDL_GAMEPAD_BUTTON_COUNT) - 1;
+        descriptor.name = "OpenNOW hold-Start controller";
+        id = SDL_AttachVirtualJoystick(&descriptor);
+    }
+
+    ~StartHoldPad()
+    {
+        if (id) SDL_DetachVirtualJoystick(id);
+    }
+
+    bool button(SDL_GamepadButton button, bool pressed) const
+    {
+        auto *joystick = SDL_GetJoystickFromID(id);
+        if (!joystick || !SDL_SetJoystickVirtualButton(joystick, button, pressed)) return false;
+        SDL_UpdateJoysticks();
+        return true;
+    }
+
+    SDL_JoystickID id = 0;
+};
 
 class ControllerInputTest final : public QObject
 {
@@ -554,6 +605,137 @@ private slots:
 
         QVERIFY(SDL_DetachVirtualJoystick(id));
         QTRY_COMPARE_WITH_TIMEOUT(input.controllerCount(), 0, 2'000);
+    }
+
+    void shortStartPressIsForwardedWithoutOpeningOverlay()
+    {
+        ControllerInput input;
+        QSignalSpy snapshots(&input, &ControllerInput::gamepadSnapshot);
+        QSignalSpy actions(&input, &ControllerInput::localActionRequested);
+        StartHoldPad pad;
+        QVERIFY2(pad.id != 0, SDL_GetError());
+        QTRY_COMPARE_WITH_TIMEOUT(input.controllerCount(), 1, 2'000);
+        QVERIFY(input.holdStartOpensOverlay());
+        input.setShellCaptureEnabled(false);
+
+        // Start reaches the game immediately; the hold detector never delays it.
+        QVERIFY(pad.button(SDL_GAMEPAD_BUTTON_START, true));
+        QTRY_COMPARE_WITH_TIMEOUT(lastGamepadButtons(snapshots), startButtonBit, 1'000);
+        QTest::qWait(100);
+        QVERIFY(pad.button(SDL_GAMEPAD_BUTTON_START, false));
+        QTRY_COMPARE_WITH_TIMEOUT(lastGamepadButtons(snapshots), 0u, 1'000);
+        QTest::qWait(startHoldSettleMs);
+        QCOMPARE(actions.size(), 0);
+    }
+
+    void heldStartOpensOverlayOnceAndReleasesStartRemotely()
+    {
+        ControllerInput input;
+        QSignalSpy snapshots(&input, &ControllerInput::gamepadSnapshot);
+        QSignalSpy actions(&input, &ControllerInput::localActionRequested);
+        uint buttonsAtAction = noSnapshot;
+        QObject observer;
+        QObject::connect(&input, &ControllerInput::localActionRequested, &observer,
+                         [&] { buttonsAtAction = lastGamepadButtons(snapshots); });
+        StartHoldPad pad;
+        QVERIFY2(pad.id != 0, SDL_GetError());
+        QTRY_COMPARE_WITH_TIMEOUT(input.controllerCount(), 1, 2'000);
+        input.setShellCaptureEnabled(false);
+
+        QElapsedTimer held;
+        held.start();
+        QVERIFY(pad.button(SDL_GAMEPAD_BUTTON_START, true));
+        QTRY_VERIFY_WITH_TIMEOUT(sawGamepadButtons(snapshots, startButtonBit), 1'000);
+        QTRY_COMPARE_WITH_TIMEOUT(actions.size(), 1, 2'000);
+        QVERIFY(held.elapsed() >= ControllerInput::startHoldOverlayMs - 5);
+        QCOMPARE(actions.first().at(0).toUInt(), 1u);
+        // The remote session saw Start released before the overlay request was raised.
+        QCOMPARE(buttonsAtAction, 0u);
+
+        // Keepalives keep Start released while it is still physically held.
+        const auto afterAction = snapshots.size();
+        QTest::qWait(250);
+        QVERIFY(snapshots.size() > afterAction);
+        for (auto index = afterAction; index < snapshots.size(); ++index)
+            QCOMPARE(snapshots.at(index).at(2).toUInt(), 0u);
+        QCOMPARE(actions.size(), 1);
+
+        // Overlay ownership round trip while Start stays held: neutral on transfer, and
+        // returning to gameplay neither re-presses Start remotely nor fires again.
+        input.setShellCaptureEnabled(true);
+        QCOMPARE(lastGamepadButtons(snapshots), 0u);
+        input.setShellCaptureEnabled(false);
+        QCOMPARE(lastGamepadButtons(snapshots), 0u);
+        QTest::qWait(startHoldSettleMs);
+        QCOMPARE(actions.size(), 1);
+        QCOMPARE(lastGamepadButtons(snapshots), 0u);
+
+        QVERIFY(pad.button(SDL_GAMEPAD_BUTTON_START, false));
+        QTest::qWait(50);
+        QCOMPARE(lastGamepadButtons(snapshots), 0u);
+        // After the physical release the next Start press reaches the game again.
+        QVERIFY(pad.button(SDL_GAMEPAD_BUTTON_START, true));
+        QTRY_COMPARE_WITH_TIMEOUT(lastGamepadButtons(snapshots), startButtonBit, 1'000);
+        QVERIFY(pad.button(SDL_GAMEPAD_BUTTON_START, false));
+        QTRY_COMPARE_WITH_TIMEOUT(lastGamepadButtons(snapshots), 0u, 1'000);
+        QCOMPARE(actions.size(), 1);
+    }
+
+    void startHoldIsCancelledByReleaseOtherButtonsFocusLossAndPreference()
+    {
+        ControllerInput input;
+        QSignalSpy snapshots(&input, &ControllerInput::gamepadSnapshot);
+        QSignalSpy actions(&input, &ControllerInput::localActionRequested);
+        QSignalSpy preference(&input, &ControllerInput::holdStartOpensOverlayChanged);
+        StartHoldPad pad;
+        QVERIFY2(pad.id != 0, SDL_GetError());
+        QTRY_COMPARE_WITH_TIMEOUT(input.controllerCount(), 1, 2'000);
+        input.setShellCaptureEnabled(false);
+
+        // Released before the threshold.
+        QVERIFY(pad.button(SDL_GAMEPAD_BUTTON_START, true));
+        QTRY_COMPARE_WITH_TIMEOUT(lastGamepadButtons(snapshots), startButtonBit, 1'000);
+        QTest::qWait(400);
+        QVERIFY(pad.button(SDL_GAMEPAD_BUTTON_START, false));
+        QTRY_COMPARE_WITH_TIMEOUT(lastGamepadButtons(snapshots), 0u, 1'000);
+
+        // Another button pressed during the hold; both still reach the game.
+        QVERIFY(pad.button(SDL_GAMEPAD_BUTTON_START, true));
+        QTRY_COMPARE_WITH_TIMEOUT(lastGamepadButtons(snapshots), startButtonBit, 1'000);
+        QVERIFY(pad.button(SDL_GAMEPAD_BUTTON_SOUTH, true));
+        QTRY_COMPARE_WITH_TIMEOUT(lastGamepadButtons(snapshots), startButtonBit | southButtonBit, 1'000);
+        QTest::qWait(startHoldSettleMs);
+        QCOMPARE(actions.size(), 0);
+        QCOMPARE(lastGamepadButtons(snapshots), startButtonBit | southButtonBit);
+        QVERIFY(pad.button(SDL_GAMEPAD_BUTTON_START, false));
+        QVERIFY(pad.button(SDL_GAMEPAD_BUTTON_SOUTH, false));
+        QTRY_COMPARE_WITH_TIMEOUT(lastGamepadButtons(snapshots), 0u, 1'000);
+
+        // Focus loss suspends input and cancels the pending hold.
+        QVERIFY(pad.button(SDL_GAMEPAD_BUTTON_START, true));
+        QTRY_COMPARE_WITH_TIMEOUT(lastGamepadButtons(snapshots), startButtonBit, 1'000);
+        input.setInputSuspended(true);
+        QCOMPARE(lastGamepadButtons(snapshots), 0u);
+        input.setInputSuspended(false);
+        QCOMPARE(lastGamepadButtons(snapshots), startButtonBit);
+        QTest::qWait(startHoldSettleMs);
+        QCOMPARE(actions.size(), 0);
+        QVERIFY(pad.button(SDL_GAMEPAD_BUTTON_START, false));
+        QTRY_COMPARE_WITH_TIMEOUT(lastGamepadButtons(snapshots), 0u, 1'000);
+
+        // Disabled preference: Start is an ordinary button that stays pressed remotely.
+        input.setHoldStartOpensOverlay(false);
+        QCOMPARE(preference.size(), 1);
+        QVERIFY(!input.holdStartOpensOverlay());
+        QVERIFY(pad.button(SDL_GAMEPAD_BUTTON_START, true));
+        QTRY_COMPARE_WITH_TIMEOUT(lastGamepadButtons(snapshots), startButtonBit, 1'000);
+        QTest::qWait(startHoldSettleMs);
+        QCOMPARE(actions.size(), 0);
+        QCOMPARE(lastGamepadButtons(snapshots), startButtonBit);
+        QVERIFY(pad.button(SDL_GAMEPAD_BUTTON_START, false));
+        QTRY_COMPARE_WITH_TIMEOUT(lastGamepadButtons(snapshots), 0u, 1'000);
+        input.setHoldStartOpensOverlay(true);
+        QCOMPARE(preference.size(), 2);
     }
 
     void preservesExistingSlotsAcrossHotplug()

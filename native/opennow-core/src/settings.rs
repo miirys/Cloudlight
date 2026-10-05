@@ -12,7 +12,7 @@ const WINDOWS_GPU_DEVICE_ID: &str = "windowsGpuDeviceId";
 const MAXIMUM_WINDOWS_GPU_DEVICE_ID_BYTES: usize = 1024;
 const MAXIMUM_BOOTSTRAP_SETTINGS_BYTES: u64 = 1024 * 1024;
 const MAXIMUM_SHORTCUT_BYTES: usize = 80;
-const SHORTCUT_KEYS: [&str; 9] = [
+const SHORTCUT_KEYS: [&str; 12] = [
     "shortcutToggleStats",
     "shortcutTogglePointerLock",
     "shortcutToggleFullscreen",
@@ -22,6 +22,9 @@ const SHORTCUT_KEYS: [&str; 9] = [
     "shortcutScreenshot",
     "shortcutToggleRecording",
     "shortcutSaveClip",
+    "shortcutGameFilter1",
+    "shortcutGameFilter2",
+    "shortcutGameFilter3",
 ];
 const RESERVED_SHORTCUTS: [&str; 2] = ["Ctrl+G", "Shift+F3"];
 
@@ -497,6 +500,18 @@ impl SettingsStore {
             &["bottom-left", "bottom-right", "top-left", "top-right"],
             "bottom-left",
         );
+        for (key, fallback) in [
+            ("hudRecordingPosition", "top-right"),
+            ("hudMicrophonePosition", "none"),
+            ("hudConnectionPosition", "top-right"),
+        ] {
+            normalize_choice(
+                &mut self.values,
+                key,
+                &["top-left", "top-right", "bottom-left", "bottom-right", "none"],
+                fallback,
+            );
+        }
         normalize_choice(
             &mut self.values,
             "appTheme",
@@ -1006,6 +1021,110 @@ fn normalize_nested_settings(values: &mut Map<String, Value>) {
         normalized.insert(key.to_owned(), Value::Number(value.into()));
     }
     values.insert("videoShader".to_owned(), Value::Object(normalized));
+    normalize_game_filters(values);
+}
+
+const GAME_FILTER_STYLE_COUNT: usize = 3;
+const GAME_FILTER_STYLE_NAME_CHARS: usize = 30;
+const GAME_FILTERS_PER_STYLE: usize = 8;
+const GAME_FILTER_COLORBLIND_MODES: [&str; 3] = ["protanopia", "deuteranopia", "tritanopia"];
+
+// Game filter styles are persisted for the Qt overlay: exactly three named slots, each
+// with at most eight typed filters whose integer parameters are clamped. Unknown filter
+// types and unknown parameters are dropped.
+fn normalize_game_filters(values: &mut Map<String, Value>) {
+    let filters = values.get("gameFilters").and_then(Value::as_object);
+    let active = bounded_integer(
+        filters.and_then(|filters| filters.get("active")),
+        0,
+        0,
+        GAME_FILTER_STYLE_COUNT as i64,
+    );
+    let mut styles = filters
+        .and_then(|filters| filters.get("styles"))
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+        .take(GAME_FILTER_STYLE_COUNT)
+        .map(normalize_game_filter_style)
+        .collect::<Vec<_>>();
+    styles.resize_with(GAME_FILTER_STYLE_COUNT, || {
+        normalize_game_filter_style(&Value::Null)
+    });
+    values.insert(
+        "gameFilters".to_owned(),
+        json!({"active": active, "styles": styles}),
+    );
+}
+
+fn normalize_game_filter_style(style: &Value) -> Value {
+    let name = style
+        .get("name")
+        .and_then(Value::as_str)
+        .unwrap_or_default()
+        .trim()
+        .chars()
+        .take(GAME_FILTER_STYLE_NAME_CHARS)
+        .collect::<String>()
+        .trim_end()
+        .to_owned();
+    let filters = style
+        .get("filters")
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+        .filter_map(normalize_game_filter)
+        .take(GAME_FILTERS_PER_STYLE)
+        .collect::<Vec<_>>();
+    json!({"name": name, "filters": filters})
+}
+
+fn normalize_game_filter(filter: &Value) -> Option<Value> {
+    let filter = filter.as_object()?;
+    let kind = filter.get("type")?.as_str()?;
+    let parameters: &[(&str, i64, i64, i64)] = match kind {
+        "black-white" => &[("intensity", 100, 0, 100)],
+        "brightness-contrast" => &[("brightness", 0, -100, 100), ("contrast", 0, -100, 100)],
+        "color" => &[
+            ("saturation", 0, -100, 100),
+            ("vibrance", 0, -100, 100),
+            ("temperature", 0, -100, 100),
+        ],
+        "colorblind" => &[("strength", 100, 0, 100)],
+        "details" | "letterbox" | "sharpen" | "vignette" => &[("amount", 50, 0, 100)],
+        "night-mode" => &[("intensity", 50, 0, 100)],
+        "old-film" => &[("intensity", 60, 0, 100)],
+        _ => return None,
+    };
+    let mut normalized = Map::new();
+    normalized.insert("type".to_owned(), Value::String(kind.to_owned()));
+    if kind == "colorblind" {
+        let mode = filter
+            .get("mode")
+            .and_then(Value::as_str)
+            .filter(|mode| GAME_FILTER_COLORBLIND_MODES.contains(mode))
+            .unwrap_or("deuteranopia");
+        normalized.insert("mode".to_owned(), Value::String(mode.to_owned()));
+    }
+    for (key, fallback, minimum, maximum) in parameters {
+        let value = bounded_integer(filter.get(*key), *fallback, *minimum, *maximum);
+        normalized.insert((*key).to_owned(), Value::Number(value.into()));
+    }
+    Some(Value::Object(normalized))
+}
+
+fn bounded_integer(value: Option<&Value>, fallback: i64, minimum: i64, maximum: i64) -> i64 {
+    value
+        .and_then(|value| {
+            value.as_i64().or_else(|| {
+                value
+                    .as_f64()
+                    .filter(|value| value.is_finite())
+                    .map(|value| value.round() as i64)
+            })
+        })
+        .unwrap_or(fallback)
+        .clamp(minimum, maximum)
 }
 
 fn default_data_dir() -> PathBuf {
@@ -1068,12 +1187,18 @@ fn defaults() -> Map<String, Value> {
         "shortcutToggleAntiAfk":"Ctrl+Shift+K", "shortcutToggleMicrophone":"Ctrl+Shift+M",
         "shortcutScreenshot":"Ctrl+F11", "shortcutToggleRecording":"F12",
         "shortcutSaveClip":"Ctrl+F12",
+        "shortcutGameFilter1":"", "shortcutGameFilter2":"", "shortcutGameFilter3":"",
         "microphoneMode":"disabled", "microphoneDeviceId":"", "hideStreamButtons":false,
         "muteWhenOutOfFocus":false, "backgroundStreamReminder":false,
         "showAntiAfkIndicator":true, "antiAfkReminderEveryMinutes":15,
         "antiAfkReminderDurationSeconds":5, "showStatsOnLaunch":false,
         "statsOverlayPosition":"top-right", "hideServerSelector":false, "hideQueueSelector":false,
         "desktopUiScale":1.0, "statsOverlayScale":1.0, "statsOverlayOpacity":85,
+        "hudRecordingPosition":"top-right", "hudMicrophonePosition":"none",
+        "hudConnectionPosition":"top-right", "streamNotifications":true,
+        "notifyConnection":true, "notifyScreenshotSaved":true, "notifyRecordingSaved":true,
+        "notifyReplaySaved":true, "notifyReplayState":true, "notifyRecordingStarted":true,
+        "notifyController":true, "notifyColorFormat":true,
         "themeAccentOverride":false,
         "statsShowFps":true, "statsShowRegion":true, "statsShowPing":true,
         "statsShowBitrate":true, "statsShowJitter":true, "statsShowDrops":true,
@@ -1083,7 +1208,7 @@ fn defaults() -> Map<String, Value> {
         "showTileLabels":true,
         "controllerMode":true, "controllerModePromptDismissed":false,
         "controllerLeftStickDeadzone":5, "controllerRightStickDeadzone":5,
-        "controllerVibrationIntensity":100,
+        "controllerVibrationIntensity":100, "controllerHoldStartOverlay":true,
         "reducedMotion":false,
         "launchInConsoleMode":false, "consoleProfilePickerOnLaunch":true,
         "desktopRailCollapsed":true, "desktopSidebarHover":true, "desktopBackground":"art",
@@ -1100,6 +1225,7 @@ fn defaults() -> Map<String, Value> {
         "updateChannel":crate::version::update_channel(crate::version::APPLICATION_VERSION),
         "allowEscapeToExitFullscreen":false, "lastSeenReleaseHighlightsVersion":"",
         "videoShader":{"enabled":false,"sharpen":40,"saturation":100,"contrast":100,"brightness":100,"vibrance":0,"filmGrain":0},
+        "gameFilters":{"active":0,"styles":[{"name":"","filters":[]},{"name":"","filters":[]},{"name":"","filters":[]}]},
         "frameInterpolation":{"enabled":false,"factor":2,"quality":480},
         "errorReportingConsent":"unset", "telemetryInstallId":""
     })
@@ -1644,6 +1770,133 @@ mod tests {
         for key in SHORTCUT_KEYS {
             assert_eq!(store.all()[key], defaults[key]);
         }
+    }
+
+    #[test]
+    fn game_filters_are_bounded_typed_and_persisted() {
+        let directory = tempfile::tempdir().unwrap();
+        let mut store = SettingsStore::load(Some(directory.path().to_owned())).unwrap();
+        assert_eq!(
+            store.all()["gameFilters"],
+            json!({"active":0,"styles":[
+                {"name":"","filters":[]},{"name":"","filters":[]},{"name":"","filters":[]}
+            ]})
+        );
+
+        let mut sharpen = vec![
+            json!({"type":"unknown","amount":10}),
+            json!("not an object"),
+            json!({"amount":10}),
+        ];
+        sharpen.extend((0..12).map(|index| json!({"type":"sharpen","amount":index * 20})));
+        store
+            .set(
+                "gameFilters",
+                json!({
+                    "active": 9,
+                    "extra": true,
+                    "styles": [
+                        {"name":"   A very long style name that keeps going   ",
+                         "filters":sharpen, "extra":true},
+                        {"name":42, "filters":[
+                            {"type":"brightness-contrast","brightness":-500,"contrast":12.6,"bogus":1},
+                            {"type":"color","saturation":"high","vibrance":101,"temperature":-101},
+                            {"type":"colorblind","mode":"monochromacy","strength":-1},
+                            {"type":"colorblind","mode":"tritanopia"},
+                            {"type":"black-white"},
+                            {"type":"old-film","intensity":1e300},
+                            {"type":"night-mode","intensity":null},
+                            {"type":"letterbox","amount":-3},
+                            {"type":"vignette","amount":100},
+                            {"type":"details"}
+                        ]},
+                        {"name":"Third", "filters":"none"},
+                        {"name":"Fourth", "filters":[]}
+                    ]
+                }),
+            )
+            .unwrap();
+        let filters = store.all()["gameFilters"].clone();
+        assert_eq!(filters.as_object().unwrap().len(), 2);
+        assert_eq!(filters["active"], json!(3));
+        let styles = filters["styles"].as_array().unwrap();
+        assert_eq!(styles.len(), 3, "exactly three styles are kept");
+
+        assert_eq!(styles[0]["name"], json!("A very long style name that ke"));
+        assert_eq!(styles[0].as_object().unwrap().len(), 2);
+        let first = styles[0]["filters"].as_array().unwrap();
+        assert_eq!(first.len(), 8, "unknown types are dropped before the limit");
+        for (index, filter) in first.iter().enumerate() {
+            assert_eq!(
+                filter,
+                &json!({"type":"sharpen","amount":(index as i64 * 20).min(100)})
+            );
+        }
+
+        assert_eq!(
+            styles[1],
+            json!({"name":"","filters":[
+                {"type":"brightness-contrast","brightness":-100,"contrast":13},
+                {"type":"color","saturation":0,"vibrance":100,"temperature":-100},
+                {"type":"colorblind","mode":"deuteranopia","strength":0},
+                {"type":"colorblind","mode":"tritanopia","strength":100},
+                {"type":"black-white","intensity":100},
+                {"type":"old-film","intensity":100},
+                {"type":"night-mode","intensity":50},
+                {"type":"letterbox","amount":0}
+            ]})
+        );
+        assert_eq!(styles[2], json!({"name":"Third","filters":[]}));
+
+        let reloaded = SettingsStore::load(Some(directory.path().to_owned())).unwrap();
+        assert_eq!(reloaded.all()["gameFilters"], filters);
+
+        store
+            .set(
+                "gameFilters",
+                json!({"active":-2,"styles":[{"name":" Only "}]}),
+            )
+            .unwrap();
+        assert_eq!(
+            store.all()["gameFilters"],
+            json!({"active":0,"styles":[
+                {"name":"Only","filters":[]},{"name":"","filters":[]},{"name":"","filters":[]}
+            ]})
+        );
+        store.set("gameFilters", json!([])).unwrap();
+        assert_eq!(store.all()["gameFilters"], defaults()["gameFilters"]);
+    }
+
+    #[test]
+    fn game_filter_shortcuts_default_unbound_and_follow_shortcut_rules() {
+        let directory = tempfile::tempdir().unwrap();
+        let mut store = SettingsStore::load(Some(directory.path().to_owned())).unwrap();
+        for key in [
+            "shortcutGameFilter1",
+            "shortcutGameFilter2",
+            "shortcutGameFilter3",
+        ] {
+            assert!(SHORTCUT_KEYS.contains(&key));
+            assert_eq!(store.all()[key], json!(""));
+        }
+        store
+            .set_shortcuts(&json!({"shortcutGameFilter1":"Alt+F1","shortcutGameFilter2":""}))
+            .unwrap();
+        let before = store.all();
+        for rejected in [
+            json!({"shortcutGameFilter3":"alt + f1"}),
+            json!({"shortcutGameFilter2":"F8"}),
+            json!({"shortcutGameFilter3":"Ctrl+G"}),
+            json!({"shortcutGameFilter4":"Alt+F4"}),
+        ] {
+            assert!(store.set_shortcuts(&rejected).is_err(), "{rejected}");
+            assert_eq!(store.all(), before, "{rejected} must not partially apply");
+        }
+        store
+            .set_shortcuts(&json!({"shortcutGameFilter1":"","shortcutGameFilter3":""}))
+            .expect("empty bindings are unbound and never conflict");
+        let reloaded = SettingsStore::load(Some(directory.path().to_owned())).unwrap();
+        assert_eq!(reloaded.all()["shortcutGameFilter1"], json!(""));
     }
 
     #[test]
@@ -2454,6 +2707,10 @@ mod tests {
         assert_eq!(store.all()["shortcutToggleFullscreen"], json!("F11"));
         assert_eq!(store.all()["shortcutScreenshot"], json!("Ctrl+F11"));
         assert_eq!(store.all()["statsOverlayPosition"], json!("top-right"));
+        assert_eq!(store.all()["hudRecordingPosition"], json!("top-right"));
+        assert_eq!(store.all()["hudMicrophonePosition"], json!("none"));
+        assert_eq!(store.all()["hudConnectionPosition"], json!("top-right"));
+        assert_eq!(store.all()["streamNotifications"], json!(true));
         for key in [
             "statsShowFps",
             "statsShowRegion",
@@ -2710,6 +2967,30 @@ mod tests {
     }
 
     #[test]
+    fn heads_up_display_positions_fall_back_to_their_defaults() {
+        let unique = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let directory = env::temp_dir().join(format!("opennow-core-hud-{unique}"));
+        fs::create_dir_all(&directory).unwrap();
+        fs::write(
+            directory.join("settings.json"),
+            r#"{"hudRecordingPosition":"middle","hudMicrophonePosition":"bottom-left","hudConnectionPosition":7}"#,
+        )
+        .unwrap();
+        let mut store = SettingsStore::load(Some(directory.clone())).unwrap();
+        assert_eq!(store.all()["hudRecordingPosition"], json!("top-right"));
+        assert_eq!(store.all()["hudMicrophonePosition"], json!("bottom-left"));
+        assert_eq!(store.all()["hudConnectionPosition"], json!("top-right"));
+        store.set("hudRecordingPosition", json!("none")).unwrap();
+        assert_eq!(store.all()["hudRecordingPosition"], json!("none"));
+        store.set("notifyConnection", json!(false)).unwrap();
+        assert_eq!(store.all()["notifyConnection"], json!(false));
+        let _ = fs::remove_dir_all(directory);
+    }
+
+    #[test]
     fn legacy_f10_f11_pair_migrates_to_native_f11_fullscreen() {
         let unique = SystemTime::now()
             .duration_since(UNIX_EPOCH)
@@ -2865,6 +3146,30 @@ mod tests {
                 json!(12)
             );
         }
+        fs::remove_dir_all(directory).unwrap();
+    }
+
+    #[test]
+    fn controller_hold_start_overlay_is_a_persisted_boolean_defaulting_on() {
+        let unique = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let directory = env::temp_dir().join(format!("opennow-controller-hold-start-{unique}"));
+        let key = "controllerHoldStartOverlay";
+        assert_eq!(defaults()[key], json!(true));
+        let mut store = SettingsStore::load(Some(directory.clone())).unwrap();
+        assert_eq!(store.all()[key], json!(true));
+        assert_eq!(store.set(key, json!(false)).unwrap(), json!(false));
+        assert_eq!(
+            SettingsStore::load(Some(directory.clone())).unwrap().all()[key],
+            json!(false)
+        );
+        for invalid in [json!("false"), json!(0), json!(null), json!([])] {
+            assert_eq!(store.set(key, invalid).unwrap(), json!(true));
+        }
+        store.set(key, json!(false)).unwrap();
+        assert_eq!(store.reset().unwrap()[key], json!(true));
         fs::remove_dir_all(directory).unwrap();
     }
 

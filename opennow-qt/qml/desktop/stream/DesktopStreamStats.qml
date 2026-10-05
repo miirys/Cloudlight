@@ -24,6 +24,8 @@ Item {
     readonly property string position: String(ShellStore.settings.statsOverlayPosition || "top-right")
     readonly property bool rightAligned: position.endsWith("right")
     readonly property bool bottomAligned: position.startsWith("bottom")
+    // Height the statistics take in their corner, so HUD indicators can stack below them.
+    readonly property real occupiedHeight: !visible ? 0 : expanded ? panel.height + 12 : compact.height + 12
     readonly property real topRightInset: !visible || bottomAligned ? inset
         : expanded ? (panel.x + panel.width > width - 408 ? panel.y + panel.height + 12 : inset)
         : Math.max(compact.x + compact.width > width - 408 ? compact.y + compact.height + 12 : inset,

@@ -49,6 +49,8 @@ class StreamVideoItem : public QQuickItem
                    NOTIFY upscalingSharpnessChanged)
     Q_PROPERTY(int upscalingDenoise READ upscalingDenoise WRITE setUpscalingDenoise
                    NOTIFY upscalingDenoiseChanged)
+    Q_PROPERTY(QVariantMap videoFilter READ videoFilter WRITE setVideoFilter
+                   NOTIFY videoFilterChanged)
     Q_PROPERTY(QVariantMap frameGenerationStats READ frameGenerationStats
                    NOTIFY frameGenerationStatsChanged)
     Q_PROPERTY(QVariantMap swapStats READ swapStats NOTIFY swapStatsChanged)
@@ -93,6 +95,9 @@ public:
     void setUpscalingSharpness(int value);
     int upscalingDenoise() const;
     void setUpscalingDenoise(int value);
+    [[nodiscard]] QVariantMap videoFilter() const;
+    void setVideoFilter(const QVariantMap &filter);
+    [[nodiscard]] const StreamVideoFilter &videoFilterState() const;
     QVariantMap frameGenerationStats() const;
     QVariantMap swapStats() const;
 
@@ -146,6 +151,7 @@ signals:
     void fsrUpscalingChanged();
     void upscalingSharpnessChanged();
     void upscalingDenoiseChanged();
+    void videoFilterChanged();
     void frameGenerationStatsChanged();
     void swapStatsChanged();
     void localShortcutRequested(const QString &action);
@@ -218,6 +224,7 @@ private:
     bool m_fsrUpscaling = false;
     int m_upscalingSharpness = 10;
     int m_upscalingDenoise = 0;
+    StreamVideoFilter m_videoFilter;
     QTimer m_frameStatsTimer;
     QTimer m_swapStatsTimer;
     QString m_swapGateSource;

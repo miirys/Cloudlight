@@ -18,6 +18,7 @@ QtObject {
         property int leftStickDeadzone: 5
         property int rightStickDeadzone: 5
         property int vibrationIntensity: 100
+        property bool holdStartOpensOverlay: true
         signal controllerActivity()
         signal controllerActivityDetailed(string device, string control, int value)
     }
@@ -54,6 +55,11 @@ QtObject {
                 check(slider.value === value, "controller tuning reflects saved value")
             }
         }
+        check(input.holdStartOpensOverlay === true, "hold-Start overlay defaults on")
+        ShellStore.applySetting("controllerHoldStartOverlay", false)
+        check(input.holdStartOpensOverlay === false, "hold-Start overlay preference reaches input owner")
+        ShellStore.applySetting("controllerHoldStartOverlay", true)
+        check(input.holdStartOpensOverlay === true, "hold-Start overlay preference restores")
         for (const controller of input.availableControllers) {
             const row = find(page, "controllerRow-" + controller.instanceId)
             check(row && row.title === controller.name, "device name must be preserved")

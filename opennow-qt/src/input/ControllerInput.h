@@ -25,11 +25,13 @@ class ControllerInput final : public QObject
     Q_PROPERTY(int leftStickDeadzone READ leftStickDeadzone WRITE setLeftStickDeadzone NOTIFY leftStickDeadzoneChanged)
     Q_PROPERTY(int rightStickDeadzone READ rightStickDeadzone WRITE setRightStickDeadzone NOTIFY rightStickDeadzoneChanged)
     Q_PROPERTY(int vibrationIntensity READ vibrationIntensity WRITE setVibrationIntensity NOTIFY vibrationIntensityChanged)
+    Q_PROPERTY(bool holdStartOpensOverlay READ holdStartOpensOverlay WRITE setHoldStartOpensOverlay NOTIFY holdStartOpensOverlayChanged)
 
 public:
     static constexpr quint32 syntheticControllerScanCode = 0x4f504e57;
     static constexpr int maxSources = maxSdlSources;
     static constexpr float sonyContactCenter = 0.5f;
+    static constexpr qint64 startHoldOverlayMs = 800;
 
     struct SonyContact {
         bool active = false;
@@ -71,6 +73,8 @@ public:
     void setLeftStickDeadzone(int percent);
     void setRightStickDeadzone(int percent);
     void setVibrationIntensity(int percent);
+    [[nodiscard]] bool holdStartOpensOverlay() const;
+    void setHoldStartOpensOverlay(bool enabled);
     void playRumble(quint8 controllerId, quint16 lowFrequency, quint16 highFrequency, quint32 durationMs,
                     quint64 sourceIncarnation = 0);
     void stopRumble();
@@ -86,6 +90,7 @@ signals:
     void leftStickDeadzoneChanged();
     void rightStickDeadzoneChanged();
     void vibrationIntensityChanged();
+    void holdStartOpensOverlayChanged();
     void controllerActivity();
     void controllerActivityDetailed(const QString &device, const QString &control, int value);
     void gamepadSnapshot(quint8 controllerId, quint16 bitmap, quint16 buttons,
@@ -123,6 +128,11 @@ private:
         quint16 product = 0;
         bool touchpadClick = false;
         bool guideLatched = false;
+        // Start held alone during gameplay; fires the guide local action at the threshold.
+        bool startHoldArmed = false;
+        qint64 startHoldPressedAt = 0;
+        // Buttons physically held but reported released remotely (Start after a hold fired).
+        quint16 suppressedButtons = 0;
         std::array<SonyContact, 2> contacts{};
         QHash<int, QPointer<QObject>> shellKeys;
         std::array<RepeatingDirection, 4> directions{{
@@ -146,6 +156,8 @@ private:
     void reportActivity(int slot, const QString &control, int value);
     void dispatchRepeats(qint64 now);
     void resetDirections();
+    void cancelStartHolds();
+    void dispatchStartHold(qint64 now);
     void handleShellButton(int slot, int key, bool pressed);
     void releaseShellButtons(int slot);
     [[nodiscard]] bool acceptsController(SDL_JoystickID id) const;
@@ -175,6 +187,7 @@ private:
     int m_leftStickDeadzone = 5;
     int m_rightStickDeadzone = 5;
     int m_vibrationIntensity = 100;
+    bool m_holdStartOpensOverlay = true;
     qint64 m_lastControllerMetadataAt = 0;
     qint64 m_lastGamepadSnapshotAt = 0;
     quint64 m_nextIncarnation = 1;

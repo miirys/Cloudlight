@@ -326,6 +326,25 @@ void StreamVideoItem::setUpscalingDenoise(int value)
     update();
 }
 
+QVariantMap StreamVideoItem::videoFilter() const
+{
+    return m_videoFilter.toVariantMap();
+}
+
+void StreamVideoItem::setVideoFilter(const QVariantMap &filter)
+{
+    const auto normalized = StreamVideoFilter::fromVariantMap(filter);
+    if (m_videoFilter == normalized) return;
+    m_videoFilter = normalized;
+    emit videoFilterChanged();
+    update();
+}
+
+const StreamVideoFilter &StreamVideoItem::videoFilterState() const
+{
+    return m_videoFilter;
+}
+
 bool StreamVideoItem::metalFxUpscaling() const
 {
     return m_metalFxUpscaling;

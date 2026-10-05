@@ -358,6 +358,11 @@ public:
             m_resetFrameGeneration = true;
     }
 
+    void setVideoFilter(const StreamVideoFilter &filter) override
+    {
+        m_textures.setFilter(filter);
+    }
+
     void setFrameGeneration(bool enabled, double refreshRate) override
     {
         if (m_frameGeneration != enabled || m_refreshRate != refreshRate)

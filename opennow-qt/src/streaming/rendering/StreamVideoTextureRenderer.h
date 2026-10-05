@@ -1,6 +1,7 @@
 #pragma once
 
 #include "streaming/rendering/StreamFsrUpscaler.h"
+#include "streaming/rendering/StreamVideoFilter.h"
 
 #include <QFile>
 #include <QMatrix4x4>
@@ -9,6 +10,7 @@
 #include <rhi/qshader.h>
 #include <algorithm>
 #include <array>
+#include <iterator>
 #include <memory>
 
 // Render-thread owner for imported video textures and the scene-graph material.
@@ -17,6 +19,19 @@
 class StreamVideoTextureRenderer
 {
 public:
+    // std140 `Composition` block shared by streamvideo.vert/.frag (all vec4-aligned):
+    //   [0..15] matrix, [16..19] bounds, [20..23] videoRect,
+    //   [24..27] parameters (opacity, dither step, filters active, grain seed),
+    //   [28..31] colorParameters (source space, output mode, white nits, HDR supported),
+    //   [32..35] filterTone (brightness, contrast, saturation, vibrance),
+    //   [36..39] filterColor (temperature, night mode, grayscale, sepia),
+    //   [40..43] filterDetail (sharpen, details, vignette, grain),
+    //   [44..47] filterFrame (letterbox, colorblind mode, colorblind strength, 0),
+    //   [48..51] filterTexel (1/width, 1/height of the bound video texture, 0, 0).
+    static constexpr int compositionFloats = 52;
+    static constexpr quint32 compositionBytes = quint32(compositionFloats * sizeof(float));
+    static constexpr quint32 colorParametersOffset = quint32(28 * sizeof(float));
+
     ~StreamVideoTextureRenderer() { release(); }
 
     void initialize(QRhi *rhi, QRhiRenderTarget *target)
@@ -70,10 +85,30 @@ public:
         m_composition[24] = opacity;
     }
 
+    // Render thread. Values are already bounded by StreamVideoFilter; an inactive filter
+    // only clears the shader flag so the unfiltered composition path stays unchanged.
+    void setFilter(const StreamVideoFilter &filter)
+    {
+        const bool active = filter.active();
+        m_grainActive = active && filter.grain > 0.0f;
+        m_composition[26] = active ? 1.0f : 0.0f;
+        if (!m_grainActive) m_composition[27] = 0.0f;
+        const float values[16] = {
+            filter.brightness, filter.contrast, filter.saturation, filter.vibrance,
+            filter.temperature, filter.nightMode, filter.grayscale, filter.sepia,
+            filter.sharpen, filter.details, filter.vignette, filter.grain,
+            filter.letterbox, filter.colorblindActive() ? float(filter.colorblindMode) : 0.0f,
+            filter.colorblindActive() ? filter.colorblindStrength : 0.0f, 0.0f};
+        std::copy(std::begin(values), std::end(values), m_composition.begin() + 32);
+    }
+
+    bool filterActive() const { return m_composition[26] > 0.5f; }
+
     bool prepare(QRhiCommandBuffer *cb)
     {
         if (!m_uniforms) {
-            m_uniforms.reset(m_rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 128));
+            m_uniforms.reset(m_rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer,
+                                              compositionBytes));
             if (!m_uniforms->create()) { m_uniforms.reset(); return false; }
         }
         if (!m_sampler) {
@@ -82,8 +117,18 @@ public:
                                              QRhiSampler::ClampToEdge));
             if (!m_sampler->create()) { m_sampler.reset(); return false; }
         }
+        if (m_grainActive) {
+            m_grainFrame = (m_grainFrame + 1) % 4096;
+            m_composition[27] = float(m_grainFrame);
+        }
+        // Sharpen/details tap spacing follows the texture bound by the previous frame;
+        // the shader never samples closer than one output pixel, so a stale or unknown
+        // size after a resolution change only affects the tap radius for one frame.
+        const QSize boundSize = boundTextureSize();
+        m_composition[48] = boundSize.width() > 0 ? 1.0f / float(boundSize.width()) : 0.0f;
+        m_composition[49] = boundSize.height() > 0 ? 1.0f / float(boundSize.height()) : 0.0f;
         auto *updates = m_rhi->nextResourceUpdateBatch();
-        updates->updateDynamicBuffer(m_uniforms.get(), 0, 128, m_composition.data());
+        updates->updateDynamicBuffer(m_uniforms.get(), 0, compositionBytes, m_composition.data());
         cb->resourceUpdate(updates);
         ensurePipelines();
         return !m_imports[m_currentSlot].bindings || (m_pipelines[0] && m_pipelines[1]);
@@ -134,7 +179,8 @@ public:
     {
         m_composition[28] = float(sourceSpace);
         auto *updates = m_rhi->nextResourceUpdateBatch();
-        updates->updateDynamicBuffer(m_uniforms.get(), 112, 16, m_composition.data() + 28);
+        updates->updateDynamicBuffer(m_uniforms.get(), colorParametersOffset, quint32(4 * sizeof(float)),
+                                     m_composition.data() + 28);
         cb->resourceUpdate(updates);
     }
 
@@ -186,8 +232,10 @@ public:
         if (!output || output == source) {
             m_fsrBinding.reset();
             m_fsrOutputId = 0;
+            m_fsrOutputSize = {};
             return;
         }
+        m_fsrOutputSize = output->pixelSize();
         if (m_fsrBinding && m_fsrOutputId == output->globalResourceId()) return;
         m_fsrBinding.reset(m_rhi->newShaderResourceBindings());
         m_fsrBinding->setBindings({
@@ -246,7 +294,26 @@ private:
     {
         m_fsrBinding.reset();
         m_fsrOutputId = 0;
+        m_fsrOutputSize = {};
         m_fsr.release();
+    }
+
+    QSize boundTextureSize() const
+    {
+        if (m_fsrBinding) return m_fsrOutputSize;
+        if (m_externalSlot >= 0 && m_external[m_externalSlot].texture)
+            return m_external[m_externalSlot].texture->pixelSize();
+        if (const auto *texture = m_imports[m_currentSlot].texture.get())
+            return texture->pixelSize();
+        return {};
+    }
+
+    static constexpr std::array<float, compositionFloats> neutralComposition()
+    {
+        std::array<float, compositionFloats> values{};
+        values[33] = 1.0f; // contrast
+        values[34] = 1.0f; // saturation
+        return values;
     }
 
     static QShader loadShader(const char *path)
@@ -306,10 +373,13 @@ private:
     StreamFsrUpscaler m_fsr;
     std::unique_ptr<QRhiShaderResourceBindings> m_fsrBinding;
     quint64 m_fsrOutputId = 0;
+    QSize m_fsrOutputSize;
     std::array<std::unique_ptr<QRhiGraphicsPipeline>, 2> m_pipelines;
     std::unique_ptr<QRhiSampler> m_sampler;
     std::unique_ptr<QRhiBuffer> m_uniforms;
-    std::array<float, 32> m_composition{};
+    std::array<float, compositionFloats> m_composition = neutralComposition();
+    int m_grainFrame = 0;
+    bool m_grainActive = false;
     QVector<quint32> m_passFormat;
     size_t m_currentSlot = 0;
     int m_externalSlot = -1;

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "streaming/rendering/StreamVideoFilter.h"
+
 #include <QMatrix4x4>
 #include <QRect>
 #include <QVariantMap>
@@ -23,6 +25,8 @@ public:
     virtual void setUpscalingTarget(const QSize &) {}
     virtual void setFsrUpscaling(bool) {}
     virtual void setUpscalingEnhancement(int, int) {}
+    // Render thread, while the GUI thread is blocked in scene-graph synchronization.
+    virtual void setVideoFilter(const StreamVideoFilter &) {}
     virtual bool needsFrame() const { return false; }
     virtual void frameSwapped() {}
     virtual QVariantMap frameGenerationStats() const { return {}; }

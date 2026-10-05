@@ -30,6 +30,7 @@ public:
         if (m_callback) m_callback->setFsrUpscaling(m_fsrUpscaling);
         if (m_callback)
             m_callback->setUpscalingEnhancement(item->upscalingSharpness(), item->upscalingDenoise());
+        if (m_callback) m_callback->setVideoFilter(item->videoFilterState());
         markDirty(QSGNode::DirtyGeometry | QSGNode::DirtyMaterial);
     }
 

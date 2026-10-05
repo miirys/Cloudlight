@@ -86,6 +86,7 @@ bool ControllerInput::acceptsController(SDL_JoystickID id) const
 void ControllerInput::setInputControllerId(quint32 id)
 {
     if (id == m_inputControllerId || (id != 0 && !m_gamepadSlots.contains(id))) return;
+    cancelStartHolds();
     stopRumble();
     publishConnectedInputs(true);
     for (int slot = 0; slot < static_cast<int>(m_slots.size()); ++slot)
@@ -186,6 +187,7 @@ bool ControllerInput::inputSuspended() const
 int ControllerInput::leftStickDeadzone() const { return m_leftStickDeadzone; }
 int ControllerInput::rightStickDeadzone() const { return m_rightStickDeadzone; }
 int ControllerInput::vibrationIntensity() const { return m_vibrationIntensity; }
+bool ControllerInput::holdStartOpensOverlay() const { return m_holdStartOpensOverlay; }
 
 void ControllerInput::setLeftStickDeadzone(int percent)
 {
@@ -212,6 +214,16 @@ void ControllerInput::setVibrationIntensity(int percent)
     stopRumble();
     m_vibrationIntensity = percent;
     emit vibrationIntensityChanged();
+}
+
+void ControllerInput::setHoldStartOpensOverlay(bool enabled)
+{
+    if (m_holdStartOpensOverlay == enabled) return;
+    m_holdStartOpensOverlay = enabled;
+    // A pending hold must not fire after the preference is turned off. Start that is
+    // already suppressed stays released remotely until it is physically released.
+    if (!enabled) cancelStartHolds();
+    emit holdStartOpensOverlayChanged();
 }
 
 void ControllerInput::playRumble(quint8 controllerId, quint16 lowFrequency,
@@ -251,6 +263,7 @@ void ControllerInput::stopRumble()
 void ControllerInput::setInputSuspended(bool suspended)
 {
     if (m_inputSuspended == suspended) return;
+    cancelStartHolds();
     if (suspended) {
         stopRumble();
         publishConnectedInputs(true);
@@ -271,6 +284,7 @@ void ControllerInput::setInputSuspended(bool suspended)
 void ControllerInput::setShellCaptureEnabled(bool enabled)
 {
     if (m_shellCaptureEnabled == enabled) return;
+    cancelStartHolds();
     if (enabled) {
         stopRumble();
         publishConnectedInputs(true);
@@ -323,6 +337,7 @@ void ControllerInput::poll()
 
     const auto now = m_clock.elapsed();
     dispatchRepeats(now);
+    dispatchStartHold(now);
     if (!m_shellCaptureEnabled && now - m_lastGamepadSnapshotAt >= gamepadKeepaliveMs) {
         publishConnectedInputs();
         m_lastGamepadSnapshotAt = now;
@@ -391,6 +406,18 @@ void ControllerInput::handleButton(const SDL_GamepadButtonEvent &event, bool pre
     const auto slotIndex = m_gamepadSlots.value(event.which, -1);
     if (slotIndex < 0 || !acceptsController(event.which)) return;
     auto &slot = m_slots[static_cast<std::size_t>(slotIndex)];
+    if (event.button == SDL_GAMEPAD_BUTTON_START) {
+        const auto startMask = buttonMask(SDL_GAMEPAD_BUTTON_START);
+        // Every Start edge ends the previous hold, including one whose release was missed
+        // while this controller did not own input. Start itself is never delayed.
+        slot.suppressedButtons &= static_cast<quint16>(~startMask);
+        slot.startHoldArmed = pressed && m_holdStartOpensOverlay && !m_shellCaptureEnabled
+            && !m_inputSuspended && !slot.guideLatched && !slot.touchpadClick
+            && (slot.buttons & static_cast<quint16>(~startMask)) == 0;
+        if (slot.startHoldArmed) slot.startHoldPressedAt = m_clock.elapsed();
+    } else if (pressed) {
+        slot.startHoldArmed = false;
+    }
     if (event.button == SDL_GAMEPAD_BUTTON_GUIDE) {
         if (pressed) {
             if (slot.guideLatched) return;
@@ -485,7 +512,7 @@ void ControllerInput::publishGamepad(int slotIndex, bool neutral)
     const auto right = neutral ? QPair<qint16, qint16>{}
         : radialDeadzone(slot.rawRightX, slot.rawRightY, m_rightStickDeadzone);
     emit gamepadSnapshot(static_cast<quint8>(effectiveSlot(slotIndex)), gamepadBitmap(),
-                         neutral ? 0 : slot.buttons,
+                         neutral ? 0 : static_cast<quint16>(slot.buttons & ~slot.suppressedButtons),
                          neutral ? 0 : slot.leftTrigger, neutral ? 0 : slot.rightTrigger,
                          left.first, static_cast<qint16>(-left.second),
                          right.first, static_cast<qint16>(-right.second));
@@ -549,7 +576,7 @@ void ControllerInput::publishSonySnapshot(int slotIndex, bool neutral)
     SonySnapshot snapshot;
     snapshot.slot = static_cast<quint8>(effectiveSlot(slotIndex));
     snapshot.incarnation = slot.incarnation;
-    snapshot.buttons = cleared ? 0 : slot.buttons;
+    snapshot.buttons = cleared ? 0 : static_cast<quint16>(slot.buttons & ~slot.suppressedButtons);
     snapshot.leftTrigger = cleared ? 0 : slot.leftTrigger;
     snapshot.rightTrigger = cleared ? 0 : slot.rightTrigger;
     snapshot.leftStickX = left.first;
@@ -644,6 +671,8 @@ void ControllerInput::updateSlotSnapshot(int slotIndex)
         if (SDL_GetGamepadButton(slot.gamepad, static_cast<SDL_GamepadButton>(button)))
             slot.buttons |= buttonMask(static_cast<Uint8>(button));
     }
+    // Suppression only covers a physical hold; a release seen here ends it.
+    slot.suppressedButtons &= slot.buttons;
     slot.rawLeftX = SDL_GetGamepadAxis(slot.gamepad, SDL_GAMEPAD_AXIS_LEFTX);
     slot.rawLeftY = SDL_GetGamepadAxis(slot.gamepad, SDL_GAMEPAD_AXIS_LEFTY);
     slot.rawRightX = SDL_GetGamepadAxis(slot.gamepad, SDL_GAMEPAD_AXIS_RIGHTX);
@@ -740,6 +769,34 @@ void ControllerInput::resetDirections()
         for (auto &direction : slot.directions)
             direction = RepeatingDirection{false, 0, 0, direction.key};
     }
+}
+
+void ControllerInput::cancelStartHolds()
+{
+    for (auto &slot : m_slots) slot.startHoldArmed = false;
+}
+
+void ControllerInput::dispatchStartHold(qint64 now)
+{
+    if (m_shellCaptureEnabled || m_inputSuspended || !m_holdStartOpensOverlay) return;
+    const auto startMask = buttonMask(SDL_GAMEPAD_BUTTON_START);
+    int firedSlot = -1;
+    for (int slotIndex = 0; slotIndex < static_cast<int>(m_slots.size()); ++slotIndex) {
+        auto &slot = m_slots[static_cast<std::size_t>(slotIndex)];
+        if (!slot.startHoldArmed || now - slot.startHoldPressedAt < startHoldOverlayMs) continue;
+        slot.startHoldArmed = false;
+        if (!slot.gamepad || !acceptsController(slot.instanceId) || (slot.buttons & startMask) == 0)
+            continue;
+        if (firedSlot < 0) firedSlot = slotIndex;
+    }
+    if (firedSlot < 0) return;
+    // One overlay request per hold, even if several owning controllers crossed together.
+    cancelStartHolds();
+    // Report Start released before the overlay request so the remote session never keeps
+    // it pressed while ownership moves to the shell; it stays masked until physical release.
+    m_slots[static_cast<std::size_t>(firedSlot)].suppressedButtons |= startMask;
+    publishSlotSnapshot(firedSlot);
+    emit localActionRequested(guideLocalAction);
 }
 
 void ControllerInput::handleShellButton(int slotIndex, int key, bool pressed)
