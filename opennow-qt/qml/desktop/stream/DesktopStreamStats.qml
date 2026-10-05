@@ -248,71 +248,101 @@ Item {
             ctx.stroke()
         }
     }
+    // GeForce NOW's compact statistics card: GPU header, one tile per live metric, and the
+    // zone strip. The game's own frame rate is not reported by the stream, so that tile is
+    // only shown when telemetry carries it rather than echoing the stream rate.
+    readonly property string zoneId: {
+        const zone = String(session.zone || "")
+        const id = zone.indexOf(".") > 0 ? zone.split(".")[0] : zone
+        return id.toUpperCase()
+    }
+    readonly property string zoneText: zoneId && zoneId !== region.toUpperCase() ? region + " (" + zoneId + ")" : region
+    readonly property var compactTiles: {
+        const tiles = []
+        if (root.shown("Fps") && read("gameFramesPerSecond") !== null)
+            tiles.push({key:"game", value:format(read("gameFramesPerSecond")), unit:"FPS", label:qsTr("Game")})
+        if (root.shown("Fps")) tiles.push({key:"stream", value:format(read("framesPerSecond")), unit:"FPS", label:qsTr("Stream")})
+        if (root.shown("Ping")) tiles.push({key:"ping", value:format(read("pingMs")), unit:"ms", label:qsTr("Ping")})
+        return tiles
+    }
     Rectangle {
         id: compact
         objectName: "compactStatsBar"
         visible: !root.expanded
-        readonly property real contentScale: Math.min(root.overlayScale, Math.max(0.5, (root.width - root.inset * 2) / (compactRow.implicitWidth + 26)))
-        width: (compactRow.implicitWidth + 26) * contentScale
-        height: 36 * contentScale
+        readonly property real contentScale: Math.min(root.overlayScale, Math.max(0.5, (root.width - root.inset * 2) / card.width))
+        width: card.width * contentScale
+        height: card.height * contentScale
         x: root.rightAligned ? root.width - width - root.inset : root.inset
         y: root.bottomAligned ? root.height - height - root.inset : root.inset
-        radius: 4; color: root.surface
+        radius: 6 * contentScale; color: root.surface
         border.width: 0
-        Row {
-            id: compactRow
-            x: 13 * compact.contentScale; y: 7 * compact.contentScale
+        Column {
+            id: card
+            readonly property real tileWidth: 92
+            width: Math.max(220, root.compactTiles.length * (tileWidth + 6) - 6 + 20)
+            padding: 10; spacing: 6
             scale: compact.contentScale; transformOrigin: Item.TopLeft
-            height: 22; spacing: 10
-            Repeater {
-                model: {
-                    const metrics = []
-                    if (root.shown("Fps")) metrics.push({value:root.format(root.read("framesPerSecond")), unit:"fps"})
-                    if (root.shown("Ping")) metrics.push({value:root.format(root.read("pingMs")), unit:"ms"})
-                    if (root.shown("Bitrate")) metrics.push({value:root.format(root.read("receiveBitrateMbps"), 1), unit:"Mbps", socketReceive:true})
-                    if (root.shown("Region")) metrics.push({value:root.region, unit:"", region:true})
-                    if (root.shown("Video")) {
-                        const h = Number(root.profile.height || String(root.profile.resolution || "").split("x")[1] || root.live.outputHeight || 0)
-                        metrics.push({value:h ? h + "p" : root.format(null), unit:String(root.live.codec || root.profile.codec || "").toUpperCase()})
-                    }
-                    return metrics
-                }
-                delegate: Row {
-                    id: compactMetric
-                    required property var modelData
-                    required property int index
+            Row {
+                visible: root.rig !== ""
+                spacing: 8; height: 26
+                Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
-                    spacing: 10
-                    Text { visible: compactMetric.index > 0; anchors.verticalCenter: parent.verticalCenter; text: "·"; color: "#808080"; font.family: Theme.bodyFont; font.pixelSize: 13 }
-                    Row {
-                        spacing: 4
-                                                Mono {
-                            id: compactValue
-                            objectName: compactMetric.modelData.socketReceive === true ? "compactSocketReceive" : ""
-                            text: compactMetric.modelData.value
-                            width: Math.min(implicitWidth, compactMetric.modelData.region ? 180 : 100)
-                            font.pixelSize: 13
-                            color: compactMetric.modelData.region ? "#B3B3B3" : root.metricColor
-                        }
-                        Mono { anchors.baseline: compactValue.baseline; text: compactMetric.modelData.unit; font.pixelSize: 12; color: "#B3B3B3"; font.weight: Font.Normal }
-                    }
+                    width: 15; height: 13; radius: 2
+                    color: root.degraded ? Theme.yellow : "#C9B8F2"
                 }
-            }
-            Repeater {
-                model: root.featureBadges
-                delegate: Row {
-                    id: featureBadge
-                    required property var modelData
+                Text {
+                    objectName: "compactStatsGpu"
                     anchors.verticalCenter: parent.verticalCenter
-                    spacing: 10
-                    Text { anchors.verticalCenter: parent.verticalCenter; text: "·"; color: "#808080"; font.family: Theme.bodyFont; font.pixelSize: 13 }
-                    Mono { id: badge; text: featureBadge.modelData.text; color: "#B3B3B3"; font.pixelSize: 13 }
+                    width: Math.min(implicitWidth, card.width - 43)
+                    text: root.rig; elide: Text.ElideRight
+                    color: "white"; font.family: Theme.bodyFont; font.pixelSize: 17; font.weight: Font.DemiBold
                 }
             }
             Row {
-                anchors.verticalCenter: parent.verticalCenter
                 spacing: 6
-                visible: false
+                Repeater {
+                    model: root.compactTiles
+                    delegate: Rectangle {
+                        id: tile
+                        required property var modelData
+                        objectName: "compactStatsTile-" + modelData.key
+                        width: card.tileWidth; height: 84; radius: 3
+                        color: Qt.rgba(1, 1, 1, 0.1)
+                        Column {
+                            anchors.centerIn: parent
+                            spacing: 1
+                            Text {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                text: tile.modelData.value
+                                color: root.metricColor; font.family: Theme.bodyFont; font.pixelSize: 28; font.weight: Font.Bold
+                                font.features: { "tnum": 1 }
+                            }
+                            Text {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                text: "(" + tile.modelData.unit + ")"
+                                color: "#B8B8B8"; font.family: Theme.bodyFont; font.pixelSize: 11; font.weight: Font.Medium
+                            }
+                            Text {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                text: tile.modelData.label.toUpperCase()
+                                color: "#D9D9D9"; font.family: Theme.bodyFont; font.pixelSize: 11; font.weight: Font.DemiBold
+                                font.letterSpacing: 0.4
+                            }
+                        }
+                    }
+                }
+            }
+            Rectangle {
+                visible: root.shown("Region")
+                width: card.width - 20; height: 22; radius: 3
+                color: Qt.rgba(1, 1, 1, 0.1)
+                Text {
+                    objectName: "compactStatsZone"
+                    anchors.centerIn: parent
+                    width: Math.min(implicitWidth, parent.width - 12)
+                    text: root.zoneText; elide: Text.ElideRight
+                    color: "#D9D9D9"; font.family: Theme.bodyFont; font.pixelSize: 11; font.weight: Font.DemiBold
+                }
             }
         }
         HoverHandler { cursorShape: Qt.PointingHandCursor }
