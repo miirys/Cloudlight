@@ -112,12 +112,18 @@ FocusScope {
     }
     Timer { interval: 1000; repeat: true; running: root.visible; onTriggered: root.nowMs = Date.now() }
 
-    // Dim the game; clicking it resumes.
+    // Dim the game; clicking it resumes. Pointer handlers only take passive grabs,
+    // so a tap on a panel row also reached this layer and closed the whole menu as
+    // the sub-page opened. Only taps beside the panel close it.
     Rectangle {
         anchors.fill: parent
         color: "#000000"
         opacity: 0.45 * reveal.progress
-        TapHandler { onTapped: root.runAction(0) }
+        TapHandler {
+            onTapped: eventPoint => {
+                if (eventPoint.position.x >= panel.x + panel.width) root.runAction(0)
+            }
+        }
     }
 
     Rectangle {
@@ -128,8 +134,13 @@ FocusScope {
         x: -width * Math.max(0, 1 - reveal.progress)
         color: OverlayStyle.body
         clip: true
-        // Swallow clicks so they never reach the dim layer behind the panel.
-        TapHandler {}
+        // Accept every press that rows leave, so it never reaches the dim layer.
+        MouseArea {
+            z: -1
+            anchors.fill: parent
+            acceptedButtons: Qt.AllButtons
+            onWheel: wheel => wheel.accepted = false
+        }
 
         OverlayHeader {
             id: header

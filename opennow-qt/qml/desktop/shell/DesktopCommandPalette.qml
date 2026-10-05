@@ -279,7 +279,9 @@ FocusScope {
         color: DesktopTokens.shell
         border.width: 0
         border.color: DesktopTokens.seam
-        TapHandler { }
+        // A bare TapHandler only grabs passively, so taps fell through to the dim
+        // layer and closed the palette. This accepts them inside the panel.
+        MouseArea { z: -1; anchors.fill: parent; acceptedButtons: Qt.AllButtons; onWheel: wheel => wheel.accepted = false }
 
         Item {
             x: 0; y: 0; width: parent.width; height: 58

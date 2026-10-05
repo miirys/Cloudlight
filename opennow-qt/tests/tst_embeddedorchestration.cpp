@@ -1837,6 +1837,16 @@ private slots:
         QVERIFY(!menu.contains(QStringLiteral("Stream quality")));
     }
 
+    void inStreamMenuRowTapsDoNotReachTheDimLayer()
+    {
+        // TapHandler only takes a passive grab, so a tap on a panel row also reached
+        // the dim layer behind the panel and closed the menu as a sub-page opened.
+        const auto menu = source(QStringLiteral("qml/desktop/stream/DesktopInStreamMenu.qml"));
+        QVERIFY(!menu.contains(QStringLiteral("TapHandler { onTapped: root.runAction(0) }")));
+        QVERIFY(menu.contains(QStringLiteral("eventPoint.position.x >= panel.x + panel.width")));
+        QVERIFY(menu.contains(QStringLiteral("acceptedButtons: Qt.AllButtons")));
+    }
+
     void fullscreenStatsShortcutHasAWindowIndependentOwner()
     {
         const auto main = source(QStringLiteral("qml/Main.qml"));
