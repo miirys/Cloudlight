@@ -27,9 +27,11 @@ Item {
         enabled: !AppController.reducedMotion
         NumberAnimation {
             id: animation
-            duration: root.shown ? Math.round(root.enterDuration * 1.6) : root.exitDuration
+            // Progress is a bounded 0..1 contract (consumers derive opacity
+            // from it), so the enter curve decelerates without overshoot.
+            duration: root.shown ? Math.round(root.enterDuration * 1.3) : root.exitDuration
             easing.type: Easing.BezierSpline
-            easing.bezierCurve: root.shown ? Theme.spring : [0.4, 0.0, 1.0, 1.0, 1, 1]
+            easing.bezierCurve: root.shown ? Theme.springSoft : [0.4, 0.0, 1.0, 1.0, 1, 1]
         }
     }
     Connections {

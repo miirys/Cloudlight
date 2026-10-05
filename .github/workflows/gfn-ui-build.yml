@@ -236,7 +236,7 @@ jobs:
         shell: pwsh
         continue-on-error: true
         run: |
-          Set-Location /o
+          Set-Location "O:\"
           $app = Get-ChildItem -Recurse -Filter OpenNOW.exe build/opennow-qt-release | Select-Object -First 1
           New-Item -ItemType Directory -Force build/screens-windows | Out-Null
           $out = (Resolve-Path build/screens-windows).Path
@@ -247,6 +247,7 @@ jobs:
             @{ name = "settings-stream"; args = @("--route", "settings", "--smoke-paper-design", "--smoke-settings-page", "stream") },
             @{ name = "settings-network"; args = @("--route", "settings", "--smoke-paper-design", "--smoke-settings-page", "network") },
             @{ name = "settings-appearance"; args = @("--route", "settings", "--smoke-paper-design", "--smoke-settings-page", "appearance") },
+            @{ name = "settings-experimental"; args = @("--route", "settings", "--smoke-paper-design", "--smoke-settings-page", "experimental") },
             @{ name = "stream-stats"; args = @("--route", "stream", "--smoke-stream-stats", "--smoke-stats-expanded") },
             @{ name = "stream-menu"; args = @("--route", "stream", "--overlay", "desktop-stream-menu", "--smoke-stream-stats") }
           )
@@ -260,6 +261,7 @@ jobs:
             if (-not $process.WaitForExit(90000)) { $process.Kill() }
             "$($capture.name): exit $($process.ExitCode) png=$(Test-Path $png)" | Tee-Object -Append (Join-Path $out summary.txt)
           }
+          Get-ChildItem $out | Format-Table Name, Length
 
       - name: Publish Windows screenshots
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'

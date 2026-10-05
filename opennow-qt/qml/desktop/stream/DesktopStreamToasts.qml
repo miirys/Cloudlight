@@ -33,9 +33,14 @@ Column {
         knownControllerIds = controllers.map(controller => controller.instanceId)
     }
 
-    readonly property bool controllerNotices: connectionNotificationsEnabled && ShellStore.streamNoticeAllowed("controller")
-    readonly property bool connectionNotices: connectionNotificationsEnabled && ShellStore.streamNoticeAllowed("connection")
-    readonly property bool colorNotices: ShellStore.streamNoticeAllowed("color-format")
+    // ShellStore owns the per-kind notification preferences; hosts without
+    // that facade (tests, previews) show every notice.
+    function noticeAllowed(kind) {
+        return typeof ShellStore.streamNoticeAllowed !== "function" || ShellStore.streamNoticeAllowed(kind)
+    }
+    readonly property bool controllerNotices: connectionNotificationsEnabled && root.noticeAllowed("controller")
+    readonly property bool connectionNotices: connectionNotificationsEnabled && root.noticeAllowed("connection")
+    readonly property bool colorNotices: root.noticeAllowed("color-format")
 
     function observeControllers() {
         if (!active || !controllerNotices) {
