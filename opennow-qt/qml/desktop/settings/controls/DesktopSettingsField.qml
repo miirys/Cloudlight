@@ -17,8 +17,11 @@ TextField {
     selectByMouse: true
     background: Rectangle {
         radius: DesktopTokens.radius
-        color: Theme.surfaceRaised
-        border.width: control.activeFocus ? 2 : 0
+        // With a mouse the focused field just brightens; the ring is for keyboard
+        // and controller focus, like buttons.
+        color: control.activeFocus ? Theme.surfaceHover : Theme.surfaceRaised
+        Behavior on color { ColorAnimation { duration: Theme.focusDuration } }
+        border.width: control.activeFocus && AppController.inputMode !== "pointer" ? 2 : 0
         border.color: control.activeFocus ? Theme.focus : Theme.seam
     }
 }

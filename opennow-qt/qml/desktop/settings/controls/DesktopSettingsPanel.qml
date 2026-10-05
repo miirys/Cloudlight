@@ -2,7 +2,7 @@ import QtQuick
 import OpenNOW
 
 // A settings group. Like GeForce NOW, groups are not boxed cards: rows sit on the
-// page background and are separated by hairlines. Non-paper panels (used for
+// page background and are separated by spacing. Non-paper panels (used for
 // standalone notices) keep a flat, opaque surface.
 Rectangle {
     id: panel
@@ -21,5 +21,6 @@ Rectangle {
         x: panel.padding
         y: panel.padding
         width: panel.width - panel.padding * 2
+        spacing: panel.paperStyle ? DesktopTokens.px(2) : 0
     }
 }

@@ -17,7 +17,7 @@ Item {
     property string title: ""
     property string description: ""
     property string value: ""
-    property int rowHeight: DesktopTokens.px(60)
+    property int rowHeight: DesktopTokens.px(64)
     property bool showDivider: true
     property string leadingLetter: ""
     property url leadingIcon: ""
@@ -30,7 +30,7 @@ Item {
     readonly property real rightInset: 0
     readonly property real controlWidth: Math.max(0, Math.min(DesktopTokens.settingsControlWidth, width - labelInset - rightInset))
     readonly property bool stacked: width < DesktopTokens.settingsCompactWidth && trailingSlot.implicitWidth > DesktopTokens.px(120)
-    implicitHeight: Math.max(rowHeight, (stacked ? trailingSlot.y + trailingSlot.height : Math.max(labels.y + labels.height, trailingSlot.y + trailingSlot.height)) + DesktopTokens.px(12))
+    implicitHeight: Math.max(rowHeight, (stacked ? trailingSlot.y + trailingSlot.height : Math.max(labels.y + labels.height, trailingSlot.y + trailingSlot.height)) + DesktopTokens.px(14))
 
     // Whole-row hover for expandable rows, like a list item.
     Rectangle {
@@ -75,8 +75,8 @@ Item {
         anchors.leftMargin: root.labelInset
         anchors.right: root.stacked ? parent.right : trailingSlot.left
         anchors.rightMargin: root.stacked ? root.rightInset : DesktopTokens.px(24)
-        y: DesktopTokens.px(12) + Math.max(0, (DesktopTokens.px(32) - height) / 2)
-        spacing: DesktopTokens.px(3)
+        y: DesktopTokens.px(14) + Math.max(0, (DesktopTokens.px(36) - height) / 2)
+        spacing: DesktopTokens.px(4)
         Text {
             id: titleLabel
             width: parent.width
@@ -105,9 +105,9 @@ Item {
         readonly property real availableWidth: root.controlWidth
         anchors.right: parent.right
         anchors.rightMargin: root.rightInset + (root.expandable ? DesktopTokens.px(32) : 0)
-        y: root.stacked ? labels.y + labels.height + DesktopTokens.px(8) : DesktopTokens.px(12)
+        y: root.stacked ? labels.y + labels.height + DesktopTokens.px(10) : DesktopTokens.px(14)
         spacing: DesktopTokens.px(10)
-        height: Math.max(DesktopTokens.px(32), implicitHeight)
+        height: Math.max(DesktopTokens.px(36), implicitHeight)
 
         add: Transition {
             ScriptAction { script: root.centerTrailing() }
@@ -155,12 +155,6 @@ Item {
 
     Component.onCompleted: centerTrailing()
 
-    Rectangle {
-        visible: root.showDivider
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-        height: 1
-        color: Qt.rgba(Theme.label.r, Theme.label.g, Theme.label.b, 0.06)
-    }
+    // No divider lines: like GeForce NOW, rows are separated by spacing alone.
+    // `showDivider` stays for API compatibility.
 }

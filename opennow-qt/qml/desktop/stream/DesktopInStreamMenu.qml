@@ -181,6 +181,9 @@ FocusScope {
                 }
                 item.width = Qt.binding(() => stack.width)
                 item.height = Qt.binding(() => stack.height)
+                // Pages are transparent; give each an opaque backing so the page
+                // underneath never shows through while one slides over another.
+                pageBacking.createObject(item)
                 return item
             }
             function settle() {
@@ -254,6 +257,10 @@ FocusScope {
                     outgoingFade.to = isForward ? 0.4 : 1
                     incomingItem.z = isForward ? 2 : 1
                     outgoingItem.z = isForward ? 1 : 2
+                    // Place the incoming page before the first frame so it never
+                    // flashes in at its resting position.
+                    incomingItem.x = incomingX.from
+                    incomingItem.opacity = incomingFade.from
                     start()
                 }
                 NumberAnimation { id: incomingX; target: motion.incoming; property: "x"; to: 0
@@ -281,6 +288,7 @@ FocusScope {
         }
     }
 
+    Component { id: pageBacking; Rectangle { z: -1; anchors.fill: parent; color: OverlayStyle.body } }
     Component { id: mainPage; OverlayMainPage { menu: root } }
     Component { id: galleryPage; OverlayGalleryPage {} }
     Component { id: filtersPage; OverlayFiltersPage {} }

@@ -30,11 +30,17 @@ Item {
     Item {
         id: picture
         anchors.fill: parent
-        layer.enabled: root.blurAmount > 0
+        // Only blur when there is a picture to blur, and at half resolution: the
+        // result is a soft wash either way, and a full-size 4K layer made opening
+        // Settings hitch.
+        readonly property bool hasPicture: art.opacity > 0 || customPicture.opacity > 0
+        layer.enabled: root.blurAmount > 0 && hasPicture
+        layer.textureSize: Qt.size(Math.max(1, Math.round(width / 2)), Math.max(1, Math.round(height / 2)))
+        layer.smooth: true
         layer.effect: MultiEffect {
             blurEnabled: true
             blur: root.blurAmount
-            blurMax: 64
+            blurMax: 32
             autoPaddingEnabled: false
         }
         Item {
@@ -56,6 +62,7 @@ Item {
         }
 
         Image {
+            id: customPicture
             objectName: "customDesktopBackground"
             anchors.fill: parent
             source: root.visible && root.customBackground ? String(ShellStore.settings.desktopBackgroundImage || "") : ""

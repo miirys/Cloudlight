@@ -43,6 +43,8 @@ FocusScope {
     // Every setting row by page, so search finds individual settings on pages that
     // are not loaded. tst_embeddedorchestration keeps it in step with the pages.
     readonly property var searchIndex: [
+        {title: qsTr("Membership"), detail: qsTr("Your plan, playtime left and when it resets"), page: 0},
+        {title: qsTr("Refresh membership"), detail: qsTr("Reload your plan and playtime from NVIDIA."), page: 0},
         {title: qsTr("Profiles"), detail: qsTr("Manage saved account profiles"), page: 0},
         {title: qsTr("Show what I am playing"), detail: qsTr("Discord activity sharing"), page: 0},
         {title: qsTr("Crash reports"), detail: qsTr("Optional error reporting"), page: 0},
@@ -561,8 +563,8 @@ FocusScope {
         }
         const tier = root.liveTierBadge()
         return tier
-            ? qsTr("Not entitled on %1 — upgrade on NVIDIA to unlock").arg(tier)
-            : qsTr("Not entitled on your current membership")
+            ? qsTr("Not included in %1").arg(tier.charAt(0) + tier.slice(1).toLowerCase())
+            : qsTr("Not included in your membership")
     }
 
     function clampFpsToEntitlement() {
@@ -798,9 +800,11 @@ FocusScope {
 
     Item {
         id: contentLane
-        x: root.compactNavigation ? settingsRail.x : settingsRail.x + settingsRail.width + DesktopTokens.px(48)
-        y: root.compactNavigation ? settingsRail.y + settingsRail.height + DesktopTokens.px(16) : DesktopTokens.px(20)
-        width: Math.min(DesktopTokens.px(860), root.width - x - DesktopTokens.px(32))
+        x: root.compactNavigation ? settingsRail.x : settingsRail.x + settingsRail.width + DesktopTokens.px(56)
+        y: root.compactNavigation ? settingsRail.y + settingsRail.height + DesktopTokens.px(16) : settingsRail.y
+        // A readable measure: rows stay close enough that a label and its control
+        // read as one line, as on GeForce NOW.
+        width: Math.min(DesktopTokens.px(780), root.width - x - DesktopTokens.px(40))
         height: root.height - y
         Text {
             id: pageTitle
@@ -811,15 +815,15 @@ FocusScope {
             opacity: searchResultsView.visible ? 0 : 1
             color: Theme.label
             font.family: Theme.displayFont
-            font.pixelSize: DesktopTokens.px(28)
-            font.weight: Font.Bold
+            font.pixelSize: DesktopTokens.px(26)
+            font.weight: Font.DemiBold
         }
         Flickable {
             id: contentFlick
             objectName: "desktopSettingsContent"
             anchors.fill: parent
             visible: !searchResultsView.visible
-            anchors.topMargin: pageTitle.visible ? pageTitle.height + DesktopTokens.px(4) : 0
+            anchors.topMargin: pageTitle.visible ? pageTitle.height + DesktopTokens.px(8) : 0
             contentWidth: width
             contentHeight: pageLoader.height + DesktopTokens.px(48)
             clip: true
@@ -829,6 +833,10 @@ FocusScope {
                 id: pageLoader
                 objectName: "settingsPageLoader"
                 width: contentFlick.width
+                // Build the next page over a few frames instead of stalling the
+                // window on one; it fades in once ready. Tests read pages
+                // synchronously, so the harness keeps the blocking load.
+                asynchronous: !SmokeTestMode
                 sourceComponent: SmokeTestMode && root.acceptancePanel !== ""
                     ? root.acceptancePanels[root.acceptancePanel] : root.pageComponents[root.selectedSection]
                 opacity: sectionEntrance.pageOpacity

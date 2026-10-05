@@ -53,7 +53,20 @@ Column {
             width: parent.width; title: qsTr("Resolution")
             description: qsTr("Stream resolution. The picture is scaled to fit your display.")
             filterPlaceholder: qsTr("Filter resolutions…")
-            items: page.settingsScreen.resolutionItems()
+            // GeForce NOW lists "2560 × 1440" with a short display-class badge,
+            // grouped by aspect ratio.
+            readonly property var classes: ({
+                "1280x720": "HD", "1600x900": "HD+", "1920x1080": "FHD", "2560x1440": "QHD",
+                "3200x1800": "QHD+", "3840x2160": "4K", "5120x2880": "5K", "7680x4320": "8K",
+                "1280x800": "WXGA", "1440x900": "WXGA+", "1680x1050": "WSXGA+", "1920x1200": "WUXGA",
+                "2560x1600": "WQXGA", "3840x2400": "WQUXGA", "2560x1080": "UW-FHD", "3440x1440": "UW-QHD",
+                "3840x1600": "UW-QHD+", "5120x2160": "5K2K", "3840x1080": "DFHD", "5120x1440": "DQHD"
+            })
+            items: page.settingsScreen.resolutionItems().map(item => item.kind === "heading"
+                ? {kind: "heading", label: String(item.label).split(" ")[0]}
+                : {kind: item.kind, value: item.value, disabled: item.disabled,
+                   label: String(item.value).replace("x", " × "), badge: classes[item.value] || "",
+                   detail: item.disabled ? qsTr("Not included in your membership") : ""})
             value: page.settingsScreen.currentResolutionValue()
             valueLabel: value.replace("x", " × ")
             onSelected: value => page.settingsScreen.setSetting("resolution", value)
@@ -63,9 +76,14 @@ Column {
             readonly property var canonical: ShellStore.canonicalFpsValues().map(value => String(value))
             readonly property string current: Number(page.settingsScreen.valueSetting("fps",60)) === 0 ? "AUTO" : String(page.settingsScreen.valueSetting("fps",60))
             readonly property var locked: page.settingsScreen.lockedFpsValues().map(value => String(page.settingsScreen.optionValueOf(value)))
+            // As on GeForce NOW, rates the membership does not include at this
+            // resolution are left out; rates this device cannot decode stay
+            // visible with the reason.
+            readonly property var unentitled: page.settingsScreen.unentitledFpsValues().map(value => String(page.settingsScreen.optionValueOf(value)))
             width: parent.width; glyph: "speed"; title: qsTr("Frame rate")
             description: page.settingsScreen.fpsEntitlementNote()
-            items: (canonical.indexOf(current) >= 0 ? canonical : [current].concat(canonical)).map(value => ({
+            items: (canonical.indexOf(current) >= 0 ? canonical : [current].concat(canonical))
+                .filter(value => value === current || unentitled.indexOf(value) < 0).map(value => ({
                 label: value === "AUTO" ? qsTr("Auto") : qsTr("%1 FPS").arg(value), value: value,
                 disabled: locked.indexOf(value) >= 0,
                 detail: locked.indexOf(value) >= 0 ? String(page.settingsScreen.fpsLockedHint() || "") : ""}))

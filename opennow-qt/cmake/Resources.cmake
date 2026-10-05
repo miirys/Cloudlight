@@ -31,6 +31,6 @@ function(opennow_add_fsr_shaders target)
         FILES shaders/fsr_easu.frag shaders/fsr_rcas.frag shaders/gamefilter.frag)
 endfunction()
 opennow_add_fsr_shaders(opennow-qt)
-set(OPENNOW_CHROME_SHADERS shaders/hdrchrome.vert shaders/hdrchrome.frag)
+set(OPENNOW_CHROME_SHADERS shaders/hdrchrome.vert shaders/hdrchrome.frag shaders/roundedimage.frag)
 qt_add_shaders(opennow-qt "opennow-chrome-shaders"
     BATCHABLE PREFIX "/opennow/shaders" BASE "shaders" FILES ${OPENNOW_CHROME_SHADERS})

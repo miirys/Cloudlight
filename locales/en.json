@@ -4090,6 +4090,23 @@
     "s_cl_130": "Your setup",
     "s_cl_131": "macOS only",
     "s_cl_132": "No settings match “%1”",
-    "s_cl_133": "Results for “%1”"
+    "s_cl_133": "Results for “%1”",
+    "s_cl_134": "%1 h %2 min",
+    "s_cl_135": "%1 min",
+    "s_cl_136": "%1 of %2",
+    "s_cl_137": "%1p",
+    "s_cl_138": "No monthly limit on your plan",
+    "s_cl_139": "Not included in %1",
+    "s_cl_140": "Not included in your membership",
+    "s_cl_141": "Playtime left",
+    "s_cl_142": "Refresh membership",
+    "s_cl_143": "Reload your plan and playtime from NVIDIA.",
+    "s_cl_144": "Resets %1",
+    "s_cl_145": "Sign in to see your plan.",
+    "s_cl_146": "Up to %1 FPS at %2",
+    "s_cl_147": "Up to %1 at %2 FPS",
+    "s_cl_148": "Your plan could not be loaded. Try refreshing.",
+    "s_cl_149": "Your plan, playtime left and when it resets",
+    "s_cl_150": "includes %1 rolled over"
   }
 }

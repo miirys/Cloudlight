@@ -8,12 +8,12 @@ Item {
     property string description: ""
     default property alias actions: actionRow.data
     width: parent.width
-    implicitHeight: heading.y + Math.max(heading.implicitHeight, actionRow.implicitHeight) + DesktopTokens.px(8)
+    implicitHeight: heading.y + Math.max(heading.implicitHeight, actionRow.implicitHeight) + DesktopTokens.px(10)
 
     Column {
         id: heading
         x: 0
-        y: DesktopTokens.px(36)
+        y: DesktopTokens.px(40)
         width: Math.max(0, actionRow.x - x - DesktopTokens.px(16))
         spacing: DesktopTokens.px(4)
         Text {
@@ -21,7 +21,7 @@ Item {
             text: root.text
             color: Theme.label
             font.family: Theme.bodyFont
-            font.pixelSize: DesktopTokens.px(18)
+            font.pixelSize: DesktopTokens.px(17)
             font.weight: Font.DemiBold
             wrapMode: Text.WordWrap
         }

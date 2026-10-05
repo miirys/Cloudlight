@@ -116,14 +116,20 @@ FocusScope {
         return zone === 0 ? (root.heroGame ? 2 : 1) : root.zoneGames(zone).length
     }
 
-    function setSelection(zone, index) {
+    // Pointer hover only moves the selection; scrolling to keep the selection on
+    // screen is for keyboard and controller navigation.
+    property bool pointerSelecting: false
+    function setSelection(zone, index, fromPointer) {
+        root.pointerSelecting = fromPointer === true
         root.focusZone = Math.max(0, Math.min(root.rails.length, zone))
         const count = root.zoneCount(root.focusZone)
         root.focusIndex = Math.max(0, Math.min(Math.max(0, count - 1), index))
         const rail = root.focusZone > 0 ? railRepeater.itemAt(root.focusZone - 1) : null
         if (rail)
             rail.currentIndex = root.focusIndex
-        root.ensureSelectionVisible()
+        if (!root.pointerSelecting)
+            root.ensureSelectionVisible()
+        root.pointerSelecting = false
     }
 
     function ensureSelectionVisible() {
@@ -373,7 +379,7 @@ FocusScope {
                             text: root.heroGame ? qsTr("Play")
                                 : ShellStore.signedIn ? qsTr("Open Store") : qsTr("Sign in")
                             selected: root.focusZone === 0 && root.focusIndex === 0
-                            onPointed: root.setSelection(0, 0)
+                            onPointed: root.setSelection(0, 0, true)
                             onActivated: root.startHero()
                         }
                         DesktopHeroButton {
@@ -382,7 +388,7 @@ FocusScope {
                             glyph: "info"
                             text: qsTr("Details")
                             selected: root.focusZone === 0 && root.focusIndex === 1
-                            onPointed: root.setSelection(0, 1)
+                            onPointed: root.setSelection(0, 1, true)
                             onActivated: root.openGame(root.heroGame)
                         }
                     }
@@ -437,7 +443,7 @@ FocusScope {
         required property int index
         readonly property int zone: index + 1
         property alias currentIndex: list.currentIndex
-        onCurrentIndexChanged: rail.reveal(currentIndex)
+        onCurrentIndexChanged: if (!root.pointerSelecting) rail.reveal(currentIndex)
 
         // Scroll only as far as needed to keep the focused tile inside the safe area.
         function reveal(i) {
@@ -521,7 +527,7 @@ FocusScope {
                 tileWidth: root.tileWidth
                 tileHeight: root.tileHeight
                 current: root.focusZone === rail.zone && root.focusIndex === index
-                onPointed: root.setSelection(rail.zone, index)
+                onPointed: root.setSelection(rail.zone, index, true)
                 onActivated: root.openGame(modelData)
             }
         }
