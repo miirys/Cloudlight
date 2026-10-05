@@ -17,7 +17,7 @@ Column {
     DesktopSettingsPanel {
         width: parent.width; paperStyle: true
         DesktopSettingsSection {
-            text: qsTr("Experimental")
+            text: qsTr("Preview features")
             description: qsTr("These may add latency, artifacts or connection problems on some setups.")
         }
         DesktopSettingsRow {

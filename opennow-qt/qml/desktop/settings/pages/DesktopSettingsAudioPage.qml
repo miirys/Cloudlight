@@ -27,7 +27,7 @@ DesktopSettingsPanel {
     }
 
     width: page.availableWidth; paperStyle: true
-    DesktopSettingsSection { text: qsTr("Audio") }
+    DesktopSettingsSection { text: qsTr("Devices") }
     DesktopSettingsChoice {
         id: outputDeviceChoice
         objectName: "audioOutputDeviceChoice"

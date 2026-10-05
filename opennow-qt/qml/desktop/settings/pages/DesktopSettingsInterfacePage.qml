@@ -9,7 +9,7 @@ DesktopSettingsPanel {
     required property var settingsScreen
 
     width: page.availableWidth; paperStyle: true
-    DesktopSettingsSection { text: qsTr("Interface") }
+    DesktopSettingsSection { text: qsTr("Language and layout") }
     DesktopSettingsChoice {
         objectName: "renewLanguageChoice"
         width: parent.width; glyph: "globe"; title: qsTr("Interface language")

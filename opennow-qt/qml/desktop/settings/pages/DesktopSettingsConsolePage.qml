@@ -11,7 +11,7 @@ Column {
     width: page.availableWidth; spacing: DesktopTokens.px(12)
     DesktopSettingsPanel {
         width: parent.width; paperStyle: true
-        DesktopSettingsSection { text: qsTr("Console mode") }
+        DesktopSettingsSection { text: qsTr("Overview") }
         DesktopSettingsRow {
             width: parent.width; paperStyle: true; glyph: "controller"; title: qsTr("One app, two shells")
             description: qsTr("Same session, settings and themes · switching does not restart the stream"); showDivider: false

@@ -19,7 +19,7 @@ Column {
     Item { width: 1; height: DesktopTokens.px(12); visible: streamNotice.visible }
     DesktopSettingsPanel {
         width: parent.width; paperStyle: true
-        DesktopSettingsSection { text: qsTr("Streaming quality"); description: qsTr("Applies to the next session you start.") }
+        DesktopSettingsSection { text: qsTr("Quality"); description: qsTr("Applies to the next session you start.") }
         DesktopSettingsRow {
             id: modeRow
             objectName: "streamingModeRow"
