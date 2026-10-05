@@ -447,6 +447,30 @@ private slots:
                 QVERIFY(std::abs(quint8(data[(row * tileSize + x) * 4]) - expected) <= 1.0);
     }
 
+    void sharpenPlusLeavesFlatAreasAndHardStepsUnchanged()
+    {
+        // NVSharpen only adds unsharp-mask detail; a flat field has none, and its
+        // ringing limiter (CalcLTIFast) suppresses overshoot where one side of a step is
+        // flat. Uniform patches must therefore come through as the unfiltered codes.
+        QList<int> codes{32, 96, 160, 224};
+        auto source = makeSource(codes, false);
+        QVERIFY(source);
+        auto target = makeTarget(QRhiTexture::RGBA8, source->pixelSize());
+        QVERIFY(target);
+        const auto expected = patches(codes, false);
+        for (int sharpen : {0, 50, 100}) {
+            StreamVideoTextureRenderer renderer;
+            renderer.setFilter(StreamVideoFilter::fromVariantList(
+                {filter("sharpen-plus", {{QStringLiteral("sharpen"), sharpen}})}));
+            QVERIFY(renderer.filterActive());
+            const auto data = render(renderer, source.get(), *target);
+            QCOMPARE(data.size(), expected.size());
+            for (qsizetype index = 0; index < data.size(); ++index)
+                QVERIFY2(std::abs(int(quint8(data[index])) - int(quint8(expected[index]))) <= 1,
+                         qPrintable(QString("sharpen %1 byte %2").arg(sharpen).arg(index)));
+        }
+    }
+
     void everyGameFilterRendersFiniteOutput()
     {
         QList<int> codes;

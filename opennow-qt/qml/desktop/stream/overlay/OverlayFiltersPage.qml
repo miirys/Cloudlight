@@ -99,7 +99,8 @@ OverlayPage {
         {value: "sharpen", label: qsTr("Sharpen"), params: [
             page.param("sharpen", qsTr("Sharpen"), 0, 100, 50),
             page.param("ignoreGrain", qsTr("Ignore Film Grain"), 0, 100, 15)]},
-        {value: "sharpen-plus", label: qsTr("Sharpen+"), pending: true, params: []},
+        {value: "sharpen-plus", label: qsTr("Sharpen+"), params: [
+            page.param("sharpen", qsTr("Sharpen"), 0, 100, 50)]},
         {value: "special-fx", label: qsTr("SpecialFX"), pending: true, params: []},
         {value: "splitscreen", label: qsTr("Splitscreen"), pending: true, params: []},
         {value: "tilt-shift", label: qsTr("Tilt-shift"), pending: true, params: []},

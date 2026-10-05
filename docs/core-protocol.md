@@ -1093,8 +1093,8 @@ the default a filter starts with when added); unknown types and parameters are d
 0–100, default 15), `letterbox` (`horizontal` and `vertical` 1–30, defaults 21/9),
 `night-mode` (`intensity` 0–100, default 30), `old-film` (`gamma`, `exposure`, `contrast`,
 `vignette` 0–100, default 50; `strength` and `dirt` 0–100, default 100), `sharpen`
-(`sharpen` 0–100, default 50; `ignoreGrain` 0–100, default 15) and `vignette` (`intensity`
-0–100, default 70). Filters saved by the earlier schema migrate: `sharpen.amount` becomes
+(`sharpen` 0–100, default 50; `ignoreGrain` 0–100, default 15), `vignette` (`intensity`
+0–100, default 70) and `sharpen-plus` (`sharpen` 0–100, default 50). Filters saved by the earlier schema migrate: `sharpen.amount` becomes
 `sharpen`, `vignette.amount` becomes `intensity`, and a colorblind `mode`/`strength` pair sets
 that mode's slider to the strength and the others to 0; every other old value is replaced by
 the default. `shortcutGameFilter1`–`shortcutGameFilter3`

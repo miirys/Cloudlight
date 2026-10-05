@@ -29,6 +29,7 @@ struct StreamVideoFilterStage
         OldFilm = 8,
         Sharpen = 9,
         Vignette = 10,
+        SharpenPlus = 11,
     };
     static constexpr int maxParameters = 8;
 
@@ -54,9 +55,9 @@ struct StreamVideoFilterStage
 
     // Keep in sync with native/opennow-core settings.rs game_filter_parameters and the
     // overlay's catalogue in OverlayFiltersPage.qml.
-    static const std::array<Definition, 10> &catalogue()
+    static const std::array<Definition, 11> &catalogue()
     {
-        static const std::array<Definition, 10> definitions = {{
+        static const std::array<Definition, 11> definitions = {{
             {BlackWhite, "black-white", {{{"intensity", 100, 0, 100, 0.0f, 1.0f}}}, 1},
             {BrightnessContrast, "brightness-contrast", {{
                 {"exposure", 0, -100, 100, -1.0f, 1.0f},
@@ -93,6 +94,8 @@ struct StreamVideoFilterStage
                 {"sharpen", 50, 0, 100, 0.0f, 1.0f},
                 {"ignoreGrain", 15, 0, 100, 0.0f, 1.0f}}}, 2},
             {Vignette, "vignette", {{{"intensity", 70, 0, 100, 0.0f, 1.0f}}}, 1},
+            // NVIDIA Image Scaling's sharpen-only pass; the slider is NIS's 0-100% sharpness.
+            {SharpenPlus, "sharpen-plus", {{{"sharpen", 50, 0, 100, 0.0f, 1.0f}}}, 1},
         }};
         return definitions;
     }

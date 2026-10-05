@@ -32,6 +32,30 @@
 //   ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 //   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 //   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+// Sharpen+ is a port of the sharpen-only path (NVSharpen) of the NVIDIA Image Scaling SDK
+// v1.0.3, NIS/NIS_Scaler.h and NIS/NIS_Config.h:
+//
+//   The MIT License(MIT)
+//
+//   Copyright(c) 2022 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+//
+//   Permission is hereby granted, free of charge, to any person obtaining a copy of
+//   this software and associated documentation files(the "Software"), to deal in
+//   the Software without restriction, including without limitation the rights to
+//   use, copy, modify, merge, publish, distribute, sublicense, and / or sell copies of
+//   the Software, and to permit persons to whom the Software is furnished to do so,
+//   subject to the following conditions :
+//
+//   The above copyright notice and this permission notice shall be included in all
+//   copies or substantial portions of the Software.
+//
+//   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+//   FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE AUTHORS OR
+//   COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+//   IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+//   CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 layout(location = 0) in vec2 uv;
 layout(location = 0) out vec4 fragColor;
@@ -56,6 +80,7 @@ const int NightMode = 7;
 const int OldFilm = 8;
 const int Sharpen = 9;
 const int Vignette = 10;
+const int SharpenPlus = 11;
 const int DetailsBlur = 100;
 
 float luma601(vec3 c) { return dot(c, vec3(0.299, 0.587, 0.114)); }
@@ -299,6 +324,82 @@ vec3 vignetteFilter(vec3 c)
     return c * v * v;
 }
 
+// --- Sharpen+ (NVSharpen, SDR constants from NVScalerUpdateConfig) -------------------------
+float nisY(ivec2 offset) { return luma709(fetchInput(offset)); }
+
+vec4 nisEdgeMap(float p[25])
+{
+    // GetEdgeMap(p, 1, 1) on the 5x5 support: the 3x3 block centred on the pixel.
+    #define P(i, j) p[(i + 1) * 5 + (j + 1)]
+    const float kDetectRatio = 2.0 * 1127.0 / 1024.0;
+    const float kDetectThres = 64.0 / 1024.0;
+    float g0 = abs(P(0,0) + P(0,1) + P(0,2) - P(2,0) - P(2,1) - P(2,2));
+    float g45 = abs(P(1,0) + P(0,0) + P(0,1) - P(2,1) - P(2,2) - P(1,2));
+    float g90 = abs(P(0,0) + P(1,0) + P(2,0) - P(0,2) - P(1,2) - P(2,2));
+    float g135 = abs(P(1,0) + P(2,0) + P(2,1) - P(0,1) - P(0,2) - P(1,2));
+    #undef P
+    float g090max = max(g0, g90), g090min = min(g0, g90);
+    float g45135max = max(g45, g135), g45135min = min(g45, g135);
+    if (g090max + g45135max == 0.0) return vec4(0.0);
+    float e090 = min(g090max / (g090max + g45135max), 1.0);
+    float e45135 = 1.0 - e090;
+    bool c090 = g090max > g090min * kDetectRatio && g090max > kDetectThres && g090max > g45135min;
+    bool c45135 = g45135max > g45135min * kDetectRatio && g45135max > kDetectThres && g45135max > g090min;
+    bool cg090 = g090max == g0;
+    bool cg45135 = g45135max == g45;
+    float fe090 = c090 && c45135 ? e090 : 1.0;
+    float fe45135 = c090 && c45135 ? e45135 : 1.0;
+    return vec4(c090 && cg090 ? fe090 : 0.0, c090 && !cg090 ? fe090 : 0.0,
+                c45135 && cg45135 ? fe45135 : 0.0, c45135 && !cg45135 ? fe45135 : 0.0);
+}
+
+float nisLti(float y0, float y1, float y2, float y3, float y4)
+{
+    const float kMinContrastRatio = 2.0;
+    const float kRatioNorm = 1.0 / (10.0 - 2.0);
+    const float kEps = 1.0 / 255.0;
+    float aCont = max(max(y0, y1), y2) - min(min(y0, y1), y2);
+    float bCont = max(max(y2, y3), y4) - min(min(y2, y3), y4);
+    float ratio = max(aCont, bCont) / (min(aCont, bCont) + kEps);
+    return 1.0 - clamp((ratio - kMinContrastRatio) * kRatioNorm, 0.0, 1.0);
+}
+
+float nisUsm(float y0, float y1, float y2, float y3, float y4, float strength, float limit)
+{
+    float usm = (-0.6001 * y1 + 1.2002 * y2 - 0.6001 * y3) * strength;
+    return clamp(usm, -limit, limit) * nisLti(y0, y1, y2, y3, y4);
+}
+
+vec3 sharpenPlus(vec3 c)
+{
+    // p[i][j]: row i (y), column j (x), centred on this pixel, as NIS loads its tile.
+    float p[25];
+    for (int i = 0; i < 5; ++i)
+        for (int j = 0; j < 5; ++j)
+            p[i * 5 + j] = nisY(ivec2(j - 2, i - 2));
+    #define P(i, j) p[(i) * 5 + (j)]
+    float slider = clamp(p0.x, 0.0, 1.0) - 0.5;
+    float maxScale = slider >= 0.0 ? 1.25 : 1.75;
+    float minScale = slider >= 0.0 ? 1.25 : 1.0;
+    float limitScale = slider >= 0.0 ? 1.25 : 1.0;
+    float strengthMin = max(0.0, 0.4 + slider * minScale * 1.2);
+    float strengthMax = 1.6 + slider * maxScale * 1.8;
+    float limitMin = max(0.1, 0.14 + slider * limitScale * 0.32);
+    float limitMax = 0.5 + slider * limitScale * 0.6;
+    const float kSharpStartY = 0.45;
+    const float kSharpScaleY = 1.0 / (0.9 - 0.45);
+    float scaleY = 1.0 - clamp((P(2,2) - kSharpStartY) * kSharpScaleY, 0.0, 1.0);
+    float strength = scaleY * (strengthMax - strengthMin) + strengthMin;
+    float limit = (scaleY * (limitMax - limitMin) + limitMin) * P(2,2);
+    vec4 usm;
+    usm.x = nisUsm(P(0,2), P(1,2), P(2,2), P(3,2), P(4,2), strength, limit);
+    usm.y = nisUsm(P(2,0), P(2,1), P(2,2), P(2,3), P(2,4), strength, limit);
+    usm.z = nisUsm(P(1,1), mix(P(2,1), P(1,2), 0.5), P(2,2), mix(P(3,2), P(2,3), 0.5), P(3,3), strength, limit);
+    usm.w = nisUsm(P(3,1), mix(P(3,2), P(2,1), 0.5), P(2,2), mix(P(2,3), P(1,2), 0.5), P(1,3), strength, limit);
+    #undef P
+    return c + vec3(dot(usm, nisEdgeMap(p)));
+}
+
 void main()
 {
     int type = int(stage.x + 0.5);
@@ -317,6 +418,7 @@ void main()
     else if (type == OldFilm) c = oldFilm(c);
     else if (type == Sharpen) c = sharpenFilter(c);
     else if (type == Vignette) c = vignetteFilter(c);
+    else if (type == SharpenPlus) c = sharpenPlus(c);
     // Non-finite results (e.g. pow of a negative base) write black, like a UNORM target.
     if (any(isnan(c)) || any(isinf(c))) c = vec3(0.0);
     fragColor = vec4(clamp(c, 0.0, 1.0), 1.0);

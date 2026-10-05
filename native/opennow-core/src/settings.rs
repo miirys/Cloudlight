@@ -1177,6 +1177,7 @@ fn game_filter_parameters(kind: &str) -> Option<&'static [(&'static str, i64, i6
         ],
         "sharpen" => &[("sharpen", 50, 0, 100), ("ignoreGrain", 15, 0, 100)],
         "vignette" => &[("intensity", 70, 0, 100)],
+        "sharpen-plus" => &[("sharpen", 50, 0, 100)],
         _ => return None,
     })
 }
