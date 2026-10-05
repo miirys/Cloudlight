@@ -19,6 +19,9 @@ FocusScope {
     property bool active: true
     property double lastPlayedNowMs: Date.now()
     property int heroIndex: 0
+    // The hero only rotates on its own until the person starts using the
+    // page: any pointer movement, scroll or key press stops it for this visit.
+    property bool userEngaged: false
     property real reveal: AppController.reducedMotion ? 1 : 0
     // Read by the shell: the top bar stays a scrim over the hero, solid below it.
     readonly property bool headerSolid: contentFlick.contentY > root.heroHeight - DesktopTokens.topBarHeight * 2
@@ -206,12 +209,22 @@ FocusScope {
         event.accepted = true
     }
 
+    HoverHandler {
+        acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+        onPointChanged: if (hovered) root.userEngaged = true
+    }
+    Connections {
+        target: contentFlick
+        function onMovementStarted() { root.userEngaged = true }
+    }
+    Keys.onShortcutOverride: root.userEngaged = true
+
     Timer {
         id: heroRotation
         interval: 9000
         repeat: true
         running: root.active && root.visible && root.heroGames.length > 1
-            && !heroHover.hovered && !AppController.reducedMotion
+            && !heroHover.hovered && !root.userEngaged && !AppController.reducedMotion
         onTriggered: root.heroIndex = (root.heroIndex + 1) % root.heroGames.length
     }
 
@@ -306,7 +319,6 @@ FocusScope {
                     spacing: DesktopTokens.px(12)
                     readonly property real shown: root.revealAt(120, 520)
                     opacity: shown
-                    transform: Translate { y: DesktopTokens.px(28) * (1 - heroText.shown) }
 
                     Text {
                         text: root.heroGame ? qsTr("CONTINUE PLAYING") : qsTr("WELCOME")
@@ -441,12 +453,11 @@ FocusScope {
             easing.type: Easing.BezierSpline
             easing.bezierCurve: [0.2, 0, 0, 1, 1, 1]
         }
-        readonly property real railReveal: root.revealAt(260 + 110 * index, 520)
+        readonly property real railReveal: root.revealAt(200, 360)
         width: homeColumn.width
         height: visible ? header.height + DesktopTokens.px(14) + list.height : 0
         visible: (modelData.games || []).length > 0
         opacity: railReveal
-        transform: Translate { y: DesktopTokens.px(32) * (1 - rail.railReveal) }
 
         Item {
             id: header

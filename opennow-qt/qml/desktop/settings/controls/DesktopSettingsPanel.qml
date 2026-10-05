@@ -13,7 +13,7 @@ Rectangle {
     implicitHeight: body.implicitHeight + padding * 2
     radius: paperStyle ? 0 : DesktopTokens.radius
     color: paperStyle ? "transparent" : Theme.surface
-    border.width: paperStyle ? 0 : 1
+    border.width: paperStyle ? 0 : 0
     border.color: DesktopTokens.seamSoft
 
     Column {

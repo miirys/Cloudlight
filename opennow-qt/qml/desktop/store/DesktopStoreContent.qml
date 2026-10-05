@@ -782,7 +782,7 @@ FocusScope {
         height: Math.min(menuColumn.contentHeight + 12, DesktopTokens.px(332), root.height - 24)
         radius: DesktopTokens.radius
         color: Theme.lightMode ? "#F7F9FC" : "#141414"
-        border.width: 1
+        border.width: 0
         border.color: DesktopTokens.seam
         opacity: filterMotion.progress
         scale: filterMotion.zoom

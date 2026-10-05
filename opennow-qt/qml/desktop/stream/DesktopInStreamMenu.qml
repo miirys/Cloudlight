@@ -85,12 +85,12 @@ FocusScope {
 
     function openPage(name) {
         const component = root.pages[name]
-        if (!component || stack.busy) return
+        if (!component) return
         if (name === "gallery") ShellStore.refreshMedia()
-        stack.push(component, {menu: root})
+        stack.push(component, true)
     }
     function back() {
-        if (stack.depth > 1 && !stack.busy) stack.pop()
+        if (stack.depth > 1) stack.pop(true)
         else if (stack.depth <= 1) root.runAction(0)
     }
     function focusPage() {
@@ -125,7 +125,7 @@ FocusScope {
         objectName: "streamMenuPanel"
         width: Math.min(OverlayStyle.panelWidth, root.width)
         height: root.height
-        x: -width * (1 - reveal.progress)
+        x: -width * Math.max(0, 1 - reveal.progress)
         color: OverlayStyle.body
         clip: true
         // Swallow clicks so they never reach the dim layer behind the panel.
@@ -144,46 +144,129 @@ FocusScope {
             onFeedbackRequested: AppController.openExternalUrl("https://github.com/miirys/OpenNOW/issues")
         }
 
-        StackView {
+        // A small page stack of our own: pages are created on push and
+        // destroyed after they leave, and a new push or pop finishes any motion
+        // still running instead of being ignored (StackView dropped pushes
+        // while "busy", which left sub-pages unopenable).
+        Item {
             id: stack
             objectName: "overlayStack"
             y: header.height
             width: parent.width
             height: parent.height - header.height
+            clip: true
             focus: true
-            initialItem: mainPage
+            property var items: []
+            readonly property int depth: items.length
+            readonly property Item currentItem: items.length > 0 ? items[items.length - 1] : null
+            readonly property bool busy: motion.running
             onCurrentItemChanged: Qt.callLater(root.focusPage)
 
-            readonly property int duration: OverlayStyle.pageDuration
-            // The outgoing page fades out in the first half so the two pages never
-            // read as a muddy cross-fade.
-            readonly property real shift: width * 0.3
-            pushEnter: Transition {
-                ParallelAnimation {
-                    NumberAnimation { property: "x"; from: stack.shift; to: 0; duration: stack.duration; easing.type: Easing.OutCubic }
-                    NumberAnimation { property: "opacity"; from: 0; to: 1; duration: stack.duration; easing.type: Easing.OutCubic }
+            function create(component) {
+                const item = component.createObject(stack, {menu: root})
+                if (!item) {
+                    console.warn("Could not open overlay page:", component.errorString())
+                    return null
+                }
+                item.width = Qt.binding(() => stack.width)
+                item.height = Qt.binding(() => stack.height)
+                return item
+            }
+            function settle() {
+                if (motion.running) {
+                    motion.complete()
+                    motion.cleanup()
                 }
             }
-            pushExit: Transition {
-                ParallelAnimation {
-                    NumberAnimation { property: "x"; from: 0; to: -stack.shift; duration: stack.duration; easing.type: Easing.OutCubic }
-                    NumberAnimation { property: "opacity"; from: 1; to: 0; duration: stack.duration * 0.5; easing.type: Easing.OutQuad }
+            function push(component, animated) {
+                settle()
+                const incoming = create(component)
+                if (!incoming) return
+                const outgoing = currentItem
+                items = items.concat([incoming])
+                if (!outgoing || !animated || AppController.reducedMotion) {
+                    incoming.x = 0
+                    if (outgoing) outgoing.visible = false
+                    return
+                }
+                motion.begin(incoming, outgoing, true)
+            }
+            function pop(animated) {
+                settle()
+                if (items.length <= 1) return
+                const outgoing = currentItem
+                const remaining = items.slice(0, items.length - 1)
+                const incoming = remaining[remaining.length - 1]
+                items = remaining
+                incoming.visible = true
+                if (!animated || AppController.reducedMotion) {
+                    incoming.x = 0
+                    incoming.opacity = 1
+                    outgoing.destroy()
+                    return
+                }
+                motion.begin(incoming, outgoing, false)
+            }
+            function popToRoot() {
+                settle()
+                while (items.length > 1) {
+                    const top = items[items.length - 1]
+                    items = items.slice(0, items.length - 1)
+                    top.destroy()
+                }
+                if (currentItem) {
+                    currentItem.visible = true
+                    currentItem.x = 0
+                    currentItem.opacity = 1
                 }
             }
-            popEnter: Transition {
-                ParallelAnimation {
-                    NumberAnimation { property: "x"; from: -stack.shift; to: 0; duration: stack.duration; easing.type: Easing.OutCubic }
-                    NumberAnimation { property: "opacity"; from: 0; to: 1; duration: stack.duration; easing.type: Easing.OutCubic }
+            Component.onCompleted: {
+                const first = create(mainPage)
+                if (first) items = [first]
+            }
+
+            // iOS-style navigation: the new page travels in from the right edge on
+            // a spring while the old one drifts a quarter width and dims; pop is
+            // the mirror image.
+            ParallelAnimation {
+                id: motion
+                property Item incoming: null
+                property Item outgoing: null
+                property bool forward: true
+                function begin(incomingItem, outgoingItem, isForward) {
+                    incoming = incomingItem
+                    outgoing = outgoingItem
+                    forward = isForward
+                    incomingX.from = isForward ? stack.width : -stack.width * 0.25
+                    outgoingX.to = isForward ? -stack.width * 0.25 : stack.width
+                    incomingFade.from = isForward ? 1 : 0.4
+                    outgoingFade.to = isForward ? 0.4 : 1
+                    incomingItem.z = isForward ? 2 : 1
+                    outgoingItem.z = isForward ? 1 : 2
+                    start()
+                }
+                NumberAnimation { id: incomingX; target: motion.incoming; property: "x"; to: 0
+                    duration: OverlayStyle.pageDuration; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.springSoft }
+                NumberAnimation { id: incomingFade; target: motion.incoming; property: "opacity"; to: 1
+                    duration: OverlayStyle.pageDuration; easing.type: Easing.OutCubic }
+                NumberAnimation { id: outgoingX; target: motion.outgoing; property: "x"; from: 0
+                    duration: OverlayStyle.pageDuration; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.springSoft }
+                NumberAnimation { id: outgoingFade; target: motion.outgoing; property: "opacity"; from: 1
+                    duration: OverlayStyle.pageDuration; easing.type: Easing.OutCubic }
+                onFinished: cleanup()
+                function cleanup() {
+                    if (!outgoing) return
+                    if (forward) {
+                        outgoing.visible = false
+                        outgoing.x = 0
+                        outgoing.opacity = 1
+                    } else {
+                        outgoing.destroy()
+                    }
+                    outgoing = null
+                    incoming = null
                 }
             }
-            popExit: Transition {
-                ParallelAnimation {
-                    NumberAnimation { property: "x"; from: 0; to: stack.shift; duration: stack.duration; easing.type: Easing.OutCubic }
-                    NumberAnimation { property: "opacity"; from: 1; to: 0; duration: stack.duration * 0.5; easing.type: Easing.OutQuad }
-                }
-            }
-            replaceEnter: pushEnter
-            replaceExit: pushExit
         }
     }
 
@@ -203,7 +286,7 @@ FocusScope {
     onOpenedChanged: if (opened) {
         closing = false
         pendingAction = -1
-        if (stack.depth > 1) stack.pop(null, StackView.Immediate)
+        stack.popToRoot()
         forceActiveFocus()
         Qt.callLater(root.focusPage)
     }

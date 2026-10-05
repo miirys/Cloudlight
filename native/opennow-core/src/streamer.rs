@@ -1173,7 +1173,7 @@ fn hybrid_gpu_hint(capabilities: &Value) -> Option<String> {
         "one of those GPUs"
     };
     Some(format!(
-        "{} can decode. Select {target} in Settings → Stream → Graphics processor, then restart OpenNOW.",
+        "{} can decode. Select {target} in Settings → Stream → Graphics processor, then restart Cloudlight.",
         capable.join("; ")
     ))
 }

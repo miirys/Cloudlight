@@ -13,7 +13,7 @@ FocusScope {
     property bool searchVisible: route !== "settings" && route.indexOf("settings-") !== 0 && route !== "friends" && route !== "updates"
     property string searchText: ""
     property bool headerOverlay: false
-    // Narrow or heavily scaled windows drop the clock and wordmark and pull
+    // Narrow or heavily scaled windows drop the clock and pull
     // the bar in from the 10-foot safe margin rather than letting items collide.
     readonly property bool headerTight: width < DesktopTokens.px(1280)
     readonly property bool headerCompact: width < DesktopTokens.px(1100)
@@ -70,7 +70,7 @@ FocusScope {
 
     DesktopBackdrop { anchors.fill: parent }
 
-    // GeForce NOW layout: one opaque top bar (brand, section tabs, search,
+    // GeForce NOW layout: one opaque top bar (section tabs, search,
     // account) over full-width content. No sidebar, no footer.
     Item {
         id: main
@@ -103,19 +103,10 @@ FocusScope {
                 }
             }
 
-            DesktopBrandLockup {
-                id: brand
-                x: root.headerEdge
-                textReveal: root.headerCompact ? 0 : 1
-                anchors.verticalCenter: parent.verticalCenter
-                markHeight: DesktopTokens.px(30)
-                fontPixelSize: DesktopTokens.px(21)
-            }
-
             Row {
                 id: tabs
                 objectName: "desktopTopTabs"
-                x: brand.x + brand.width + DesktopTokens.px(root.headerCompact ? 20 : 44)
+                x: root.headerEdge - DesktopTokens.px(root.headerCompact ? 12 : 16)
                 height: parent.height
                 spacing: DesktopTokens.px(root.headerCompact ? 0 : 8)
                 Repeater {

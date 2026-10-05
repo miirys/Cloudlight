@@ -67,7 +67,7 @@ Item {
         anchors.fill: parent
         radius: DesktopTokens.radius
         color: Theme.surfaceRaised
-        border.width: 1
+        border.width: 0
         border.color: Theme.seam
     }
     Row {

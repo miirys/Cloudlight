@@ -310,6 +310,7 @@ qt_add_qml_module(opennow-qt
         qml/desktop/shell/DesktopApp.qml
         qml/desktop/shell/DesktopCommandPalette.qml
         qml/desktop/shell/DesktopShell.qml
+        qml/desktop/shell/DesktopWindowBar.qml
         qml/desktop/store/DesktopStoreCard.qml
         qml/desktop/store/DesktopStoreChip.qml
         qml/desktop/store/DesktopStoreContent.qml
@@ -423,7 +424,13 @@ qt_add_qml_module(opennow-qt
         res/onboarding/desktop-preview.png
         res/onboarding/console-preview.png
         res/fonts/Nunito-Variable.ttf
-        res/fonts/InterVariable.ttf
+        res/fonts/Inter-Regular.ttf
+        res/fonts/Inter-Medium.ttf
+        res/fonts/Inter-SemiBold.ttf
+        res/fonts/Inter-Bold.ttf
+        res/fonts/InterDisplay-Medium.ttf
+        res/fonts/InterDisplay-SemiBold.ttf
+        res/fonts/InterDisplay-Bold.ttf
         res/fonts/CormorantGaramond-Variable.ttf
         res/fonts/IBMPlexMono-Regular.ttf
         res/fonts/IBMPlexMono-Medium.ttf

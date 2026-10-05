@@ -46,6 +46,8 @@ qt_add_executable(opennow-qt
     src/acceptance/SessionLaunchAcceptance.cpp
     src/app/AppController.cpp
     src/app/AppController.h
+    src/app/platform/WindowChrome.cpp
+    src/app/platform/WindowChrome.h
     src/app/platform/MacAwdlController.cpp
     src/app/platform/MacAwdlController.h
     src/app/platform/GraphicsDeviceSelection.cpp

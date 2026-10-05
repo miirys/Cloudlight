@@ -51,7 +51,7 @@ OverlayPage {
                 color: OverlayStyle.text
                 font.family: Theme.bodyFont
                 font.pixelSize: OverlayStyle.bodySize
-                font.variableAxes: OverlayStyle.bodyAxes
+                font.weight: OverlayStyle.bodyWeight
                 elide: Text.ElideRight
             }
             Text {
@@ -64,7 +64,7 @@ OverlayPage {
             }
             Text {
                 width: parent.width
-                text: qsTr("Built on OpenNOW. Not affiliated with NVIDIA.")
+                text: qsTr("Independent client. Not affiliated with NVIDIA.")
                 color: OverlayStyle.subtitle
                 font.family: Theme.bodyFont
                 font.pixelSize: OverlayStyle.subtitleSize
@@ -81,7 +81,6 @@ OverlayPage {
     Link { title: qsTr("Release notes"); url: "https://github.com/miirys/OpenNOW/commits/main" }
     Link { title: qsTr("Cloudlight source code"); url: "https://github.com/miirys/OpenNOW" }
     Link { title: qsTr("Report a problem"); url: "https://github.com/miirys/OpenNOW/issues" }
-    Link { title: qsTr("OpenNOW project"); url: "https://github.com/OpenCloudGaming/OpenNOW" }
     Link { title: qsTr("NVIDIA GeForce NOW Terms of Use"); url: "https://www.nvidia.com/en-us/geforce-now/terms-of-use/" }
     Link { title: qsTr("Privacy Policy"); url: "https://www.nvidia.com/en-us/about-nvidia/privacy-policy/" }
     OverlayDivider { visible: page.membershipText !== "" }

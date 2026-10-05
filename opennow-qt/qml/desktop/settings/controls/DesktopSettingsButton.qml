@@ -25,7 +25,7 @@ Button {
         radius: DesktopTokens.radius
         color: control.primary ? (control.down ? Qt.darker(Theme.focus, 1.15) : control.hovered ? Qt.lighter(Theme.focus, 1.08) : Theme.focus)
              : control.down || control.hovered ? Theme.surfaceHover : Theme.surfaceRaised
-        border.width: control.activeFocus ? 2 : control.primary ? 0 : 1
+        border.width: control.activeFocus ? 2 : control.primary ? 0 : 0
         border.color: control.activeFocus ? Theme.label
                     : control.danger ? Theme.coral
                     : Theme.seam

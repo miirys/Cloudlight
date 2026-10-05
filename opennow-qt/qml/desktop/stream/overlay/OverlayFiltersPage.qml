@@ -108,7 +108,7 @@ OverlayPage {
                 Rectangle {
                     anchors.fill: parent
                     color: slotTile.highlighted ? "#141414" : "#000000"
-                    border.width: Math.max(1, Math.round(OverlayStyle.uf(slotTile.selected || slotTile.keyFocus ? 2 : 1)))
+                    border.width: Math.max(1, Math.round(OverlayStyle.uf(slotTile.selected || slotTile.keyFocus ? 2 : 0)))
                     border.color: slotTile.selected ? OverlayStyle.accent : slotTile.keyFocus ? OverlayStyle.text : "#D8D8D8"
                     Behavior on border.color { ColorAnimation { duration: OverlayStyle.fastDuration } }
                 }
@@ -123,7 +123,7 @@ OverlayPage {
                     color: OverlayStyle.text
                     font.family: Theme.bodyFont
                     font.pixelSize: OverlayStyle.bodySize
-                    font.variableAxes: OverlayStyle.bodyAxes
+                    font.weight: OverlayStyle.bodyWeight
                     elide: Text.ElideRight
                 }
                 Text {
@@ -166,7 +166,7 @@ OverlayPage {
                 selectionColor: OverlayStyle.accentTrack
                 font.family: Theme.bodyFont
                 font.pixelSize: OverlayStyle.bodySize
-                font.variableAxes: OverlayStyle.bodyAxes
+                font.weight: OverlayStyle.bodyWeight
                 clip: true
                 onTextEdited: { const value = text; page.editStyle(style => style.name = value) }
                 Keys.onPressed: event => {

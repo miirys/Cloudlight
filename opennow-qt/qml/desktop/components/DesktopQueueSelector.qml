@@ -175,7 +175,7 @@ Dialog {
                         radius: DesktopTokens.radius
                         color: option.highlighted ? DesktopTokens.raisedStrong : option.hovered ? DesktopTokens.raised : "transparent"
                         border.color: option.highlighted || option.activeFocus ? DesktopTokens.focus : DesktopTokens.seam
-                        border.width: option.activeFocus ? 2 : 1
+                        border.width: option.activeFocus ? 2 : 0
                     }
                     contentItem: RowLayout {
                         spacing: DesktopTokens.px(16)
@@ -276,7 +276,7 @@ Dialog {
                 radius: DesktopTokens.px(4)
                 color: dontShow.checked ? Theme.focus : "transparent"
                 border.color: dontShow.activeFocus ? Theme.focus : Theme.textMuted
-                border.width: dontShow.activeFocus ? 2 : 1
+                border.width: dontShow.activeFocus ? 2 : 0
                 Text {
                     anchors.centerIn: parent
                     visible: dontShow.checked

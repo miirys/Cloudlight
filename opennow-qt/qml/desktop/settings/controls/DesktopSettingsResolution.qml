@@ -55,7 +55,7 @@ Item {
     Rectangle {
         visible: reveal.present; opacity: reveal.progress
         x: 8; y: 0; width: parent.width-16; height: parent.height
-        radius: DesktopTokens.radius; color: Theme.surface; border.width: 1; border.color: Theme.seam
+        radius: DesktopTokens.radius; color: Theme.surface; border.width: 0; border.color: Theme.seam
     }
     DesktopSettingsRow {
         id: header
@@ -100,7 +100,7 @@ Item {
                     width: gridContents.width; spacing: 8
                     Row {
                         spacing: 8
-                        Rectangle { width: 20; height: 11; y: 2; radius: 2; color: "transparent"; border.width: 1; border.color: Theme.textMuted }
+                        Rectangle { width: 20; height: 11; y: 2; radius: 2; color: "transparent"; border.width: 1.5; border.color: Theme.textMuted }
                         Text { text: modelData.label; color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 11; font.weight: Font.DemiBold; font.letterSpacing: 0 }
                         Text { text: "· " + modelData.items.length; color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 11 }
                     }
@@ -119,7 +119,7 @@ Item {
                                 onClicked: { root.selected(modelData.value); root.expanded = false }
                                 background: Rectangle {
                                     radius: DesktopTokens.radius; color: tile.selected ? Theme.focus : tile.hovered ? DesktopTokens.hover : Theme.surfaceRaised
-                                    border.width: 1; border.color: tile.activeFocus ? Theme.focus : DesktopTokens.seamSoft
+                                    border.width: 0; border.color: tile.activeFocus ? Theme.focus : DesktopTokens.seamSoft
                                 }
                                 Column {
                                     anchors.centerIn: parent; spacing: 0
@@ -149,7 +149,7 @@ Item {
             width: moreLabel.implicitWidth + 28; height: 26
             onClicked: gridFlick.contentY = Math.min(gridFlick.contentHeight - gridFlick.height,
                 gridFlick.contentY + gridFlick.height * 0.8)
-            background: Rectangle { radius: DesktopTokens.radius; color: Theme.surfaceRaised; border.width: 1; border.color: parent.activeFocus ? Theme.focus : DesktopTokens.seamSoft }
+            background: Rectangle { radius: DesktopTokens.radius; color: Theme.surfaceRaised; border.width: 0; border.color: parent.activeFocus ? Theme.focus : DesktopTokens.seamSoft }
             Text { id: moreLabel; anchors.centerIn: parent; text: qsTr("Scroll for more"); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 11; font.weight: Font.Bold }
         }
     }

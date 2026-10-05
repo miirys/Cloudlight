@@ -163,7 +163,7 @@ Column {
             Layout.alignment: Qt.AlignTop
             implicitHeight: generationContents.implicitHeight + DesktopTokens.px(4)
             color: root.panelColor; radius: DesktopTokens.radiusLarge
-            border.width: root.settings.frameGeneration === "2x" ? DesktopTokens.px(2) : 1
+            border.width: root.settings.frameGeneration === "2x" ? DesktopTokens.px(2) : 0
             border.color: root.settings.frameGeneration === "2x" ? root.mint : Theme.seam
             Column {
                 id: generationContents
@@ -272,7 +272,7 @@ Column {
             Layout.alignment: Qt.AlignTop
             implicitHeight: Math.max(DesktopTokens.px(366), upscaleContents.implicitHeight + DesktopTokens.px(2))
             Layout.minimumHeight: root.wide ? generationCard.implicitHeight : 0
-            radius: DesktopTokens.radiusLarge; border.color: Theme.seam; border.width: 1
+            radius: DesktopTokens.radiusLarge; border.color: Theme.seam; border.width: 0
             color: root.panelColor
             Column {
                 id: upscaleContents

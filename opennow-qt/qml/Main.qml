@@ -427,6 +427,7 @@ ApplicationWindow {
     }
 
     Component.onCompleted: {
+        if (typeof WindowChrome !== "undefined") WindowChrome.setEnabled(customChrome)
         Qt.callLater(() => CoreClient.markUiReady())
         initializeStartupMode()
         updateSessionWindowMode()
@@ -535,7 +536,21 @@ ApplicationWindow {
         }
     }
 
+    // Cloudlight draws its own caption on Windows; "Use the system title bar"
+    // in Settings > Interface switches back to the native one.
+    readonly property bool customChrome: typeof WindowChrome !== "undefined" && WindowChrome.supported
+        && ShellStore.settings.systemTitleBar !== true
+    onCustomChromeChanged: if (typeof WindowChrome !== "undefined") WindowChrome.setEnabled(customChrome)
+
+    DesktopWindowBar {
+        id: windowBar
+        z: 10
+        width: parent.width
+        shown: window.customChrome && window.visibility !== ApplicationWindow.FullScreen
+    }
+
     ShellViewport {
+        topInset: windowBar.height
         desktopSurfaceActive: window.desktopSurfaceActive
         layer.enabled: HdrOutput.chromeRequired && window.activeRoute !== "stream"
         layer.effect: HdrChromeEffect {}

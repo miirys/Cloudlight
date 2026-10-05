@@ -13,7 +13,7 @@ Rectangle {
     radius: 4
     color: "#1C1C1C"
     border.color: "#E8A33D"
-    border.width: 1
+    border.width: 0
     Accessible.role: Accessible.AlertMessage
     Accessible.name: heading.text + ". " + detail.text
 

@@ -11,6 +11,6 @@ Text {
     color: strong ? OverlayStyle.text : OverlayStyle.label
     font.family: Theme.bodyFont
     font.pixelSize: OverlayStyle.labelSize
-    font.variableAxes: strong ? OverlayStyle.bodyAxes : OverlayStyle.strongAxes
+    font.weight: strong ? OverlayStyle.bodyWeight : OverlayStyle.strongWeight
     elide: Text.ElideRight
 }

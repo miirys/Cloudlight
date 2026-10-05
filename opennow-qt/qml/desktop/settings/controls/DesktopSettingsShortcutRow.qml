@@ -318,7 +318,7 @@ FocusScope {
                         radius: DesktopTokens.radius
                         color: root.capturing ? Qt.rgba(0, 0, 0, Theme.lightMode ? 0.06 : 0.3)
                             : bindingButton.down || bindingButton.hovered ? DesktopTokens.raisedStrong : DesktopTokens.raised
-                        border.width: root.capturing || bindingButton.activeFocus ? 2 : 1
+                        border.width: root.capturing || bindingButton.activeFocus ? 2 : 0
                         border.color: root.capturing ? root.toneColor
                             : bindingButton.activeFocus ? DesktopTokens.focus
                             : root.unset ? DesktopTokens.textFaint : Theme.seam

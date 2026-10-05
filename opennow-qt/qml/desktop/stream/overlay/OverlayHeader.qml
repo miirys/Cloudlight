@@ -59,7 +59,7 @@ Rectangle {
         color: OverlayStyle.headerText
         font.family: Theme.bodyFont
         font.pixelSize: OverlayStyle.titleSize
-        font.variableAxes: OverlayStyle.strongAxes
+        font.weight: OverlayStyle.strongWeight
         elide: Text.ElideRight
     }
     Row {

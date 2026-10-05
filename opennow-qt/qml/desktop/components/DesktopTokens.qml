@@ -101,11 +101,12 @@ QtObject {
     }
 
     function scaleForWindow(width, height) {
-        // Laid out against a 1440x810 canvas, so a 1080p screen (a TV or
-        // projector seen from a couch) gets ~1.33x and a 4K screen at 100%
-        // gets ~2.67x, the same layout drawn at native resolution. Smaller
-        // windows reflow instead of shrinking below 0.95.
-        return Math.max(0.95, Math.min(3, Math.min(width / 1440, height / 810)))
+        // Desktop windows keep a fixed 1x layout in logical pixels and let the
+        // OS display scale (Windows 125-200%, macOS Retina) set physical size,
+        // the way native apps behave: resizing reflows content instead of
+        // zooming it. Only very large logical canvases, such as a 4K TV at
+        // 100% scaling, grow. Settings > Interface size scales on top.
+        return Math.max(1, Math.min(3, Math.min(width / 2048, height / 1152)))
     }
 
     function storeKey(value) {

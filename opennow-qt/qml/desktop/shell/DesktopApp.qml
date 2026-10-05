@@ -83,7 +83,7 @@ FocusScope {
             return
         const fitted = DesktopTokens.scaleForWindow(root.width, root.height)
         const preference = Number(ShellStore.settings.desktopUiScale || 1)
-        DesktopTokens.uiScale = Math.min(3.4, Math.max(0.9, fitted * preference))
+        DesktopTokens.uiScale = Math.min(3.4, Math.max(0.85, fitted * preference))
     }
     onWidthChanged: root.updateUiScale()
     onHeightChanged: root.updateUiScale()
@@ -154,7 +154,7 @@ FocusScope {
             anchors.fill: parent
             sourceComponent: root.contentForRoute(root.contentRoute)
             opacity: pageEntrance.pageOpacity
-            transform: Translate { y: pageEntrance.offset }
+            scale: pageEntrance.pageScale
             PageEntrance { id: pageEntrance; objectName: "desktopPageEntrance" }
             onLoaded: {
                 pageEntrance.restart()
@@ -231,7 +231,7 @@ FocusScope {
         height: 48
         radius: DesktopTokens.radius
         color: Theme.surfaceRaised
-        border.width: 1
+        border.width: 0
         border.color: DesktopTokens.danger
         visible: root.modeErrorVisible
         z: 220

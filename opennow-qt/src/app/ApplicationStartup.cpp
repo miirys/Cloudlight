@@ -3,6 +3,7 @@
 #include "acceptance/AcceptanceSession.h"
 #include "app/ApplicationStartup.h"
 #include "app/platform/MacAwdlController.h"
+#include "app/platform/WindowChrome.h"
 #include "input/ControllerInput.h"
 #include "core/CoreClient.h"
 #include "input/InputModeTracker.h"
@@ -79,7 +80,13 @@ static int runApplicationSession(int argc, char *argv[], QString &restartExecuta
     QGuiApplication::setOrganizationDomain(u"opennow.app"_s);
     QGuiApplication::setApplicationVersion(QString::fromLatin1(OPENNOW_VERSION));
     QQuickWindow::setDefaultAlphaBuffer(true);
+#if defined(Q_OS_WIN)
+    // Distance-field glyphs are unhinted and gamma-light on Windows, so small
+    // text looked washed out. Native glyphs match the system's text contrast.
+    QQuickWindow::setTextRenderType(QQuickWindow::NativeTextRendering);
+#else
     QQuickWindow::setTextRenderType(QQuickWindow::QtTextRendering);
+#endif
 #if defined(Q_OS_WIN)
     QQuickWindow::setGraphicsApi(QSGRendererInterface::Direct3D11);
 #elif defined(Q_OS_MACOS)
@@ -102,7 +109,13 @@ static int runApplicationSession(int argc, char *argv[], QString &restartExecuta
     qSetMessagePattern(u"%{time yyyy-MM-ddTHH:mm:ss.zzz} %{type} %{category}: %{message}"_s);
     const QStringList bundledFonts = {
         u":/qt/qml/OpenNOW/res/fonts/Nunito-Variable.ttf"_s,
-        u":/qt/qml/OpenNOW/res/fonts/InterVariable.ttf"_s,
+        u":/qt/qml/OpenNOW/res/fonts/Inter-Regular.ttf"_s,
+        u":/qt/qml/OpenNOW/res/fonts/Inter-Medium.ttf"_s,
+        u":/qt/qml/OpenNOW/res/fonts/Inter-SemiBold.ttf"_s,
+        u":/qt/qml/OpenNOW/res/fonts/Inter-Bold.ttf"_s,
+        u":/qt/qml/OpenNOW/res/fonts/InterDisplay-Medium.ttf"_s,
+        u":/qt/qml/OpenNOW/res/fonts/InterDisplay-SemiBold.ttf"_s,
+        u":/qt/qml/OpenNOW/res/fonts/InterDisplay-Bold.ttf"_s,
         u":/qt/qml/OpenNOW/res/fonts/CormorantGaramond-Variable.ttf"_s,
         u":/qt/qml/OpenNOW/res/fonts/IBMPlexMono-Regular.ttf"_s,
         u":/qt/qml/OpenNOW/res/fonts/IBMPlexMono-Medium.ttf"_s,
@@ -112,8 +125,15 @@ static int runApplicationSession(int argc, char *argv[], QString &restartExecuta
         if (QFontDatabase::addApplicationFont(fontPath) == -1)
             qWarning("Could not load bundled font %s", qUtf8Printable(fontPath));
     }
-    QFont applicationFont(QStringLiteral("Inter Variable"));
+    // Static Inter instances (text and display optical sizes) cut from the
+    // OFL variable font. Variable instances render at the wrong weight with
+    // DirectWrite, which made every label look thin on Windows.
+    QFont applicationFont(QStringLiteral("Inter"));
+#if defined(Q_OS_WIN)
+    applicationFont.setHintingPreference(QFont::PreferVerticalHinting);
+#else
     applicationFont.setHintingPreference(QFont::PreferNoHinting);
+#endif
     applicationFont.setStyleStrategy(QFont::PreferAntialias);
     application.setFont(applicationFont);
     const auto arguments = application.arguments();
@@ -240,6 +260,7 @@ static int runApplicationSession(int argc, char *argv[], QString &restartExecuta
     qmlRegisterUncreatableType<MacAwdlController>("OpenNOW", 1, 0, "MacAwdlController",
                                                 u"Use the application-owned MacAwdl instance"_s);
     MacAwdlController macAwdl;
+    WindowChrome windowChrome;
     QQmlApplicationEngine engine;
     engine.setInitialProperties({{u"visible"_s, false}, {u"visibility"_s, QWindow::Hidden}});
     AcceptanceSession acceptance(application, engine, controller, coreClient, arguments);
@@ -251,6 +272,7 @@ static int runApplicationSession(int argc, char *argv[], QString &restartExecuta
     engine.rootContext()->setContextProperty(u"GraphicsDevices"_s, &graphicsDevices);
     engine.rootContext()->setContextProperty(u"HdrOutput"_s, &hdrOutput);
     engine.rootContext()->setContextProperty(u"MacAwdl"_s, &macAwdl);
+    engine.rootContext()->setContextProperty(u"WindowChrome"_s, &windowChrome);
 #ifdef OPENNOW_EMBEDDED_STREAMER
     engine.rootContext()->setContextProperty(u"NativeStreamRuntime"_s,
                                              &nativeStreamRuntime);
@@ -273,6 +295,7 @@ static int runApplicationSession(int argc, char *argv[], QString &restartExecuta
         return EXIT_FAILURE;
     }
     hdrOutput.attach(rootWindow);
+    windowChrome.attach(rootWindow);
 #if defined(Q_OS_LINUX) && QT_CONFIG(vulkan) && __has_include(<vulkan/vulkan.h>)
     if (vulkanDevice.handle() && !vulkanDevice.adopt(rootWindow)) {
         qWarning("Could not adopt the embedded Vulkan device: %s",

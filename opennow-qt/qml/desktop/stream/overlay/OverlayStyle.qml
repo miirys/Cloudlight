@@ -29,8 +29,10 @@ QtObject {
     readonly property int labelSize: u(18)
     // Inter ships as one variable face, so weights are set on its axis: titles in the
     // reference are a touch heavier than regular, headers and group labels semibold.
-    readonly property var bodyAxes: ({"wght": 450})
-    readonly property var strongAxes: ({"wght": 600})
+    // Static Inter faces: Medium for row text, SemiBold for headings. No
+    // variable axes, so Windows renders the same weights as Linux.
+    readonly property int bodyWeight: Font.Medium
+    readonly property int strongWeight: Font.DemiBold
 
     readonly property color body: "#191919"
     readonly property color header: "#393939"
@@ -56,5 +58,5 @@ QtObject {
 
     readonly property int fastDuration: AppController.reducedMotion ? 0 : 120
     readonly property int panelDuration: AppController.reducedMotion ? 0 : 220
-    readonly property int pageDuration: AppController.reducedMotion ? 0 : 200
+    readonly property int pageDuration: AppController.reducedMotion ? 0 : 380
 }

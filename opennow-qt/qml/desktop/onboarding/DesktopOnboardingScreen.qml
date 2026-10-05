@@ -42,7 +42,7 @@ FocusScope {
             return
         const fitted = DesktopTokens.scaleForWindow(width, height)
         const preference = Number(store.settings.desktopUiScale || 1)
-        DesktopTokens.uiScale = Math.min(3, Math.max(0.9, fitted * preference))
+        DesktopTokens.uiScale = Math.min(3.4, Math.max(0.85, fitted * preference))
     }
 
     onWidthChanged: updateUiScale()
@@ -164,7 +164,7 @@ FocusScope {
         background: Rectangle {
             radius: action.cornerRadius
             color: action.primary ? action.accent : action.hovered || action.down ? DesktopTokens.raisedStrong : DesktopTokens.seamSoft
-            border.width: action.activeFocus ? 2 : 1
+            border.width: action.activeFocus ? 2 : 0
             border.color: action.activeFocus ? Theme.focus : action.primary ? action.accent : Theme.seam
             Behavior on color { ColorAnimation { duration: DesktopTokens.quickDuration } }
         }
@@ -648,7 +648,7 @@ FocusScope {
                         width: Math.min(implicitWidth, parent.width)
                         text: qsTr("Report a bug on GitHub Issues")
                         implicitHeight: DesktopTokens.px(44)
-                        onClicked: Qt.openUrlExternally("https://github.com/OpenCloudGaming/OpenNOW/issues")
+                        onClicked: Qt.openUrlExternally("https://github.com/miirys/OpenNOW/issues")
                     }
                     Action {
                         width: Math.min(implicitWidth, parent.width)
@@ -656,7 +656,7 @@ FocusScope {
                         implicitHeight: DesktopTokens.px(44)
                         flat: true
                         background: Item {}
-                        onClicked: Qt.openUrlExternally("https://github.com/OpenCloudGaming/OpenNOW/issues")
+                        onClicked: Qt.openUrlExternally("https://github.com/miirys/OpenNOW/issues")
                     }
                 }
                 Card {
@@ -702,7 +702,7 @@ FocusScope {
                         }
                         Repeater {
                             model: [
-                                {key:qsTr("Bugs"),value:qsTr("OpenCloudGaming/OpenNOW · Issues")},
+                                {key:qsTr("Bugs"),value:qsTr("Cloudlight · Issues")},
                                 {key:qsTr("Updates"),value:qsTr("Releases are published on GitHub")},
                                 {key:qsTr("Settings"),value:qsTr("Revisit your choices after setup")},
                                 {key:qsTr("Source"),value:qsTr("Free and open source")}
@@ -846,8 +846,8 @@ FocusScope {
                             Repeater {
                                 model: [
                                     {title:qsTr("Sponsor"),detail:qsTr("See the available ways to contribute on GitHub."),url:"https://github.com/sponsors/zortos293"},
-                                    {title:qsTr("Contribute"),detail:qsTr("Help improve the code, translations or documentation."),url:"https://github.com/OpenCloudGaming/OpenNOW"},
-                                    {title:qsTr("Report"),detail:qsTr("A clear bug report helps make Cloudlight better."),url:"https://github.com/OpenCloudGaming/OpenNOW/issues"}
+                                    {title:qsTr("Contribute"),detail:qsTr("Help improve the code, translations or documentation."),url:"https://github.com/miirys/OpenNOW"},
+                                    {title:qsTr("Report"),detail:qsTr("A clear bug report helps make Cloudlight better."),url:"https://github.com/miirys/OpenNOW/issues"}
                                 ]
                                 delegate: AbstractButton {
                                     id: contributionOption
@@ -858,7 +858,7 @@ FocusScope {
                                     onClicked: Qt.openUrlExternally(modelData.url)
                                     background: Rectangle {
                                         color: contributionOption.hovered ? DesktopTokens.raised : DesktopTokens.seamSoft
-                                        radius: DesktopTokens.radiusLarge; border.width: contributionOption.activeFocus ? 2 : 1
+                                        radius: DesktopTokens.radiusLarge; border.width: contributionOption.activeFocus ? 2 : 0
                                         border.color: contributionOption.activeFocus ? Theme.focus : Theme.seam
                                     }
                                     Column {
@@ -937,7 +937,7 @@ FocusScope {
                             Action {
                                 width: Math.min(implicitWidth, parent.width)
                                 text: qsTr("Visit the repository ↗"); implicitHeight: DesktopTokens.px(34)
-                                onClicked: Qt.openUrlExternally("https://github.com/OpenCloudGaming/OpenNOW")
+                                onClicked: Qt.openUrlExternally("https://github.com/miirys/OpenNOW")
                             }
                         }
                     }

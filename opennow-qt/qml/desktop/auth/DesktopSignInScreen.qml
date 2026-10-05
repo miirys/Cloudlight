@@ -293,7 +293,7 @@ FocusScope {
                 radius: DesktopTokens.radiusLarge
                 // Beside the art panel the form sits straight on the page; alone, it keeps its card.
                 color: root.wideLayout ? "transparent" : Theme.surface
-                border.width: root.wideLayout ? 0 : 1
+                border.width: root.wideLayout ? 0 : 0
                 border.color: root.cardSeam
 
                 Column {
@@ -383,7 +383,7 @@ FocusScope {
                             background: Rectangle {
                                 radius: DesktopTokens.radius
                                 color: providerButton.hovered || providerButton.activeFocus ? DesktopTokens.raisedStrong : DesktopTokens.raised
-                                border.width: providerButton.activeFocus ? DesktopTokens.px(3) : 1
+                                border.width: providerButton.activeFocus ? DesktopTokens.px(3) : 0
                                 border.color: providerButton.activeFocus ? Theme.label : root.cardSeam
                             }
                             contentItem: Item {
@@ -437,7 +437,7 @@ FocusScope {
                             visible: ShellStore.sessionPersistenceMessage !== ""
                             radius: DesktopTokens.radius
                             color: DesktopTokens.raised
-                            border.width: 1
+                            border.width: 0
                             border.color: DesktopTokens.danger
                             BodyText { id: persistWarning; x: DesktopTokens.px(10); y: DesktopTokens.px(10); width: parent.width - DesktopTokens.px(20); text: ShellStore.sessionPersistenceMessage; font.pixelSize: DesktopTokens.px(13); lineHeight: DesktopTokens.px(18) }
                         }
@@ -707,7 +707,7 @@ FocusScope {
                     z: 20
                     radius: DesktopTokens.radius
                     color: Theme.surfaceRaised
-                    border.width: 1
+                    border.width: 0
                     border.color: root.cardSeam
                     ListView {
                         anchors.fill: parent

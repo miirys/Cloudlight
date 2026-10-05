@@ -97,7 +97,7 @@ Item {
         height: Math.min(Math.min(root.menuMaxHeight, root.height - DesktopTokens.px(24)), Math.max(DesktopTokens.px(48), root.menuContentHeight + root.menuMargin * 2))
         radius: root.menuRadius
         color: Theme.shell
-        border.width: 1
+        border.width: 0
         border.color: Theme.seam
         enabled: root.opened
         opacity: reveal.progress

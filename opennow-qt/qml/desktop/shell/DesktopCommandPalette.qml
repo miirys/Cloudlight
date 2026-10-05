@@ -277,7 +277,7 @@ FocusScope {
         height: root.panelHeight
         radius: DesktopTokens.radiusLarge
         color: DesktopTokens.shell
-        border.width: 1
+        border.width: 0
         border.color: DesktopTokens.seam
         TapHandler { }
 

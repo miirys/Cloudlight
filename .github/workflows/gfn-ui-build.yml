@@ -232,6 +232,48 @@ jobs:
           cd /o
           cmake --build build/opennow-qt-release --config Release --parallel 4
 
+      - name: Capture Windows UI screenshots
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          Set-Location /o
+          $app = Get-ChildItem -Recurse -Filter OpenNOW.exe build/opennow-qt-release | Select-Object -First 1
+          New-Item -ItemType Directory -Force build/screens-windows | Out-Null
+          $out = (Resolve-Path build/screens-windows).Path
+          $env:PATH = "$env:QT_ROOT_DIR\bin;$($app.DirectoryName);$env:PATH"
+          $captures = @(
+            @{ name = "home"; args = @("--route", "home", "--smoke-paper-design") },
+            @{ name = "library"; args = @("--route", "library", "--smoke-collections") },
+            @{ name = "settings-stream"; args = @("--route", "settings", "--smoke-paper-design", "--smoke-settings-page", "stream") },
+            @{ name = "settings-network"; args = @("--route", "settings", "--smoke-paper-design", "--smoke-settings-page", "network") },
+            @{ name = "settings-appearance"; args = @("--route", "settings", "--smoke-paper-design", "--smoke-settings-page", "appearance") },
+            @{ name = "stream-stats"; args = @("--route", "stream", "--smoke-stream-stats", "--smoke-stats-expanded") },
+            @{ name = "stream-menu"; args = @("--route", "stream", "--overlay", "desktop-stream-menu", "--smoke-stream-stats") }
+          )
+          foreach ($capture in $captures) {
+            $png = Join-Path $out "$($capture.name).png"
+            $log = Join-Path $out "$($capture.name).log"
+            $arguments = @("--smoke-test", "--allow-multiple-instances", "--desktop", "--reduced-motion",
+              "--smoke-width", "1600", "--smoke-height", "900", "--screenshot", $png) + $capture.args
+            $process = Start-Process -FilePath $app.FullName -ArgumentList $arguments -PassThru -NoNewWindow `
+              -RedirectStandardError $log -RedirectStandardOutput "$log.out"
+            if (-not $process.WaitForExit(90000)) { $process.Kill() }
+            "$($capture.name): exit $($process.ExitCode) png=$(Test-Path $png)" | Tee-Object -Append (Join-Path $out summary.txt)
+          }
+
+      - name: Publish Windows screenshots
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        shell: bash
+        continue-on-error: true
+        run: |
+          cd /o/build/screens-windows
+          git init -q -b screens-windows
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Windows screens for ${GITHUB_SHA::8} (run ${GITHUB_RUN_NUMBER})"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git" screens-windows:screens-windows
+
       - name: Package portable ZIP
         shell: bash
         run: |

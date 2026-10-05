@@ -46,7 +46,7 @@ Item {
         opacity: reveal.progress
         x: 0; y: header.height; width: parent.width; height: parent.height - header.height
         radius: DesktopTokens.radius; color: Theme.surface
-        border.width: 1; border.color: Theme.seam
+        border.width: 0; border.color: Theme.seam
     }
     DesktopSettingsRow {
         id: header

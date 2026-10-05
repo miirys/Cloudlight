@@ -64,7 +64,7 @@ Rectangle {
             radius: DesktopTokens.radius
             color: action.primary ? root.accent : action.hovered ? DesktopTokens.raisedStrong : DesktopTokens.raised
             border.color: action.activeFocus ? Theme.focus : Theme.seam
-            border.width: action.activeFocus ? 2 : 1
+            border.width: action.activeFocus ? 2 : 0
         }
         opacity: enabled ? 1 : 0.5
     }

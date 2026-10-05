@@ -156,7 +156,7 @@ int AcceptanceSession::prepareWindow()
             auto *store = m_engine.singletonInstance<QObject *>(u"OpenNOW"_s, u"ShellStore"_s);
             if (store) {
                 store->setProperty("settings", QVariantMap{
-                    {u"themePack"_s, u"aurora"_s}, {u"appTheme"_s, u"dark"_s},
+                    {u"themePack"_s, u"cloudlight"_s}, {u"appTheme"_s, u"dark"_s},
                     {u"desktopSidebarHover"_s, false}, {u"desktopRailCollapsed"_s, true},
                     {u"resolution"_s, u"2560x1440"_s}, {u"fps"_s, 120},
                     {u"codec"_s, u"av1"_s}, {u"colorQuality"_s, u"10bit_420"_s},

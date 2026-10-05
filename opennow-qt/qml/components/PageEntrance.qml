@@ -3,13 +3,15 @@ import OpenNOW
 
 // Animate only the incoming page, never the shell or native video surface.
 // Restarting replaces the previous transition; no delayed swaps or stale pages.
+// The page fades in quickly and settles from 98.5% scale on a spring curve,
+// the way macOS and iOS swap content. Nothing slides.
 Item {
     id: root
     property real progress: 1
-    // Fade the whole page in while it settles upward, so a route change reads
-    // as one deliberate reveal rather than a flicker.
-    readonly property real pageOpacity: Math.min(1, progress * 1.6)
-    readonly property real offset: 18 * (1 - progress)
+    readonly property real pageOpacity: Math.min(1, progress * 2.4)
+    readonly property real pageScale: 0.985 + 0.015 * progress
+    // Kept for older consumers; pages no longer travel.
+    readonly property real offset: 0
 
     function restart() {
         entrance.stop()
@@ -20,10 +22,9 @@ Item {
     NumberAnimation {
         id: entrance
         target: root; property: "progress"; to: 1
-        duration: 280
-        // Material 3 "emphasized decelerate".
+        duration: Theme.springDuration
         easing.type: Easing.BezierSpline
-        easing.bezierCurve: [0.05, 0.7, 0.1, 1, 1, 1]
+        easing.bezierCurve: Theme.spring
     }
     Connections {
         target: AppController

@@ -261,7 +261,7 @@ FocusScope {
         anchors.fill: parent
         color: Theme.shell
         opacity: reveal.progress
-        transform: Translate { y: Math.round((1 - reveal.progress) * DesktopTokens.px(16)) }
+        scale: 0.98 + 0.02 * reveal.progress
         readonly property int gutter: Math.round(Math.max(DesktopTokens.px(24), Math.min(DesktopTokens.px(88), width * 0.055)))
         readonly property bool narrow: width < DesktopTokens.px(720)
         MouseArea {

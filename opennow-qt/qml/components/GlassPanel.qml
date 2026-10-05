@@ -8,6 +8,6 @@ Rectangle {
 
     color: strong ? Theme.glassStrong : Theme.glass
     border.color: Theme.seam
-    border.width: 1
+    border.width: 0
     radius: panelRadius
 }

@@ -43,7 +43,7 @@ OverlayFocusable {
         color: root.available ? OverlayStyle.text : OverlayStyle.disabled
         font.family: Theme.bodyFont
         font.pixelSize: OverlayStyle.bodySize
-        font.variableAxes: OverlayStyle.bodyAxes
+        font.weight: OverlayStyle.bodyWeight
         elide: Text.ElideRight
     }
 }

@@ -17,7 +17,7 @@ AbstractButton {
     background: Rectangle {
         radius: DesktopTokens.radiusLarge
         color: Theme.surface
-        border.width: root.activeFocus ? DesktopTokens.px(3) : root.selected ? 2 : 1
+        border.width: root.activeFocus ? DesktopTokens.px(3) : root.selected ? 2 : 0
         border.color: root.activeFocus ? Theme.label : root.selected ? root.accent : Theme.seam
         Behavior on border.color { ColorAnimation { duration: DesktopTokens.quickDuration } }
     }

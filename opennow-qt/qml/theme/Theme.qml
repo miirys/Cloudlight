@@ -83,8 +83,11 @@ QtObject {
         return (luminance + 0.05) / 0.0592 > 1.05 / (luminance + 0.05) ? "#141414" : "#FFFFFF"
     }
 
-    readonly property string displayFont: "Inter Variable"
-    readonly property string bodyFont: "Inter Variable"
+    // Inter is the closest open match to SF Pro: "Inter Display" for titles
+    // (tighter spacing, like SF Pro Display) and "Inter" for everything else.
+    // Only Regular, Medium, SemiBold and Bold are bundled; there is no thin text.
+    readonly property string displayFont: "Inter Display"
+    readonly property string bodyFont: "Inter"
     readonly property string monoFont: "IBM Plex Mono"
     // Brand face: the Cloudlight wordmark and a few editorial headlines only.
     readonly property string brandFont: "Cormorant Garamond"
@@ -100,6 +103,12 @@ QtObject {
     readonly property int overlayDuration: AppController.reducedMotion ? 0 : 140
     readonly property int panelDuration: AppController.reducedMotion ? 0 : 160
     readonly property var easeOut: [0.16, 1.0, 0.3, 1.0]
+    // Spring-like curves (Apple-style): a fast start that settles with a
+    // ~1.5% overshoot, and a critically damped one for things that must not
+    // overshoot (fades, large surfaces). Both are 4-value BezierSpline paths.
+    readonly property var spring: [0.2, 1.08, 0.32, 1.0, 1, 1]
+    readonly property var springSoft: [0.32, 0.72, 0.0, 1.0, 1, 1]
+    readonly property int springDuration: AppController.reducedMotion ? 0 : 460
     readonly property var easeEmphasized: [0.2, 0.9, 0.1, 1.0]
 
     function unit(windowWidth, windowHeight) {

@@ -11,7 +11,7 @@ app = QGuiApplication([])
 family = QFontDatabase.applicationFontFamilies(
     QFontDatabase.addApplicationFont("opennow-qt/res/fonts/CormorantGaramond-Variable.ttf"))[0]
 inter = QFontDatabase.applicationFontFamilies(
-    QFontDatabase.addApplicationFont("opennow-qt/res/fonts/InterVariable.ttf"))[0]
+    QFontDatabase.addApplicationFont("opennow-qt/res/fonts/Inter-SemiBold.ttf"))[0]
 W, H = 2560, 1280
 
 

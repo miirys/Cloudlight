@@ -18,7 +18,7 @@ AbstractButton {
         radius: height / 2
         color: control.checked ? Theme.focus
              : control.hovered ? Theme.surfaceStrong : Theme.surfaceRaised
-        border.width: control.checked ? 0 : 1
+        border.width: control.checked ? 0 : 0
         border.color: Theme.seam
         Behavior on color { ColorAnimation { duration: Theme.focusDuration } }
         Rectangle {

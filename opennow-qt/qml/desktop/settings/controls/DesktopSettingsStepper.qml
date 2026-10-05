@@ -15,7 +15,7 @@ Rectangle {
     implicitHeight: DesktopTokens.px(40)
     radius: DesktopTokens.radius
     color: Theme.surfaceRaised
-    border.width: 1; border.color: Theme.seam
+    border.width: 0; border.color: Theme.seam
     Row {
         anchors.centerIn: parent; spacing: DesktopTokens.px(2)
         AbstractButton {

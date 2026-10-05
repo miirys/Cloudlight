@@ -84,7 +84,7 @@ FocusScope {
                         : entry.modelData.value === root.value ? OverlayStyle.accent : "#DADADA"
                     font.family: Theme.bodyFont
                     font.pixelSize: OverlayStyle.bodySize
-                    font.variableAxes: OverlayStyle.bodyAxes
+                    font.weight: OverlayStyle.bodyWeight
                     elide: Text.ElideRight
                 }
                 HoverHandler { id: entryHover }

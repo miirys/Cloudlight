@@ -449,7 +449,7 @@ FocusScope {
             font.pixelSize: DesktopTokens.px(13)
             leftPadding: DesktopTokens.px(34)
             DesktopGlyph { x: DesktopTokens.px(12); anchors.verticalCenter: parent.verticalCenter; width: DesktopTokens.px(14); height: width; icon: "desktop-search.svg" }
-            background: Rectangle { radius: DesktopTokens.radius; color: Theme.surfaceRaised; border.width: 1; border.color: settingsSearch.activeFocus ? Theme.focus : Theme.seam }
+            background: Rectangle { radius: DesktopTokens.radius; color: Theme.surfaceRaised; border.width: 0; border.color: settingsSearch.activeFocus ? Theme.focus : Theme.seam }
             onAccepted: {
                 for (let i = 0; i < root.sections.length; ++i) {
                     if (root.matchesSection(root.sections[i])) {
@@ -550,7 +550,8 @@ FocusScope {
                 sourceComponent: SmokeTestMode && root.acceptancePanel !== ""
                     ? root.acceptancePanels[root.acceptancePanel] : root.pageComponents[root.selectedSection]
                 opacity: sectionEntrance.pageOpacity
-                transform: Translate { y: sectionEntrance.offset }
+                scale: sectionEntrance.pageScale
+                transformOrigin: Item.Top
                 PageEntrance { id: sectionEntrance; objectName: "settingsPageEntrance" }
                 onLoaded: { contentFlick.contentY = 0; sectionEntrance.restart() }
             }

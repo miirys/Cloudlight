@@ -18,7 +18,7 @@ Rectangle {
     radius: 4
     color: "#1C1C1C"
     border.color: "#333333"
-    border.width: 1
+    border.width: 0
     Accessible.role: Accessible.AlertMessage
     Accessible.name: title + ". " + subtitle + (battery.visible ? ". " + battery.text : "")
 

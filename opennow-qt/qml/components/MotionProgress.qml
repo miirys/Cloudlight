@@ -8,7 +8,7 @@ Item {
     property bool shown: false
     property int enterDuration: 200
     property int exitDuration: 160
-    property real closedScale: 0.97
+    property real closedScale: 0.96
     property real progress: 0
     readonly property bool present: shown || progress > 0
     readonly property real zoom: AppController.reducedMotion ? 1 : closedScale + (1 - closedScale) * progress
@@ -27,8 +27,9 @@ Item {
         enabled: !AppController.reducedMotion
         NumberAnimation {
             id: animation
-            duration: root.shown ? root.enterDuration : root.exitDuration
-            easing.type: Easing.OutCubic
+            duration: root.shown ? Math.round(root.enterDuration * 1.6) : root.exitDuration
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: root.shown ? Theme.spring : [0.4, 0.0, 1.0, 1.0, 1, 1]
         }
     }
     Connections {

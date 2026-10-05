@@ -69,7 +69,7 @@ Dialog {
                 radius: DesktopTokens.px(4)
                 color: dontNotify.checked ? Theme.focus : "transparent"
                 border.color: dontNotify.activeFocus ? Theme.focus : Theme.textMuted
-                border.width: dontNotify.activeFocus ? 2 : 1
+                border.width: dontNotify.activeFocus ? 2 : 0
                 Text {
                     anchors.centerIn: parent
                     text: "✓"

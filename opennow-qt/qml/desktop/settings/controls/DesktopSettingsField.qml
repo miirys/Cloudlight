@@ -18,7 +18,7 @@ TextField {
     background: Rectangle {
         radius: DesktopTokens.radius
         color: Theme.surfaceRaised
-        border.width: control.activeFocus ? 2 : 1
+        border.width: control.activeFocus ? 2 : 0
         border.color: control.activeFocus ? Theme.focus : Theme.seam
     }
 }
