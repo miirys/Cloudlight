@@ -24,7 +24,7 @@ mod windows_graphics;
 #[cfg(target_os = "windows")]
 mod windows_raw_input;
 
-pub use embedded_input::{EmbeddedInputCapture, EmbeddedLocalAction};
+pub use embedded_input::{EmbeddedInputCapture, EmbeddedLocalAction, InputViewport};
 pub use graphics::{
     GraphicsApi, GraphicsColorSpace, GraphicsContext, GraphicsContextLease, GraphicsFrame,
     GraphicsFrameError, GraphicsFrameInfo, GraphicsFramePublisher, GraphicsFrameToken,

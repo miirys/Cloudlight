@@ -23,7 +23,7 @@ use serde_json::Value;
 
 static FIRST_FRAME_LOGGED: AtomicBool = AtomicBool::new(false);
 
-pub const OPENNOW_STREAMER_FFI_ABI_VERSION: u32 = 11;
+pub const OPENNOW_STREAMER_FFI_ABI_VERSION: u32 = 12;
 pub const OPENNOW_STREAMER_MAX_TEXT_BYTES: usize =
     opennow_streamer_protocol::text_input::MAX_TEXT_BYTES;
 pub const OPENNOW_STREAMER_VULKAN_DEVICE_INFO_VERSION: u32 = 1;
@@ -1291,6 +1291,41 @@ pub unsafe extern "C" fn opennow_streamer_set_capture_active(
 }
 
 #[unsafe(no_mangle)]
+/// Publishes the letterboxed video rectangle in physical screen pixels, or clears it when
+/// `valid` is false. Where the platform input thread can sample the OS cursor (Windows Raw
+/// Input), absolute-mode position, buttons and wheel are then captured there instead of by
+/// the caller; `opennow_streamer_set_capture_active` reports that through `raw_input_active`.
+///
+/// # Safety
+///
+/// `handle` must be null or point to a live engine handle that is not being destroyed.
+pub unsafe extern "C" fn opennow_streamer_set_input_viewport(
+    handle: *const OpenNowStreamer,
+    valid: bool,
+    left: i32,
+    top: i32,
+    width: u32,
+    height: u32,
+) -> OpenNowStreamerStatus {
+    ffi_status(|| {
+        if handle.is_null() {
+            return OpenNowStreamerStatus::NullPointer;
+        }
+        let handle = unsafe { &*handle };
+        let viewport = if valid {
+            match opennow_streamer_platform::InputViewport::new(left, top, width, height) {
+                Some(viewport) => Some(viewport),
+                None => return OpenNowStreamerStatus::InvalidConfig,
+            }
+        } else {
+            None
+        };
+        handle.input.set_viewport(viewport);
+        OpenNowStreamerStatus::Ok
+    })
+}
+
+#[unsafe(no_mangle)]
 /// Binds the caller's live graphics objects to the current scene-graph render thread.
 ///
 /// Repeating the call with an identical context is idempotent. A changed context invalidates any
@@ -1777,7 +1812,7 @@ mod tests {
 
     #[test]
     fn abi_eleven_appends_the_sony_snapshot_contract() {
-        assert_eq!(OPENNOW_STREAMER_FFI_ABI_VERSION, 11);
+        assert_eq!(OPENNOW_STREAMER_FFI_ABI_VERSION, 12);
         assert_eq!(std::mem::offset_of!(OpenNowSdlDeviceClaim, incarnation), 8);
         assert_eq!(std::mem::offset_of!(OpenNowSdlDeviceClaim, vendor), 16);
         assert_eq!(std::mem::offset_of!(OpenNowSdlDeviceClaim, product), 18);
@@ -2376,6 +2411,36 @@ mod tests {
         assert!(header.contains("#define OPENNOW_STREAMER_MAX_TEXT_BYTES 65536u"));
         assert_eq!(OPENNOW_STREAMER_MAX_TEXT_BYTES, 65_536);
         assert!(header.contains("opennow_streamer_submit_text("));
+        assert!(header.contains("opennow_streamer_set_input_viewport("));
+    }
+
+    #[test]
+    fn input_viewport_is_published_and_rejects_empty_rectangles() {
+        let messages = Box::new(CallbackMessages::default());
+        let mut handle = graphics_test_handle(&messages);
+        assert_eq!(
+            unsafe { opennow_streamer_set_input_viewport(std::ptr::null(), true, 0, 0, 1, 1) },
+            OpenNowStreamerStatus::NullPointer
+        );
+        assert_eq!(
+            unsafe { opennow_streamer_set_input_viewport(&handle, true, -1920, 40, 1920, 1080) },
+            OpenNowStreamerStatus::Ok
+        );
+        assert_eq!(
+            handle.input.viewport(),
+            opennow_streamer_platform::InputViewport::new(-1920, 40, 1920, 1080)
+        );
+        assert_eq!(
+            unsafe { opennow_streamer_set_input_viewport(&handle, true, 0, 0, 0, 1080) },
+            OpenNowStreamerStatus::InvalidConfig
+        );
+        assert!(handle.input.viewport().is_some());
+        assert_eq!(
+            unsafe { opennow_streamer_set_input_viewport(&handle, false, 0, 0, 0, 0) },
+            OpenNowStreamerStatus::Ok
+        );
+        assert_eq!(handle.input.viewport(), None);
+        handle.shutdown();
     }
 
     #[test]

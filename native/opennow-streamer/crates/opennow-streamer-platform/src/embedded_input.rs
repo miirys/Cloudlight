@@ -11,10 +11,55 @@ pub enum EmbeddedLocalAction {
     RecordingToggle,
 }
 
+/// The letterboxed video rectangle in physical screen pixels. With it, the
+/// platform input thread can sample the OS cursor itself in absolute mode, the
+/// way GeForce NOW does, instead of waiting on the UI thread once per frame.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct InputViewport {
+    pub left: i32,
+    pub top: i32,
+    pub width: u16,
+    pub height: u16,
+}
+
+impl InputViewport {
+    pub fn new(left: i32, top: i32, width: u32, height: u32) -> Option<Self> {
+        let width = u16::try_from(width).ok().filter(|width| *width > 0)?;
+        let height = u16::try_from(height).ok().filter(|height| *height > 0)?;
+        Some(Self {
+            left,
+            top,
+            width,
+            height,
+        })
+    }
+
+    /// Maps a physical screen point to a host absolute-mouse sample, clamped to
+    /// the video edge, and whether the point is inside the video.
+    pub fn sample(self, screen_x: i32, screen_y: i32) -> (CapturedInput, bool) {
+        let dx = i64::from(screen_x) - i64::from(self.left);
+        let dy = i64::from(screen_y) - i64::from(self.top);
+        let inside = (0..i64::from(self.width)).contains(&dx)
+            && (0..i64::from(self.height)).contains(&dy);
+        let x = dx.clamp(0, i64::from(self.width) - 1) as u16;
+        let y = dy.clamp(0, i64::from(self.height) - 1) as u16;
+        (
+            CapturedInput::MouseAbsolute {
+                x,
+                y,
+                width: self.width,
+                height: self.height,
+            },
+            inside,
+        )
+    }
+}
+
 pub struct EmbeddedInputCapture {
     queue: Arc<CapturedInputQueue>,
     active: AtomicBool,
     gamepads: Mutex<[Option<u16>; 4]>,
+    viewport: Mutex<Option<InputViewport>>,
     #[cfg(target_os = "linux")]
     raw: Mutex<Option<crate::linux_xinput::LinuxXInputController>>,
     #[cfg(target_os = "windows")]
@@ -27,6 +72,7 @@ impl EmbeddedInputCapture {
             queue,
             active: AtomicBool::new(false),
             gamepads: Mutex::new([None; 4]),
+            viewport: Mutex::new(None),
             #[cfg(any(target_os = "linux", target_os = "windows"))]
             raw: Mutex::new(None),
         }
@@ -100,6 +146,32 @@ impl EmbeddedInputCapture {
         self.queue.submit_text(bytes)
     }
 
+    /// Publishes where the video is on screen. `None` hands absolute input
+    /// back to the UI toolkit.
+    pub fn set_viewport(&self, viewport: Option<InputViewport>) {
+        *self
+            .viewport
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner) = viewport;
+        #[cfg(target_os = "windows")]
+        {
+            let raw = self
+                .raw
+                .lock()
+                .unwrap_or_else(std::sync::PoisonError::into_inner);
+            if let Some(raw) = raw.as_ref() {
+                raw.set_viewport(viewport);
+            }
+        }
+    }
+
+    pub fn viewport(&self) -> Option<InputViewport> {
+        *self
+            .viewport
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
+    }
+
     pub fn set_active(&self, active: bool, relative_mouse: bool, window_handle: usize) -> bool {
         let mut gamepads = self
             .gamepads
@@ -142,11 +214,15 @@ impl EmbeddedInputCapture {
 
         #[cfg(target_os = "windows")]
         {
-            // Qt owns absolute position, buttons, and wheel as one ordered event
-            // stream. Raw Input is required only for relative motion. Letting the
-            // raw thread own buttons in absolute mode races the Qt position event,
-            // so the host can apply a click at its previous cursor coordinate.
-            let raw_enabled = raw_capture_enabled(active, relative_mouse);
+            // One owner for position, buttons and wheel. With a published video
+            // viewport the Raw Input thread owns all three in both cursor modes:
+            // in absolute mode it samples the OS cursor on every mouse report, so
+            // host positions follow the mouse instead of the UI thread's frame
+            // pacing. Without a viewport Qt keeps absolute mode, and Raw Input
+            // only serves relative motion.
+            let viewport = self.viewport();
+            let raw_enabled =
+                windows_raw_capture_enabled(active, relative_mouse, viewport.is_some());
             let mut raw = self
                 .raw
                 .lock()
@@ -164,6 +240,7 @@ impl EmbeddedInputCapture {
                 if window_handle != 0 {
                     raw.set_foreground_owner(window_handle as isize);
                 }
+                raw.set_viewport(viewport);
                 raw.set_capture(raw_enabled, relative_mouse);
                 raw_enabled
             } else {
@@ -188,9 +265,14 @@ const fn x11_raw_capture_enabled(active: bool, relative_mouse: bool, x11_window:
     raw_capture_enabled(active, relative_mouse) && x11_window != 0
 }
 
-#[cfg(any(target_os = "linux", target_os = "windows", test))]
+#[cfg(any(target_os = "linux", test))]
 const fn raw_capture_enabled(active: bool, relative_mouse: bool) -> bool {
     active && relative_mouse
+}
+
+#[cfg(any(target_os = "windows", test))]
+const fn windows_raw_capture_enabled(active: bool, relative_mouse: bool, has_viewport: bool) -> bool {
+    active && (relative_mouse || has_viewport)
 }
 
 #[cfg(test)]
@@ -430,6 +512,67 @@ mod tests {
         capture.active.store(true, Ordering::Release);
         capture.submit_local_action(EmbeddedLocalAction::Guide);
         assert_eq!(queue.take(), Some(CapturedInput::Guide));
+    }
+
+    #[test]
+    fn windows_raw_capture_owns_absolute_mode_only_with_a_viewport() {
+        assert!(!windows_raw_capture_enabled(false, true, true));
+        assert!(windows_raw_capture_enabled(true, true, false));
+        assert!(!windows_raw_capture_enabled(true, false, false));
+        assert!(windows_raw_capture_enabled(true, false, true));
+    }
+
+    #[test]
+    fn viewport_samples_are_clamped_to_the_video_and_report_inside() {
+        let viewport = InputViewport::new(100, 50, 1920, 1080).unwrap();
+        assert_eq!(
+            viewport.sample(100, 50),
+            (
+                CapturedInput::MouseAbsolute {
+                    x: 0,
+                    y: 0,
+                    width: 1920,
+                    height: 1080
+                },
+                true
+            )
+        );
+        assert_eq!(
+            viewport.sample(2019, 1129),
+            (
+                CapturedInput::MouseAbsolute {
+                    x: 1919,
+                    y: 1079,
+                    width: 1920,
+                    height: 1080
+                },
+                true
+            )
+        );
+        let (outside, inside) = viewport.sample(2020, 10);
+        assert!(!inside);
+        assert_eq!(
+            outside,
+            CapturedInput::MouseAbsolute {
+                x: 1919,
+                y: 0,
+                width: 1920,
+                height: 1080
+            }
+        );
+        assert!(InputViewport::new(0, 0, 0, 10).is_none());
+        assert!(InputViewport::new(0, 0, 70_000, 10).is_none());
+    }
+
+    #[test]
+    fn published_viewport_is_kept_for_the_next_capture() {
+        let capture = EmbeddedInputCapture::new(Arc::new(CapturedInputQueue::default()));
+        assert_eq!(capture.viewport(), None);
+        let viewport = InputViewport::new(-1920, 0, 1280, 720);
+        capture.set_viewport(viewport);
+        assert_eq!(capture.viewport(), viewport);
+        capture.set_viewport(None);
+        assert_eq!(capture.viewport(), None);
     }
 
     #[test]

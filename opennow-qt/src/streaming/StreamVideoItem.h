@@ -191,6 +191,10 @@ private:
     void releaseInput();
     void releaseQtMouseButtons();
     void updateCursorConfinement();
+    // Publishes the letterboxed video in physical screen pixels so the native
+    // input thread can own absolute position, buttons and wheel (Windows).
+    void publishInputViewport();
+    [[nodiscard]] QRect physicalRectForItemRect(const QRectF &localRect) const;
     void updateSwapGate();
     void syncSwapGate();
     [[nodiscard]] QString currentSwapGateSource() const;
@@ -212,6 +216,10 @@ private:
     QSet<quint32> m_pressedShortcuts;
     QSet<quint8> m_pressedMouseButtons;
     QPointF m_lastMousePosition;
+    // Last absolute sample sent from Qt events; Qt's per-frame synthetic hover
+    // repeats the same point, which must not become another packet.
+    QRect m_lastAbsoluteSample;
+    QHash<QByteArray, QCursor> m_remoteCursorCache;
     std::unique_ptr<class WaylandPointerCapture> m_waylandPointer;
     std::unique_ptr<class MacPointerCapture> m_macPointer;
     bool m_usesMacPointerCapture = false;

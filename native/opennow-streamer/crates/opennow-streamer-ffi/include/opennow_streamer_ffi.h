@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-#define OPENNOW_STREAMER_FFI_ABI_VERSION 11u
+#define OPENNOW_STREAMER_FFI_ABI_VERSION 12u
 #define OPENNOW_STREAMER_MAX_TEXT_BYTES 65536u
 #define OPENNOW_STREAMER_VULKAN_DEVICE_INFO_VERSION 1u
 #define OPENNOW_STREAMER_GRAPHICS_CONTEXT_VERSION 3u
@@ -290,6 +290,17 @@ OpenNowStreamerStatus opennow_streamer_set_capture_active(
     bool relative_mouse,
     uintptr_t window_handle,
     bool *raw_input_active);
+
+/* Letterboxed video rectangle in physical screen pixels; valid=false clears it. With a
+   viewport, platforms that can sample the OS cursor capture absolute position, buttons and
+   wheel on their input thread (reported through raw_input_active). Since ABI 12. */
+OpenNowStreamerStatus opennow_streamer_set_input_viewport(
+    const OpenNowStreamer *handle,
+    bool valid,
+    int32_t left,
+    int32_t top,
+    uint32_t width,
+    uint32_t height);
 
 OpenNowStreamerStatus opennow_streamer_set_graphics_context(
     const OpenNowStreamer *handle,

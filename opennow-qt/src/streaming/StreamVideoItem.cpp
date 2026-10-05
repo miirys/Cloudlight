@@ -139,6 +139,8 @@ void StreamVideoItem::setVideoSize(const QSize &size)
     m_videoSize = normalized;
     emit videoSizeChanged();
     update();
+    // The letterbox moved: republish the input viewport and its owner.
+    syncCaptureState();
 }
 
 bool StreamVideoItem::renderCallbackAvailable() const

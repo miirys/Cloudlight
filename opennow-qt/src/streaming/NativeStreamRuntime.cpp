@@ -228,7 +228,8 @@ NativeStreamRuntime::NativeStreamRuntime(QObject *parent,
                               &opennow_streamer_replace_sdl_device_claims,
                               &opennow_streamer_submit_sony_snapshot,
                               &opennow_streamer_set_log_file,
-                              &opennow_streamer_submit_text}, parent, vulkanDevice, windowsAdapterLuid)
+                              &opennow_streamer_submit_text,
+                              &opennow_streamer_set_input_viewport}, parent, vulkanDevice, windowsAdapterLuid)
 {
 }
 
@@ -679,6 +680,18 @@ OpenNowStreamerStatus NativeStreamRuntime::setCaptureActive(
                                   rawInputActive)
         : OPENNOW_STREAMER_CLOSED;
 }
+OpenNowStreamerStatus NativeStreamRuntime::setInputViewport(const QRect &physicalViewport)
+{
+    const auto valid = physicalViewport.isValid() && !physicalViewport.isEmpty();
+    const std::shared_lock lock(d->handleMutex);
+    return d->handle && d->api.setInputViewport
+        ? d->api.setInputViewport(
+              d->handle, valid, valid ? physicalViewport.x() : 0, valid ? physicalViewport.y() : 0,
+              valid ? static_cast<std::uint32_t>(physicalViewport.width()) : 0,
+              valid ? static_cast<std::uint32_t>(physicalViewport.height()) : 0)
+        : OPENNOW_STREAMER_CLOSED;
+}
+
 OpenNowStreamerStatus NativeStreamRuntime::replaceSdlDeviceClaims(
     const QList<SdlDeviceClaim> &claims)
 {

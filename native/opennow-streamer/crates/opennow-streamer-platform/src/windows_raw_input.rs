@@ -6,7 +6,7 @@ use std::sync::atomic::{AtomicBool, AtomicIsize, Ordering};
 use std::sync::{Arc, Mutex, mpsc};
 use std::thread::{self, JoinHandle};
 
-use windows_sys::Win32::Foundation::{HWND, LPARAM, LRESULT, WPARAM};
+use windows_sys::Win32::Foundation::{HWND, LPARAM, LRESULT, POINT, WPARAM};
 use windows_sys::Win32::System::LibraryLoader::GetModuleHandleW;
 use windows_sys::Win32::System::Threading::{
     GetCurrentThread, SetThreadPriority, THREAD_PRIORITY_ABOVE_NORMAL,
@@ -17,7 +17,7 @@ use windows_sys::Win32::UI::Input::{
 };
 use windows_sys::Win32::UI::WindowsAndMessaging::{
     CREATESTRUCTW, CreateWindowExW, DefWindowProcW, DestroyWindow, DispatchMessageW, GWLP_USERDATA,
-    GetForegroundWindow, GetMessageW, GetWindowLongPtrW, HWND_MESSAGE, MSG, PostMessageW,
+    GetCursorPos, GetForegroundWindow, GetMessageW, GetWindowLongPtrW, HWND_MESSAGE, MSG, PostMessageW,
     PostQuitMessage, RI_MOUSE_BUTTON_4_DOWN, RI_MOUSE_BUTTON_4_UP, RI_MOUSE_BUTTON_5_DOWN,
     RI_MOUSE_BUTTON_5_UP, RI_MOUSE_HWHEEL, RI_MOUSE_LEFT_BUTTON_DOWN, RI_MOUSE_LEFT_BUTTON_UP,
     RI_MOUSE_MIDDLE_BUTTON_DOWN, RI_MOUSE_MIDDLE_BUTTON_UP, RI_MOUSE_RIGHT_BUTTON_DOWN,
@@ -25,6 +25,7 @@ use windows_sys::Win32::UI::WindowsAndMessaging::{
     WM_APP, WM_CLOSE, WM_INPUT, WM_NCCREATE, WM_NCDESTROY, WNDCLASSW,
 };
 
+use crate::embedded_input::InputViewport;
 use crate::media::{CapturedInput, CapturedInputQueue};
 
 const RAW_INPUT_CLASS: &[u16] = &[
@@ -53,6 +54,10 @@ struct RawInputState {
     relative_motion: AtomicBool,
     pressed_buttons: Mutex<HashSet<u8>>,
     captured_input: Arc<CapturedInputQueue>,
+    // Absolute mode: the letterboxed video in physical screen pixels, and the
+    // last position sent so button-only reports do not repeat it.
+    viewport: Mutex<Option<InputViewport>>,
+    last_absolute: Mutex<Option<CapturedInput>>,
 }
 
 pub(crate) struct WindowsRawInputController {
@@ -72,6 +77,8 @@ impl WindowsRawInputController {
             relative_motion: AtomicBool::new(false),
             pressed_buttons: Mutex::new(HashSet::new()),
             captured_input,
+            viewport: Mutex::new(None),
+            last_absolute: Mutex::new(None),
         });
         let thread_state = Arc::clone(&state);
         let (ready_sender, ready_receiver) = mpsc::sync_channel(1);
@@ -103,6 +110,19 @@ impl WindowsRawInputController {
             .store(foreground_owner, Ordering::Release);
     }
 
+    pub(crate) fn set_viewport(&self, viewport: Option<InputViewport>) {
+        *self
+            .state
+            .viewport
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner) = viewport;
+        *self
+            .state
+            .last_absolute
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner) = None;
+    }
+
     pub(crate) fn set_capture(&self, enabled: bool, relative_motion: bool) {
         let motion_changed = self
             .state
@@ -119,6 +139,13 @@ impl WindowsRawInputController {
             }
         } else if enabled_changed {
             release_pressed_buttons(&self.state);
+        }
+        if enabled_changed || motion_changed {
+            *self
+                .state
+                .last_absolute
+                .lock()
+                .unwrap_or_else(std::sync::PoisonError::into_inner) = None;
         }
     }
 
@@ -281,25 +308,33 @@ unsafe fn process_raw_input(state: &RawInputState, handle: HRAWINPUT) {
     let mouse = unsafe { raw.data.mouse };
     let owns_foreground =
         unsafe { GetForegroundWindow() } as isize == state.foreground_owner.load(Ordering::Acquire);
-    if owns_foreground
-        && state.relative_motion.load(Ordering::Acquire)
-        && mouse.usFlags & MOUSE_MOVE_ABSOLUTE == 0
-    {
-        // SDL continues to own absolute cursor coordinates. This thread owns raw relative
-        // deltas, plus buttons and wheel in both cursor modes.
+    let relative = state.relative_motion.load(Ordering::Acquire);
+    if owns_foreground && relative && mouse.usFlags & MOUSE_MOVE_ABSOLUTE == 0 {
+        // Relative mode: raw, unaccelerated deltas straight from the device.
         push_mouse_delta(&state.captured_input, mouse.lLastX, mouse.lLastY);
+    }
+    // Absolute mode: sample the OS cursor on every mouse report, like GeForce
+    // NOW's own client, and queue the position ahead of any button or wheel in
+    // the same report so a click always lands where the cursor is.
+    let mut inside_video = relative;
+    if owns_foreground && !relative {
+        inside_video = push_absolute_position(state);
     }
 
     let buttons = unsafe { mouse.Anonymous.Anonymous };
-    let button_flags = if owns_foreground {
+    let button_flags = if owns_foreground && inside_video {
         buttons.usButtonFlags
     } else {
         // A click can transiently move foreground before WM_INPUT delivers the
         // matching release. Never discard releases for buttons that we already
         // sent down: doing so leaves both the local de-duplicator and host stuck.
+        // Presses beside the video (letterbox bars) stay local.
         buttons.usButtonFlags & raw_mouse_button_up_mask()
     };
     push_raw_mouse_buttons(state, button_flags);
+    if owns_foreground && !inside_video {
+        return;
+    }
     if owns_foreground && u32::from(buttons.usButtonFlags) & RI_MOUSE_WHEEL != 0 {
         state.captured_input.push(CapturedInput::MouseWheel {
             delta_x: 0,
@@ -311,6 +346,44 @@ unsafe fn process_raw_input(state: &RawInputState, handle: HRAWINPUT) {
             delta_x: buttons.usButtonData as i16,
             delta_y: 0,
         });
+    }
+}
+
+/// Queues the current cursor position as a host absolute sample. Returns
+/// whether the cursor is over the video. Outside it nothing is sent unless a
+/// button is held, so a drag that leaves the video keeps tracking at the edge.
+fn push_absolute_position(state: &RawInputState) -> bool {
+    let Some(viewport) = *state
+        .viewport
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner)
+    else {
+        return false;
+    };
+    let mut cursor = POINT { x: 0, y: 0 };
+    if unsafe { GetCursorPos(&mut cursor) } == 0 {
+        return false;
+    }
+    let (sample, inside) = viewport.sample(cursor.x, cursor.y);
+    let dragging = !state
+        .pressed_buttons
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner)
+        .is_empty();
+    if inside || dragging {
+        push_absolute_sample(state, sample);
+    }
+    inside
+}
+
+fn push_absolute_sample(state: &RawInputState, sample: CapturedInput) {
+    let mut last = state
+        .last_absolute
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    if last.as_ref() != Some(&sample) {
+        state.captured_input.push(sample.clone());
+        *last = Some(sample);
     }
 }
 
@@ -392,8 +465,11 @@ mod tests {
     use std::sync::Arc;
     use std::sync::atomic::Ordering;
 
-    use super::{RawInputState, push_mouse_delta, push_raw_mouse_buttons, release_pressed_buttons};
-    use crate::media::{CapturedInput, CapturedInputQueue};
+    use super::{
+        RawInputState, push_absolute_sample, push_mouse_delta, push_raw_mouse_buttons,
+        release_pressed_buttons,
+    };
+use crate::media::{CapturedInput, CapturedInputQueue};
     use windows_sys::Win32::UI::WindowsAndMessaging::{
         RI_MOUSE_LEFT_BUTTON_DOWN, RI_MOUSE_LEFT_BUTTON_UP, RI_MOUSE_RIGHT_BUTTON_DOWN,
     };
@@ -405,7 +481,24 @@ mod tests {
             relative_motion: false.into(),
             pressed_buttons: Default::default(),
             captured_input: Arc::new(CapturedInputQueue::default()),
+            viewport: Default::default(),
+            last_absolute: Default::default(),
         }
+    }
+
+    #[test]
+    fn repeated_absolute_positions_are_sent_once() {
+        let state = state();
+        let sample = CapturedInput::MouseAbsolute {
+            x: 10,
+            y: 20,
+            width: 1920,
+            height: 1080,
+        };
+        push_absolute_sample(&state, sample.clone());
+        push_absolute_sample(&state, sample.clone());
+        assert_eq!(state.captured_input.take(), Some(sample));
+        assert_eq!(state.captured_input.take(), None);
     }
 
     #[test]

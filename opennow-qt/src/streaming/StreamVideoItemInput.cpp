@@ -675,6 +675,7 @@ void StreamVideoItem::mousePressEvent(QMouseEvent *event)
                 if (!m_relativeMouse) submitAbsoluteMouse(event->position());
                 s_nativeRuntime->submitMouseButton(button, true);
             }
+            if (!m_relativeMouse && m_pressedMouseButtons.size() == 1) updateCursorConfinement();
         }
         m_lastMousePosition = event->position();
         event->accept();
@@ -691,6 +692,7 @@ void StreamVideoItem::mouseReleaseEvent(QMouseEvent *event)
             if (!m_relativeMouse) submitAbsoluteMouse(event->position());
             s_nativeRuntime->submitMouseButton(button, false);
         }
+        if (m_pressedMouseButtons.isEmpty() && !m_relativeMouse) updateCursorConfinement();
         if (m_pressedMouseButtons.isEmpty() && m_pendingRelativeMouse) {
             const auto relative = *m_pendingRelativeMouse;
             m_pendingRelativeMouse.reset();
@@ -722,7 +724,8 @@ void StreamVideoItem::mouseMoveEvent(QMouseEvent *event)
             m_lastMousePosition = mapFromGlobal(QCursor::pos());
         }
     } else {
-        submitAbsoluteMouse(event->position());
+        // With Raw Input active the native input thread samples the cursor itself.
+        if (!m_rawInputActive) submitAbsoluteMouse(event->position());
         m_lastMousePosition = event->position();
     }
     event->accept();
@@ -737,7 +740,7 @@ void StreamVideoItem::hoverEnterEvent(QHoverEvent *event)
     // QQuickItem sends ordinary no-button movement through hover events once
     // hover delivery is enabled. Publish the entry point as well so the remote
     // cursor cannot retain a stale position when it re-enters the stream item.
-    submitAbsoluteMouse(event->position());
+    if (!m_rawInputActive) submitAbsoluteMouse(event->position());
     m_lastMousePosition = event->position();
     event->accept();
 }
@@ -751,7 +754,7 @@ void StreamVideoItem::hoverMoveEvent(QHoverEvent *event)
     // With no button held Qt does not call mouseMoveEvent for this item. Keep
     // the absolute GFN pointer current so remote hover and click hit-testing
     // use the same coordinates.
-    submitAbsoluteMouse(event->position());
+    if (!m_rawInputActive) submitAbsoluteMouse(event->position());
     m_lastMousePosition = event->position();
     event->accept();
 }
@@ -889,9 +892,10 @@ void StreamVideoItem::resynchronizeInput()
             && !WaylandPointerCapture::isWayland() && !m_usesMacPointerCapture) {
         const auto anchor = mapToGlobal(QPointF(width() / 2.0, height() / 2.0)).toPoint();
         QCursor::setPos(anchor);
-    } else if (m_captureActive && !m_relativeMouse) {
+    } else if (m_captureActive && !m_relativeMouse && !m_rawInputActive) {
         // Fullscreen changes the absolute viewport dimensions without requiring
         // the physical cursor to move. Re-publish the current point immediately.
+        m_lastAbsoluteSample = {};
         submitAbsoluteMouse(mapFromGlobal(QCursor::pos()));
     }
     m_lastMousePosition = mapFromGlobal(QCursor::pos());
@@ -902,6 +906,8 @@ void StreamVideoItem::submitAbsoluteMouse(const QPointF &position)
 {
     const auto coordinates = absoluteMouseCoordinates(
         position, m_videoSize, QSizeF(width(), height()));
+    if (coordinates == m_lastAbsoluteSample) return;
+    m_lastAbsoluteSample = coordinates;
     s_nativeRuntime->submitMouseAbsolute(
         static_cast<quint16>(std::min(coordinates.x(), 65535)),
         static_cast<quint16>(std::min(coordinates.y(), 65535)),
@@ -932,6 +938,7 @@ void StreamVideoItem::syncCaptureState()
         if (m_relativeMouse) desired = desired && m_macPointer->locked();
     }
     bool rawInput = false;
+    publishInputViewport();
     if (s_nativeRuntime && s_nativeRuntime->running()) {
         s_nativeRuntime->setCaptureActive(
             desired, m_relativeMouse,
@@ -942,8 +949,10 @@ void StreamVideoItem::syncCaptureState()
                 ? static_cast<std::uintptr_t>(window()->winId()) : 0,
             &rawInput);
     }
+    if (m_rawInputActive != (desired && rawInput)) m_lastAbsoluteSample = {};
     m_rawInputActive = desired && rawInput;
     const auto changed = m_captureActive != desired;
+    if (changed) m_lastAbsoluteSample = {};
     m_captureActive = desired;
     if (m_captureActive) {
         m_lastMousePosition = mapFromGlobal(QCursor::pos());
@@ -969,6 +978,7 @@ void StreamVideoItem::releaseInput()
     }
     m_pressedKeys.clear();
     m_pressedShortcuts.clear();
+    m_lastAbsoluteSample = {};
     if (!m_rawInputActive) releaseQtMouseButtons();
     else m_pressedMouseButtons.clear();
     ungrabMouse();
@@ -999,6 +1009,47 @@ QRect StreamVideoItem::cursorConfinementRect(const QRect &viewport, bool rawRela
     return rawRelative && !viewport.isEmpty() ? QRect(viewport.center(), QSize(1, 1)) : viewport;
 }
 
+QRect StreamVideoItem::physicalRectForItemRect(const QRectF &localRect) const
+{
+#if defined(Q_OS_WIN)
+    if (!window()) return {};
+    const auto handle = reinterpret_cast<HWND>(window()->winId());
+    RECT client{};
+    POINT topLeft{};
+    if (!handle || !GetClientRect(handle, &client) || !ClientToScreen(handle, &topLeft))
+        return {};
+    POINT bottomRight{client.right, client.bottom};
+    if (!ClientToScreen(handle, &bottomRight)) return {};
+    const auto *content = window()->contentItem();
+    if (!content) return {};
+    const auto first = mapToItem(content, localRect.topLeft());
+    const auto second = mapToItem(content, localRect.bottomRight());
+    const QRectF itemRect(QPointF(std::min(first.x(), second.x()),
+                                 std::min(first.y(), second.y())),
+                          QPointF(std::max(first.x(), second.x()),
+                                  std::max(first.y(), second.y())));
+    return scaledCaptureRect(
+        itemRect, QSizeF(window()->width(), window()->height()),
+        QRect(topLeft.x, topLeft.y, bottomRight.x - topLeft.x, bottomRight.y - topLeft.y));
+#else
+    Q_UNUSED(localRect);
+    return {};
+#endif
+}
+
+void StreamVideoItem::publishInputViewport()
+{
+#if defined(Q_OS_WIN)
+    if (!s_nativeRuntime || !s_nativeRuntime->running()) return;
+    QRect viewport;
+    if (!m_videoSize.isEmpty() && width() > 0 && height() > 0) {
+        const auto local = aspectFitRect(m_videoSize, QSize(qRound(width()), qRound(height())));
+        viewport = physicalRectForItemRect(QRectF(local));
+    }
+    s_nativeRuntime->setInputViewport(viewport);
+#endif
+}
+
 void StreamVideoItem::updateCursorConfinement()
 {
 #if defined(Q_OS_WIN)
@@ -1006,34 +1057,19 @@ void StreamVideoItem::updateCursorConfinement()
         releaseCursorConfinement();
         return;
     }
-    const auto handle = reinterpret_cast<HWND>(window()->winId());
-    RECT client{};
-    POINT topLeft{};
-    if (!handle || !GetClientRect(handle, &client)
-        || !ClientToScreen(handle, &topLeft)) {
-        releaseCursorConfinement();
-        return;
+    // Window moves change where the video is on screen.
+    publishInputViewport();
+    QRectF localRect(0, 0, width(), height());
+    if (!m_relativeMouse) {
+        // Absolute mode leaves the arrow free (it can reach the window chrome)
+        // and only holds it on the picture while a drag is in progress.
+        if (m_pressedMouseButtons.isEmpty() || m_videoSize.isEmpty()) {
+            releaseCursorConfinement();
+            return;
+        }
+        localRect = QRectF(aspectFitRect(m_videoSize, QSize(qRound(width()), qRound(height()))));
     }
-    POINT bottomRight{client.right, client.bottom};
-    if (!ClientToScreen(handle, &bottomRight)) {
-        releaseCursorConfinement();
-        return;
-    }
-    const auto *content = window()->contentItem();
-    if (!content) {
-        releaseCursorConfinement();
-        return;
-    }
-    const auto first = mapToItem(content, QPointF(0, 0));
-    const auto second = mapToItem(content, QPointF(width(), height()));
-    const QRectF itemRect(QPointF(std::min(first.x(), second.x()),
-                                 std::min(first.y(), second.y())),
-                          QPointF(std::max(first.x(), second.x()),
-                                  std::max(first.y(), second.y())));
-    const auto captureRect = scaledCaptureRect(
-        itemRect, QSizeF(window()->width(), window()->height()),
-        QRect(topLeft.x, topLeft.y, bottomRight.x - topLeft.x,
-              bottomRight.y - topLeft.y));
+    const auto captureRect = physicalRectForItemRect(localRect);
     if (captureRect.isEmpty()) {
         releaseCursorConfinement();
         return;
@@ -1149,6 +1185,13 @@ void StreamVideoItem::applyRemoteCursor(const QByteArray &bytes)
     }
 
     if (messageType == 1 && metadata.imageOffset >= 0 && metadata.imageLength > 0) {
+        // The host re-sends the same custom shapes; decode each one once.
+        const auto cacheKey = bytes.mid(2, 2) + bytes.mid(metadata.imageOffset, metadata.imageLength);
+        if (const auto cached = m_remoteCursorCache.constFind(cacheKey);
+                cached != m_remoteCursorCache.constEnd()) {
+            setRemoteCursorShape(*cached);
+            return;
+        }
         QPixmap pixmap;
         const auto image = QByteArray::fromBase64(
             bytes.mid(metadata.imageOffset, metadata.imageLength));
@@ -1164,13 +1207,18 @@ void StreamVideoItem::applyRemoteCursor(const QByteArray &bytes)
                            0, pixmap.width() - 1),
                 std::clamp(qRound(static_cast<quint8>(bytes[3]) / metadata.scale),
                            0, pixmap.height() - 1));
-            setRemoteCursorShape(QCursor(pixmap, hotspot.x(), hotspot.y()));
+            const QCursor cursor(pixmap, hotspot.x(), hotspot.y());
+            if (m_remoteCursorCache.size() >= 32) m_remoteCursorCache.clear();
+            m_remoteCursorCache.insert(cacheKey, cursor);
+            setRemoteCursorShape(cursor);
             return;
         }
     }
     switch (cursorId) {
     case 2: setRemoteCursorShape(Qt::IBeamCursor); break;
     case 3: setRemoteCursorShape(Qt::WaitCursor); break;
+    case 5: setRemoteCursorShape(Qt::BusyCursor); break;
+    case 13: setRemoteCursorShape(Qt::WhatsThisCursor); break;
     case 4: setRemoteCursorShape(Qt::CrossCursor); break;
     case 6: setRemoteCursorShape(Qt::SizeFDiagCursor); break;
     case 7: setRemoteCursorShape(Qt::SizeBDiagCursor); break;

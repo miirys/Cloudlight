@@ -6,6 +6,7 @@
 #include <QByteArray>
 #include <QJsonObject>
 #include <QObject>
+#include <QRect>
 #include <QString>
 
 #include <cstddef>
@@ -58,6 +59,8 @@ public:
             const OpenNowStreamer *, const OpenNowSdlDeviceClaim *, std::size_t);
         using SubmitSonySnapshot = OpenNowStreamerStatus (*)(
             const OpenNowStreamer *, const OpenNowSonySnapshot *);
+        using SetInputViewport = OpenNowStreamerStatus (*)(
+            const OpenNowStreamer *, bool, std::int32_t, std::int32_t, std::uint32_t, std::uint32_t);
 
         Create create = nullptr;
         Send send = nullptr;
@@ -79,6 +82,7 @@ public:
         SubmitSonySnapshot submitSonySnapshot = nullptr;
         SetLogFile setLogFile = nullptr;
         Send submitText = nullptr;
+        SetInputViewport setInputViewport = nullptr;
     };
 
     static constexpr int DefaultShutdownTimeoutMs = 1'500;
@@ -145,6 +149,8 @@ public:
     OpenNowStreamerStatus setCaptureActive(bool active, bool relativeMouse,
                                            std::uintptr_t windowHandle,
                                            bool *rawInputActive);
+    // Letterboxed video rectangle in physical screen pixels; an empty rect clears it.
+    OpenNowStreamerStatus setInputViewport(const QRect &physicalViewport);
     OpenNowStreamerStatus replaceSdlDeviceClaims(const QList<SdlDeviceClaim> &claims);
     OpenNowStreamerStatus submitSonySnapshot(const OpenNowSonySnapshot &snapshot);
 
