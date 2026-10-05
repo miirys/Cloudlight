@@ -182,6 +182,20 @@ impl CloudMatchService {
             .create_at(params, settings, auth, device_id, connection)
     }
 
+    pub(crate) fn network_test(
+        &self,
+        params: &Value,
+        settings: &Value,
+        auth: &AuthSession,
+        device_id: &str,
+    ) -> Result<Value, ServiceError> {
+        let client = client_for_settings(&self.client, settings).map_err(invalid)?;
+        let requested = requested_streaming_base(params, settings, auth)?;
+        let token = session_token(auth);
+        let base = self.create_base(&client, &requested, params, settings, token, device_id)?;
+        run_network_test(&client, &base, token, device_id, params, settings)
+    }
+
     pub(crate) fn admit_create(&self) -> Result<CreateAdmission<'_>, ServiceError> {
         let guard = self
             .allocation_admission
@@ -2358,14 +2372,14 @@ fn network_test_display_profile(
     }
 }
 
-fn try_network_test_session(
+fn allocate_network_test_session(
     client: &Client,
     base: &Url,
     token: &str,
     device_id: &str,
     params: &Value,
     settings: &Value,
-) -> Result<Value, ServiceError> {
+) -> Result<crate::network_test::NetworkTestSession, ServiceError> {
     let profile = network_test_display_profile(settings, params);
     let url = crate::network_test::nettest_url(base)?;
     let body = crate::network_test::allocation_body("GFN-PC", profile);
@@ -2422,7 +2436,97 @@ fn try_network_test_session(
         });
     }
     let payload = payload.map_err(|_| invalid("Network test session returned invalid JSON"))?;
-    let session = crate::network_test::parse_allocation(&payload)?;
+    crate::network_test::parse_allocation(&payload)
+}
+
+fn network_test_thresholds(session: &crate::network_test::NetworkTestSession) -> Value {
+    json!({
+        "bandwidthRecommendedMbps":session.thresholds.bandwidth_recommended_mbps,
+        "bandwidthLimitMbps":session.thresholds.bandwidth_limit_mbps,
+        "latencyRecommendedMs":session.thresholds.latency_recommended_ms,
+        "latencyLimitMs":session.thresholds.latency_limit_ms,
+        "packetLossRecommendedPct":session.thresholds.packet_loss_recommended_pct,
+        "packetLossLimitPct":session.thresholds.packet_loss_limit_pct,
+    })
+}
+
+fn network_test_socket(
+    session: &crate::network_test::NetworkTestSession,
+) -> Result<(UdpSocket, std::net::SocketAddr), ServiceError> {
+    let peer = std::net::SocketAddr::new(session.address, session.port);
+    let socket = UdpSocket::bind(if peer.is_ipv4() {
+        "0.0.0.0:0"
+    } else {
+        "[::]:0"
+    })
+    .map_err(|_| invalid("Network test probe could not bind a UDP socket"))?;
+    Ok((socket, peer))
+}
+
+/// On-demand network test (Settings > Server location > Test network). Uses a
+/// real nettestsession at the zone the next launch would use, so the
+/// required/recommended thresholds come from GeForce NOW. Latency, jitter and
+/// loss come from signed probes to its test server; bandwidth is not measured
+/// because the probe protocol for it has not been verified.
+fn run_network_test(
+    client: &Client,
+    base: &Url,
+    token: &str,
+    device_id: &str,
+    params: &Value,
+    settings: &Value,
+) -> Result<Value, ServiceError> {
+    let session = allocate_network_test_session(client, base, token, device_id, params, settings)?;
+    let Some(key) = session.hmac_key.as_deref() else {
+        return Err(network_test_key_unavailable());
+    };
+    crate::requests::check()?;
+    let (socket, peer) = network_test_socket(&session)?;
+    let path = crate::network_test::measure_path(
+        &socket,
+        peer,
+        key,
+        session.session_id.as_bytes(),
+        crate::network_test::PATH_PROBES,
+        crate::network_test::PATH_INTERVAL,
+        crate::network_test::PATH_REPLY_WAIT,
+        crate::network_test::PATH_BUDGET,
+    );
+    crate::requests::check()?;
+    let mtu = crate::network_test::probe_mtu(
+        &socket,
+        peer,
+        key,
+        session.session_id.as_bytes(),
+        crate::network_test::PROBE_FLOOR_BYTES,
+        crate::network_test::PROBE_CEILING_BYTES,
+    )
+    .ok()
+    .and_then(|outcome| outcome.measured_datagram_bytes);
+    Ok(json!({
+        "status": if path.received > 0 { "measured" } else { "unreachable" },
+        "zone":base.host_str().unwrap_or_default(),
+        "serverId":session.server_id,
+        "latencyMs":path.median_ms(),
+        "jitterMs":path.jitter_ms(),
+        "packetLossPct":path.loss_pct(),
+        "probesSent":path.sent,
+        "probesReceived":path.received,
+        "bandwidthMbps":Value::Null,
+        "mtuBytes":mtu,
+        "thresholds":network_test_thresholds(&session),
+    }))
+}
+
+fn try_network_test_session(
+    client: &Client,
+    base: &Url,
+    token: &str,
+    device_id: &str,
+    params: &Value,
+    settings: &Value,
+) -> Result<Value, ServiceError> {
+    let session = allocate_network_test_session(client, base, token, device_id, params, settings)?;
     let Some(key) = session.hmac_key.as_deref() else {
         return Err(network_test_key_unavailable());
     };
@@ -2446,14 +2550,7 @@ fn try_network_test_session(
         "secure":session.secure,
         "measuredDatagramBytes":measured_datagram_bytes,
         "probes":outcome.probes,
-        "thresholds":{
-            "bandwidthRecommendedMbps":session.thresholds.bandwidth_recommended_mbps,
-            "bandwidthLimitMbps":session.thresholds.bandwidth_limit_mbps,
-            "latencyRecommendedMs":session.thresholds.latency_recommended_ms,
-            "latencyLimitMs":session.thresholds.latency_limit_ms,
-            "packetLossRecommendedPct":session.thresholds.packet_loss_recommended_pct,
-            "packetLossLimitPct":session.thresholds.packet_loss_limit_pct,
-        },
+        "thresholds":network_test_thresholds(&session),
     }))
 }
 
@@ -2461,13 +2558,7 @@ fn probe_network_test_path(
     session: &crate::network_test::NetworkTestSession,
     key: &[u8],
 ) -> Result<crate::network_test::ProbeOutcome, ServiceError> {
-    let peer = std::net::SocketAddr::new(session.address, session.port);
-    let socket = UdpSocket::bind(if peer.is_ipv4() {
-        "0.0.0.0:0"
-    } else {
-        "[::]:0"
-    })
-    .map_err(|_| invalid("Network test probe could not bind a UDP socket"))?;
+    let (socket, peer) = network_test_socket(session)?;
     crate::network_test::probe_mtu(
         &socket,
         peer,

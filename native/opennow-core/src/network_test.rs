@@ -746,11 +746,170 @@ pub fn probe_mtu(
     })
 }
 
+/// Round trips measured on the GFN test server's path with the same signed
+/// probes the launch-time MTU check uses. The server does not echo sequence
+/// numbers, so probes are strictly stop-and-wait and stale replies are
+/// drained before each send.
+#[derive(Debug, Clone, PartialEq)]
+pub struct PathMeasurement {
+    pub sent: usize,
+    pub received: usize,
+    pub round_trips_ms: Vec<f64>,
+}
+
+impl PathMeasurement {
+    pub fn loss_pct(&self) -> Option<f64> {
+        (self.sent > 0).then(|| (self.sent - self.received) as f64 * 100.0 / self.sent as f64)
+    }
+
+    pub fn median_ms(&self) -> Option<f64> {
+        let mut values = self.round_trips_ms.clone();
+        if values.is_empty() {
+            return None;
+        }
+        values.sort_by(f64::total_cmp);
+        Some(values[values.len() / 2])
+    }
+
+    /// Mean absolute difference between consecutive round trips.
+    pub fn jitter_ms(&self) -> Option<f64> {
+        (self.round_trips_ms.len() > 1).then(|| {
+            self.round_trips_ms
+                .windows(2)
+                .map(|pair| (pair[1] - pair[0]).abs())
+                .sum::<f64>()
+                / (self.round_trips_ms.len() - 1) as f64
+        })
+    }
+}
+
+pub const PATH_PROBES: usize = 40;
+pub const PATH_INTERVAL: std::time::Duration = std::time::Duration::from_millis(25);
+pub const PATH_REPLY_WAIT: std::time::Duration = std::time::Duration::from_millis(400);
+pub const PATH_BUDGET: std::time::Duration = std::time::Duration::from_secs(5);
+
+fn round_trip(
+    socket: &std::net::UdpSocket,
+    peer: std::net::SocketAddr,
+    key: &[u8],
+    session_id: &[u8],
+    sequence: u32,
+    size: u32,
+    reply_wait: std::time::Duration,
+    deadline: std::time::Instant,
+) -> Option<std::time::Duration> {
+    let mut buffer = vec![0_u8; MAX_MESSAGE_BYTES];
+    // Drop replies that arrived after an earlier probe timed out.
+    if socket.set_nonblocking(true).is_ok() {
+        while socket.recv_from(&mut buffer).is_ok() {}
+        socket.set_nonblocking(false).ok()?;
+    }
+    let mut message = NetworkTestMessage::mtu_probe(size, session_id, sequence);
+    message.seal(key).ok()?;
+    let started = std::time::Instant::now();
+    socket.send_to(&message.encode(), peer).ok()?;
+    let deadline = deadline.min(started + reply_wait);
+    loop {
+        let remaining = deadline.saturating_duration_since(std::time::Instant::now());
+        if remaining.is_zero() || socket.set_read_timeout(Some(remaining)).is_err() {
+            return None;
+        }
+        let (length, source) = socket.recv_from(&mut buffer).ok()?;
+        if source != peer || length < size as usize {
+            continue;
+        }
+        let Ok(reply) = NetworkTestMessage::decode_reply(&buffer[..length]) else {
+            continue;
+        };
+        if reply_is_accepted(&reply, session_id, size) {
+            return Some(started.elapsed());
+        }
+    }
+}
+
+pub fn measure_path(
+    socket: &std::net::UdpSocket,
+    peer: std::net::SocketAddr,
+    key: &[u8],
+    session_id: &[u8],
+    probes: usize,
+    interval: std::time::Duration,
+    reply_wait: std::time::Duration,
+    budget: std::time::Duration,
+) -> PathMeasurement {
+    let deadline = std::time::Instant::now() + budget;
+    let mut measurement = PathMeasurement {
+        sent: 0,
+        received: 0,
+        round_trips_ms: Vec::with_capacity(probes),
+    };
+    for index in 0..probes {
+        let started = std::time::Instant::now();
+        if started >= deadline || crate::requests::check().is_err() {
+            break;
+        }
+        measurement.sent += 1;
+        let sequence = u32::try_from(index + 1).unwrap_or(u32::MAX);
+        if let Some(elapsed) =
+            round_trip(
+            socket,
+            peer,
+            key,
+            session_id,
+            sequence,
+            PROBE_FLOOR_BYTES,
+            reply_wait,
+            deadline,
+        )
+        {
+            measurement.received += 1;
+            measurement.round_trips_ms.push(elapsed.as_secs_f64() * 1000.0);
+        }
+        let spent = started.elapsed();
+        if spent < interval {
+            std::thread::sleep(interval - spent);
+        }
+    }
+    measurement
+}
+
 #[cfg(test)]
 mod probe_tests {
     use super::*;
     use std::net::{SocketAddr, UdpSocket};
     use std::time::Duration;
+
+    #[test]
+    fn path_measurement_counts_loss_and_round_trips() {
+        let dropped = std::sync::Arc::new(std::sync::atomic::AtomicUsize::new(0));
+        let counter = dropped.clone();
+        let (address, server) = vendor_server(1_472, move |size| {
+            // Drop every fourth probe to exercise the loss count.
+            if counter.fetch_add(1, std::sync::atomic::Ordering::SeqCst) % 4 == 3 {
+                Vec::new()
+            } else {
+                vec![vendor_datagram(SESSION, size, MESSAGE_TYPE_MTU_RESPONSE)]
+            }
+        });
+        let socket = UdpSocket::bind("127.0.0.1:0").unwrap();
+        let measurement = measure_path(
+            &socket,
+            address,
+            &KEY,
+            SESSION,
+            8,
+            Duration::from_millis(1),
+            Duration::from_millis(60),
+            Duration::from_secs(5),
+        );
+        drop(socket);
+        server.join().unwrap();
+        assert_eq!(measurement.sent, 8);
+        assert_eq!(measurement.received, 6);
+        assert_eq!(measurement.loss_pct(), Some(25.0));
+        assert!(measurement.median_ms().is_some());
+        assert!(measurement.jitter_ms().is_some());
+    }
 
     const KEY: [u8; 32] = [0x33; 32];
     const SESSION: &[u8] = b"nt-1";

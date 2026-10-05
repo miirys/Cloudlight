@@ -404,6 +404,7 @@ and artwork only near the viewport, using the section's local category ID
 - `catalog.store.list`, `catalog.store.local`, `catalog.store.presentation`
 - `network.regions.list`
 - `network.regions.ping`
+- `network.test` allocates a GeForce NOW test session for the zone the next launch would use and returns latency, jitter, packet loss, path MTU and the service thresholds (bandwidth is reported as null until its probe is verified).
 - `queue.servers.list`
 - `account.subscription.get`
 - `account.connections.list`, `account.connections.sync`, `account.connections.unlink`

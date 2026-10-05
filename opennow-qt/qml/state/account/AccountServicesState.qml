@@ -19,6 +19,12 @@ QtObject {
     property bool regionPingPending: false
     readonly property bool regionPingBusy: regionPingPending || regionPingRequestId !== ""
     property string regionPingRequestId: ""
+    // On-demand network test against the GeForce NOW test server for the zone
+    // the next launch would use: idle, running, done or failed.
+    property string networkTestRequestId: ""
+    property string networkTestState: "idle"
+    property var networkTestResult: ({})
+    property string networkTestMessage: ""
     property var gameAccounts: []
     property string gameAccountsState: "idle"
     property string gameAccountMessage: ""
@@ -91,7 +97,9 @@ QtObject {
     function invalidateAccount() {
         accountLinkPollTimer.stop()
         syncPollTimer.stop()
-        for (const key of ["subscriptionRequestId", "regionsRequestId", "regionPingRequestId",
+        networkTestState = "idle"
+        networkTestResult = ({})
+        for (const key of ["subscriptionRequestId", "regionsRequestId", "regionPingRequestId", "networkTestRequestId",
                 "gameAccountsRequestId", "gameAccountActionRequestId", "accountLinkStartRequestId",
                 "accountLinkPollRequestId", "syncStatusRequestId", "syncCancelRequestId", "storageLocationsRequestId", "storageResetRequestId"]) {
             const requestId = root[key]
@@ -149,6 +157,44 @@ QtObject {
         }, 20000)
         if (regionPingRequestId === "")
             regionPingMessage = qsTr("Could not start the latency test. Try again.")
+    }
+
+    function runNetworkTest() {
+        if (!ready || networkTestRequestId !== "")
+            return
+        if (!signedIn) {
+            networkTestState = "failed"
+            networkTestMessage = qsTr("Sign in to test your network.")
+            return
+        }
+        networkTestResult = ({})
+        networkTestMessage = ""
+        networkTestState = "running"
+        networkTestRequestId = coreClient.request("network.test", {}, 45000)
+        if (networkTestRequestId === "") {
+            networkTestState = "failed"
+            networkTestMessage = qsTr("Could not start the network test. Try again.")
+        }
+    }
+
+    function cancelNetworkTest() {
+        const requestId = networkTestRequestId
+        networkTestRequestId = ""
+        if (networkTestState === "running")
+            networkTestState = "idle"
+        if (requestId !== "") coreClient.cancel(requestId)
+    }
+
+    function acceptNetworkTest(result) {
+        networkTestRequestId = ""
+        networkTestResult = result || ({})
+        networkTestState = "done"
+    }
+
+    function failNetworkTest(message) {
+        networkTestRequestId = ""
+        networkTestMessage = message
+        networkTestState = "failed"
     }
 
     function resetRegionPing() {

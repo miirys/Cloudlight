@@ -31,7 +31,6 @@ Column {
         DesktopSettingsRow {
             objectName: "renewRegionLatency"
             width: parent.width; paperStyle: true; glyph: "speed"; title: qsTr("Region latency")
-            showDivider: false
             description: ShellStore.regionPingMessage || qsTr("Measure available regions before your next session")
             value: ShellStore.regionPingBusy || page.settingsScreen.currentRegionPing() === null ? ""
                 : page.settingsScreen.valueSetting("region", "") === "" ? qsTr("Best: %1 ms").arg(page.settingsScreen.currentRegionPing())
@@ -41,6 +40,16 @@ Column {
                 text: ShellStore.regionPingPending ? qsTr("Loading…") : ShellStore.regionPingBusy ? qsTr("Pinging…") : qsTr("Ping regions")
                 enabled: !ShellStore.regionPingBusy
                 onClicked: ShellStore.pingRegions()
+            }
+        }
+        DesktopSettingsRow {
+            objectName: "networkTestRow"
+            width: parent.width; paperStyle: true; glyph: "wave"; title: qsTr("Network test")
+            description: qsTr("Check latency and packet loss to the GeForce NOW server you'll play on.")
+            DesktopSettingsButton {
+                objectName: "networkTestButton"
+                text: qsTr("Test network")
+                onClicked: networkTestDialog.open()
             }
         }
         DesktopSettingsRow {
@@ -68,7 +77,7 @@ Column {
             DesktopSettingsSection { text: qsTr("Network test") }
             DesktopSettingsRow {
                 objectName: "renewNetworkTest"
-                width: parent.width; paperStyle: true; glyph: "speed"; title: qsTr("Network test")
+                width: parent.width; paperStyle: true; glyph: "speed"; title: qsTr("Test network before each launch")
                 showDivider: false
                 description: qsTr("Measure this zone's UDP payload reachability before streaming · selected zones only")
                 DesktopSettingsToggle { objectName: "renewNetworkTestToggle"; checked: page.settingsScreen.boolSetting("networkTest",false); onValueChangedByUser: value => page.settingsScreen.setSetting("networkTest",value) }
@@ -94,4 +103,5 @@ Column {
             }
         }
     }
+    DesktopNetworkTestDialog { id: networkTestDialog }
 }

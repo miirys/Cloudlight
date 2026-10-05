@@ -284,6 +284,9 @@ QtObject {
     property alias regionPingMessage: accountServicesOwner.regionPingMessage
     property alias regionPingPending: accountServicesOwner.regionPingPending
     readonly property bool regionPingBusy: accountServicesOwner.regionPingBusy
+    readonly property string networkTestState: accountServicesOwner.networkTestState
+    readonly property var networkTestResult: accountServicesOwner.networkTestResult
+    readonly property string networkTestMessage: accountServicesOwner.networkTestMessage
     property var savedAccounts: []
     property alias gameAccounts: accountServicesOwner.gameAccounts
     property alias gameAccountsState: accountServicesOwner.gameAccountsState
@@ -689,6 +692,7 @@ QtObject {
     property alias subscriptionRequestId: accountServicesOwner.subscriptionRequestId
     property alias regionsRequestId: accountServicesOwner.regionsRequestId
     property alias regionPingRequestId: accountServicesOwner.regionPingRequestId
+    property alias networkTestRequestId: accountServicesOwner.networkTestRequestId
     property string accountsRequestId: ""
     property string accountSwitchRequestId: ""
     property string accountRemoveRequestId: ""
@@ -1291,6 +1295,14 @@ QtObject {
 
     function resetRegionPing() {
         return accountServicesOwner.resetRegionPing()
+    }
+
+    function runNetworkTest() {
+        return accountServicesOwner.runNetworkTest()
+    }
+
+    function cancelNetworkTest() {
+        return accountServicesOwner.cancelNetworkTest()
     }
 
     function refreshGameAccounts() {
@@ -3587,6 +3599,8 @@ QtObject {
                 accountServicesOwner.acceptRegions(result)
             } else if (requestId === root.regionPingRequestId) {
                 accountServicesOwner.acceptRegionPing(result)
+            } else if (requestId === root.networkTestRequestId) {
+                accountServicesOwner.acceptNetworkTest(result)
             } else if (requestId === root.accountsRequestId) {
                 root.savedAccounts = result.accounts || []
                 root.accountsRequestId = ""
@@ -3912,6 +3926,8 @@ QtObject {
                 accountServicesOwner.failRegions(message)
             } else if (requestId === root.regionPingRequestId) {
                 accountServicesOwner.failRegionPing(message)
+            } else if (requestId === root.networkTestRequestId) {
+                accountServicesOwner.failNetworkTest(message)
             } else if (requestId === root.accountsRequestId) {
                 root.accountsRequestId = ""
             } else if (requestId === root.accountSwitchRequestId) {

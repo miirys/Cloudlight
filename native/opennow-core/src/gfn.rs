@@ -1640,6 +1640,15 @@ impl GfnService {
         })
     }
 
+    pub fn network_test(&self, params: &Value, settings: &Value) -> Result<Value, ServiceError> {
+        self.providers()?;
+        let (session, generation) = self.authenticated_snapshot(TokenPurpose::ServiceId, false)?;
+        let (params, settings) = self.scoped_session_route(params, settings, &session)?;
+        self.cloudmatch
+            .network_test(&params, &settings, &session, &self.device_id)
+            .map(|result| scoped_result(result, &session, generation))
+    }
+
     pub fn create_session(&self, params: &Value, settings: &Value) -> Result<Value, ServiceError> {
         let admission = self.cloudmatch.admit_create()?;
         let app_id = params["catalogAppId"].as_str().unwrap_or_default();
