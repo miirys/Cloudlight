@@ -45,7 +45,7 @@ OverlayPage {
     OverlayDivider {}
     OverlayRow {
         objectName: "overlayConsoleMode"
-        icon: "gamepad"
+        icon: "gameplay"
         title: page.menu.modeOn ? qsTr("Switch to desktop mode") : qsTr("Switch to console mode")
         subtitle: qsTr("Changes the Cloudlight interface around the game")
         available: !DesktopTokens.consoleModePending(page.Window.window)

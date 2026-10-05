@@ -23,7 +23,7 @@ OverlayPage {
         onActivated: ShellStore.setSetting("streamNotifications", !checked)
     }
     OverlayDivider {}
-    OverlaySectionLabel { text: qsTr("Network"); strong: true; topPadding: OverlayStyle.u(30); bottomPadding: OverlayStyle.u(19) }
+    OverlaySectionLabel { text: qsTr("Network"); strong: true; topPadding: OverlayStyle.u(18); bottomPadding: OverlayStyle.u(19) }
     Check { title: qsTr("Connection status"); setting: "notifyConnection" }
     OverlaySectionLabel { text: qsTr("Gallery"); strong: true; topPadding: OverlayStyle.u(18); bottomPadding: OverlayStyle.u(19) }
     Check { title: qsTr("Recording saved"); setting: "notifyRecordingSaved" }

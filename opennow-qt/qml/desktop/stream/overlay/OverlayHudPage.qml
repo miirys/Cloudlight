@@ -87,8 +87,8 @@ OverlayPage {
         height: OverlayStyle.u(85)
         titleCenter: OverlayStyle.u(36)
         stepperCenter: titleCenter + OverlayStyle.u(10)
-        stepperValueWidth: OverlayStyle.u(202)
-        stepperMargin: OverlayStyle.u(19)
+        stepperValueWidth: OverlayStyle.u(218)
+        stepperMargin: OverlayStyle.u(22)
         valueText: page.cornerLabels[page.position(setting, fallback)] || ""
         onStepped: direction => page.step(setting, fallback, direction, allowNone)
         onActivated: stepped(1)
@@ -96,8 +96,8 @@ OverlayPage {
     OverlaySectionLabel { text: qsTr("Status indicators"); topPadding: OverlayStyle.u(28) }
     PositionRow { objectName: "overlayHudRecording"; title: qsTr("Record"); setting: "hudRecordingPosition"; fallback: "top-right" }
     PositionRow { title: qsTr("Microphone"); setting: "hudMicrophonePosition"; fallback: "none" }
-    OverlaySectionLabel { text: qsTr("Network"); topPadding: OverlayStyle.u(22); bottomPadding: 0 }
+    OverlaySectionLabel { text: qsTr("Network"); topPadding: OverlayStyle.u(15); bottomPadding: OverlayStyle.u(8) }
     PositionRow { title: qsTr("Connection status"); setting: "hudConnectionPosition"; fallback: "top-right"; titleCenter: OverlayStyle.u(29) }
-    OverlaySectionLabel { text: qsTr("Statistics"); topPadding: OverlayStyle.u(22); bottomPadding: 0 }
+    OverlaySectionLabel { text: qsTr("Statistics"); topPadding: OverlayStyle.u(8); bottomPadding: OverlayStyle.u(8) }
     PositionRow { title: qsTr("Position"); setting: "statsOverlayPosition"; fallback: "top-right"; allowNone: false; titleCenter: OverlayStyle.u(29) }
 }

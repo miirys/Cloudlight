@@ -142,7 +142,7 @@ OverlayPage {
     OverlayDivider {}
 
     // Name, with GeForce NOW's 30-character counter.
-    OverlaySectionLabel { text: qsTr("Name"); strong: true; topPadding: 0 }
+    OverlaySectionLabel { text: qsTr("Name"); strong: true; topPadding: OverlayStyle.u(5) }
     OverlayFocusable {
         id: nameField
         objectName: "overlayFilterName"
@@ -197,13 +197,13 @@ OverlayPage {
         x: OverlayStyle.gutter
         width: parent.width - OverlayStyle.gutter * 2
         horizontalAlignment: Text.AlignRight
-        topPadding: OverlayStyle.u(8)
+        topPadding: OverlayStyle.u(11)
         text: input.text.length + "/30"
         color: OverlayStyle.subtitle
         font.family: Theme.bodyFont
         font.pixelSize: OverlayStyle.subtitleSize
     }
-    OverlaySectionLabel { text: qsTr("Shortcut"); strong: true; topPadding: OverlayStyle.u(4) }
+    OverlaySectionLabel { text: qsTr("Shortcut"); strong: true; topPadding: OverlayStyle.u(15); bottomPadding: OverlayStyle.u(25) }
     OverlayKeyField {
         objectName: "overlayFilterShortcut"
         fullWidth: true
@@ -224,7 +224,7 @@ OverlayPage {
     Item {
         id: filtersHeader
         width: parent.width
-        height: OverlayStyle.u(94)
+        height: OverlayStyle.u(78)
         Text {
             x: OverlayStyle.gutter
             anchors.verticalCenter: parent.verticalCenter
@@ -237,9 +237,10 @@ OverlayPage {
             id: addButton
             objectName: "overlayFilterAdd"
             anchors.right: parent.right
-            anchors.rightMargin: OverlayStyle.u(4)
+            anchors.rightMargin: OverlayStyle.u(11)
+            anchors.verticalCenter: parent.verticalCenter
             width: OverlayStyle.u(56)
-            height: parent.height
+            height: OverlayStyle.u(48)
             available: page.available.length > 0
             Accessible.role: Accessible.Button
             Accessible.name: qsTr("Add filter")

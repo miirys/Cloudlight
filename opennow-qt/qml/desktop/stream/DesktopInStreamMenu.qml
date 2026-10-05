@@ -155,6 +155,8 @@ FocusScope {
             onCurrentItemChanged: Qt.callLater(root.focusPage)
 
             readonly property int duration: OverlayStyle.pageDuration
+            // The outgoing page fades out in the first half so the two pages never
+            // read as a muddy cross-fade.
             readonly property real shift: width * 0.3
             pushEnter: Transition {
                 ParallelAnimation {
@@ -165,7 +167,7 @@ FocusScope {
             pushExit: Transition {
                 ParallelAnimation {
                     NumberAnimation { property: "x"; from: 0; to: -stack.shift; duration: stack.duration; easing.type: Easing.OutCubic }
-                    NumberAnimation { property: "opacity"; from: 1; to: 0; duration: stack.duration; easing.type: Easing.OutCubic }
+                    NumberAnimation { property: "opacity"; from: 1; to: 0; duration: stack.duration * 0.5; easing.type: Easing.OutQuad }
                 }
             }
             popEnter: Transition {
@@ -177,7 +179,7 @@ FocusScope {
             popExit: Transition {
                 ParallelAnimation {
                     NumberAnimation { property: "x"; from: 0; to: stack.shift; duration: stack.duration; easing.type: Easing.OutCubic }
-                    NumberAnimation { property: "opacity"; from: 1; to: 0; duration: stack.duration; easing.type: Easing.OutCubic }
+                    NumberAnimation { property: "opacity"; from: 1; to: 0; duration: stack.duration * 0.5; easing.type: Easing.OutQuad }
                 }
             }
             replaceEnter: pushEnter
