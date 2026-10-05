@@ -122,45 +122,20 @@ QtObject {
         }
         return items
     }
-    // The active game filter style as the stream renderer's videoFilter values. Settings hold
-    // GeForce NOW style -100..100 sliders; the renderer takes neutral-centred floats.
-    readonly property var gameFilterUniforms: {
+    // The active game filter style, in stack order, for the stream renderer's filter chain.
+    // Entries keep NVIDIA's integer slider values; the renderer converts and clamps them.
+    readonly property var gameFilterChain: {
         const state = settings.gameFilters || ({})
         const active = Number(state.active || 0)
         const style = active > 0 ? ((state.styles || [])[active - 1] || ({})) : ({})
-        const out = {}
-        const unit = value => Math.max(-1, Math.min(1, Number(value || 0) / 100))
-        const add = (key, value) => { out[key] = (out[key] || 0) + value }
-        for (const filter of (style.filters || [])) {
-            switch (String(filter.type || "")) {
-            case "black-white": add("grayscale", unit(filter.intensity)); break
-            case "brightness-contrast":
-                add("brightness", unit(filter.brightness) * 0.5)
-                out.contrast = 1 + unit(filter.contrast)
-                break
-            case "color":
-                out.saturation = 1 + unit(filter.saturation)
-                add("vibrance", unit(filter.vibrance))
-                add("temperature", unit(filter.temperature))
-                break
-            case "colorblind":
-                out.colorblindMode = ({protanopia: 1, deuteranopia: 2, tritanopia: 3})[String(filter.mode)] || 2
-                out.colorblindStrength = unit(filter.strength)
-                break
-            case "details": add("details", unit(filter.amount)); break
-            case "letterbox": add("letterbox", unit(filter.amount)); break
-            case "night-mode": add("nightMode", unit(filter.intensity)); break
-            case "old-film":
-                add("sepia", unit(filter.intensity))
-                add("grain", unit(filter.intensity) * 0.6)
-                add("vignette", unit(filter.intensity) * 0.5)
-                break
-            case "sharpen": add("sharpen", unit(filter.amount)); break
-            case "vignette": add("vignette", unit(filter.amount)); break
-            }
-        }
-        return out
+        return (style.filters || []).map(filter => Object.assign({}, filter))
     }
+    // The AI video filter, applied by the client before the game filters.
+    readonly property var videoEnhance: ({
+        mode: String(settings.aiVideoFilter || "off"),
+        denoise: Number(settings.aiDenoise ?? 5),
+        sharpen: Number(settings.aiSharpen ?? 5)
+    })
     readonly property var colorQualityItems: [
         ["8bit_420", qsTr("8-bit, YUV 4:2:0")], ["8bit_444", qsTr("8-bit, YUV 4:4:4")],
         ["10bit_420", qsTr("10-bit, YUV 4:2:0")], ["10bit_444", qsTr("10-bit, YUV 4:4:4")]

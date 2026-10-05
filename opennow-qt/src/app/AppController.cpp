@@ -9,6 +9,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QFile>
+#include <QNetworkInformation>
 #include <QGuiApplication>
 #include <QKeySequence>
 #include <QPixmap>
@@ -29,6 +30,27 @@ AppController::AppController(QObject *parent)
     : QObject(parent)
     , m_route(u"home"_s)
 {
+}
+
+QString AppController::networkTransport() const
+{
+    if (!QNetworkInformation::instance())
+        QNetworkInformation::loadDefaultBackend();
+    const QNetworkInformation *information = QNetworkInformation::instance();
+    if (!information || !information->supports(QNetworkInformation::Feature::TransportMedium))
+        return QStringLiteral("unknown");
+    switch (information->transportMedium()) {
+    case QNetworkInformation::TransportMedium::Ethernet:
+        return QStringLiteral("ethernet");
+    case QNetworkInformation::TransportMedium::WiFi:
+        return QStringLiteral("wifi");
+    case QNetworkInformation::TransportMedium::Cellular:
+        return QStringLiteral("cellular");
+    case QNetworkInformation::TransportMedium::Bluetooth:
+        return QStringLiteral("bluetooth");
+    default:
+        return QStringLiteral("unknown");
+    }
 }
 
 QString AppController::shortcutFromKey(int key, int modifiers) const

@@ -29,6 +29,9 @@ public:
     [[nodiscard]] QString inputMode() const;
 
     Q_INVOKABLE bool navigate(const QString &route);
+    // The local link to the router for the network test's second node: "ethernet", "wifi",
+    // "cellular", "bluetooth" or "unknown" when the platform can't tell.
+    Q_INVOKABLE QString networkTransport() const;
     Q_INVOKABLE bool navigateFromLastPrimary(const QString &route);
     Q_INVOKABLE bool showOverlay(const QString &overlay);
     Q_INVOKABLE bool goBack();

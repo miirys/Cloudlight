@@ -228,7 +228,7 @@ if(BUILD_TESTING)
     qt_add_executable(opennow-consoleactions-tests
         tests/tst_consoleactions.cpp src/app/AppController.cpp src/app/AppController.h)
     target_include_directories(opennow-consoleactions-tests PRIVATE src)
-    target_link_libraries(opennow-consoleactions-tests PRIVATE Qt6::QuickTest Qt6::Quick)
+    target_link_libraries(opennow-consoleactions-tests PRIVATE Qt6::QuickTest Qt6::Quick Qt6::Network)
     target_compile_definitions(opennow-consoleactions-tests PRIVATE
         OPENNOW_QML_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/qml"
         OPENNOW_CONSOLE_ACTION_TEST_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/consoleactions")
@@ -715,7 +715,7 @@ if(BUILD_TESTING)
         src/app/AppController.h
     )
     target_include_directories(opennow-qt-tests PRIVATE src)
-    target_link_libraries(opennow-qt-tests PRIVATE Qt6::Test Qt6::Core Qt6::Gui)
+    target_link_libraries(opennow-qt-tests PRIVATE Qt6::Test Qt6::Core Qt6::Gui Qt6::Network)
     add_test(NAME opennow-qt-tests COMMAND opennow-qt-tests -o -,txt)
     set_tests_properties(opennow-qt-tests PROPERTIES
         ENVIRONMENT "QT_QPA_PLATFORM=offscreen")

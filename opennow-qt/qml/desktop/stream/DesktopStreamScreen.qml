@@ -96,7 +96,8 @@ FocusScope {
         inputEnabled: visible
             && !ShellStore.streamOverlayBlocksGameplayInput(AppController.overlay)
         shortcutBindings: ShellStore.streamShortcutBindings()
-        videoFilter: ShellStore.gameFilterUniforms
+        videoFilterChain: ShellStore.gameFilterChain
+        videoEnhance: ShellStore.videoEnhance
         clipboardPaste: ShellStore.settings.clipboardPaste === true
         keyboardLayout: String((ShellStore.activeSession || {}).keyboardLayout || "en-US")
         videoSize: Qt.size(Number(root.profile.width || 0), Number(root.profile.height || 0))

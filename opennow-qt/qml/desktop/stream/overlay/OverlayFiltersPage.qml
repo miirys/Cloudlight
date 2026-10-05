@@ -52,32 +52,80 @@ OverlayPage {
         page.commit(next)
     }
 
+    // GeForce NOW's "+" list in its order, with NVIDIA's slider labels, ranges, steps and the
+    // defaults a filter starts with when added. Values are the integers NVIDIA's sliders show;
+    // the stream renderer converts them. Toggles are stored as 0 or 1.
+    function param(key, label, from, to, fallback, step, suffix) {
+        return {key: key, label: label, from: from, to: to, fallback: fallback, step: step || 1, suffix: suffix || ""}
+    }
+    function toggle(key, label) { return {key: key, label: label, from: 0, to: 1, fallback: 0, toggle: true} }
     readonly property var catalog: [
-        {value: "black-white", label: qsTr("Black & White"), params: [{key: "intensity", label: qsTr("Intensity"), from: 0, to: 100, fallback: 100}]},
+        {value: "auto-depth-of-field", label: qsTr("Auto Depth of Field"), depth: true, params: []},
+        {value: "black-white", label: qsTr("Black & White"), params: [page.param("intensity", qsTr("Intensity"), 0, 100, 100)]},
         {value: "brightness-contrast", label: qsTr("Brightness / Contrast"), params: [
-            {key: "brightness", label: qsTr("Brightness"), from: -100, to: 100, fallback: 0},
-            {key: "contrast", label: qsTr("Contrast"), from: -100, to: 100, fallback: 0}]},
+            page.param("exposure", qsTr("Exposure"), -100, 100, 0, 2),
+            page.param("contrast", qsTr("Contrast"), -100, 100, 30, 2),
+            page.param("highlights", qsTr("Highlights"), -100, 100, 20, 2),
+            page.param("shadows", qsTr("Shadows"), -100, 100, -30, 2),
+            page.param("gamma", qsTr("Gamma"), -100, 100, 0, 2)]},
         {value: "color", label: qsTr("Color"), params: [
-            {key: "saturation", label: qsTr("Saturation"), from: -100, to: 100, fallback: 0},
-            {key: "vibrance", label: qsTr("Vibrance"), from: -100, to: 100, fallback: 0},
-            {key: "temperature", label: qsTr("Temperature"), from: -100, to: 100, fallback: 0}]},
-        {value: "colorblind", label: qsTr("Colorblind"), params: [{key: "strength", label: qsTr("Strength"), from: 0, to: 100, fallback: 100}]},
-        {value: "details", label: qsTr("Details"), params: [{key: "amount", label: qsTr("Amount"), from: 0, to: 100, fallback: 50}]},
-        {value: "letterbox", label: qsTr("Letterbox"), params: [{key: "amount", label: qsTr("Amount"), from: 0, to: 100, fallback: 50}]},
-        {value: "night-mode", label: qsTr("Night mode"), params: [{key: "intensity", label: qsTr("Intensity"), from: 0, to: 100, fallback: 50}]},
-        {value: "old-film", label: qsTr("Old film"), params: [{key: "intensity", label: qsTr("Intensity"), from: 0, to: 100, fallback: 60}]},
-        {value: "sharpen", label: qsTr("Sharpen"), params: [{key: "amount", label: qsTr("Amount"), from: 0, to: 100, fallback: 50}]},
-        {value: "vignette", label: qsTr("Vignette"), params: [{key: "amount", label: qsTr("Amount"), from: 0, to: 100, fallback: 50}]}
-    ]
-    readonly property var colorblindModes: [
-        {value: "protanopia", label: qsTr("Protanopia")},
-        {value: "deuteranopia", label: qsTr("Deuteranopia")},
-        {value: "tritanopia", label: qsTr("Tritanopia")}
+            page.param("tintColor", qsTr("Tint Color"), 0, 100, 20),
+            page.param("tintIntensity", qsTr("Tint Intensity"), 0, 100, 30),
+            page.param("temperature", qsTr("Temperature"), -100, 100, 0, 2),
+            page.param("vibrance", qsTr("Vibrance"), -100, 100, 0, 2)]},
+        {value: "colorblind", label: qsTr("Colorblind"), params: [
+            page.param("protanopia", qsTr("Protanopia"), 0, 100, 0),
+            page.param("deuteranopia", qsTr("Deuteranopia"), 0, 100, 100),
+            page.param("tritanopia", qsTr("Tritanopia"), 0, 100, 0)]},
+        {value: "depth-of-field", label: qsTr("Depth of field"), depth: true, params: []},
+        {value: "details", label: qsTr("Details"), params: [
+            page.param("sharpen", qsTr("Sharpen"), 0, 100, 50),
+            page.param("clarity", qsTr("Clarity"), -100, 100, 70, 2),
+            page.param("hdrToning", qsTr("HDR Toning"), -100, 100, 60, 2),
+            page.param("bloom", qsTr("Bloom"), 0, 100, 15)]},
+        {value: "letterbox", label: qsTr("Letterbox"), params: [
+            page.param("horizontal", qsTr("Horizontal Scale"), 1, 30, 21),
+            page.param("vertical", qsTr("Vertical Scale"), 1, 30, 9)]},
+        {value: "night-mode", label: qsTr("Night mode"), params: [page.param("intensity", qsTr("Intensity"), 0, 100, 30)]},
+        {value: "old-film", label: qsTr("Old film"), params: [
+            page.param("gamma", qsTr("Gamma"), 0, 100, 50),
+            page.param("exposure", qsTr("Exposure"), 0, 100, 50),
+            page.param("contrast", qsTr("Contrast"), 0, 100, 50),
+            page.param("vignette", qsTr("Vignette Amount"), 0, 100, 50),
+            page.param("strength", qsTr("Filter Strength"), 0, 100, 100),
+            page.param("dirt", qsTr("Film Dirt Strength"), 0, 100, 100)]},
+        {value: "painterly", label: qsTr("Painterly"), pending: true, params: []},
+        {value: "sharpen", label: qsTr("Sharpen"), params: [
+            page.param("sharpen", qsTr("Sharpen"), 0, 100, 50),
+            page.param("ignoreGrain", qsTr("Ignore Film Grain"), 0, 100, 15)]},
+        {value: "sharpen-plus", label: qsTr("Sharpen+"), pending: true, params: []},
+        {value: "special-fx", label: qsTr("SpecialFX"), params: [
+            page.param("retro", qsTr("Retro"), 0, 100, 50),
+            page.param("sketch", qsTr("Sketch"), 0, 100, 0),
+            page.param("halftone", qsTr("Half-Tone"), 0, 100, 0),
+            page.param("sepia", qsTr("Sepia"), 0, 100, 0)]},
+        {value: "splitscreen", label: qsTr("Splitscreen"), params: [
+            page.toggle("compare", qsTr("Split & Compare")),
+            page.param("position", qsTr("Position"), 0, 100, 50),
+            page.param("rotation", qsTr("Rotation"), -180, 180, 0, 15, "°"),
+            page.param("dividerWidth", qsTr("Divider Width"), 0, 100, 0),
+            page.param("dividerColor", qsTr("Divider Color"), 0, 100, 0),
+            page.toggle("gradient", qsTr("Gradient Fade")),
+            page.param("zoom", qsTr("Zoom"), 50, 100, 100)]},
+        {value: "tilt-shift", label: qsTr("Tilt-shift"), params: [
+            page.param("axis", qsTr("Axis"), 0, 180, 0, 1, "°"),
+            page.param("blurSize", qsTr("Blur Size"), 0, 100, 50),
+            page.param("blurCurve", qsTr("Blur Curve"), 0, 100, 20)]},
+        {value: "vignette", label: qsTr("Vignette"), params: [page.param("intensity", qsTr("Intensity"), 0, 100, 70)]},
+        {value: "watercolor", label: qsTr("Watercolor"), pending: true, params: []}
     ]
     function entry(type) { return page.catalog.find(item => item.value === type) }
     readonly property var style: draft.styles[editing - 1] || ({name: "", filters: []})
+    // Depth filters stay in the list, as on GeForce NOW, but can't be added: a video stream
+    // carries no depth buffer, so the client has nothing to focus with.
     readonly property var available: page.catalog.filter(item => !page.style.filters.some(f => f.type === item.value))
-        .map(item => ({value: item.value, label: item.label}))
+        .map(item => ({value: item.value, label: item.label, disabled: item.depth === true || item.pending === true}))
+    readonly property bool canAdd: page.style.filters.length < 8 && page.available.some(item => !item.disabled)
 
     OverlaySectionLabel { text: qsTr("Style"); topPadding: OverlayStyle.u(39) }
     Item { width: 1; height: OverlayStyle.u(5) }
@@ -241,7 +289,7 @@ OverlayPage {
             anchors.verticalCenter: parent.verticalCenter
             width: OverlayStyle.u(56)
             height: OverlayStyle.u(48)
-            available: page.available.length > 0
+            available: page.canAdd
             Accessible.role: Accessible.Button
             Accessible.name: qsTr("Add filter")
             onActivated: addMenu.show()
@@ -263,7 +311,6 @@ OverlayPage {
         onPicked: value => page.editStyle(style => {
             const params = {type: value}
             for (const param of page.entry(value).params) params[param.key] = param.fallback
-            if (value === "colorblind") params.mode = "deuteranopia"
             style.filters.push(params)
         })
     }
@@ -303,30 +350,39 @@ OverlayPage {
                     ink: OverlayStyle.subtitle
                 }
             }
-            OverlayRow {
-                visible: filter.modelData.type === "colorblind"
-                title: qsTr("Type")
-                trailing: "stepper"
-                height: OverlayStyle.u(64)
-                valueText: (page.colorblindModes.find(m => m.value === filter.modelData.mode) || page.colorblindModes[1]).label
-                onStepped: direction => page.editStyle(style => {
-                    const modes = page.colorblindModes.map(m => m.value)
-                    const current = Math.max(0, modes.indexOf(style.filters[filter.index].mode))
-                    style.filters[filter.index].mode = modes[(current + direction + modes.length) % modes.length]
-                })
-                onActivated: stepped(1)
-            }
             Repeater {
                 model: filter.info.params
-                delegate: OverlaySlider {
+                delegate: Loader {
+                    id: control
                     required property var modelData
-                    title: modelData.label
-                    from: modelData.from
-                    to: modelData.to
-                    value: Number(filter.modelData[modelData.key] ?? modelData.fallback)
-                    onMoved: next => {
-                        const key = modelData.key
+                    width: page.width
+                    readonly property int current: Number(filter.modelData[modelData.key] ?? modelData.fallback)
+                    function write(next) {
+                        const key = control.modelData.key
                         page.editStyle(style => style.filters[filter.index][key] = next)
+                    }
+                    sourceComponent: modelData.toggle === true ? toggleControl : sliderControl
+                    Component {
+                        id: sliderControl
+                        OverlaySlider {
+                            title: control.modelData.label
+                            from: control.modelData.from
+                            to: control.modelData.to
+                            step: control.modelData.step
+                            suffix: control.modelData.suffix
+                            value: control.current
+                            onMoved: next => control.write(next)
+                        }
+                    }
+                    Component {
+                        id: toggleControl
+                        OverlayRow {
+                            title: control.modelData.label
+                            trailing: "toggle"
+                            height: OverlayStyle.u(64)
+                            checked: control.current !== 0
+                            onActivated: control.write(checked ? 0 : 1)
+                        }
                     }
                 }
             }
