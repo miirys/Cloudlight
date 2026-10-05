@@ -3339,24 +3339,18 @@ fn provider_region_entries(payload: &Value) -> Vec<Value> {
         .map(str::trim)
         .filter(|name| !name.is_empty())
         .collect::<Vec<_>>();
-    let mut regions = metadata
+    // Keep the service's own gfn-regions order (the order GeForce NOW lists
+    // its servers in), not an alphabetical one.
+    names
         .iter()
-        .filter_map(|entry| {
-            let name = entry["key"].as_str()?;
-            let value = entry["value"].as_str()?;
-            if !names.contains(&name) {
-                return None;
-            }
+        .filter_map(|name| {
+            let value = metadata
+                .iter()
+                .find(|entry| entry["key"].as_str() == Some(*name))?["value"]
+                .as_str()?;
             Some(json!({"name":name,"url":trusted_streaming_base(value).ok()?.as_str()}))
         })
-        .collect::<Vec<_>>();
-    regions.sort_by(|left, right| {
-        left["name"]
-            .as_str()
-            .unwrap_or("")
-            .cmp(right["name"].as_str().unwrap_or(""))
-    });
-    regions
+        .collect()
 }
 
 fn provider_result(state: &ServiceState) -> Value {

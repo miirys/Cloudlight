@@ -485,6 +485,10 @@ fn dispatch(method: &str, params: &Value, core: &AppCore) -> DispatchResult {
                 });
             } else if key == "appAccentColor" {
                 event["changes"] = json!({"themeAccentOverride": true});
+            } else if key == "networkAdjust" {
+                event["changes"] = json!({"saveBandwidth": settings.all()["saveBandwidth"]});
+            } else if key == "saveBandwidth" {
+                event["changes"] = json!({"networkAdjust": settings.all()["networkAdjust"]});
             }
             if key == "microphoneMode" && applied == json!("voice-activity") {
                 event["changes"] = json!({"microphoneDeviceId": ""});

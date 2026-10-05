@@ -1440,7 +1440,9 @@ fn build_create_body(app_id: &str, params: &Value, settings: &Value, device_id: 
         _ => requested_color,
     };
     let cloud_gsync = resolved_cloud_gsync(settings);
-    let reflex = cloud_gsync || fps >= 120;
+    // Reflex is offered from 120 FPS (as in GeForce NOW) and is always on
+    // with VRR; below that the toggle has no effect.
+    let reflex = cloud_gsync || (setting_bool(settings, "enableReflex", true) && fps >= 120);
     let persistence = setting_bool(settings, "enablePersistingInGameSettings", true)
         && params["supportsInGameSettingsPersistence"].as_bool() == Some(true);
     let metadata = vec![

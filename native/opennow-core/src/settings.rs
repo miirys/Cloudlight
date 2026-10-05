@@ -74,6 +74,13 @@ impl SettingsStore {
             });
             match persisted {
                 Some(persisted) => {
+                    // Profiles from before the three-way network setting carry
+                    // only the saveBandwidth bool; on maps to "Optimal latency".
+                    let migrate_network_adjust = !persisted.contains_key("networkAdjust")
+                        && persisted.get("saveBandwidth").and_then(Value::as_bool) == Some(true);
+                    if migrate_network_adjust {
+                        values.insert("networkAdjust".to_owned(), json!("latency"));
+                    }
                     migrate_onboarding = policy == LoadPolicy::ReadWrite
                         && !persisted.contains_key("onboardingCompleted");
                     if migrate_onboarding {
@@ -240,6 +247,23 @@ impl SettingsStore {
         } else if key == "appAccentColor" {
             self.values
                 .insert("themeAccentOverride".to_owned(), json!(true));
+        }
+        // networkAdjust supersedes the saveBandwidth bool; keep both in step so
+        // older surfaces (console settings) and the stream policy agree.
+        if key == "networkAdjust" {
+            let adjusting = self.values[key].as_str() != Some("off");
+            self.values
+                .insert("saveBandwidth".to_owned(), json!(adjusting));
+        } else if key == "saveBandwidth" {
+            let enabled = self.values[key].as_bool() == Some(true);
+            let current = self.values["networkAdjust"].as_str().unwrap_or("off");
+            let next = match (enabled, current) {
+                (false, _) => "off",
+                (true, "off") => "latency",
+                (true, other) => other,
+            }
+            .to_owned();
+            self.values.insert("networkAdjust".to_owned(), json!(next));
         }
         if key == "launchInConsoleMode" && self.values.get(key) == Some(&json!(false)) {
             self.values
@@ -472,6 +496,18 @@ impl SettingsStore {
             }
         }
         normalize_choice(&mut self.values, "frameGeneration", &["off", "2x"], "off");
+        normalize_choice(
+            &mut self.values,
+            "networkAdjust",
+            &["off", "latency", "quality"],
+            "off",
+        );
+        normalize_choice(
+            &mut self.values,
+            "streamingMode",
+            &["datasaver", "balanced", "competitive", "cinematic", "custom"],
+            "custom",
+        );
         normalize_choice(
             &mut self.values,
             "upscaling",
@@ -1169,7 +1205,7 @@ fn defaults() -> Map<String, Value> {
         "onboardingCompleted":false,
         "resolution":"1920x1080", "aspectRatio":"16:9", "posterSizeScale":1.05,
         "fps":60, "frameGeneration":"off", "upscaling":"off", "upscalingSharpness":10, "upscalingDenoise":0,
-        "maxBitrateMbps":75, "saveBandwidth":false, "recordingBitrateMbps":null,
+        "maxBitrateMbps":75, "saveBandwidth":false, "networkAdjust":"off", "enableReflex":true, "streamingMode":"custom", "recordingBitrateMbps":null,
         "recordingResolution":"720p", "recordingFps":30, "streamClientMode":"native",
         "replayBufferEnabled":false, "replayBufferSeconds":30, "replayBufferMemoryMiB":256,
         "nativeVideoBackend":"auto", "nativeStreamerExecutablePath":"", "audioOutputDevice":"",
@@ -2128,6 +2164,29 @@ mod tests {
         store.reset().unwrap();
         assert_eq!(store.all()["steamBigPictureMode"], false);
         fs::remove_dir_all(directory).unwrap();
+    }
+
+    #[test]
+    fn network_adjust_tracks_save_bandwidth_and_migrates_old_profiles() {
+        let directory = tempfile::tempdir().unwrap();
+        let mut store = SettingsStore::load(Some(directory.path().to_path_buf())).unwrap();
+        assert_eq!(store.all()["networkAdjust"], json!("off"));
+        store.set("networkAdjust", json!("quality")).unwrap();
+        assert_eq!(store.all()["saveBandwidth"], json!(true));
+        store.set("saveBandwidth", json!(true)).unwrap();
+        assert_eq!(store.all()["networkAdjust"], json!("quality"));
+        store.set("saveBandwidth", json!(false)).unwrap();
+        assert_eq!(store.all()["networkAdjust"], json!("off"));
+        assert_eq!(store.set("networkAdjust", json!("sideways")).unwrap(), json!("off"));
+
+        let legacy = tempfile::tempdir().unwrap();
+        std::fs::write(
+            legacy.path().join("settings.json"),
+            serde_json::to_vec(&json!({"saveBandwidth": true})).unwrap(),
+        )
+        .unwrap();
+        let loaded = SettingsStore::load(Some(legacy.path().to_path_buf())).unwrap();
+        assert_eq!(loaded.all()["networkAdjust"], json!("latency"));
     }
 
     #[test]

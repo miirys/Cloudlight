@@ -64,6 +64,79 @@ FocusScope {
         ShellStore.setSetting(key, value)
         if (key === "resolution")
             Qt.callLater(root.clampFpsToEntitlement)
+        // Editing any value a preset owns turns the mode into Custom, as in
+        // GeForce NOW.
+        if (!root.applyingPreset && root.streamPresetKeys.indexOf(key) >= 0
+                && String(root.valueSetting("streamingMode", "custom")) !== "custom")
+            ShellStore.setSetting("streamingMode", "custom")
+    }
+
+    property bool applyingPreset: false
+    readonly property var streamPresetKeys: ["resolution", "fps", "maxBitrateMbps", "networkAdjust", "enableReflex", "colorQuality"]
+    readonly property var streamingModes: [
+        {value: "datasaver", label: qsTr("Data saver"), detail: qsTr("Uses less data. Good for metered or slower connections.")},
+        {value: "balanced", label: qsTr("Balanced"), detail: qsTr("A good mix of image quality and smooth play for most connections.")},
+        {value: "competitive", label: qsTr("Competitive"), detail: qsTr("The highest frame rate your membership allows, with Reflex, for the lowest latency.")},
+        {value: "cinematic", label: qsTr("Cinematic"), detail: qsTr("The best image quality: higher resolution, higher bit rate and richer colour.")},
+        {value: "custom", label: qsTr("Custom"), detail: qsTr("Adjust your streaming settings for a custom experience. Some combinations of values may cause connection issues.")}
+    ]
+
+    // Client-side bundles of individual settings; nothing named "mode" is sent.
+    function streamingPreset(mode) {
+        const fastest = (resolution, fallback) => {
+            const rates = ShellStore.entitledFpsForResolution(resolution).map(Number).filter(rate => rate > 0)
+            return rates.length ? Math.max(...rates) : fallback
+        }
+        const cinematicColor = ShellStore.settingsOwnerState.colorQualityGate("10bit_444") === ""
+            && ShellStore.settingsOwnerState.colorQualityItems.some(item => item.value === "10bit_444" && !item.disabled)
+            ? "10bit_444" : ShellStore.tenBitAllowedByMembership() ? "10bit_420" : "8bit_420"
+        switch (mode) {
+        case "datasaver": return {resolution: "1280x720", fps: 60, maxBitrateMbps: 15, networkAdjust: "latency", enableReflex: true, colorQuality: "8bit_420"}
+        case "balanced": return {resolution: "1920x1080", fps: 60, maxBitrateMbps: 50, networkAdjust: "latency", enableReflex: true, colorQuality: "8bit_420"}
+        case "competitive": return {resolution: "1920x1080", fps: fastest("1920x1080", 120), maxBitrateMbps: 75, networkAdjust: "latency", enableReflex: true, colorQuality: "8bit_420"}
+        case "cinematic": return {resolution: "2560x1440", fps: 60, maxBitrateMbps: 100, networkAdjust: "quality", enableReflex: true, colorQuality: cinematicColor}
+        default: return {resolution: "1920x1080", fps: 60, maxBitrateMbps: 75, networkAdjust: "off", enableReflex: true, colorQuality: "8bit_420"}
+        }
+    }
+
+    function applyStreamingMode(mode) {
+        root.applyingPreset = true
+        const preset = root.streamingPreset(mode)
+        if (preset.colorQuality !== "8bit_420" && ["h264", "av1"].indexOf(String(root.valueSetting("codec", "auto"))) >= 0)
+            ShellStore.setSetting("codec", "auto")
+        for (const key of root.streamPresetKeys) {
+            if (preset[key] !== undefined && root.valueSetting(key, null) !== preset[key])
+                root.setSetting(key, preset[key])
+        }
+        ShellStore.setSetting("streamingMode", mode)
+        root.applyingPreset = false
+    }
+
+    // Resets the Details rows to the current mode's values (Custom resets to
+    // Cloudlight's defaults).
+    function resetStreamingDetails() {
+        const mode = String(root.valueSetting("streamingMode", "custom"))
+        root.applyStreamingMode(mode)
+        root.applyingPreset = true
+        if (mode === "custom") {
+            for (const [key, value] of [["codec", "auto"], ["enableHdr", false], ["enableCloudGsync", false]])
+                if (root.valueSetting(key, null) !== value) root.setSetting(key, value)
+        }
+        root.applyingPreset = false
+    }
+
+    // Typical data use, estimated from resolution, frame rate and codec (NVIDIA
+    // publishes no formula). Uses the average, not the bit-rate cap.
+    function dataUsageGbPerHour() {
+        const size = String(root.valueSetting("resolution", "1920x1080")).split("x").map(Number)
+        const fps = Number(root.valueSetting("fps", 60)) || 60
+        const codec = String(root.valueSetting("codec", "auto"))
+        const color = String(root.valueSetting("colorQuality", "8bit_420"))
+        const bpp = codec === "h264" ? 0.18 : codec === "av1" ? 0.12 : 0.15
+        let mbps = Math.min(Number(root.valueSetting("maxBitrateMbps", 75)) || 75,
+                            (size[0] || 1920) * (size[1] || 1080) * fps * bpp / 1e6)
+        mbps *= (color.endsWith("_444") ? 1.15 : 1) * (color.indexOf("10bit") === 0 ? 1.05 : 1)
+        return Math.max(1, Math.round(mbps * 0.45))
     }
 
     function setChoice(key, value) {
@@ -184,7 +257,8 @@ FocusScope {
         const items = [{ kind: "choice", label: qsTr("Automatic"), detail: qsTr("Lowest latency"), value: "" }]
         const groups = [qsTr("Europe"), qsTr("North America"), qsTr("Asia Pacific"),
                         qsTr("South America"), qsTr("Middle East"), qsTr("Africa"), qsTr("Other")]
-        const regions = (ShellStore.regions || []).slice().sort((a, b) => String(a.name).localeCompare(String(b.name)))
+        // Regions keep the service's own order inside each continent.
+        const regions = ShellStore.regions || []
         for (const group of groups) {
             const members = regions.filter(region => root.regionGroup(region.name) === group)
             if (!members.length)

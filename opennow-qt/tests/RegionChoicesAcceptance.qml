@@ -43,16 +43,17 @@ QtObject {
         const choices = items.filter(item => item.kind === "choice" && item.value !== "")
         check(choices.length === fixtures.length, "every account region remains selectable")
         let group = ""
-        let previousName = ""
+        let previousIndex = -1
         for (const item of items.slice(1)) {
             if (item.kind === "heading") {
                 group = item.label
-                previousName = ""
+                previousIndex = -1
             } else {
                 check(screen.regionGroup(item.label) === group, "choice under wrong heading")
-                check(previousName.localeCompare(item.label) <= 0, "alphabetical order within a section")
+                const index = fixtures.findIndex(region => region.name === item.label)
+                check(index > previousIndex, "service order within a section")
                 check(fixtures.some(region => region.name === item.label && region.url === item.value), "account name and endpoint must be preserved")
-                previousName = item.label
+                previousIndex = index
             }
         }
         check(ShellStore.regions === fixtures, "grouping must not replace account data")

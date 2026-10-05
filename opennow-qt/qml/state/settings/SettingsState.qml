@@ -780,6 +780,12 @@ QtObject {
             updated.themeAccentOverride = false
         } else if (key === "appAccentColor") {
             updated.themeAccentOverride = true
+        } else if (key === "networkAdjust") {
+            // Mirrors the core: the legacy bool follows the three-way choice.
+            updated.saveBandwidth = value !== "off"
+        } else if (key === "saveBandwidth") {
+            const current = String(settings.networkAdjust || "off")
+            updated.networkAdjust = !value ? "off" : current === "off" ? "latency" : current
         }
         return updated
     }

@@ -1587,6 +1587,14 @@ fn negotiated_dynamic_streaming_mode(context: &SessionContext) -> u8 {
     {
         return policy;
     }
+    // Official shared-settings schema: 0 off, 1 prefer FPS ("Optimal
+    // latency"), 2 prefer resolution ("Optimal quality").
+    match context.settings.get("networkAdjust").and_then(Value::as_str) {
+        Some("latency") => return 1,
+        Some("quality") => return 2,
+        Some("off") => return 0,
+        _ => {}
+    }
     u8::from(
         context
             .settings
@@ -2657,6 +2665,16 @@ mod tests {
                 None,
                 "{measured}"
             );
+        }
+    }
+
+    #[test]
+    fn announce_maps_network_adjust_to_dynamic_streaming_mode() {
+        for (adjust, policy) in [("off", 0), ("latency", 1), ("quality", 2)] {
+            let mut value = context();
+            value.settings["saveBandwidth"] = json!(adjust != "off");
+            value.settings["networkAdjust"] = json!(adjust);
+            assert_eq!(negotiated_dynamic_streaming_mode(&value), policy);
         }
     }
 

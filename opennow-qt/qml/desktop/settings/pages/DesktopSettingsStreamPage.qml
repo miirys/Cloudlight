@@ -19,7 +19,26 @@ Column {
     Item { width: 1; height: DesktopTokens.px(12); visible: streamNotice.visible }
     DesktopSettingsPanel {
         width: parent.width; paperStyle: true
-        DesktopSettingsSection { text: qsTr("Video"); description: qsTr("Applies to the next session you start.") }
+        DesktopSettingsSection { text: qsTr("Streaming quality"); description: qsTr("Applies to the next session you start.") }
+        DesktopSettingsRow {
+            id: modeRow
+            objectName: "streamingModeRow"
+            readonly property string mode: String(page.settingsScreen.valueSetting("streamingMode", "custom"))
+            readonly property var current: page.settingsScreen.streamingModes.find(item => item.value === mode) || page.settingsScreen.streamingModes[4]
+            width: parent.width; paperStyle: true; glyph: "sliders"; title: qsTr("Mode")
+            description: current.detail + "\n" + qsTr("Data usage is ~%1 GB per hour. Actual data use will vary.").arg(page.settingsScreen.dataUsageGbPerHour())
+            DesktopSettingsSegmented {
+                objectName: "streamingModeControl"
+                options: page.settingsScreen.streamingModes.map(item => ({label: item.label, value: item.value, width: 96}))
+                selectedIndex: options.findIndex(item => item.value === modeRow.mode)
+                onSelected: (index, item) => page.settingsScreen.applyStreamingMode(item.value)
+            }
+        }
+    }
+    Item { width: 1; height: DesktopTokens.px(12) }
+    DesktopSettingsPanel {
+        width: parent.width; paperStyle: true
+        DesktopSettingsSection { text: qsTr("Details") }
         DesktopSettingsChoice {
             objectName: "resolutionChoice"
             width: parent.width; title: qsTr("Resolution")
@@ -84,13 +103,17 @@ Column {
             onSelected: value => ShellStore.setSetting("windowsGpuDeviceId", value)
         }
         DesktopSettingsRow {
-            width: parent.width; paperStyle: true; glyph: "drop"; title: qsTr("Adjust for poor network conditions")
-            description: qsTr("Lowers resolution and image quality to keep the frame rate steady when your connection can't keep up.")
-            DesktopSettingsToggle {
-                objectName: "saveBandwidthToggle"
-                checked: page.settingsScreen.boolSetting("saveBandwidth", false)
-                Accessible.name: qsTr("Adjust for poor network conditions")
-                onValueChangedByUser: value => page.settingsScreen.setSetting("saveBandwidth", value)
+            width: parent.width; paperStyle: true; glyph: "drop"; title: qsTr("Adjust for network conditions")
+            description: String(page.settingsScreen.valueSetting("networkAdjust", "off")) === "quality"
+                ? qsTr("Keeps the resolution and lowers the frame rate when your connection can't keep up.")
+                : String(page.settingsScreen.valueSetting("networkAdjust", "off")) === "latency"
+                ? qsTr("Keeps the frame rate and lowers the resolution when your connection can't keep up.")
+                : qsTr("Holds your chosen quality. The stream may stutter if your connection can't keep up.")
+            DesktopSettingsSegmented {
+                objectName: "networkAdjustControl"
+                options: [{label: qsTr("Off"), value: "off", width: 64}, {label: qsTr("Optimal latency"), value: "latency", width: 128}, {label: qsTr("Optimal quality"), value: "quality", width: 128}]
+                selectedIndex: options.findIndex(item => item.value === String(page.settingsScreen.valueSetting("networkAdjust", "off")))
+                onSelected: (index, item) => page.settingsScreen.setSetting("networkAdjust", item.value)
             }
         }
         DesktopSettingsRow {
@@ -110,10 +133,23 @@ Column {
         DesktopSettingsChoice {
             objectName: "colorQualityChoice"
             width: parent.width; glyph: "sun"; title: qsTr("Color precision")
-            description: page.settingsScreen.colorQualityFooter(); showDivider: false
+            description: page.settingsScreen.colorQualityFooter()
             items: ShellStore.settingsOwnerState.colorQualityItems
             value: page.settingsScreen.valueSetting("colorQuality", "8bit_420")
             onSelected: value => page.settingsScreen.setChoice("colorQuality", value)
+        }
+        DesktopSettingsRow {
+            objectName: "streamingResetRow"
+            width: parent.width; paperStyle: true; glyph: "reset"; title: qsTr("Reset details")
+            description: String(page.settingsScreen.valueSetting("streamingMode", "custom")) === "custom"
+                ? qsTr("Return these settings to Cloudlight's defaults.")
+                : qsTr("Return these settings to the selected mode's values.")
+            showDivider: false
+            DesktopSettingsButton {
+                objectName: "streamingResetButton"
+                text: qsTr("Reset")
+                onClicked: page.settingsScreen.resetStreamingDetails()
+            }
         }
     }
     DesktopSettingsPanel {
@@ -168,6 +204,24 @@ Column {
     DesktopSettingsPanel {
         width: parent.width; paperStyle: true
         DesktopSettingsSection { text: qsTr("Latency") }
+        DesktopSettingsRow {
+            id: reflexRow
+            objectName: "reflexRow"
+            readonly property bool available: Number(page.settingsScreen.valueSetting("fps", 60)) >= 120
+            readonly property bool forced: page.settingsScreen.boolSetting("enableCloudGsync", false)
+            width: parent.width; paperStyle: true; glyph: "bolt"; title: qsTr("Reflex")
+            description: forced ? qsTr("Always on while Cloud G-SYNC is on.")
+                : available ? qsTr("Lowers the game's render latency on the server.")
+                : qsTr("Available at 120 FPS and above.")
+            DesktopSettingsToggle {
+                objectName: "reflexToggle"
+                Accessible.name: qsTr("Reflex")
+                enabled: reflexRow.available && !reflexRow.forced
+                opacity: enabled ? 1 : 0.45
+                checked: reflexRow.forced || (reflexRow.available && page.settingsScreen.boolSetting("enableReflex", true))
+                onValueChangedByUser: value => page.settingsScreen.setSetting("enableReflex", value)
+            }
+        }
         DesktopSettingsRow {
             objectName: "cloudGsyncRow"
             width: parent.width; paperStyle: true; glyph: "bolt"; title: qsTr("Cloud G-SYNC")
