@@ -76,17 +76,14 @@ Column {
             readonly property var canonical: ShellStore.canonicalFpsValues().map(value => String(value))
             readonly property string current: Number(page.settingsScreen.valueSetting("fps",60)) === 0 ? "AUTO" : String(page.settingsScreen.valueSetting("fps",60))
             readonly property var locked: page.settingsScreen.lockedFpsValues().map(value => String(page.settingsScreen.optionValueOf(value)))
-            // As on GeForce NOW, rates the membership does not include at this
-            // resolution are left out; rates this device cannot decode stay
-            // visible with the reason.
-            readonly property var unentitled: page.settingsScreen.unentitledFpsValues().map(value => String(page.settingsScreen.optionValueOf(value)))
+            // Rates the membership or this device cannot use stay visible but
+            // disabled, with the reason underneath.
             width: parent.width; glyph: "speed"; title: qsTr("Frame rate")
             description: page.settingsScreen.fpsEntitlementNote()
-            items: (canonical.indexOf(current) >= 0 ? canonical : [current].concat(canonical))
-                .filter(value => value === current || unentitled.indexOf(value) < 0).map(value => ({
+            items: (canonical.indexOf(current) >= 0 ? canonical : [current].concat(canonical)).map(value => ({
                 label: value === "AUTO" ? qsTr("Auto") : qsTr("%1 FPS").arg(value), value: value,
                 disabled: locked.indexOf(value) >= 0,
-                detail: locked.indexOf(value) >= 0 ? String(page.settingsScreen.fpsLockedHint() || "") : ""}))
+                detail: locked.indexOf(value) >= 0 ? String(page.settingsScreen.fpsLockedHint(value) || "") : ""}))
             value: current
             onSelected: value => page.settingsScreen.setSetting("fps", value === "AUTO" ? 0 : Number(value))
         }

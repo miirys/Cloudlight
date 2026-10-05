@@ -551,8 +551,16 @@ FocusScope {
             .arg(root.currentResolutionValue().replace("x", "×"))
     }
 
-    function fpsLockedHint() {
-        if (!root.unentitledFpsValues().length) {
+    function fpsLockedHint(value) {
+        // Per rate: the membership text for rates the plan does not include,
+        // the device reason for the rest.
+        if (value !== undefined) {
+            const unentitled = root.unentitledFpsValues().map(item => String(root.optionValueOf(item)))
+            if (unentitled.indexOf(String(value)) < 0) {
+                const reason = ShellStore.lockedFpsReason()
+                if (reason !== "") return reason
+            }
+        } else if (!root.unentitledFpsValues().length) {
             const reason = ShellStore.lockedFpsReason()
             if (reason !== "")
                 return reason
