@@ -42,6 +42,8 @@ private:
                         const QString &prefix,
                         QHash<QString, QString> *target);
     static QHash<QString, QString> loadLocale(const QString &locale);
+    static void applyCurrentProductName(QHash<QString, QString> *translations,
+                                        const QHash<QString, QString> &english);
     static QString interpolate(QString value, const QVariantMap &values);
 
     QStringList m_availableLocales;

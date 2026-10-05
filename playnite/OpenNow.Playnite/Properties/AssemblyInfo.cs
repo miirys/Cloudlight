@@ -2,10 +2,10 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitle("OpenNow.Playnite")]
-[assembly: AssemblyDescription("Launch GeForce NOW games through OpenNOW from Playnite")]
+[assembly: AssemblyDescription("Launch GeForce NOW games through Cloudlight from Playnite")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("OpenCloudGaming")]
-[assembly: AssemblyProduct("OpenNOW Launcher")]
+[assembly: AssemblyCompany("Cloudlight")]
+[assembly: AssemblyProduct("Cloudlight Launcher")]
 [assembly: AssemblyCopyright("")]
 [assembly: AssemblyTrademark("")]
 [assembly: ComVisible(false)]

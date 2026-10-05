@@ -32,7 +32,7 @@ try {
     $deployment = New-Item -ItemType Directory "$root/deployment"
     $package = New-Item -ItemType Directory "$root/package/bin"
     $names = @(Get-Content "$PSScriptRoot/../packaging/windows-release-binaries.txt")
-    $expected = @("OpenNOW.exe", "opennow-core.exe", "opennow-acceptance-verify.exe", "opennow-update-helper.exe", "opennow-streamer.exe", "opennow_streamer_ffi.dll")
+    $expected = @("Cloudlight.exe", "cloudlight-core.exe", "cloudlight-acceptance-verify.exe", "cloudlight-update-helper.exe", "cloudlight-streamer.exe", "cloudlight_streamer_ffi.dll")
     if (Compare-Object $names $expected) { throw "Unexpected first-party binary contract" }
     foreach ($name in $names) {
         Set-Content "$deployment/$name" "signed $name"
@@ -46,7 +46,7 @@ try {
     Assert-Fails { Assert-OpenNowPackagePayload -Root "$root/package" -DeploymentRoot $deployment } "without non-system DLLs: qt6core.dll"
     $script:HelperDependency = "KERNEL32.dll"
     if ($script:Inspected.Count -eq 0 -or
-        @($script:Inspected | Where-Object { [IO.Path]::GetFileName($_) -ne "opennow-update-helper.exe" }).Count -ne 0) {
+        @($script:Inspected | Where-Object { [IO.Path]::GetFileName($_) -ne "cloudlight-update-helper.exe" }).Count -ne 0) {
         throw "Package validation did not inspect the update helper dependencies"
     }
     foreach ($name in $names) {
@@ -60,10 +60,10 @@ try {
         Assert-Fails { Assert-OpenNowPackagePayload -Root "$root/package" -DeploymentRoot $deployment } "Expected exactly one $name"
         Copy-Item "$deployment/$name" $package
     }
-    Copy-Item "$deployment/opennow-streamer.exe" "$root/package"
+    Copy-Item "$deployment/cloudlight-streamer.exe" "$root/package"
     Assert-Fails { Get-OpenNowReleaseBinaries -Root "$root/package" } "found 2"
     Assert-Fails { Assert-OpenNowPackagePayload -Root "$root/package" -DeploymentRoot $deployment } "found 2"
-    Remove-Item "$root/package/opennow-streamer.exe"
+    Remove-Item "$root/package/cloudlight-streamer.exe"
     foreach ($name in $names) {
         Set-Content "$package/$name" "unsigned Cargo copy"
         Assert-Fails { Assert-OpenNowSignedPackage -Root "$root/package" -SignedRoot $deployment } "differs from the signed deployment copy"
@@ -72,7 +72,7 @@ try {
     }
     foreach ($code in @(1, 2, 7)) {
         $script:SignToolExitCode = $code
-        Assert-Fails { Invoke-OpenNowSignTool sign /fd SHA256 "$deployment/OpenNOW.exe" } "exit code $code"
+        Assert-Fails { Invoke-OpenNowSignTool sign /fd SHA256 "$deployment/Cloudlight.exe" } "exit code $code"
         Assert-Fails { Assert-OpenNowSignedPackage -Root "$root/package" -SignedRoot $deployment } "exit code $code"
     }
     $script:SignToolExitCode = 0
@@ -83,12 +83,12 @@ try {
     @"
 cmake_minimum_required(VERSION 3.24)
 project(PackageContract NONE)
-set(OPENNOW_EXECUTABLE_NAME OpenNOW)
+set(OPENNOW_EXECUTABLE_NAME Cloudlight)
 set(CMAKE_INSTALL_BINDIR bin)
 add_executable(opennow-qt IMPORTED)
-set_target_properties(opennow-qt PROPERTIES IMPORTED_LOCATION "$deployPath/OpenNOW.exe")
+set_target_properties(opennow-qt PROPERTIES IMPORTED_LOCATION "$deployPath/Cloudlight.exe")
 include("$module")
-install(PROGRAMS "$deployPath/OpenNOW.exe" DESTINATION bin)
+install(PROGRAMS "$deployPath/Cloudlight.exe" DESTINATION bin)
 set(CPACK_PACKAGE_NAME PackageContract)
 set(CPACK_PACKAGE_VERSION 1.0.0)
 set(CPACK_GENERATOR ZIP)
@@ -98,7 +98,7 @@ include(CPack)
     if ($LASTEXITCODE -ne 0) { throw "Fixture configuration failed" }
     cmake --install "$root/build" --prefix "$root/installed"
     if ($LASTEXITCODE -ne 0) { throw "Fixture installation failed" }
-    foreach ($name in $names | Where-Object { $_ -ne "OpenNOW.exe" }) {
+    foreach ($name in $names | Where-Object { $_ -ne "Cloudlight.exe" }) {
         if ((Get-FileHash "$root/installed/bin/$name").Hash -ne (Get-FileHash "$deployment/$name").Hash) {
             throw "CMake did not install the deployment copy of $name"
         }
@@ -117,7 +117,7 @@ include(CPack)
     if ((Resolve-OpenNowSetupPayload -Root "$root/installed") -ne (Get-Item "$root/installed").FullName) {
         throw "Setup rejected the direct installed payload"
     }
-    foreach ($name in @("OpenNOW.exe", "opennow-core.exe", "opennow-update-helper.exe")) {
+    foreach ($name in @("Cloudlight.exe", "cloudlight-core.exe", "cloudlight-update-helper.exe")) {
         Remove-Item "$wrappedRoot/bin/$name"
         Assert-Fails { Resolve-OpenNowSetupPayload -Root "$root/unpacked" } "found 0"
         Copy-Item "$deployment/$name" "$wrappedRoot/bin"
@@ -134,7 +134,7 @@ include(CPack)
     New-Item -ItemType Directory "$root/deep/outer" | Out-Null
     Copy-Item $wrappedRoot "$root/deep/outer/payload" -Recurse
     Assert-Fails { Resolve-OpenNowSetupPayload -Root "$root/deep" } "found 0"
-    Assert-Fails { Resolve-OpenNowSetupPayload -Root "$deployment/OpenNOW.exe" } "regular directory"
+    Assert-Fails { Resolve-OpenNowSetupPayload -Root "$deployment/Cloudlight.exe" } "regular directory"
 
     $workflow = Get-Content "$PSScriptRoot/../../.github/workflows/qt-release-candidate.yml" -Raw
     function Get-CandidateStep {

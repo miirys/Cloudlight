@@ -2,11 +2,11 @@
 Type=Application
 Name=Cloudlight
 Comment=Couch-first GeForce NOW client
-Exec=opennow-qt %U
-Icon=io.github.opencloudgaming.OpenNOW
+Exec=cloudlight %U
+Icon=io.github.miirys.Cloudlight
 Terminal=false
 Categories=Game;Network;
 Keywords=GeForce;cloud;gaming;controller;
 StartupNotify=true
-StartupWMClass=OpenNOW
+StartupWMClass=Cloudlight
 MimeType=x-scheme-handler/opennow;

@@ -30,8 +30,8 @@ void ThumbnailGeneratorTest::rejectsUntrustedAndNonVideoPaths()
     qunsetenv("OPENNOW_PICTURES_DIR");
     const auto pictures = QStandardPaths::writableLocation(QStandardPaths::PicturesLocation);
     QDir directory(pictures);
-    QVERIFY(directory.mkpath(QStringLiteral("OpenNOW/Recordings")));
-    const auto invalid = directory.filePath(QStringLiteral("OpenNOW/Recordings/not-video.txt"));
+    QVERIFY(directory.mkpath(QStringLiteral("Cloudlight/Recordings")));
+    const auto invalid = directory.filePath(QStringLiteral("Cloudlight/Recordings/not-video.txt"));
     QFile file(invalid);
     QVERIFY(file.open(QIODevice::WriteOnly));
     QCOMPARE(file.write("fixture"), 7);
@@ -53,16 +53,16 @@ void ThumbnailGeneratorTest::regenerationScopingFollowsPicturesOverride()
     qputenv("OPENNOW_PICTURES_DIR", overrideRoot.path().toUtf8());
 
     QDir root(overrideRoot.path());
-    QVERIFY(root.mkpath(QStringLiteral("OpenNOW/Recordings")));
-    const auto insideOverride = root.filePath(QStringLiteral("OpenNOW/Recordings/override-clip.mkv"));
+    QVERIFY(root.mkpath(QStringLiteral("Cloudlight/Recordings")));
+    const auto insideOverride = root.filePath(QStringLiteral("Cloudlight/Recordings/override-clip.mkv"));
     QFile inside(insideOverride);
     QVERIFY(inside.open(QIODevice::WriteOnly));
     QCOMPARE(inside.write("fixture"), 7);
     inside.close();
 
     QDir defaultRoot(QStandardPaths::writableLocation(QStandardPaths::PicturesLocation));
-    QVERIFY(defaultRoot.mkpath(QStringLiteral("OpenNOW/Recordings")));
-    const auto outsideOverride = defaultRoot.filePath(QStringLiteral("OpenNOW/Recordings/default-clip.mkv"));
+    QVERIFY(defaultRoot.mkpath(QStringLiteral("Cloudlight/Recordings")));
+    const auto outsideOverride = defaultRoot.filePath(QStringLiteral("Cloudlight/Recordings/default-clip.mkv"));
     QFile outside(outsideOverride);
     QVERIFY(outside.open(QIODevice::WriteOnly));
     QCOMPARE(outside.write("fixture"), 7);
@@ -87,8 +87,8 @@ void ThumbnailGeneratorTest::regenerationRefusesUnavailablePicturesRoot()
         QSKIP("This platform cannot set an empty environment variable in-process");
 
     QDir root(QStandardPaths::writableLocation(QStandardPaths::PicturesLocation));
-    QVERIFY(root.mkpath(QStringLiteral("OpenNOW/Recordings")));
-    const auto source = root.filePath(QStringLiteral("OpenNOW/Recordings/unavailable-clip.mkv"));
+    QVERIFY(root.mkpath(QStringLiteral("Cloudlight/Recordings")));
+    const auto source = root.filePath(QStringLiteral("Cloudlight/Recordings/unavailable-clip.mkv"));
     QFile file(source);
     QVERIFY(file.open(QIODevice::WriteOnly));
     QCOMPARE(file.write("fixture"), 7);

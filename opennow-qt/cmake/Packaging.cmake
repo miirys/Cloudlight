@@ -18,9 +18,9 @@ if(WIN32)
     include(packaging/WindowsReleaseBinaries.cmake)
 elseif(NOT APPLE)
     install(PROGRAMS
-        "$<TARGET_FILE_DIR:opennow-qt>/opennow-core${OPENNOW_CORE_SUFFIX}"
-        "$<TARGET_FILE_DIR:opennow-qt>/opennow-acceptance-verify${OPENNOW_CORE_SUFFIX}"
-        "$<TARGET_FILE_DIR:opennow-qt>/opennow-update-helper${OPENNOW_CORE_SUFFIX}"
+        "$<TARGET_FILE_DIR:opennow-qt>/cloudlight-core${OPENNOW_CORE_SUFFIX}"
+        "$<TARGET_FILE_DIR:opennow-qt>/cloudlight-acceptance-verify${OPENNOW_CORE_SUFFIX}"
+        "$<TARGET_FILE_DIR:opennow-qt>/cloudlight-update-helper${OPENNOW_CORE_SUFFIX}"
         DESTINATION "${CMAKE_INSTALL_BINDIR}"
     )
     install(PROGRAMS "${OPENNOW_STREAMER_FFI_RUNTIME}"
@@ -29,9 +29,9 @@ elseif(NOT APPLE)
         DESTINATION "${CMAKE_INSTALL_BINDIR}")
 else()
     install(PROGRAMS
-        "${OPENNOW_CORE_ARTIFACT_ROOT}/${OPENNOW_CORE_PROFILE}/opennow-core${OPENNOW_CORE_SUFFIX}"
-        "${OPENNOW_CORE_ARTIFACT_ROOT}/${OPENNOW_CORE_PROFILE}/opennow-acceptance-verify${OPENNOW_CORE_SUFFIX}"
-        "${OPENNOW_CORE_ARTIFACT_ROOT}/${OPENNOW_CORE_PROFILE}/opennow-update-helper${OPENNOW_CORE_SUFFIX}"
+        "${OPENNOW_CORE_ARTIFACT_ROOT}/${OPENNOW_CORE_PROFILE}/cloudlight-core${OPENNOW_CORE_SUFFIX}"
+        "${OPENNOW_CORE_ARTIFACT_ROOT}/${OPENNOW_CORE_PROFILE}/cloudlight-acceptance-verify${OPENNOW_CORE_SUFFIX}"
+        "${OPENNOW_CORE_ARTIFACT_ROOT}/${OPENNOW_CORE_PROFILE}/cloudlight-update-helper${OPENNOW_CORE_SUFFIX}"
         DESTINATION "${OPENNOW_EXECUTABLE_NAME}.app/Contents/MacOS")
     install(FILES "${OPENNOW_STREAMER_FFI_RUNTIME}"
         DESTINATION "${OPENNOW_EXECUTABLE_NAME}.app/Contents/MacOS")
@@ -42,7 +42,7 @@ endif()
 if(APPLE)
     set(OPENNOW_LICENSE_DESTINATION "${OPENNOW_EXECUTABLE_NAME}.app/Contents/Resources/licenses")
 else()
-    set(OPENNOW_LICENSE_DESTINATION "${CMAKE_INSTALL_DATADIR}/doc/opennow")
+    set(OPENNOW_LICENSE_DESTINATION "${CMAKE_INSTALL_DATADIR}/doc/cloudlight")
 endif()
 install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/../LICENSE"
     DESTINATION "${OPENNOW_LICENSE_DESTINATION}"
@@ -56,26 +56,26 @@ install(DIRECTORY packaging/licenses/
 )
 
 if(UNIX AND NOT APPLE)
-    install(FILES packaging/io.github.opencloudgaming.OpenNOW.desktop
+    install(FILES packaging/io.github.miirys.Cloudlight.desktop
         DESTINATION "${CMAKE_INSTALL_DATADIR}/applications")
-    install(FILES packaging/io.github.opencloudgaming.OpenNOW.metainfo.xml
+    install(FILES packaging/io.github.miirys.Cloudlight.metainfo.xml
         DESTINATION "${CMAKE_INSTALL_DATADIR}/metainfo")
-    install(FILES packaging/io.github.opencloudgaming.OpenNOW.svg
+    install(FILES packaging/io.github.miirys.Cloudlight.svg
         DESTINATION "${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps")
     foreach(size IN LISTS OPENNOW_APPLICATION_ICON_SIZES)
         install(FILES "packaging/icons/opennow-${size}.png"
             DESTINATION "${CMAKE_INSTALL_DATADIR}/icons/hicolor/${size}x${size}/apps"
-            RENAME io.github.opencloudgaming.OpenNOW.png)
+            RENAME io.github.miirys.Cloudlight.png)
     endforeach()
 endif()
 
 if(APPLE)
     option(OPENNOW_MACOS_ADHOC_SIGN "Ad-hoc seal deployed macOS bundles without a signing identity" OFF)
     set(OPENNOW_QT_DEPLOY_TOOL_ARGS DEPLOY_TOOL_OPTIONS
-        "-executable=${OPENNOW_EXECUTABLE_NAME}.app/Contents/MacOS/opennow-core"
-        "-executable=${OPENNOW_EXECUTABLE_NAME}.app/Contents/MacOS/opennow-acceptance-verify"
-        "-executable=${OPENNOW_EXECUTABLE_NAME}.app/Contents/MacOS/opennow-update-helper"
-        "-executable=${OPENNOW_EXECUTABLE_NAME}.app/Contents/MacOS/opennow-streamer")
+        "-executable=${OPENNOW_EXECUTABLE_NAME}.app/Contents/MacOS/cloudlight-core"
+        "-executable=${OPENNOW_EXECUTABLE_NAME}.app/Contents/MacOS/cloudlight-acceptance-verify"
+        "-executable=${OPENNOW_EXECUTABLE_NAME}.app/Contents/MacOS/cloudlight-update-helper"
+        "-executable=${OPENNOW_EXECUTABLE_NAME}.app/Contents/MacOS/cloudlight-streamer")
     if(OPENNOW_MACOS_ADHOC_SIGN)
         list(APPEND OPENNOW_QT_DEPLOY_TOOL_ARGS "-codesign=-")
     endif()
@@ -100,11 +100,11 @@ if(WIN32 OR APPLE)
     endif()
 endif()
 
-set(CPACK_PACKAGE_NAME "OpenNOW")
-set(CPACK_PACKAGE_VENDOR "OpenCloudGaming")
-set(CPACK_PACKAGE_CONTACT "OpenCloudGaming <support@opennow.app>")
+set(CPACK_PACKAGE_NAME "Cloudlight")
+set(CPACK_PACKAGE_VENDOR "Cloudlight")
+set(CPACK_PACKAGE_CONTACT "Cloudlight <https://github.com/miirys/OpenNOW/issues>")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Controller-first GeForce NOW client")
-set(CPACK_PACKAGE_HOMEPAGE_URL "https://github.com/OpenCloudGaming/OpenNOW")
+set(CPACK_PACKAGE_HOMEPAGE_URL "https://github.com/miirys/OpenNOW")
 set(CPACK_PACKAGE_VERSION "${OPENNOW_BUILD_VERSION}")
 string(REPLACE "." ";" OPENNOW_BUILD_VERSION_PARTS "${OPENNOW_NUMERIC_VERSION}")
 list(GET OPENNOW_BUILD_VERSION_PARTS 0 CPACK_PACKAGE_VERSION_MAJOR)
@@ -116,7 +116,7 @@ if(WIN32)
     include("${CMAKE_CURRENT_LIST_DIR}/WindowsInstaller.cmake")
 elseif(APPLE)
     set(CPACK_GENERATOR "DragNDrop;ZIP")
-    set(CPACK_DMG_VOLUME_NAME "OpenNOW")
+    set(CPACK_DMG_VOLUME_NAME "Cloudlight")
 else()
     # Linux packages intentionally use the distribution Qt runtime. AppImage
     # assembly uses linuxdeploy in release CI so plugin selection is explicit.

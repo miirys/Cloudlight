@@ -31,7 +31,7 @@ namespace OpenNow.Playnite
         private bool databaseUpdatedOnGetGames;
 
         public override Guid Id => PluginGuid;
-        public override string Name => "OpenNOW";
+        public override string Name => "Cloudlight";
         public override string LibraryIcon { get; }
         public override LibraryClient Client { get; }
 
@@ -134,13 +134,13 @@ namespace OpenNow.Playnite
                 new MainMenuItem
                 {
                     Description = ResourceProvider.GetString("LOCOpenNow_MenuItemUpdateStatusDescription"),
-                    MenuSection = "@OpenNOW",
+                    MenuSection = "@Cloudlight",
                     Action = _ => UpdateDatabaseAndGamesStatus(showDialogs: true),
                 },
                 new MainMenuItem
                 {
                     Description = ResourceProvider.GetString("LOCOpenNow_MenuItemOpenDatabaseBrowserDescription"),
-                    MenuSection = "@OpenNOW",
+                    MenuSection = "@Cloudlight",
                     Action = _ => OpenDatabaseBrowser(),
                 },
             };
@@ -204,7 +204,7 @@ namespace OpenNow.Playnite
                 "opennow-exe-not-found",
                 string.Format(ResourceProvider.GetString("LOCOpenNow_NotificationMessage"), executablePath ?? "(auto-detect failed)"),
                 NotificationType.Error,
-                () => Process.Start(new ProcessStartInfo("https://github.com/OpenCloudGaming/OpenNOW/releases") { UseShellExecute = true }));
+                () => Process.Start(new ProcessStartInfo("https://github.com/miirys/OpenNOW/releases") { UseShellExecute = true }));
         }
 
         public bool DownloadAndRefreshGameList(bool showDialogs)

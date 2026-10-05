@@ -1,4 +1,4 @@
-; First-install copier for the portable OpenNOW tree.
+; First-install copier for the portable Cloudlight tree.
 ; This is not the updater. It does not write a Windows Installer
 ; ProductCode, UpgradeCode, or InstallLocation.
 
@@ -12,9 +12,9 @@
   #error Compile with /DPayload pointing at the portable ZIP layout
 #endif
 
-#define AppName "OpenNOW"
-#define AppExeName "OpenNOW.exe"
-#define AppPublisher "OpenCloudGaming"
+#define AppName "Cloudlight"
+#define AppExeName "Cloudlight.exe"
+#define AppPublisher "Cloudlight"
 #define StableUpgradeCode "{6E81F7AE-B19D-4E87-A94A-2B2F01EBF762}"
 #define NightlyUpgradeCode "{9661F4F8-656C-4B64-9035-01B04F4822B1}"
 #define SupporterUpgradeCode "{B3AF8A40-5F44-445A-AD99-CECE00593601}"
@@ -24,13 +24,13 @@ AppId={{7E2A9C14-6B0D-4E58-9F31-0C8A5D2B6E17}
 AppName={#AppName}
 AppVersion={#AppVersion}
 AppPublisher={#AppPublisher}
-AppPublisherURL=https://github.com/OpenCloudGaming/OpenNOW
-AppSupportURL=https://github.com/OpenCloudGaming/OpenNOW
-DefaultDirName={localappdata}\OpenNOW
+AppPublisherURL=https://github.com/miirys/OpenNOW
+AppSupportURL=https://github.com/miirys/OpenNOW
+DefaultDirName={localappdata}\Cloudlight
 DisableDirPage=yes
 DisableProgramGroupPage=yes
 PrivilegesRequired=lowest
-OutputBaseFilename=OpenNOW-setup
+OutputBaseFilename=Cloudlight-setup
 OutputDir=output
 Compression=lzma2
 SolidCompression=yes
@@ -38,7 +38,7 @@ WizardStyle=modern
 ArchitecturesAllowed={#Arch}
 ArchitecturesInstallIn64BitMode={#Arch}
 UninstallDisplayIcon={app}\bin\{#AppExeName}
-SetupIconFile=..\icons\OpenNOW.ico
+SetupIconFile=..\icons\Cloudlight.ico
 LicenseFile=..\..\..\LICENSE
 ChangesAssociations=no
 ChangesEnvironment=no
@@ -59,7 +59,7 @@ Name: "{autodesktop}\{#AppName}"; Filename: "{app}\bin\{#AppExeName}"; WorkingDi
 Filename: "{app}\bin\{#AppExeName}"; Description: "{cm:LaunchProgram,{#AppName}}"; Flags: nowait postinstall skipifsilent
 
 [UninstallDelete]
-; Remove the local tree and leave %APPDATA%\OpenNOW alone.
+; Remove the local tree and leave the %APPDATA%\Cloudlight profile alone.
 Type: filesandordirs; Name: "{app}"
 
 [Code]
@@ -86,7 +86,7 @@ begin
     exit;
   if Exec(ExpandConstant('{sys}\msiexec.exe'), '/x ' + ProductCode + ' /passive /norestart', '', SW_SHOW, ewWaitUntilTerminated, ResultCode) and ((ResultCode = 0) or (ResultCode = 1605) or (ResultCode = 3010)) then
     exit;
-  MsgBox('Windows Installer could not remove the registered OpenNOW product. Install setup.exe again after that product is uninstalled.', mbError, MB_OK);
+  MsgBox('Windows Installer could not remove the registered Cloudlight product. Install setup.exe again after that product is uninstalled.', mbError, MB_OK);
   Result := False;
 end;
 
@@ -104,7 +104,7 @@ begin
   begin
     if Products[Index] <> '' then
     begin
-      if MsgBox('OpenNOW is already registered with Windows Installer. Uninstall that copy before installing this one so the two copies do not both claim updates?', mbConfirmation, MB_YESNO) = IDYES then
+      if MsgBox('Cloudlight is already registered with Windows Installer. Uninstall that copy before installing this one so the two copies do not both claim updates?', mbConfirmation, MB_YESNO) = IDYES then
         Result := RemoveRegisteredProduct(Products[Index])
       else
         Result := True;

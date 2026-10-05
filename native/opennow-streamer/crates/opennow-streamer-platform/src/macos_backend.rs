@@ -334,7 +334,7 @@ impl MacExternalSurface {
         let video = sdl
             .video()
             .map_err(|error| format!("SDL video initialization failed: {error}"))?;
-        let mut window_builder = video.window("OpenNOW Stream", 1280, 800);
+        let mut window_builder = video.window("Cloudlight Stream", 1280, 800);
         window_builder
             .position_centered()
             .resizable()

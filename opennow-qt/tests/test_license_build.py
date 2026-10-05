@@ -24,7 +24,7 @@ class LicenseBuildContractTest(unittest.TestCase):
             build = source / "build"
             fixture = source / "fixture"
             fixture.mkdir()
-            bins = ("opennow-core", "opennow-acceptance-verify", "opennow-license-report")
+            bins = ("cloudlight-core", "cloudlight-acceptance-verify", "opennow-license-report")
             (fixture / "Cargo.toml").write_text(
                 '[package]\nname = "license-build-fixture"\nversion = "0.0.0"\nedition = "2024"\n'
                 + "".join(f'[[bin]]\nname = "{name}"\npath = "main.rs"\n' for name in bins)

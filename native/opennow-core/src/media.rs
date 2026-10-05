@@ -8,7 +8,13 @@ use std::path::{Component, Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 use url::Url;
 
+use crate::legacy_paths;
+
 const LIST_LIMIT: usize = 100;
+
+const MEDIA_DIR_NAME: &str = "Cloudlight";
+const LEGACY_MEDIA_DIR_NAME: &str = "OpenNOW";
+const RECORDING_PREFIX: &str = "Cloudlight-";
 
 const MEDIA_UNAVAILABLE: &str = "No pictures directory is available for the media library";
 
@@ -21,7 +27,15 @@ impl MediaService {
         let Some(root) = pictures_directory() else {
             return Ok(Self { root: None });
         };
-        let root = root.join("OpenNOW");
+        // Captures from before the Cloudlight rename live in Pictures/OpenNOW. The
+        // folder is renamed once; media is never copied, so when the rename is not
+        // possible the existing folder simply stays in use.
+        let (root, _) = legacy_paths::migrate(
+            &root.join(MEDIA_DIR_NAME),
+            &[root.join(LEGACY_MEDIA_DIR_NAME)],
+            legacy_paths::MovePolicy::RenameOnly,
+            None,
+        );
         fs::create_dir_all(root.join("Screenshots"))?;
         fs::create_dir_all(root.join("Recordings"))?;
         Ok(Self { root: Some(root) })
@@ -42,7 +56,7 @@ impl MediaService {
             .as_str()
             .map(sanitized_title)
             .filter(|value| !value.is_empty())
-            .unwrap_or_else(|| "opennow".to_owned());
+            .unwrap_or_else(|| "cloudlight".to_owned());
         let timestamp = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap_or_default()
@@ -54,7 +68,7 @@ impl MediaService {
             } else {
                 format!("-{suffix}")
             };
-            let stem = format!("OpenNOW-{title}-{timestamp}{suffix}");
+            let stem = format!("{RECORDING_PREFIX}{title}-{timestamp}{suffix}");
             let path = directory.join(format!("{stem}.mkv"));
             let part = directory.join(format!(".{stem}.mkv.part"));
             if !path.exists() && !part.exists() {
@@ -76,7 +90,7 @@ impl MediaService {
         let file_name = path
             .file_name()
             .and_then(|value| value.to_str())
-            .filter(|value| value.starts_with("OpenNOW-") && !value.contains(".."))
+            .filter(|value| value.starts_with(RECORDING_PREFIX) && !value.contains(".."))
             .ok_or_else(|| "Recording output file name is invalid".to_owned())?;
         if path.extension().and_then(|value| value.to_str()) != Some("mkv") || path.exists() {
             return Err("Recording output must be a new .mkv file".to_owned());
@@ -91,7 +105,9 @@ impl MediaService {
             .canonicalize()
             .map_err(|error| format!("Could not validate recording output directory: {error}"))?;
         if actual_parent != expected_parent {
-            return Err("Recording output is outside the OpenNOW recordings directory".to_owned());
+            return Err(
+                "Recording output is outside the Cloudlight recordings directory".to_owned(),
+            );
         }
         let part = recordings.join(format!(".{file_name}.part"));
         if part.exists() {

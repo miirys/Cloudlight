@@ -138,14 +138,14 @@ fn classify_recovery(
     } else if running_version.trim_start_matches('v') != outcome.version.trim_start_matches('v') {
         result.status = OutcomeStatus::Failed;
         result.message = format!(
-            "The native package is installed, but OpenNOW is running {running_version} instead of {}. Restart OpenNOW before retrying the update.",
+            "The native package is installed, but Cloudlight is running {running_version} instead of {}. Restart Cloudlight before retrying the update.",
             outcome.version
         );
     } else {
         result.status = OutcomeStatus::Completed;
         result.installed_version = Some(outcome.version.clone());
         result.message = format!(
-            "Native package identity and running OpenNOW {} were verified after installation.",
+            "Native package identity and running Cloudlight {} were verified after installation.",
             outcome.version
         );
     }

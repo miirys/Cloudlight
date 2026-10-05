@@ -32,7 +32,7 @@ FocusScope {
         store.onboardingAwdlController.state !== MacAwdlController.Unsupported
             ? qsTr("Complete the required network setup, then choose optional on-device picture processing.")
             : qsTr("Optional, on-device picture processing. Keep it simple now, or experiment with how your stream is presented."),
-        qsTr("Cloudlight is free and open source. If it helps you, consider supporting its development through GitHub Sponsors. You can also help by reporting bugs or contributing to the project. Sponsoring is entirely optional, and you can continue without donating."),
+        qsTr("Cloudlight is free and open source. If it helps you, you can support it by reporting bugs, sharing ideas or contributing on GitHub. Everything here is optional, and you can continue at any time."),
         qsTr("Here's what you picked. Finish setup to save your preferences, or go back to adjust anything.")]
 
     focus: true
@@ -830,8 +830,8 @@ FocusScope {
                         Column {
                             x: DesktopTokens.px(80); y: DesktopTokens.px(20)
                             width: parent.width - x - DesktopTokens.px(22); spacing: DesktopTokens.px(2)
-                            Copy { text: qsTr("Sponsor on GitHub"); color: Theme.label; font.pixelSize: DesktopTokens.px(20); font.weight: Font.Bold; lineHeight: DesktopTokens.px(24) }
-                            Copy { text: "github.com/sponsors/zortos293"; font.pixelSize: DesktopTokens.px(13); lineHeight: DesktopTokens.px(18) }
+                            Copy { text: qsTr("Get help on GitHub"); color: Theme.label; font.pixelSize: DesktopTokens.px(20); font.weight: Font.Bold; lineHeight: DesktopTokens.px(24) }
+                            Copy { text: "github.com/miirys/OpenNOW/issues"; font.pixelSize: DesktopTokens.px(13); lineHeight: DesktopTokens.px(18) }
                         }
                         Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: DesktopTokens.seamSoft }
                     }
@@ -845,7 +845,7 @@ FocusScope {
                             columnSpacing: DesktopTokens.px(10); rowSpacing: DesktopTokens.px(10)
                             Repeater {
                                 model: [
-                                    {title:qsTr("Sponsor"),detail:qsTr("See the available ways to contribute on GitHub."),url:"https://github.com/sponsors/zortos293"},
+                                    {title:qsTr("Get help"),detail:qsTr("Ask a question or search existing reports in GitHub Issues."),url:"https://github.com/miirys/OpenNOW/issues"},
                                     {title:qsTr("Contribute"),detail:qsTr("Help improve the code, translations or documentation."),url:"https://github.com/miirys/OpenNOW"},
                                     {title:qsTr("Report"),detail:qsTr("A clear bug report helps make Cloudlight better."),url:"https://github.com/miirys/OpenNOW/issues"}
                                 ]
@@ -880,8 +880,8 @@ FocusScope {
                             width: parent.width - DesktopTokens.px(44); spacing: DesktopTokens.px(12)
                             Action {
                                 width: Math.min(implicitWidth, parent.width)
-                                text: qsTr("Sponsor on GitHub ↗"); primary: true; accent: root.coral
-                                onClicked: Qt.openUrlExternally("https://github.com/sponsors/zortos293")
+                                text: qsTr("Open GitHub Issues ↗"); primary: true; accent: root.coral
+                                onClicked: Qt.openUrlExternally("https://github.com/miirys/OpenNOW/issues")
                             }
                             Action { text: qsTr("Not now"); onClicked: root.next() }
                         }
@@ -892,7 +892,7 @@ FocusScope {
                         Copy {
                             id: sponsorPromise
                             x: DesktopTokens.px(22); y: DesktopTokens.px(12); width: parent.width - DesktopTokens.px(44)
-                            text: qsTr("Sponsoring is optional. No payment is collected in Cloudlight.")
+                            text: qsTr("Everything here is optional. Cloudlight never asks for payment.")
                             font.pixelSize: DesktopTokens.px(12); lineHeight: DesktopTokens.px(16)
                         }
                     }
@@ -965,7 +965,7 @@ FocusScope {
                         {glyph:"bolt",label:qsTr("Boost"),step:3,value:(root.settings.frameGeneration === "2x" ? qsTr("Frame generation 2× · Experimental") : qsTr("Frame generation off"))
                             + (Qt.platform.os === "osx" ? (root.settings.upscaling === "metalfx" ? qsTr(" · MetalFX · clarity %1 · noise reduction %2").arg(root.settings.upscalingSharpness ?? 10).arg(root.settings.upscalingDenoise ?? 0) : qsTr(" · upscaling off")) : (root.settings.upscaling === "fsr1" ? qsTr(" · FSR 1 · clarity %1").arg(root.settings.upscalingSharpness ?? 10) : qsTr(" · upscaling off")))},
                         {glyph:"info",label:qsTr("Beta"),step:0,value:qsTr("Beta · report bugs on GitHub")},
-                        {glyph:"heart",label:qsTr("Support"),step:4,value:qsTr("Optional · GitHub Sponsors")}
+                        {glyph:"heart",label:qsTr("Support"),step:4,value:qsTr("Optional · GitHub Issues")}
                     ]
                     delegate: AbstractButton {
                         id: summaryRow

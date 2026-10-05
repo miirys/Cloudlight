@@ -6,11 +6,26 @@ namespace OpenNow.Playnite.Services
 {
     internal static class OpenNowPath
     {
+        // Cloudlight is the current name. Installations from before the rename keep
+        // their OpenNOW folder (an upgrade reuses the registered install location)
+        // and may hold either executable name, so both are still searched.
+        internal static readonly string[] ProductNames = { "Cloudlight", "OpenNOW" };
+        internal static readonly string[] ExecutableNames = { "Cloudlight.exe", "OpenNOW.exe" };
+
         public static IEnumerable<string> GetDefaultCandidatePaths()
         {
             var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            yield return Path.Combine(localAppData, "OpenNOW", "bin", "OpenNOW.exe");
-            yield return Path.Combine(localAppData, "Programs", "OpenNOW", "bin", "OpenNOW.exe");
+            foreach (var product in ProductNames)
+            {
+                foreach (var candidate in GetInstalledExecutables(Path.Combine(localAppData, product)))
+                {
+                    yield return candidate;
+                }
+                foreach (var candidate in GetInstalledExecutables(Path.Combine(localAppData, "Programs", product)))
+                {
+                    yield return candidate;
+                }
+            }
             yield return Path.Combine(localAppData, "Programs", "OpenNOW", "OpenNOW.exe");
             yield return Path.Combine(localAppData, "OpenNOW", "OpenNOW.exe");
 
@@ -33,15 +48,49 @@ namespace OpenNow.Playnite.Services
             {
                 yield break;
             }
-            yield return Path.Combine(directory, "OpenNOW", "bin", "OpenNOW.exe");
+            foreach (var product in ProductNames)
+            {
+                foreach (var candidate in GetInstalledExecutables(Path.Combine(directory, product)))
+                {
+                    yield return candidate;
+                }
+                foreach (var installation in GetVersionedInstallations(directory, product))
+                {
+                    foreach (var candidate in GetInstalledExecutables(installation))
+                    {
+                        yield return candidate;
+                    }
+                }
+                foreach (var channel in new[] { " Nightly", " Supporter" })
+                {
+                    foreach (var candidate in GetInstalledExecutables(Path.Combine(directory, product + channel)))
+                    {
+                        yield return candidate;
+                    }
+                }
+            }
+            yield return Path.Combine(directory, "OpenNOW", "OpenNOW.exe");
+        }
+
+        private static IEnumerable<string> GetInstalledExecutables(string installation)
+        {
+            foreach (var executable in ExecutableNames)
+            {
+                yield return Path.Combine(installation, "bin", executable);
+            }
+        }
+
+        private static List<string> GetVersionedInstallations(string directory, string product)
+        {
+            var prefix = product + " ";
             var versioned = new List<KeyValuePair<Version, string>>();
             try
             {
                 if (Directory.Exists(directory))
                 {
-                    foreach (var path in Directory.GetDirectories(directory, "OpenNOW *"))
+                    foreach (var path in Directory.GetDirectories(directory, prefix + "*"))
                     {
-                        if (Version.TryParse(Path.GetFileName(path).Substring("OpenNOW ".Length), out var version))
+                        if (Version.TryParse(Path.GetFileName(path).Substring(prefix.Length), out var version))
                         {
                             versioned.Add(new KeyValuePair<Version, string>(version, path));
                         }
@@ -57,15 +106,12 @@ namespace OpenNow.Playnite.Services
                 versioned.Clear();
             }
             versioned.Sort((left, right) => right.Key.CompareTo(left.Key));
+            var installations = new List<string>();
             foreach (var installation in versioned)
             {
-                yield return Path.Combine(installation.Value, "bin", "OpenNOW.exe");
+                installations.Add(installation.Value);
             }
-            foreach (var name in new[] { "OpenNOW Nightly", "OpenNOW Supporter" })
-            {
-                yield return Path.Combine(directory, name, "bin", "OpenNOW.exe");
-            }
-            yield return Path.Combine(directory, "OpenNOW", "OpenNOW.exe");
+            return installations;
         }
 
         public static string ResolveExecutablePath(string configuredPath)

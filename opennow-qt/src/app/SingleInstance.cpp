@@ -103,5 +103,5 @@ QString SingleInstance::serverName()
 {
     const auto scope = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation).toUtf8();
     const auto digest = QCryptographicHash::hash(scope, QCryptographicHash::Sha256).toHex().first(16);
-    return u"opennow-%1"_s.arg(QString::fromLatin1(digest));
+    return u"cloudlight-%1"_s.arg(QString::fromLatin1(digest));
 }

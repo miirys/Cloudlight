@@ -1,7 +1,7 @@
 {
   "name": "opennow-workspace",
   "private": true,
-  "description": "OpenNOW Qt/native desktop workspace and repository tooling",
+  "description": "Cloudlight Qt/native desktop workspace and repository tooling",
   "engines": {
     "node": ">=22.22.0"
   },

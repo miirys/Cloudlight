@@ -14,13 +14,15 @@ opennow_add_application_icons(opennow-qt)
 
 if(WIN32)
     enable_language(RC)
-    configure_file(packaging/OpenNOW.rc.in "${CMAKE_CURRENT_BINARY_DIR}/OpenNOW.rc" @ONLY)
-    set_source_files_properties("${CMAKE_CURRENT_BINARY_DIR}/OpenNOW.rc" PROPERTIES
-        OBJECT_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/packaging/icons/OpenNOW.ico")
-    target_sources(opennow-qt PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/OpenNOW.rc")
+    # Executable version resource: numeric major,minor,patch,0 plus the full build version.
+    string(REPLACE "." "," OPENNOW_RC_VERSION "${OPENNOW_NUMERIC_VERSION},0")
+    configure_file(packaging/Cloudlight.rc.in "${CMAKE_CURRENT_BINARY_DIR}/Cloudlight.rc" @ONLY)
+    set_source_files_properties("${CMAKE_CURRENT_BINARY_DIR}/Cloudlight.rc" PROPERTIES
+        OBJECT_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/packaging/icons/Cloudlight.ico")
+    target_sources(opennow-qt PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/Cloudlight.rc")
 elseif(APPLE)
-    set_source_files_properties(packaging/icons/OpenNOW.icns PROPERTIES
+    set_source_files_properties(packaging/icons/Cloudlight.icns PROPERTIES
         MACOSX_PACKAGE_LOCATION Resources)
-    target_sources(opennow-qt PRIVATE packaging/icons/OpenNOW.icns)
-    set_target_properties(opennow-qt PROPERTIES MACOSX_BUNDLE_ICON_FILE OpenNOW.icns)
+    target_sources(opennow-qt PRIVATE packaging/icons/Cloudlight.icns)
+    set_target_properties(opennow-qt PROPERTIES MACOSX_BUNDLE_ICON_FILE Cloudlight.icns)
 endif()

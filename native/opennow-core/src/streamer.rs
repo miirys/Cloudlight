@@ -944,7 +944,7 @@ impl Drop for StreamerService {
         {
             let _ = worker
                 .control
-                .send(WorkerCommand::Stop("OpenNOW core shutdown".to_owned()));
+                .send(WorkerCommand::Stop("Cloudlight core shutdown".to_owned()));
             let _ = worker.join.join();
         }
     }
@@ -1397,7 +1397,7 @@ fn run_worker(
     );
     let _ = write_child(
         &mut stdin,
-        &json!({"id":"shutdown","type":"shutdown","reason":"OpenNOW session ended"}),
+        &json!({"id":"shutdown","type":"shutdown","reason":"Cloudlight session ended"}),
     );
     wait_or_kill(&mut child);
     drop(stdin);
@@ -2013,9 +2013,9 @@ fn resolve_executable(settings: &Value) -> Result<PathBuf, StreamerError> {
         .parent()
         .unwrap_or_else(|| Path::new("."))
         .join(if cfg!(target_os = "windows") {
-            "opennow-streamer.exe"
+            "cloudlight-streamer.exe"
         } else {
-            "opennow-streamer"
+            "cloudlight-streamer"
         }))
 }
 
@@ -2084,7 +2084,7 @@ mod tests {
     #[test]
     fn external_stream_window_is_the_native_input_owner() {
         let command = streamer_command(
-            Path::new("opennow-streamer"),
+            Path::new("cloudlight-streamer"),
             &json!({
                 "nativeVideoBackend":"auto",
                 "decoderPreference":"auto",

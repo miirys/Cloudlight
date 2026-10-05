@@ -1,3 +1,4 @@
+use crate::legacy_paths;
 use crate::proxy::normalize_proxy_url;
 use serde_json::{Map, Value, json};
 use std::collections::HashSet;
@@ -813,24 +814,33 @@ fn normalize_resolution(values: &mut Map<String, Value>) {
     }
 }
 
+/// Resolves the profile directory without changing anything on disk. Short-lived
+/// queries use this so only the long-running core moves a legacy profile.
 pub fn resolve_data_dir(data_dir: Option<PathBuf>) -> PathBuf {
-    data_dir.unwrap_or_else(|| {
-        let primary = default_data_dir();
-        select_existing_data_dir(primary.clone(), legacy_data_dirs(&primary))
-    })
+    data_dir.unwrap_or_else(default_data_dir)
 }
 
-fn select_existing_data_dir(
-    primary: PathBuf,
-    legacy_candidates: impl IntoIterator<Item = PathBuf>,
-) -> PathBuf {
-    if primary.exists() {
-        return primary;
-    }
-    legacy_candidates
-        .into_iter()
-        .find(|candidate| candidate.exists())
-        .unwrap_or(primary)
+/// Resolves the profile directory for the long-running core. A profile still in
+/// its pre-Cloudlight OpenNOW location is moved to the Cloudlight location once;
+/// when that is not possible the legacy profile stays in use and nothing is lost.
+pub fn prepare_data_dir(data_dir: Option<PathBuf>) -> PathBuf {
+    data_dir.unwrap_or_else(|| {
+        let (current, legacy) = data_dir_candidates();
+        let (selected, outcome) = legacy_paths::migrate(
+            &current,
+            &legacy,
+            legacy_paths::MovePolicy::RenameOrCopy,
+            Some(PROFILE_LOCK_FILE),
+        );
+        if outcome == legacy_paths::Outcome::KeptLegacy {
+            eprintln!(
+                "Profile migration deferred: {} could not be moved to {}; it stays in use",
+                selected.display(),
+                current.display()
+            );
+        }
+        selected
+    })
 }
 
 fn normalize_choice(values: &mut Map<String, Value>, key: &str, choices: &[&str], fallback: &str) {
@@ -1242,41 +1252,52 @@ fn bounded_integer(value: Option<&Value>, fallback: i64, minimum: i64, maximum: 
         .clamp(minimum, maximum)
 }
 
+/// Locked for the lifetime of the core that owns a profile directory.
+pub const PROFILE_LOCK_FILE: &str = "core.lock";
+const DATA_DIR_NAME: &str = "Cloudlight";
+/// Profile directory names used before the Cloudlight rename, newest first. The
+/// lowercase spelling is the Electron-era Linux profile.
+const LEGACY_DATA_DIR_NAMES: &[&str] = if cfg!(target_os = "linux") {
+    &["OpenNOW", "opennow"]
+} else {
+    &["OpenNOW"]
+};
+
 fn default_data_dir() -> PathBuf {
+    let (current, legacy) = data_dir_candidates();
+    legacy_paths::select(&current, &legacy)
+}
+
+/// The Cloudlight profile directory and the legacy directories it replaces. An
+/// explicit OPENNOW_DATA_DIR is used as-is and never migrated.
+fn data_dir_candidates() -> (PathBuf, Vec<PathBuf>) {
     if let Some(path) = env::var_os("OPENNOW_DATA_DIR") {
-        return PathBuf::from(path);
+        return (PathBuf::from(path), Vec::new());
     }
+    let base = data_dir_base();
+    let legacy = LEGACY_DATA_DIR_NAMES
+        .iter()
+        .map(|name| base.join(name))
+        .collect();
+    (base.join(DATA_DIR_NAME), legacy)
+}
+
+fn data_dir_base() -> PathBuf {
     #[cfg(target_os = "windows")]
     if let Some(path) = env::var_os("APPDATA") {
-        return PathBuf::from(path).join("OpenNOW");
+        return PathBuf::from(path);
     }
     #[cfg(target_os = "macos")]
     if let Some(path) = env::var_os("HOME") {
-        return PathBuf::from(path).join("Library/Application Support/OpenNOW");
+        return PathBuf::from(path).join("Library/Application Support");
     }
     if let Some(path) = env::var_os("XDG_CONFIG_HOME") {
-        return PathBuf::from(path).join("OpenNOW");
+        return PathBuf::from(path);
     }
     env::var_os("HOME")
         .map(PathBuf::from)
         .unwrap_or_else(|| PathBuf::from("."))
-        .join(".config/OpenNOW")
-}
-
-fn legacy_data_dirs(primary: &Path) -> Vec<PathBuf> {
-    #[cfg(target_os = "linux")]
-    {
-        let mut candidates = Vec::new();
-        if let Some(parent) = primary.parent() {
-            candidates.push(parent.join("opennow"));
-        }
-        candidates
-    }
-    #[cfg(not(target_os = "linux"))]
-    {
-        let _ = primary;
-        Vec::new()
-    }
+        .join(".config")
 }
 
 fn defaults() -> Map<String, Value> {
@@ -3185,46 +3206,43 @@ mod tests {
 
     #[test]
     fn existing_legacy_profile_wins_only_when_primary_is_absent() {
-        let unique = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_nanos();
-        let root = env::temp_dir().join(format!("opennow-core-profile-{unique}"));
-        let primary = root.join("OpenNOW");
-        let legacy = root.join("legacy-opennow");
+        let root = tempfile::tempdir().unwrap();
+        let primary = root.path().join("Cloudlight");
+        let legacy = root.path().join("OpenNOW");
 
         fs::create_dir_all(&legacy).unwrap();
         assert_eq!(
-            select_existing_data_dir(primary.clone(), [legacy.clone()]),
+            legacy_paths::select(&primary, std::slice::from_ref(&legacy)),
             legacy
         );
 
         fs::create_dir_all(&primary).unwrap();
-        assert_eq!(select_existing_data_dir(primary.clone(), [legacy]), primary);
-        let _ = fs::remove_dir_all(root);
+        assert_eq!(legacy_paths::select(&primary, &[legacy]), primary);
     }
 
     #[test]
-    fn historical_profile_spelling_respects_filesystem_case_sensitivity() {
-        let unique = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_nanos();
-        let root = env::temp_dir().join(format!("opennow-core-profile-case-{unique}"));
-        let primary = root.join("OpenNOW");
-        let legacy = root.join("opennow");
-        fs::create_dir_all(&legacy).unwrap();
-        fs::write(legacy.join("settings.json"), b"{}").unwrap();
+    fn historical_profile_spellings_follow_the_cloudlight_profile() {
+        let root = tempfile::tempdir().unwrap();
+        let primary = root.path().join(DATA_DIR_NAME);
+        let candidates = LEGACY_DATA_DIR_NAMES
+            .iter()
+            .map(|name| root.path().join(name))
+            .collect::<Vec<_>>();
+        let oldest = candidates.last().unwrap().clone();
+        fs::create_dir_all(&oldest).unwrap();
+        fs::write(oldest.join("settings.json"), b"{}").unwrap();
 
-        let expected = if primary.canonicalize().is_ok() {
-            primary.clone()
-        } else {
-            legacy.clone()
-        };
-        let selected = select_existing_data_dir(primary, [legacy.clone()]);
-        assert_eq!(selected, expected);
-        assert_eq!(fs::read(selected.join("settings.json")).unwrap(), b"{}");
-        let _ = fs::remove_dir_all(root);
+        let (selected, outcome) = legacy_paths::migrate(
+            &primary,
+            &candidates,
+            legacy_paths::MovePolicy::RenameOrCopy,
+            Some(PROFILE_LOCK_FILE),
+        );
+
+        assert_eq!(outcome, legacy_paths::Outcome::Renamed);
+        assert_eq!(selected, primary);
+        assert_eq!(fs::read(primary.join("settings.json")).unwrap(), b"{}");
+        assert_eq!(legacy_paths::select(&primary, &candidates), primary);
     }
 
     #[test]

@@ -32,8 +32,8 @@ set(OPENNOW_SDL3_RUNTIME_TARGET SDL3-runtime)
 add_library(SDL3-runtime SHARED IMPORTED)
 set_target_properties(SDL3-runtime PROPERTIES
     IMPORTED_LOCATION "${{CMAKE_BINARY_DIR}}/libSDL3.so")
-set(OPENNOW_STREAMER_FFI_RUNTIME "${{CMAKE_BINARY_DIR}}/libopennow_streamer_ffi.so")
-set(OPENNOW_STREAMER_BIN_ARTIFACT "${{CMAKE_BINARY_DIR}}/opennow-streamer")
+set(OPENNOW_STREAMER_FFI_RUNTIME "${{CMAKE_BINARY_DIR}}/libcloudlight_streamer_ffi.so")
+set(OPENNOW_STREAMER_BIN_ARTIFACT "${{CMAKE_BINARY_DIR}}/cloudlight-streamer")
 set(OPENNOW_GENERATED_NOTICES "${{CMAKE_BINARY_DIR}}/THIRD_PARTY_NOTICES")
 include("{qt_source.as_posix()}/cmake/Packaging.cmake")
 '''
@@ -55,14 +55,14 @@ file(WRITE "{source.as_posix()}/architecture.txt" "${{CPACK_DEBIAN_PACKAGE_ARCHI
                 self.assertIn("qt6-svg-plugins (>= 6.8)", [item.strip() for item in dependencies])
                 self.assertIn("pkexec", [item.strip() for item in dependencies])
                 self.assertEqual((source / "architecture.txt").read_text(), architecture)
-                self.assertIn("opennow-update-helper", (build / "cmake_install.cmake").read_text())
+                self.assertIn("cloudlight-update-helper", (build / "cmake_install.cmake").read_text())
 
     def test_missing_or_nonexecutable_helper_is_rejected(self):
         with tempfile.TemporaryDirectory() as directory:
             bin_dir = Path(directory)
             with self.assertRaisesRegex(ValueError, "executable update helper"):
                 verify_package(bin_dir)
-            helper = bin_dir / "opennow-update-helper"
+            helper = bin_dir / "cloudlight-update-helper"
             helper.write_bytes(b"test helper")
             helper.chmod(0o600)
             with self.assertRaisesRegex(ValueError, "executable update helper"):

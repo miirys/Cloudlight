@@ -1,5 +1,5 @@
 set(OPENNOW_BUILD_VERSION "${PROJECT_VERSION}" CACHE STRING
-    "OpenNOW version: major.minor.patch or major.minor.patch-{nightly,supporter}.run.attempt")
+    "Cloudlight version: major.minor.patch or major.minor.patch-{nightly,supporter}.run.attempt")
 if(NOT OPENNOW_BUILD_VERSION MATCHES "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(-(nightly|supporter)\\.[1-9][0-9]*\\.[1-9][0-9]*)?$")
     message(FATAL_ERROR
         "OPENNOW_BUILD_VERSION must be major.minor.patch or major.minor.patch-{nightly,supporter}.run.attempt")
@@ -27,4 +27,4 @@ else()
     message(FATAL_ERROR "Unsupported package target architecture: ${OPENNOW_TARGET_PROCESSOR}")
 endif()
 set(OPENNOW_PACKAGE_FILE_NAME
-    "OpenNOW-Qt-${OPENNOW_BUILD_VERSION}-${CMAKE_SYSTEM_NAME}-${OPENNOW_PACKAGE_ARCH}")
+    "Cloudlight-Qt-${OPENNOW_BUILD_VERSION}-${CMAKE_SYSTEM_NAME}-${OPENNOW_PACKAGE_ARCH}")

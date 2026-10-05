@@ -1169,7 +1169,7 @@ fn create_owned_window(window: OwnedWindow) -> Result<HWND, String> {
         CreateWindowExW(
             extended_style,
             WINDOW_CLASS,
-            w!("OpenNOW Stream"),
+            w!("Cloudlight Stream"),
             style,
             window.bounds.x,
             window.bounds.y,

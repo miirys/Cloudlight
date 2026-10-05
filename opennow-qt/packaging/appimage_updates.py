@@ -11,8 +11,8 @@ def update_information(channel, arch):
         raise ValueError("Unsupported AppImage update channel or architecture")
     tag = "latest" if channel == "stable" else "latest-pre"
     version = "*" if channel == "stable" else f"*-{channel}.*"
-    return (f"gh-releases-zsync|OpenCloudGaming|OpenNOW|{tag}|"
-            f"OpenNOW-Qt-{version}-Linux-{arch}.AppImage.zsync")
+    return (f"gh-releases-zsync|miirys|OpenNOW|{tag}|"
+            f"Cloudlight-Qt-{version}-Linux-{arch}.AppImage.zsync")
 
 
 def verify_zsync(appimage):
@@ -45,7 +45,7 @@ def verify_zsync(appimage):
 
 
 def verify(appimage, channel, arch):
-    if not re.fullmatch(r"OpenNOW-Qt-[0-9A-Za-z.+-]+-Linux-" + arch + r"\.AppImage", appimage.name):
+    if not re.fullmatch(r"Cloudlight-Qt-[0-9A-Za-z.+-]+-Linux-" + arch + r"\.AppImage", appimage.name):
         raise ValueError("Expected a versioned AppImage filename")
     result = subprocess.run([str(appimage.resolve()), "--appimage-updateinformation"],
                             check=True, capture_output=True, text=True, timeout=30,

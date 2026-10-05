@@ -12,7 +12,7 @@ import subprocess
 import tempfile
 
 
-BUNDLE_ID = "io.github.opencloudgaming.OpenNOW"
+BUNDLE_ID = "io.github.miirys.Cloudlight"
 ENTITLEMENTS = Path(__file__).with_name("macos-release-entitlements.plist")
 SECRET_NAMES = (
     "OPENNOW_MACOS_DEVELOPER_ID_P12_BASE64",
@@ -74,7 +74,7 @@ def verify_app(app, requirement):
     run("codesign", "--verify", "--deep", "--strict", "-R", requirement, app)
     actual_entitlements = plistlib.loads(run(
         "codesign", "--display", "--entitlements", "-", "--xml",
-        app / "Contents/MacOS/OpenNOW",
+        app / "Contents/MacOS/Cloudlight",
     ).encode())
     with ENTITLEMENTS.open("rb") as source:
         if actual_entitlements != plistlib.load(source):
@@ -109,13 +109,13 @@ def package(build, output, version):
     requirement = (f'=anchor apple generic and certificate leaf[subject.OU] = "{match[1]}" '
                    'and certificate leaf[field.1.2.840.113635.100.6.1.13] exists')
     output.mkdir(parents=True, exist_ok=True)
-    name = f"OpenNOW-Qt-{version}-Darwin-arm64"
+    name = f"Cloudlight-Qt-{version}-Darwin-arm64"
     if any((output / f"{name}.{suffix}").exists() for suffix in ("zip", "dmg")):
         raise ValueError("Candidate outputs already exist")
     with tempfile.TemporaryDirectory(prefix="opennow-macos-signing-", dir=os.environ.get("RUNNER_TEMP")) as directory:
         temporary = Path(directory)
         stage = temporary / "stage"
-        app = stage / "OpenNOW.app"
+        app = stage / "Cloudlight.app"
         keychain = temporary / "signing.keychain-db"
         key = temporary / "AuthKey.p8"
         certificate = temporary / "certificate.p12"
@@ -157,7 +157,7 @@ def package(build, output, version):
             dmg = temporary / f"{name}.dmg"
             run("ditto", "-c", "-k", "--sequesterRsrc", "--keepParent", app, archive)
             (stage / "Applications").symlink_to("/Applications")
-            run("hdiutil", "create", "-volname", "OpenNOW", "-srcfolder", stage,
+            run("hdiutil", "create", "-volname", "Cloudlight", "-srcfolder", stage,
                 "-format", "UDZO", dmg)
             run("codesign", "--force", "--sign", identity, "--keychain", keychain, "--timestamp", dmg)
             print("Notarizing and stapling the final disk image", flush=True)
@@ -170,13 +170,13 @@ def package(build, output, version):
             print("Verifying Gatekeeper signatures and tickets from final packages", flush=True)
             extracted = temporary / "zip-extracted"
             run("ditto", "-x", "-k", archive, extracted)
-            verify_app(extracted / "OpenNOW.app", requirement)
+            verify_app(extracted / "Cloudlight.app", requirement)
             mount = temporary / "mounted"
             mount.mkdir()
             try:
                 run("hdiutil", "attach", dmg, "-readonly", "-nobrowse", "-mountpoint", mount)
-                relocated = temporary / "dmg-extracted/OpenNOW.app"
-                run("ditto", mount / "OpenNOW.app", relocated)
+                relocated = temporary / "dmg-extracted/Cloudlight.app"
+                run("ditto", mount / "Cloudlight.app", relocated)
             finally:
                 run("hdiutil", "detach", mount)
             verify_app(relocated, requirement)

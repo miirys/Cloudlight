@@ -84,7 +84,7 @@ private slots:
     {
         QTest::addColumn<QByteArray>("flatpakId");
         QTest::addColumn<QByteArray>("picturesOverride");
-        const QByteArray opennowFlatpakId("io.github.opencloudgaming.OpenNOW");
+        const QByteArray opennowFlatpakId("io.github.miirys.Cloudlight");
         const QByteArray explicitOverride("/custom/captures");
         const QByteArray emptyOverride("");
         QTest::newRow("native-xdg-pictures") << QByteArray{} << QByteArray{};
@@ -204,9 +204,51 @@ private slots:
         const auto root = qvariant_cast<QJsonObject>(responses.first().at(1))
                               .value(QStringLiteral("path")).toString();
         QCOMPARE(QDir::cleanPath(root),
-                 QDir::cleanPath(QDir(overrideRoot.path()).filePath(QStringLiteral("OpenNOW"))));
+                 QDir::cleanPath(QDir(overrideRoot.path()).filePath(QStringLiteral("Cloudlight"))));
         QCOMPARE(QDir::cleanPath(mediaRecordingsDirectory()),
                  QDir::cleanPath(QDir(root).filePath(QStringLiteral("Recordings"))));
+        QCOMPARE(QDir::cleanPath(mediaScreenshotsDirectory()),
+                 QDir::cleanPath(QDir(root).filePath(QStringLiteral("Screenshots"))));
+        client.stop();
+    }
+
+    void realCoreMovesPreRenameCapturesWhereQtLooks()
+    {
+        QTemporaryDir overrideRoot;
+        QTemporaryDir dataDir;
+        QVERIFY(overrideRoot.isValid() && dataDir.isValid());
+        const auto previousPictures = qgetenv("OPENNOW_PICTURES_DIR");
+        const auto restoreEnvironment = qScopeGuard([&] {
+            if (previousPictures.isNull()) qunsetenv("OPENNOW_PICTURES_DIR");
+            else qputenv("OPENNOW_PICTURES_DIR", previousPictures);
+        });
+        const auto program = QString::fromUtf8(OPENNOW_TEST_CORE_PATH);
+        QVERIFY2(QFileInfo(program).isExecutable(), qPrintable(program));
+
+        const QDir pictures(overrideRoot.path());
+        QVERIFY(pictures.mkpath(QStringLiteral("OpenNOW/Screenshots")));
+        QFile capture(pictures.filePath(QStringLiteral("OpenNOW/Screenshots/before-rename.png")));
+        QVERIFY(capture.open(QIODevice::WriteOnly));
+        QCOMPARE(capture.write("fixture"), 7);
+        capture.close();
+
+        qputenv("OPENNOW_PICTURES_DIR", overrideRoot.path().toUtf8());
+        // Before the core runs, Qt keeps using the pre-rename folder.
+        QCOMPARE(QDir::cleanPath(mediaScreenshotsDirectory()),
+                 QDir::cleanPath(pictures.filePath(QStringLiteral("OpenNOW/Screenshots"))));
+        CoreClient client;
+        QSignalSpy responses(&client, &CoreClient::responseReceived);
+        QVERIFY(client.start(program, {QStringLiteral("--data-dir"), dataDir.path()}));
+        QTRY_COMPARE_WITH_TIMEOUT(client.state(), QStringLiteral("ready"), 5'000);
+        responses.clear();
+        client.request(QStringLiteral("media.root.get"));
+        QTRY_COMPARE_WITH_TIMEOUT(responses.size(), 1, 5'000);
+        const auto root = qvariant_cast<QJsonObject>(responses.first().at(1))
+                              .value(QStringLiteral("path")).toString();
+        QCOMPARE(QDir::cleanPath(root),
+                 QDir::cleanPath(pictures.filePath(QStringLiteral("Cloudlight"))));
+        QVERIFY(QFileInfo::exists(pictures.filePath(QStringLiteral("Cloudlight/Screenshots/before-rename.png"))));
+        QVERIFY(!QFileInfo::exists(pictures.filePath(QStringLiteral("OpenNOW"))));
         QCOMPARE(QDir::cleanPath(mediaScreenshotsDirectory()),
                  QDir::cleanPath(QDir(root).filePath(QStringLiteral("Screenshots"))));
         client.stop();

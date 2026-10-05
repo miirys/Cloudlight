@@ -10,7 +10,7 @@ namespace OpenNow.Playnite.Services
 {
     internal static class OpenNowLauncher
     {
-        public const string PlayActionName = "Play via OpenNOW";
+        public const string PlayActionName = "Play via Cloudlight";
         public const string FeatureName = "OpenNOW";
 
         public static string BuildLaunchArguments(string title, int? appId)
@@ -39,7 +39,7 @@ namespace OpenNow.Playnite.Services
             errorMessage = null;
             if (string.IsNullOrWhiteSpace(executablePath) || !System.IO.File.Exists(executablePath))
             {
-                errorMessage = "OpenNOW executable was not found. Set the path in extension settings.";
+                errorMessage = "Cloudlight executable was not found. Set the path in extension settings.";
                 return false;
             }
 

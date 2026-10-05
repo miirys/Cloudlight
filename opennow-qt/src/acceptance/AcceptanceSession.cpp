@@ -63,9 +63,9 @@ QString AcceptanceSession::coreProgram(const QStringList &arguments)
     if (smoke) return {};
     const auto bundled = QDir(QCoreApplication::applicationDirPath()).filePath(
 #ifdef Q_OS_WIN
-        u"opennow-core.exe"_s
+        u"cloudlight-core.exe"_s
 #else
-        u"opennow-core"_s
+        u"cloudlight-core"_s
 #endif
     );
     return QFileInfo::exists(bundled) ? bundled : QString{};
@@ -96,7 +96,7 @@ void AcceptanceSession::configureContext()
             {u"title"_s, u"Smoke Test Game"_s},
             {u"isAvailable"_s, true},
             {u"isInLibrary"_s, true},
-            {u"publisherName"_s, u"OpenNOW Test Fixture"_s},
+            {u"publisherName"_s, u"Cloudlight Test Fixture"_s},
             {u"genres"_s, QStringList{u"Fixture"_s}},
             {u"selectedVariantIndex"_s, 0},
             {u"variants"_s, QVariantList{

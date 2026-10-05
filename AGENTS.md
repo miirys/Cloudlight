@@ -215,8 +215,8 @@ Crowdin and should change only through Crowdin synchronization pull requests.
 
 - Qt 6.8+, CMake 3.24+, a C++20 toolchain, SDL3, Cargo, and the platform media dependencies are
   required.
-- On Windows the development executable is normally `build/opennow-qt/OpenNOW.exe`; on Linux it is
-  normally `build/opennow-qt/opennow-qt`.
+- On Windows the development executable is normally `build/opennow-qt/Cloudlight.exe`; on Linux it is
+  normally `build/opennow-qt/cloudlight`.
 - Build before restarting the development application. Stop only OpenNOW processes from this
   workspace, then launch the freshly built Qt executable from `build/opennow-qt` so bundled runtime
   libraries and the Rust core resolve predictably.

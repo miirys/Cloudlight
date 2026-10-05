@@ -37,7 +37,7 @@ After building the Qt application, run:
 
 ```sh
 ctest --test-dir build/opennow-qt --output-on-failure -R 'stream-stats|streamtoasts|queue-drops|frame-generation-stats|fullscreen.*stats'
-bash scripts/capture-qt-stream-stats.sh build/opennow-qt/opennow-qt build/stats-v2-captures
+bash scripts/capture-qt-stream-stats.sh build/opennow-qt/cloudlight build/stats-v2-captures
 ```
 
 The capture script renders compact, expanded, degraded, 1.5× scale, and controller/packet-loss
@@ -59,7 +59,7 @@ cargo test --manifest-path native/opennow-core/Cargo.toml cloudmatch::tests
 After building the app, capture the different-game confirmation without signing in:
 
 ```sh
-build/opennow-qt/opennow-qt --smoke-test --allow-multiple-instances \
+build/opennow-qt/cloudlight --smoke-test --allow-multiple-instances \
   --desktop --route inserting --reduced-motion --smoke-width 960 --smoke-height 640 \
   --smoke-session-resume conflict --screenshot /absolute/path/session-conflict.png
 ```
@@ -345,7 +345,7 @@ scale. The checks open Advanced and reject overlapping or overflowing row conten
 Capture the actual Qt pages with account-free smoke data:
 
 ```sh
-bash scripts/capture-qt-settings.sh build/opennow-qt/opennow-qt /absolute/path/settings-captures
+bash scripts/capture-qt-settings.sh build/opennow-qt/cloudlight /absolute/path/settings-captures
 ```
 
 The script captures every page, compact and scaled views, expanded conditional

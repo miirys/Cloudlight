@@ -1,5 +1,5 @@
 {
-    "app-id": "io.github.opencloudgaming.OpenNOW",
+    "app-id": "io.github.miirys.Cloudlight",
     "runtime": "org.kde.Platform",
     "runtime-version": "6.10",
     "sdk": "org.kde.Sdk",
@@ -7,7 +7,7 @@
         "org.freedesktop.Sdk.Extension.rust-stable",
         "org.freedesktop.Sdk.Extension.llvm20"
     ],
-    "command": "opennow-qt",
+    "command": "cloudlight",
     "finish-args": [
         "--share=network",
         "--share=ipc",
@@ -16,7 +16,7 @@
         "--socket=pulseaudio",
         "--device=all",
         "--filesystem=xdg-run/pipewire-0",
-        "--filesystem=xdg-pictures/OpenNOW:create",
+        "--filesystem=xdg-pictures/Cloudlight:create",
         "--talk-name=org.freedesktop.secrets"
     ],
     "modules": [

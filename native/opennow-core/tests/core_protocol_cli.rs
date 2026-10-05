@@ -10,7 +10,7 @@ fn hello(version: u32) -> Value {
         .unwrap()
         .as_nanos();
     let directory = std::env::temp_dir().join(format!("opennow-protocol-{version}-{unique}"));
-    let mut child = Command::new(env!("CARGO_BIN_EXE_opennow-core"))
+    let mut child = Command::new(env!("CARGO_BIN_EXE_cloudlight-core"))
         .arg("--data-dir")
         .arg(&directory)
         .stdin(Stdio::piped())
@@ -85,7 +85,7 @@ fn writable_cores_exclusively_own_the_resolved_profile_until_exit() {
         .as_nanos();
     let directory = std::env::temp_dir().join(format!("opennow-profile-lock-{unique}"));
     let other_directory = directory.join("other-profile");
-    let mut first = Command::new(env!("CARGO_BIN_EXE_opennow-core"))
+    let mut first = Command::new(env!("CARGO_BIN_EXE_cloudlight-core"))
         .args(["--data-dir", directory.to_str().unwrap()])
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
@@ -103,7 +103,7 @@ fn writable_cores_exclusively_own_the_resolved_profile_until_exit() {
     });
     let ready = receiver.recv_timeout(Duration::from_secs(10));
     let launch = |path: &std::path::Path, graphics: bool| {
-        let mut command = Command::new(env!("CARGO_BIN_EXE_opennow-core"));
+        let mut command = Command::new(env!("CARGO_BIN_EXE_cloudlight-core"));
         command.arg("--data-dir").arg(path).stdin(Stdio::null());
         if graphics {
             command.arg("--graphics-preferences");
@@ -240,7 +240,7 @@ mod pending_profile_owner {
             release_read.as_raw_fd(),
         ];
         let executable = std::env::var_os("OPENNOW_PROFILE_TEST_CORE")
-            .unwrap_or_else(|| env!("CARGO_BIN_EXE_opennow-core").into());
+            .unwrap_or_else(|| env!("CARGO_BIN_EXE_cloudlight-core").into());
         let mut command = Command::new(&executable);
         command
             .arg("--data-dir")

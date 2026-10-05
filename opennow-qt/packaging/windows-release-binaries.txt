@@ -1,6 +1,6 @@
-OpenNOW.exe
-opennow-core.exe
-opennow-acceptance-verify.exe
-opennow-update-helper.exe
-opennow-streamer.exe
-opennow_streamer_ffi.dll
+Cloudlight.exe
+cloudlight-core.exe
+cloudlight-acceptance-verify.exe
+cloudlight-update-helper.exe
+cloudlight-streamer.exe
+cloudlight_streamer_ffi.dll

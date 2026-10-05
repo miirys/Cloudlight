@@ -133,7 +133,7 @@ impl DiscordService {
                 }) {
                 Ok(_) => Some(mailbox),
                 Err(error) => {
-                    eprintln!("opennow-core: discord presence worker failed to start: {error}");
+                    eprintln!("cloudlight-core: discord presence worker failed to start: {error}");
                     self.worker_alive.store(false, Ordering::SeqCst);
                     None
                 }
@@ -684,7 +684,7 @@ fn activity_payload(params: &Value) -> Result<Value, String> {
             .map(|value| format!("In queue (#{value})"))
             .unwrap_or_else(|| "In queue".to_owned()),
         "starting" => "Starting stream".to_owned(),
-        "streaming" => "Streaming via OpenNOW".to_owned(),
+        "streaming" => "Streaming via Cloudlight".to_owned(),
         _ => return Err("Unsupported Discord activity kind".to_owned()),
     };
     let mut activity = json!({

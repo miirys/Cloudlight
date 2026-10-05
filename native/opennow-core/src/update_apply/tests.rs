@@ -9,7 +9,7 @@ use tempfile::TempDir;
 #[test]
 fn linux_update_preparation_rejects_cross_format_replacement() {
     use std::ffi::OsStr;
-    let image = Some(OsStr::new("/home/user/OpenNOW.AppImage"));
+    let image = Some(OsStr::new("/home/user/Cloudlight.AppImage"));
     assert!(validate_linux_install_kind(InstallKind::AppImage, image).is_ok());
     assert!(validate_linux_install_kind(InstallKind::DebianPackage, None).is_ok());
     assert!(validate_linux_install_kind(InstallKind::AppImage, None).is_err());
@@ -58,16 +58,16 @@ fn prepared_windows_swap_replaces_runtime_binaries_and_missing_ack_restores_them
     let directory = TempDir::new().unwrap();
     let plan = plan(directory.path(), InstallKind::WindowsPortable);
     let names = [
-        "OpenNOW.exe",
-        "opennow-core.exe",
-        "opennow-update-helper.exe",
+        "Cloudlight.exe",
+        "cloudlight-core.exe",
+        "cloudlight-update-helper.exe",
     ];
-    let old_core = b"old-opennow-core";
-    let old_helper = b"old-opennow-update-helper";
-    let new_core = b"new-opennow-core";
-    let new_helper = b"new-opennow-update-helper";
+    let old_core = b"old-cloudlight-core";
+    let old_helper = b"old-cloudlight-update-helper";
+    let new_core = b"new-cloudlight-core";
+    let new_helper = b"new-cloudlight-update-helper";
     let old_app = b"#!/bin/sh\nexit 0\n";
-    let new_app = b"#!/bin/sh\nbin=$(CDPATH= cd -- \"$(dirname \"$0\")\" && pwd)\nmkdir -p \"$OPENNOW_DATA_DIR\"\ncp \"$bin/OpenNOW.exe\" \"$OPENNOW_DATA_DIR/seen-OpenNOW.exe\"\ncp \"$bin/opennow-core.exe\" \"$OPENNOW_DATA_DIR/seen-opennow-core.exe\"\ncp \"$bin/opennow-update-helper.exe\" \"$OPENNOW_DATA_DIR/seen-opennow-update-helper.exe\"\nsleep 30\n";
+    let new_app = b"#!/bin/sh\nbin=$(CDPATH= cd -- \"$(dirname \"$0\")\" && pwd)\nmkdir -p \"$OPENNOW_DATA_DIR\"\ncp \"$bin/Cloudlight.exe\" \"$OPENNOW_DATA_DIR/seen-Cloudlight.exe\"\ncp \"$bin/cloudlight-core.exe\" \"$OPENNOW_DATA_DIR/seen-cloudlight-core.exe\"\ncp \"$bin/cloudlight-update-helper.exe\" \"$OPENNOW_DATA_DIR/seen-cloudlight-update-helper.exe\"\nsleep 30\n";
     let old = [
         old_app.as_slice(),
         old_core.as_slice(),
@@ -116,9 +116,9 @@ fn prepared_windows_swap_replaces_runtime_binaries_and_missing_ack_restores_them
             "{name} was not swapped into place before rollback"
         );
         let seen = match *name {
-            "OpenNOW.exe" => "seen-OpenNOW.exe",
-            "opennow-core.exe" => "seen-opennow-core.exe",
-            "opennow-update-helper.exe" => "seen-opennow-update-helper.exe",
+            "Cloudlight.exe" => "seen-Cloudlight.exe",
+            "cloudlight-core.exe" => "seen-cloudlight-core.exe",
+            "cloudlight-update-helper.exe" => "seen-cloudlight-update-helper.exe",
             _ => unreachable!(),
         };
         assert_eq!(
@@ -146,14 +146,10 @@ fn flatpak_detection_accepts_environment_or_sandbox_marker() {
     assert!(!is_flatpak_installation(None, &info));
     assert!(!is_flatpak_installation(Some(OsStr::new("")), &info));
     assert!(is_flatpak_installation(
-        Some(OsStr::new("io.github.opencloudgaming.OpenNOW")),
+        Some(OsStr::new("io.github.miirys.Cloudlight")),
         &info
     ));
-    fs::write(
-        &info,
-        b"[Application]\nname=io.github.opencloudgaming.OpenNOW\n",
-    )
-    .unwrap();
+    fs::write(&info, b"[Application]\nname=io.github.miirys.Cloudlight\n").unwrap();
     assert!(is_flatpak_installation(None, &info));
     assert!(is_flatpak_installation(Some(OsStr::new("")), &info));
 }
@@ -177,7 +173,7 @@ fn signed_manifest(asset: &str, bytes: &[u8]) -> (verification::UpdateManifest, 
 
 #[test]
 fn signature_rejects_tampering_wrong_key_and_invalid_schema() {
-    let (manifest, key) = signed_manifest("OpenNOW.zip", b"valid package");
+    let (manifest, key) = signed_manifest("Cloudlight.zip", b"valid package");
     verification::verify_manifest(&manifest, &key.verifying_key()).unwrap();
     assert!(
         verification::verify_manifest(
@@ -198,8 +194,8 @@ fn signature_rejects_tampering_wrong_key_and_invalid_schema() {
 fn package_verification_rejects_tampering_and_wrong_filename() {
     let dir = TempDir::new().unwrap();
     let bytes = b"valid package";
-    let (manifest, _) = signed_manifest("OpenNOW.zip", bytes);
-    let package = dir.path().join("OpenNOW.zip");
+    let (manifest, _) = signed_manifest("Cloudlight.zip", bytes);
+    let package = dir.path().join("Cloudlight.zip");
     fs::write(&package, bytes).unwrap();
     verification::verify_package(&package, &manifest).unwrap();
     fs::write(&package, b"evil! package").unwrap();
@@ -278,7 +274,7 @@ fn archive_rejects_corruption_without_leaving_a_partial_tree() {
 #[test]
 fn framework_symlinks_are_preserved_and_escaping_links_are_rejected() {
     let dir = TempDir::new().unwrap();
-    let source = dir.path().join("OpenNOW.app");
+    let source = dir.path().join("Cloudlight.app");
     let framework = source.join("Contents/Frameworks/Qt.framework");
     fs::create_dir_all(framework.join("Versions/A")).unwrap();
     fs::write(framework.join("Versions/A/Qt"), b"framework").unwrap();
@@ -453,21 +449,21 @@ fn fixture_plan_uses_canonical_installation_paths() {
     );
     assert_eq!(
         plan.application_executable,
-        plan.target.join("bin/OpenNOW.exe")
+        plan.target.join("bin/Cloudlight.exe")
     );
 }
 
 fn plan(directory: &Path, kind: InstallKind) -> Plan {
     let directory = fs::canonicalize(directory).unwrap();
     let target = directory.join(if kind == InstallKind::AppImage {
-        "OpenNOW.AppImage"
+        "Cloudlight.AppImage"
     } else {
         "installed"
     });
     let application = if kind == InstallKind::AppImage {
         target.clone()
     } else {
-        target.join("bin/OpenNOW.exe")
+        target.join("bin/Cloudlight.exe")
     };
     Plan {
         schema_version: 1,
@@ -656,7 +652,7 @@ fn spawn_without_startup_acknowledgement_rolls_back_the_complete_directory() {
     fs::create_dir_all(plan.application_executable.parent().unwrap()).unwrap();
     fs::write(&plan.application_executable, b"old executable").unwrap();
     let payload = directory.path().join("payload");
-    stage_native_executable(&payload.join("bin/OpenNOW.exe"));
+    stage_native_executable(&payload.join("bin/Cloudlight.exe"));
     assert!(
         replace_and_restart(&plan, directory.path(), &payload, Duration::from_millis(30))
             .unwrap_err()
@@ -666,7 +662,7 @@ fn spawn_without_startup_acknowledgement_rolls_back_the_complete_directory() {
         fs::read(&plan.application_executable).unwrap(),
         b"old executable"
     );
-    assert!(directory.path().join("failed/bin/OpenNOW.exe").is_file());
+    assert!(directory.path().join("failed/bin/Cloudlight.exe").is_file());
 }
 
 #[test]
@@ -679,7 +675,7 @@ fn portable_directory_replacement_requires_ack_and_preserves_settings() {
     fs::create_dir(&plan.data_dir).unwrap();
     fs::write(plan.data_dir.join("settings.json"), b"unchanged").unwrap();
     let payload = directory.path().join("payload");
-    stage_native_executable(&payload.join("bin/OpenNOW.exe"));
+    stage_native_executable(&payload.join("bin/Cloudlight.exe"));
     fs::write(payload.join("new-only.dll"), b"new dependency").unwrap();
     let acknowledgement_directory = directory.path().to_path_buf();
     let nonce = plan.nonce.clone();
@@ -1158,7 +1154,7 @@ fn windows_busy_file_rejects_replacement_without_losing_original() {
         .open(&plan.application_executable)
         .unwrap();
     let payload = directory.path().join("payload");
-    stage_native_executable(&payload.join("bin/OpenNOW.exe"));
+    stage_native_executable(&payload.join("bin/Cloudlight.exe"));
     assert!(
         replace_and_restart(&plan, directory.path(), &payload, Duration::from_millis(30)).is_err()
     );

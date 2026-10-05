@@ -27,18 +27,18 @@ void presentUpdateSurface(QQmlApplicationEngine &engine, QQuickWindow *window, c
     auto *store = engine.singletonInstance<QObject *>(u"OpenNOW"_s, u"ShellStore"_s);
     if (!store)
         return;
-    const auto replacement = u"This OpenNOW installation is registered with Windows Installer. Replace it once with setup.exe. In-app updates do not run Windows Installer."_s;
+    const auto replacement = u"This Cloudlight installation is registered with Windows Installer. Replace it once with setup.exe. In-app updates do not run Windows Installer."_s;
     QVariantMap state{{u"currentVersion"_s, QGuiApplication::applicationVersion()},
                       {u"canCheck"_s, false}};
     if (surface == u"confirm"_s) {
         state.insert(u"status"_s, u"downloaded"_s);
         state.insert(u"downloadedVersion"_s, u"1.2.3"_s);
         state.insert(u"canInstall"_s, true);
-        state.insert(u"message"_s, u"OpenNOW 1.2.3 downloaded and verified. Ready to install."_s);
+        state.insert(u"message"_s, u"Cloudlight 1.2.3 downloaded and verified. Ready to install."_s);
     } else if (surface == u"progress"_s) {
         state.insert(u"status"_s, u"downloading"_s);
         state.insert(u"availableVersion"_s, u"1.2.3"_s);
-        state.insert(u"message"_s, u"Downloading OpenNOW 1.2.3…"_s);
+        state.insert(u"message"_s, u"Downloading Cloudlight 1.2.3…"_s);
     } else {
         state.insert(u"status"_s, u"not-available"_s);
         state.insert(u"message"_s, replacement);
@@ -665,7 +665,7 @@ int AcceptanceSession::startSmokeWorkload()
             {u"message"_s, u"A new release is available."_s}, {u"canDownload"_s, true}});
         store->setProperty("releaseHighlights", QVariantMap{{u"bodyMarkdown"_s,
             u"# Release notes\n\n**Bold fix** and *emphasis*.\n\n- First item\n- Second item\n\n"
-             "[Project](https://github.com/OpenCloudGaming/OpenNOW)\n\n"
+             "[Project](https://github.com/miirys/OpenNOW)\n\n"
              "| Feature | Status |\n| --- | --- |\n| Updates | Ready |\n\n```text\ncode block\n```"_s}});
         QTimer::singleShot(500, this, [this] {
             auto *window = qobject_cast<QQuickWindow *>(m_engine.rootObjects().first());

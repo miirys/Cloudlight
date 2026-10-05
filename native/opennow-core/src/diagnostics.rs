@@ -344,10 +344,10 @@ impl DiagnosticsService {
         fs::create_dir_all(&self.directory)?;
         let path = self
             .directory
-            .join(format!("opennow-diagnostics-{}.txt", now_ms()));
+            .join(format!("cloudlight-diagnostics-{}.txt", now_ms()));
         let temporary = path.with_extension("txt.tmp");
         let mut output = String::from(
-            "OpenNOW Qt/Rust diagnostics\nSecrets, URLs, tokens, e-mail addresses and local user paths are redacted.\n\n",
+            "Cloudlight Qt/Rust diagnostics\nSecrets, URLs, tokens, e-mail addresses and local user paths are redacted.\n\n",
         );
         if let Ok(previous) = fs::read_to_string(&self.previous_path) {
             output.push_str("Previous run\n------------\n");

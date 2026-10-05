@@ -57,7 +57,7 @@
                       IsEnabled="{Binding ElementName=ActionsEnabled, Path=IsChecked}">
             <TextBlock Margin="0,10,10,0"
                        TextWrapping="Wrap"
-                       Text="When enabled, OpenNOW adds a launch option for games from other libraries that are supported on GeForce NOW." />
+                       Text="When enabled, Cloudlight adds a launch option for games from other libraries that are supported on GeForce NOW." />
             <CheckBox Margin="0,10,0,0"
                       IsChecked="{Binding Settings.OnlyShowActionsForNotLibInstalledGames}"
                       Content="{DynamicResource LOCOpenNow_ShowActionForAlreadyInstalledGamesSetting}" />

@@ -28,7 +28,7 @@
             <key>CFBundleTypeRole</key>
             <string>Viewer</string>
             <key>CFBundleURLName</key>
-            <string>io.github.opencloudgaming.OpenNOW.launch</string>
+            <string>io.github.miirys.Cloudlight.launch</string>
             <key>CFBundleURLSchemes</key>
             <array>
                 <string>opennow</string>
@@ -40,7 +40,7 @@
     <key>NSHighResolutionCapable</key>
     <true/>
     <key>NSMicrophoneUsageDescription</key>
-    <string>OpenNOW uses your microphone for in-game voice chat only when you enable Open microphone in audio settings.</string>
+    <string>Cloudlight uses your microphone for in-game voice chat only when you enable Open microphone in audio settings.</string>
     <key>NSSupportsAutomaticGraphicsSwitching</key>
     <true/>
 </dict>

@@ -633,7 +633,7 @@ impl GfnService {
             ("client_id", STEAM_DECK_CLIENT_ID),
             ("scope", SCOPES),
             ("device_id", self.device_id.as_str()),
-            ("display_name", "OpenNOW"),
+            ("display_name", "Cloudlight"),
             ("idp_id", provider.idp_id.as_str()),
         ];
         let response = self

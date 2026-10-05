@@ -63,11 +63,11 @@ class MacOSReleaseTest(unittest.TestCase):
         elif args[:2] == ["security", "delete-keychain"]:
             Path(args[-1]).unlink(missing_ok=True)
         elif args[:2] == ["cmake", "--install"]:
-            app = Path(args[-1]) / "OpenNOW.app"
+            app = Path(args[-1]) / "Cloudlight.app"
             (app / "Contents/MacOS").mkdir(parents=True)
             (app / "Contents/Info.plist").write_bytes(plistlib.dumps({"CFBundleIdentifier": RELEASE.BUNDLE_ID}))
-            for relative in ("MacOS/OpenNOW", "MacOS/opennow-core", "MacOS/opennow-update-helper",
-                             "MacOS/libopennow_streamer_ffi.dylib", "PlugIns/platforms/libqcocoa.dylib",
+            for relative in ("MacOS/Cloudlight", "MacOS/cloudlight-core", "MacOS/cloudlight-update-helper",
+                             "MacOS/libcloudlight_streamer_ffi.dylib", "PlugIns/platforms/libqcocoa.dylib",
                              "Frameworks/QtCore.framework/Versions/A/QtCore",
                              "Helpers/Nested.app/Contents/MacOS/Nested"):
                 path = app / "Contents" / relative
@@ -81,14 +81,14 @@ class MacOSReleaseTest(unittest.TestCase):
             shutil.copytree(args[-2], copied, symlinks=True)
             self.copies[args[-1]] = copied
         elif args[:3] == ["ditto", "-x", "-k"]:
-            shutil.copytree(self.copies[args[-2]], Path(args[-1]) / "OpenNOW.app", symlinks=True)
+            shutil.copytree(self.copies[args[-2]], Path(args[-1]) / "Cloudlight.app", symlinks=True)
         elif args[0] == "ditto":
             shutil.copytree(args[-2], args[-1], symlinks=True)
         elif args[:2] == ["hdiutil", "create"]:
             Path(args[-1]).write_bytes(b"dmg fixture")
-            self.copies[args[-1]] = Path(args[args.index("-srcfolder") + 1]) / "OpenNOW.app"
+            self.copies[args[-1]] = Path(args[args.index("-srcfolder") + 1]) / "Cloudlight.app"
         elif args[:2] == ["hdiutil", "attach"]:
-            shutil.copytree(self.copies[args[2]], Path(args[-1]) / "OpenNOW.app", symlinks=True)
+            shutil.copytree(self.copies[args[2]], Path(args[-1]) / "Cloudlight.app", symlinks=True)
         elif args[:3] == ["xcrun", "notarytool", "submit"]:
             return json.dumps({"status": self.notary_status})
         elif args[:3] == ["xcrun", "stapler", "staple"] and args[-1].endswith(".app"):
@@ -115,7 +115,7 @@ class MacOSReleaseTest(unittest.TestCase):
         for index, path in enumerate(paths):
             for descendant in paths[index + 1:]:
                 self.assertNotIn(path, descendant.parents)
-        self.assertEqual(paths[-1].name, "OpenNOW.app")
+        self.assertEqual(paths[-1].name, "Cloudlight.app")
         self.assertNotIn("/Frameworks/QtCore.framework/QtCore", "\n".join(str(path) for path in paths))
         install = next(i for i, call in enumerate(self.calls) if call[0] == "cmake")
         self.assertIn("--strip", self.calls[install])
@@ -131,7 +131,7 @@ class MacOSReleaseTest(unittest.TestCase):
         self.assertTrue(notaries[1][3].endswith("Darwin-arm64.dmg"))
         self.assertEqual(len([call for call in self.calls if call[0] == "spctl"]), 4)
         self.assertEqual({path.name for path in self.output.iterdir()},
-                         {"OpenNOW-Qt-1.2.3-Darwin-arm64.zip", "OpenNOW-Qt-1.2.3-Darwin-arm64.dmg"})
+                         {"Cloudlight-Qt-1.2.3-Darwin-arm64.zip", "Cloudlight-Qt-1.2.3-Darwin-arm64.dmg"})
         self.assertFalse(list(self.root.glob("opennow-macos-signing-*")))
 
     def test_only_root_app_receives_exact_jit_and_microphone_entitlements(self):
@@ -141,14 +141,14 @@ class MacOSReleaseTest(unittest.TestCase):
         signed = [call for call in self.calls if call[:2] == ["codesign", "--force"]]
         for call in signed:
             with self.subTest(target=call[-1]):
-                if Path(call[-1]).name == "OpenNOW.app":
+                if Path(call[-1]).name == "Cloudlight.app":
                     self.assertEqual(call[call.index("--entitlements") + 1], str(RELEASE.ENTITLEMENTS))
                 else:
                     self.assertNotIn("--entitlements", call)
         inspected = [call[-1] for call in self.calls if call[:3] == ["codesign", "--display", "--entitlements"]]
         self.assertEqual(len(inspected), 3)
         for location in ("stage", "zip-extracted", "dmg-extracted"):
-            self.assertTrue(any(f"/{location}/OpenNOW.app/Contents/MacOS/OpenNOW" in path for path in inspected))
+            self.assertTrue(any(f"/{location}/Cloudlight.app/Contents/MacOS/Cloudlight" in path for path in inspected))
 
     def test_temporary_signing_keychain_is_searchable_before_signing_and_restored(self):
         self.package()
@@ -286,13 +286,13 @@ class MacOSCandidateWorkflowTest(unittest.TestCase):
                                   env={**os.environ, "RELEASE_VERSION": "1.2.3"}, capture_output=True, text=True)
 
     def names(self):
-        names = [f"OpenNOW-Qt-1.2.3-{platform}-{arch}.{extension}"
+        names = [f"Cloudlight-Qt-1.2.3-{platform}-{arch}.{extension}"
                  for platform, arches, extensions in (
                      ("Linux", ("x64", "arm64"), ("AppImage", "AppImage.zsync", "deb")),
                      ("Windows", ("x64", "arm64"), ("msi", "zip")),
                      ("Darwin", ("arm64",), ("dmg", "zip")))
                  for arch in arches for extension in extensions]
-        names.extend(f"OpenNOW-Qt-1.2.3-Windows-{arch}-setup.exe" for arch in ("x64", "arm64"))
+        names.extend(f"Cloudlight-Qt-1.2.3-Windows-{arch}-setup.exe" for arch in ("x64", "arm64"))
         return names
 
     @unittest.skipUnless(sys.platform.startswith("linux"), "Inventory uses GNU find on the Linux signing runner")
@@ -300,8 +300,8 @@ class MacOSCandidateWorkflowTest(unittest.TestCase):
         names = self.names()
         self.assertEqual(len(names), 14)
         self.assertEqual([name for name in names if name.endswith("-setup.exe")], [
-            "OpenNOW-Qt-1.2.3-Windows-x64-setup.exe",
-            "OpenNOW-Qt-1.2.3-Windows-arm64-setup.exe",
+            "Cloudlight-Qt-1.2.3-Windows-x64-setup.exe",
+            "Cloudlight-Qt-1.2.3-Windows-arm64-setup.exe",
         ])
         result = self.inventory(names)
         self.assertEqual(result.returncode, 0, result.stderr)

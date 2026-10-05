@@ -293,7 +293,7 @@ impl UpdaterService {
                 .timeout(Duration::from_secs(10))
                 .header(
                     USER_AGENT,
-                    concat!("OpenNOW-Qt/", env!("CARGO_PKG_VERSION")),
+                    concat!("Cloudlight-Qt/", env!("CARGO_PKG_VERSION")),
                 )
                 .header(ACCEPT, "application/vnd.github+json")
                 .send()
@@ -449,7 +449,7 @@ impl UpdaterService {
         let manifest_response = self
             .client
             .get(&available.manifest_url)
-            .header(USER_AGENT, "OpenNOW-Qt/0.5")
+            .header(USER_AGENT, "Cloudlight-Qt/0.5")
             .send()
             .map_err(|_| "Could not download signed update metadata".to_owned())?;
         ensure_asset_response(&manifest_response, MAXIMUM_MANIFEST_BYTES)?;
@@ -469,7 +469,7 @@ impl UpdaterService {
         let response = self
             .client
             .get(&available.asset.browser_download_url)
-            .header(USER_AGENT, "OpenNOW-Qt/0.5")
+            .header(USER_AGENT, "Cloudlight-Qt/0.5")
             .send()
             .map_err(|_| "Could not download the update package".to_owned())?;
         ensure_asset_response(&response, manifest.size)?;
@@ -979,8 +979,8 @@ mod tests {
                     "--nocapture",
                 ])
                 .env("OPENNOW_FLATPAK_UPDATER_TEST", "1")
-                .env("FLATPAK_ID", "io.github.opencloudgaming.OpenNOW")
-                .env("APPIMAGE", "/host/OpenNOW.AppImage")
+                .env("FLATPAK_ID", "io.github.miirys.Cloudlight")
+                .env("APPIMAGE", "/host/Cloudlight.AppImage")
                 .output()
                 .unwrap();
             assert!(
@@ -999,7 +999,7 @@ mod tests {
         fs::write(&persisted, b"partial host update transaction").unwrap();
         let updater = UpdaterService::new(directory.path()).unwrap();
         let message = update_apply::external_update_message().unwrap();
-        assert!(message.contains("flatpak update io.github.opencloudgaming.OpenNOW"));
+        assert!(message.contains("flatpak update io.github.miirys.Cloudlight"));
         assert!(!updater.installation_pending());
         for state in [updater.state(), updater.check(&json!({})).unwrap()] {
             assert_eq!(state["status"], "unsupported");
@@ -1027,7 +1027,7 @@ mod tests {
             message
         );
         for (name, kind) in [
-            ("OpenNOW.AppImage", update_apply::InstallKind::AppImage),
+            ("Cloudlight.AppImage", update_apply::InstallKind::AppImage),
             ("OpenNOW.deb", update_apply::InstallKind::DebianPackage),
         ] {
             let package = directory.path().join(name);
@@ -1362,7 +1362,7 @@ mod tests {
         let mut state = notes_state();
         state.downloaded = Some(DownloadedUpdate {
             version: "1.1.0".to_owned(),
-            asset_name: "OpenNOW-Qt-linux-x64.AppImage".to_owned(),
+            asset_name: "Cloudlight-Qt-linux-x64.AppImage".to_owned(),
             path: PathBuf::from("/not-read-by-state"),
             size: 123,
             sha256: "ab".repeat(32),
@@ -1453,7 +1453,7 @@ mod tests {
         };
         let extension = update_apply::compatible_package_extension().unwrap();
         let name = format!(
-            "OpenNOW-Qt-{}-Linux-{architecture}.{extension}",
+            "Cloudlight-Qt-{}-Linux-{architecture}.{extension}",
             version.trim_start_matches('v')
         );
         release.assets = [name.clone(), format!("{name}.manifest.json")]
@@ -1693,7 +1693,7 @@ mod tests {
         let available = AvailableUpdate {
             version: "1.0.0-nightly.10.2+build".to_owned(),
             asset: Asset {
-                name: "OpenNOW-Qt-1.0.0-nightly.10.2-Linux-x64.deb".to_owned(),
+                name: "Cloudlight-Qt-1.0.0-nightly.10.2-Linux-x64.deb".to_owned(),
                 browser_download_url: String::new(),
                 size: 123,
             },
@@ -1729,7 +1729,7 @@ mod tests {
         let mut manifest = UpdateManifest {
             schema_version: 1,
             version: "1.0.0-nightly.10.2".to_owned(),
-            asset: "OpenNOW-Qt-1.0.0-nightly.10.2-Linux-x64.deb".to_owned(),
+            asset: "Cloudlight-Qt-1.0.0-nightly.10.2-Linux-x64.deb".to_owned(),
             size: 123,
             sha256: "ab".repeat(32),
             signature: String::new(),
@@ -1770,7 +1770,7 @@ mod tests {
         updater.state.lock().unwrap().available = Some(AvailableUpdate {
             version: "1.0.0-nightly.10.2".to_owned(),
             asset: Asset {
-                name: "OpenNOW-Qt-1.0.0-nightly.10.2-Linux-x64.deb".to_owned(),
+                name: "Cloudlight-Qt-1.0.0-nightly.10.2-Linux-x64.deb".to_owned(),
                 browser_download_url: String::new(),
                 size: 123,
             },
@@ -1798,7 +1798,7 @@ mod tests {
         } else {
             "x64"
         };
-        let name = format!("OpenNOW-Qt-1.0.0-nightly.10.2-Linux-{arch}.deb");
+        let name = format!("Cloudlight-Qt-1.0.0-nightly.10.2-Linux-{arch}.deb");
         let assets = [Asset {
             browser_download_url: format!("{RELEASE_ASSET_PREFIX}v1.0.0-nightly.10.2/{name}"),
             name,
@@ -1877,10 +1877,10 @@ mod tests {
             "https://github.com/miirys/OpenNOW/releases/tag/v1.0.0"
         ));
         assert!(!trusted_release_url("https://example.com/releases/tag/v1"));
-        assert!(safe_asset_name("OpenNOW-Qt-linux-x64.AppImage"));
-        assert!(!safe_asset_name("../OpenNOW.AppImage"));
+        assert!(safe_asset_name("Cloudlight-Qt-linux-x64.AppImage"));
+        assert!(!safe_asset_name("../Cloudlight.AppImage"));
         let malicious = Asset {
-            name: "OpenNOW-Qt-linux-x64.AppImage".to_owned(),
+            name: "Cloudlight-Qt-linux-x64.AppImage".to_owned(),
             browser_download_url: "https://example.com/update".to_owned(),
             size: 1,
         };
@@ -1893,7 +1893,7 @@ mod tests {
         let mut manifest = UpdateManifest {
             schema_version: 1,
             version: "0.6.0".to_owned(),
-            asset: "OpenNOW-Qt-linux-x64.AppImage".to_owned(),
+            asset: "Cloudlight-Qt-linux-x64.AppImage".to_owned(),
             size: 123,
             sha256: "ab".repeat(32),
             signature: String::new(),

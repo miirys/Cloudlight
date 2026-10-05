@@ -85,6 +85,7 @@ private slots:
     void screenshotExportHonorsPicturesOverride();
     void screenshotExportRefusesUnavailablePicturesRoot();
     void mascotOverrideReadsOnlyLocalPoseFiles();
+    void mascotOverrideReadsPreRenameFolderInPlace();
 };
 
 void AppControllerTest::rejectsUnknownRoutes()
@@ -281,16 +282,16 @@ void AppControllerTest::screenshotExportIsScoped()
     qunsetenv("OPENNOW_PICTURES_DIR");
     const auto pictures = QStandardPaths::writableLocation(QStandardPaths::PicturesLocation);
     QDir directory(pictures);
-    QVERIFY(directory.mkpath(QStringLiteral("OpenNOW/Screenshots")));
-    const auto source = directory.filePath(QStringLiteral("OpenNOW/Screenshots/contract-test.png"));
-    const auto target = directory.filePath(QStringLiteral("OpenNOW/contract-export.png"));
+    QVERIFY(directory.mkpath(QStringLiteral("Cloudlight/Screenshots")));
+    const auto source = directory.filePath(QStringLiteral("Cloudlight/Screenshots/contract-test.png"));
+    const auto target = directory.filePath(QStringLiteral("Cloudlight/contract-export.png"));
     QFile file(source);
     QVERIFY(file.open(QIODevice::WriteOnly));
     QCOMPARE(file.write("fixture"), 7);
     file.close();
     QVERIFY(controller.copyScreenshotTo(source, QUrl::fromLocalFile(target).toString()));
     QVERIFY(QFileInfo::exists(target));
-    QVERIFY(!controller.copyScreenshotTo(directory.filePath(QStringLiteral("OpenNOW/contract-export.png")),
+    QVERIFY(!controller.copyScreenshotTo(directory.filePath(QStringLiteral("Cloudlight/contract-export.png")),
                                          QUrl::fromLocalFile(source).toString()));
     QFile::remove(source);
     QFile::remove(target);
@@ -309,9 +310,9 @@ void AppControllerTest::screenshotExportHonorsPicturesOverride()
 
     AppController controller;
     QDir root(overrideRoot.path());
-    QVERIFY(root.mkpath(QStringLiteral("OpenNOW/Screenshots")));
-    const auto source = root.filePath(QStringLiteral("OpenNOW/Screenshots/override-test.png"));
-    const auto target = root.filePath(QStringLiteral("OpenNOW/override-export.png"));
+    QVERIFY(root.mkpath(QStringLiteral("Cloudlight/Screenshots")));
+    const auto source = root.filePath(QStringLiteral("Cloudlight/Screenshots/override-test.png"));
+    const auto target = root.filePath(QStringLiteral("Cloudlight/override-export.png"));
     QFile file(source);
     QVERIFY(file.open(QIODevice::WriteOnly));
     QCOMPARE(file.write("fixture"), 7);
@@ -333,9 +334,9 @@ void AppControllerTest::screenshotExportRefusesUnavailablePicturesRoot()
 
     AppController controller;
     QDir root(QStandardPaths::writableLocation(QStandardPaths::PicturesLocation));
-    QVERIFY(root.mkpath(QStringLiteral("OpenNOW/Screenshots")));
-    const auto source = root.filePath(QStringLiteral("OpenNOW/Screenshots/unavailable-test.png"));
-    const auto target = root.filePath(QStringLiteral("OpenNOW/unavailable-export.png"));
+    QVERIFY(root.mkpath(QStringLiteral("Cloudlight/Screenshots")));
+    const auto source = root.filePath(QStringLiteral("Cloudlight/Screenshots/unavailable-test.png"));
+    const auto target = root.filePath(QStringLiteral("Cloudlight/unavailable-export.png"));
     QFile file(source);
     QVERIFY(file.open(QIODevice::WriteOnly));
     QCOMPARE(file.write("fixture"), 7);
@@ -347,12 +348,17 @@ void AppControllerTest::screenshotExportRefusesUnavailablePicturesRoot()
 
 void AppControllerTest::mascotOverrideReadsOnlyLocalPoseFiles()
 {
-    QStandardPaths::setTestModeEnabled(true);
-    const auto restoreTestMode = qScopeGuard([] { QStandardPaths::setTestModeEnabled(false); });
-    QDir root(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
+    QTemporaryDir profile;
+    QVERIFY(profile.isValid());
+    const auto previousData = qgetenv("OPENNOW_DATA_DIR");
+    const auto restoreEnvironment = qScopeGuard([&] {
+        if (previousData.isNull()) qunsetenv("OPENNOW_DATA_DIR");
+        else qputenv("OPENNOW_DATA_DIR", previousData);
+    });
+    qputenv("OPENNOW_DATA_DIR", profile.path().toUtf8());
+    QDir root(profile.path());
     QVERIFY(root.mkpath(QStringLiteral("mascot")));
     const auto path = root.filePath(QStringLiteral("mascot/login.png"));
-    const auto removeFixture = qScopeGuard([&] { QFile::remove(path); });
     AppController controller;
     QVERIFY(controller.mascotOverrideUrl(QStringLiteral("login")).isEmpty());
     QFile file(path);
@@ -364,6 +370,45 @@ void AppControllerTest::mascotOverrideReadsOnlyLocalPoseFiles()
     QVERIFY(controller.mascotOverrideUrl(QStringLiteral("../mascot/login")).isEmpty());
     QVERIFY(controller.mascotOverrideUrl(QStringLiteral("Login")).isEmpty());
     QVERIFY(controller.mascotOverrideUrl(QString()).isEmpty());
+}
+
+void AppControllerTest::mascotOverrideReadsPreRenameFolderInPlace()
+{
+    QStandardPaths::setTestModeEnabled(true);
+    const auto previousOrganization = QCoreApplication::organizationName();
+    QCoreApplication::setOrganizationName(QStringLiteral("Cloudlight"));
+    const auto restoreApplication = qScopeGuard([&] {
+        QCoreApplication::setOrganizationName(previousOrganization);
+        QStandardPaths::setTestModeEnabled(false);
+    });
+    QTemporaryDir profile;
+    QVERIFY(profile.isValid());
+    const auto previousData = qgetenv("OPENNOW_DATA_DIR");
+    const auto restoreEnvironment = qScopeGuard([&] {
+        if (previousData.isNull()) qunsetenv("OPENNOW_DATA_DIR");
+        else qputenv("OPENNOW_DATA_DIR", previousData);
+    });
+    qputenv("OPENNOW_DATA_DIR", profile.path().toUtf8());
+
+    // Before the rename, local art lived in Qt's OpenCloudGaming/OpenNOW folder.
+    const auto appData = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    QVERIFY(!appData.isEmpty());
+    const QDir legacyRoot(QFileInfo(QFileInfo(appData).path()).path());
+    const auto legacy = legacyRoot.filePath(QStringLiteral("OpenCloudGaming/OpenNOW/mascot"));
+    QVERIFY(QDir().mkpath(legacy));
+    const auto removeLegacy = qScopeGuard([&] { QDir(legacy).removeRecursively(); });
+    const auto path = QDir(legacy).filePath(QStringLiteral("login.png"));
+    QFile file(path);
+    QVERIFY(file.open(QIODevice::WriteOnly));
+    QCOMPARE(file.write("fixture"), 7);
+    file.close();
+
+    AppController controller;
+    QCOMPARE(controller.mascotOverrideUrl(QStringLiteral("login")),
+             QUrl::fromLocalFile(QFileInfo(path).absoluteFilePath()).toString());
+    // Reading never moves or copies the old folder.
+    QVERIFY(QFileInfo::exists(path));
+    QVERIFY(!QFileInfo::exists(QDir(profile.path()).filePath(QStringLiteral("mascot"))));
 }
 
 QTEST_MAIN(AppControllerTest)

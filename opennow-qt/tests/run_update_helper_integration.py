@@ -24,7 +24,7 @@ def target_directory_for(directory, environment):
 def build_update_helper(environment):
     if "OPENNOW_UPDATE_TEST_TARGET_DIR" in environment:
         run(["cargo", "clean", "--manifest-path", str(MANIFEST), "-p", "opennow-core"], environment)
-    run(["cargo", "build", "--locked", "--manifest-path", str(MANIFEST), "--lib", "--bin", "opennow-update-helper"], environment)
+    run(["cargo", "build", "--locked", "--manifest-path", str(MANIFEST), "--lib", "--bin", "cloudlight-update-helper"], environment)
 
 
 def build_fixtures(directory, environment):
@@ -119,7 +119,7 @@ fn main() {
         build_fixtures(directory, environment)
         environment["OPENNOW_TEST_UPDATE_PREVIOUS"] = str(previous)
         environment["OPENNOW_TEST_UPDATE_CANDIDATE"] = str(candidate)
-        environment["OPENNOW_TEST_UPDATE_HELPER"] = str(debug / ("opennow-update-helper" + suffix))
+        environment["OPENNOW_TEST_UPDATE_HELPER"] = str(debug / ("cloudlight-update-helper" + suffix))
         listed = subprocess.run(
             ["cargo", "test", "--locked", "--manifest-path", str(MANIFEST), "--lib",
              "update_apply::integration_tests", "--", "--ignored", "--list"],

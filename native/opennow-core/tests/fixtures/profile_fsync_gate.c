@@ -10,7 +10,7 @@
 static void report_main_error(int fd, const void *data, size_t length)
 {
     static int reported;
-    if (fd != STDERR_FILENO || !memmem(data, length, "opennow-core:", 13)) return;
+    if (fd != STDERR_FILENO || !memmem(data, length, "cloudlight-core:", 16)) return;
     const char *signal_fd = getenv("PROFILE_ERROR_FD");
     if (!signal_fd || __atomic_exchange_n(&reported, 1, __ATOMIC_SEQ_CST)) return;
     ssize_t (*real_write)(int, const void *, size_t) = dlsym(RTLD_NEXT, "write");

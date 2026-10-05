@@ -194,8 +194,8 @@ jobs:
           export LD_LIBRARY_PATH="$RUNNER_TEMP/SDL-install/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
           mkdir -p build/release-artifacts
           cmake --install build/qt-release --config Release --prefix "$PWD/build/AppDir/usr"
-          test -f build/AppDir/usr/bin/libopennow_streamer_ffi.so
-          test -x build/AppDir/usr/bin/opennow-streamer
+          test -f build/AppDir/usr/bin/libcloudlight_streamer_ffi.so
+          test -x build/AppDir/usr/bin/cloudlight-streamer
           python3 opennow-qt/packaging/verify_linux_package.py build/AppDir/usr/bin
           curl --fail --location --retry 3 \
             "https://github.com/linuxdeploy/linuxdeploy/releases/download/1-alpha-20251107-1/linuxdeploy-${LINUXDEPLOY_ARCH}.AppImage" \
@@ -212,11 +212,11 @@ jobs:
           LDAI_UPDATE_INFORMATION=$(python3 opennow-qt/packaging/appimage_updates.py information \
             --channel stable --arch "$PACKAGE_ARCH")
           QMAKE="$QT_ROOT_DIR/bin/qmake" QML_SOURCES_PATHS="$PWD/opennow-qt/qml" \
-          OUTPUT="OpenNOW-Qt-${{ inputs.version }}-Linux-${{ matrix.arch }}.AppImage" \
+          OUTPUT="Cloudlight-Qt-${{ inputs.version }}-Linux-${{ matrix.arch }}.AppImage" \
             "build/linuxdeploy-${LINUXDEPLOY_ARCH}.AppImage" \
               --appdir build/AppDir \
-              --desktop-file build/AppDir/usr/share/applications/io.github.opencloudgaming.OpenNOW.desktop \
-              --icon-file build/AppDir/usr/share/icons/hicolor/scalable/apps/io.github.opencloudgaming.OpenNOW.svg \
+              --desktop-file build/AppDir/usr/share/applications/io.github.miirys.Cloudlight.desktop \
+              --icon-file build/AppDir/usr/share/icons/hicolor/scalable/apps/io.github.miirys.Cloudlight.svg \
               --library "$(pkg-config --variable=libdir libva)/libva.so.2" \
               --library "$(pkg-config --variable=libdir libva-drm)/libva-drm.so.2" \
               --exclude-library libglib-2.0.so.0 \
@@ -234,8 +234,8 @@ jobs:
             python3 opennow-qt/packaging/verify_linux_package.py build/AppDir/usr/bin --appdir build/AppDir
           python3 opennow-qt/packaging/appimage_updates.py verify \
             --channel stable --arch "$PACKAGE_ARCH" \
-            --appimage "OpenNOW-Qt-${{ inputs.version }}-Linux-${PACKAGE_ARCH}.AppImage"
-          mv OpenNOW-Qt-*.AppImage OpenNOW-Qt-*.AppImage.zsync build/release-artifacts/
+            --appimage "Cloudlight-Qt-${{ inputs.version }}-Linux-${PACKAGE_ARCH}.AppImage"
+          mv Cloudlight-Qt-*.AppImage Cloudlight-Qt-*.AppImage.zsync build/release-artifacts/
           cpack --config build/qt-release/CPackConfig.cmake \
             -D "CPACK_PROJECT_CONFIG_FILE=$PWD/opennow-qt/packaging/LinuxBundledDeb.cmake" \
             -D "OPENNOW_APPDIR=$PWD/build/AppDir" \
@@ -655,39 +655,39 @@ jobs:
       - name: Test relocated bundle without development libraries
         shell: bash
         run: |
-          packages=(build/release-artifacts/OpenNOW-Qt-*-Darwin-arm64.zip)
+          packages=(build/release-artifacts/Cloudlight-Qt-*-Darwin-arm64.zip)
           [[ ${#packages[@]} -eq 1 && -f "${packages[0]}" ]]
           ditto -x -k "${packages[0]}" "$RUNNER_TEMP/zip-relocated"
-          zip_app=$(find "$RUNNER_TEMP/zip-relocated" -name OpenNOW.app -type d -print -quit)
+          zip_app=$(find "$RUNNER_TEMP/zip-relocated" -name Cloudlight.app -type d -print -quit)
           [[ -n "$zip_app" ]]
-          dmgs=(build/release-artifacts/OpenNOW-Qt-*-Darwin-arm64.dmg)
+          dmgs=(build/release-artifacts/Cloudlight-Qt-*-Darwin-arm64.dmg)
           [[ ${#dmgs[@]} -eq 1 && -f "${dmgs[0]}" ]]
           hdiutil verify "${dmgs[0]}"
           mount="$RUNNER_TEMP/opennow-dmg"
           mkdir -p "$mount" "$RUNNER_TEMP/dmg-relocated"
           hdiutil attach "${dmgs[0]}" -readonly -nobrowse -mountpoint "$mount"
           trap 'hdiutil detach "$mount"' EXIT
-          test -d "$mount/OpenNOW.app"
-          ditto "$mount/OpenNOW.app" "$RUNNER_TEMP/dmg-relocated/OpenNOW.app"
+          test -d "$mount/Cloudlight.app"
+          ditto "$mount/Cloudlight.app" "$RUNNER_TEMP/dmg-relocated/Cloudlight.app"
           hdiutil detach "$mount"
           trap - EXIT
-          for app in "$zip_app" "$RUNNER_TEMP/dmg-relocated/OpenNOW.app"; do
+          for app in "$zip_app" "$RUNNER_TEMP/dmg-relocated/Cloudlight.app"; do
             /usr/bin/codesign --verify --deep --strict "$app"
-            [[ $(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app/Contents/Info.plist") == io.github.opencloudgaming.OpenNOW ]]
+            [[ $(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app/Contents/Info.plist") == io.github.miirys.Cloudlight ]]
             identity=$(/usr/bin/codesign --display --verbose=4 "$app" 2>&1)
-            printf '%s\n' "$identity" | grep -Fx 'Identifier=io.github.opencloudgaming.OpenNOW'
+            printf '%s\n' "$identity" | grep -Fx 'Identifier=io.github.miirys.Cloudlight'
             printf '%s\n' "$identity" | grep -F 'Authority=Developer ID Application:'
             xcrun stapler validate "$app"
             spctl --assess --type execute --verbose=4 "$app"
             bin="$app/Contents/MacOS"
-            for executable in OpenNOW opennow-core opennow-acceptance-verify opennow-update-helper opennow-streamer; do
+            for executable in Cloudlight cloudlight-core cloudlight-acceptance-verify cloudlight-update-helper cloudlight-streamer; do
               test -x "$bin/$executable"
               lipo "$bin/$executable" -verify_arch arm64
             done
-            test -f "$bin/libopennow_streamer_ffi.dylib"
-            lipo "$bin/libopennow_streamer_ffi.dylib" -verify_arch arm64
-            otool -D "$bin/libopennow_streamer_ffi.dylib" \
-              | grep -Fx '@rpath/libopennow_streamer_ffi.dylib'
+            test -f "$bin/libcloudlight_streamer_ffi.dylib"
+            lipo "$bin/libcloudlight_streamer_ffi.dylib" -verify_arch arm64
+            otool -D "$bin/libcloudlight_streamer_ffi.dylib" \
+              | grep -Fx '@rpath/libcloudlight_streamer_ffi.dylib'
             test -f "$app/Contents/Resources/licenses/THIRD_PARTY_NOTICES"
             test -f "$app/Contents/PlugIns/imageformats/libqsvg.dylib"
             restore() {
@@ -701,7 +701,7 @@ jobs:
             mv "$RUNNER_TEMP/SDL-install" "$RUNNER_TEMP/SDL-install.unavailable"
             unset QT_PLUGIN_PATH QT_QPA_PLATFORM_PLUGIN_PATH QML2_IMPORT_PATH QML_IMPORT_PATH
             unset DYLD_LIBRARY_PATH DYLD_FRAMEWORK_PATH DYLD_FALLBACK_LIBRARY_PATH DYLD_FALLBACK_FRAMEWORK_PATH
-            "$bin/opennow-acceptance-verify" --help
+            "$bin/cloudlight-acceptance-verify" --help
             python3 - "$bin" <<'PY'
           import json
           import os
@@ -712,15 +712,15 @@ jobs:
           import tempfile
 
           bin_dir = Path(sys.argv[1])
-          for name in ("OpenNOW", "opennow-core", "opennow-acceptance-verify",
-                       "opennow-update-helper", "opennow-streamer", "libopennow_streamer_ffi.dylib"):
+          for name in ("Cloudlight", "cloudlight-core", "cloudlight-acceptance-verify",
+                       "cloudlight-update-helper", "cloudlight-streamer", "libcloudlight_streamer_ffi.dylib"):
               dependencies = subprocess.check_output(["otool", "-L", bin_dir / name], text=True)
               for line in dependencies.splitlines()[1:]:
                   dependency = line.strip().split(" (", 1)[0]
                   assert not dependency.startswith("/") or dependency.startswith(
                       ("/System/Library/", "/usr/lib/")), (name, dependency)
           probe = subprocess.run(
-              [bin_dir / "opennow-streamer"],
+              [bin_dir / "cloudlight-streamer"],
               input='{"id":"package-probe","type":"hello","protocolVersion":7}\n'
                     '{"id":"package-shutdown","type":"shutdown"}\n',
               text=True, capture_output=True, check=True, timeout=30)
@@ -730,7 +730,7 @@ jobs:
           assert any(b.get("backend") == "videotoolbox" for b in ready["capabilities"]["videoBackends"])
           with tempfile.TemporaryDirectory() as data_dir:
               core = subprocess.Popen(
-                  [bin_dir / "opennow-core", "--data-dir", data_dir],
+                  [bin_dir / "cloudlight-core", "--data-dir", data_dir],
                   stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
               try:
                   core.stdin.write('{"type":"request","id":"package-core","method":"core.hello",'
@@ -744,7 +744,7 @@ jobs:
                   core.kill()
                   core.communicate(timeout=5)
           subprocess.run(
-              [bin_dir / "OpenNOW", "--smoke-test", "--allow-multiple-instances",
+              [bin_dir / "Cloudlight", "--smoke-test", "--allow-multiple-instances",
                "--desktop", "--route", "home", "--reduced-motion"],
               env={**os.environ, "QT_QPA_PLATFORM": "cocoa"}, check=True, timeout=30)
           PY
@@ -795,13 +795,13 @@ jobs:
             exit 1
           fi
           expected=$(for arch in x64 arm64; do
-            printf 'OpenNOW-Qt-%s-Linux-%s.AppImage\nOpenNOW-Qt-%s-Linux-%s.deb\n' \
+            printf 'Cloudlight-Qt-%s-Linux-%s.AppImage\nCloudlight-Qt-%s-Linux-%s.deb\n' \
               "$RELEASE_VERSION" "$arch" "$RELEASE_VERSION" "$arch"
-            printf 'OpenNOW-Qt-%s-Linux-%s.AppImage.zsync\n' "$RELEASE_VERSION" "$arch"
-            printf 'OpenNOW-Qt-%s-Windows-%s.msi\nOpenNOW-Qt-%s-Windows-%s.zip\nOpenNOW-Qt-%s-Windows-%s-setup.exe\n' \
+            printf 'Cloudlight-Qt-%s-Linux-%s.AppImage.zsync\n' "$RELEASE_VERSION" "$arch"
+            printf 'Cloudlight-Qt-%s-Windows-%s.msi\nCloudlight-Qt-%s-Windows-%s.zip\nCloudlight-Qt-%s-Windows-%s-setup.exe\n' \
               "$RELEASE_VERSION" "$arch" "$RELEASE_VERSION" "$arch" "$RELEASE_VERSION" "$arch"
           done
-          printf 'OpenNOW-Qt-%s-Darwin-arm64.dmg\nOpenNOW-Qt-%s-Darwin-arm64.zip\n' \
+          printf 'Cloudlight-Qt-%s-Darwin-arm64.dmg\nCloudlight-Qt-%s-Darwin-arm64.zip\n' \
             "$RELEASE_VERSION" "$RELEASE_VERSION")
           actual=$(find candidate -type f ! -name SHA256SUMS -printf '%f\n' | LC_ALL=C sort)
           [[ "$actual" == "$(printf '%s\n' "$expected" | LC_ALL=C sort)" ]]
@@ -850,7 +850,7 @@ jobs:
           [[ "$manifests" -eq "$assets" ]]
           inventory="$RUNNER_TEMP/RELEASE-CANDIDATE-INVENTORY.txt"
           {
-            echo "OpenNOW Qt release candidate"
+            echo "Cloudlight Qt release candidate"
             echo "version=$RELEASE_VERSION"
             echo "sourceCommit=$SOURCE_SHA"
             echo "windowsSigningMode=$WINDOWS_SIGNING_MODE"

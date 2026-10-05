@@ -13,6 +13,7 @@ mod discord;
 mod frame_rate;
 mod gfn;
 mod language;
+mod legacy_paths;
 mod media;
 mod network;
 mod network_test;
@@ -38,7 +39,7 @@ use gfn::GfnService;
 use opennow_core::update_apply;
 use rand::RngCore;
 use serde_json::{Map, Value, json};
-use settings::{SettingsStore, resolve_data_dir};
+use settings::{PROFILE_LOCK_FILE, SettingsStore, prepare_data_dir, resolve_data_dir};
 use std::env;
 use std::io::{self, BufRead, Write};
 use std::path::PathBuf;
@@ -69,14 +70,14 @@ struct AppCore {
 
 fn main() {
     if let Err(error) = run() {
-        eprintln!("opennow-core: {error}");
+        eprintln!("cloudlight-core: {error}");
         std::process::exit(1);
     }
 }
 
 fn run() -> Result<(), String> {
-    let data_dir = resolve_data_dir(argument_value("--data-dir").map(PathBuf::from));
     if env::args_os().any(|argument| argument == "--graphics-preferences") {
+        let data_dir = resolve_data_dir(argument_value("--data-dir").map(PathBuf::from));
         let windows_gpu_device_id = SettingsStore::windows_gpu_device_id_read_only(Some(data_dir))
             .map_err(|error| error.to_string())?;
         let stdout = io::stdout();
@@ -85,6 +86,7 @@ fn run() -> Result<(), String> {
             &json!({"version":1,"windowsGpuDeviceId":windows_gpu_device_id}),
         );
     }
+    let data_dir = prepare_data_dir(argument_value("--data-dir").map(PathBuf::from));
     std::fs::create_dir_all(&data_dir)
         .map_err(|error| format!("Could not initialize the data directory: {error}"))?;
     let profile_lock = std::fs::OpenOptions::new()
@@ -92,11 +94,11 @@ fn run() -> Result<(), String> {
         .write(true)
         .create(true)
         .truncate(false)
-        .open(data_dir.join("core.lock"))
+        .open(data_dir.join(PROFILE_LOCK_FILE))
         .map_err(|error| format!("Could not open the data directory lock: {error}"))?;
     profile_lock.try_lock_exclusive().map_err(|error| {
         if error.raw_os_error() == fs2::lock_contended_error().raw_os_error() {
-            "The OpenNOW data directory is already in use".to_owned()
+            "The Cloudlight data directory is already in use".to_owned()
         } else {
             format!("Could not lock the data directory: {error}")
         }
@@ -110,7 +112,7 @@ fn run() -> Result<(), String> {
             let mut output = stdout.lock();
             for value in output_rx {
                 if let Err(error) = write_json(&mut output, &value) {
-                    eprintln!("opennow-core: output failed: {error}");
+                    eprintln!("cloudlight-core: output failed: {error}");
                     break;
                 }
             }
@@ -385,7 +387,7 @@ fn dispatch(method: &str, params: &Value, core: &AppCore) -> DispatchResult {
     if session_transition && core.updater.installation_pending() {
         return Err((
             "update_pending".to_owned(),
-            "An update is waiting for OpenNOW to exit".to_owned(),
+            "An update is waiting for Cloudlight to exit".to_owned(),
         ));
     }
     match method {
@@ -411,7 +413,7 @@ fn dispatch(method: &str, params: &Value, core: &AppCore) -> DispatchResult {
                 "presenceAvailable":false,
                 "invitesAvailable":false,
                 "localControllerJoin":true,
-                "reason":"NVIDIA does not expose the GeForce NOW friends, presence, or invitation service to third-party clients. OpenNOW will not display invented contacts or claim invitations were sent."
+                "reason":"NVIDIA does not expose the GeForce NOW friends, presence, or invitation service to third-party clients. Cloudlight will not display invented contacts or claim invitations were sent."
             }),
             None,
         )),

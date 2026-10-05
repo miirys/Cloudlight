@@ -106,7 +106,7 @@ public:
                     if (opennow_streamer_vulkan_device_info(m_runtime->vulkanDevice(), &info)
                             != OPENNOW_STREAMER_OK
                             || !LinuxVulkanGraphics::Device::matchesContext(info, context)) {
-                        reportFailure(QStringLiteral("Qt is not using the embedded Vulkan Video device. Restart OpenNOW to recreate the shared graphics device."));
+                        reportFailure(QStringLiteral("Qt is not using the embedded Vulkan Video device. Restart Cloudlight to recreate the shared graphics device."));
                         return;
                     }
                 } else {

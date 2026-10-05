@@ -25,10 +25,10 @@ class WindowsTestBundleTest(unittest.TestCase):
         self.revision = "0123456789abcdef"
         self.tests = ["embedded-orchestration", "stream-input"]
         self.files = {
-            "Release/OpenNOW.exe": b"application\x00",
+            "Release/Cloudlight.exe": b"application\x00",
             "Release/tst_streaminput.exe": b"test executable",
             "Release/Qt6Core.dll": b"runtime library",
-            "Release/OpenNOW.pdb": b"debug symbols",
+            "Release/Cloudlight.pdb": b"debug symbols",
             "Release/platforms/qwindows.dll": b"platform plugin",
             "Release/qml/OpenNOW/qmldir": b"module OpenNOW",
             "Release/resources/shader.bin": b"\x00\xff\x01",
@@ -41,7 +41,7 @@ class WindowsTestBundleTest(unittest.TestCase):
         for name, data in self.files.items():
             self.write(name, data)
         for name in (
-            "CMakeCache.txt", "build.ninja", "object.obj", "Debug/OpenNOW.exe",
+            "CMakeCache.txt", "build.ninja", "object.obj", "Debug/Cloudlight.exe",
             "rust-target/CTestTestfile.cmake",
             "streamer-rust-target/nested/CTestTestfile.cmake",
             "nested/target/CTestTestfile.cmake",

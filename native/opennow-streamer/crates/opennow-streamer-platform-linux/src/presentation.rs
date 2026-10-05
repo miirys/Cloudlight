@@ -226,7 +226,7 @@ impl VulkanPresenter {
                 )
             }
         } else {
-            let application_name = c"OpenNOW";
+            let application_name = c"Cloudlight";
             let application = vk::ApplicationInfo::default()
                 .application_name(application_name)
                 .application_version(vk::make_api_version(0, 0, 1, 0))

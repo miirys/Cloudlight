@@ -492,7 +492,7 @@ impl LinuxHardwareOutput {
                 "Wayland presentation must use a compositor-managed top-level window".to_owned(),
             );
         }
-        let mut window_builder = video.window("OpenNOW Stream", 1280, 720);
+        let mut window_builder = video.window("Cloudlight Stream", 1280, 720);
         window_builder
             .position_centered()
             .resizable()
@@ -1563,7 +1563,7 @@ impl SoftwareOutput {
             .audio()
             .map_err(|error| format!("SDL audio initialization failed: {error}"))?;
         let external_renderer = external_renderer_enabled();
-        let mut window_builder = video.window("OpenNOW Stream", 1280, 720);
+        let mut window_builder = video.window("Cloudlight Stream", 1280, 720);
         window_builder
             .position_centered()
             .resizable()
@@ -2603,7 +2603,7 @@ impl WindowsExternalSdlSurface {
         let video = sdl
             .video()
             .map_err(|error| format!("SDL video initialization failed: {error}"))?;
-        let mut window_builder = video.window("OpenNOW Stream", 1280, 720);
+        let mut window_builder = video.window("Cloudlight Stream", 1280, 720);
         window_builder
             .position_centered()
             .resizable()

@@ -153,9 +153,9 @@ fn fixture(wrong_identity: bool) -> Fixture {
     let helper = fixture_path("OPENNOW_TEST_UPDATE_HELPER");
     #[cfg(target_os = "linux")]
     let (kind, target, application, package, candidate_bytes) = {
-        let target = root.join("OpenNOW.AppImage");
+        let target = root.join("Cloudlight.AppImage");
         stage_executable(&previous, &target);
-        let package = directory.join("OpenNOW-1.2.3.AppImage");
+        let package = directory.join("Cloudlight-1.2.3.AppImage");
         let mut bytes = fs::read(&candidate).unwrap();
         assert_eq!(&bytes[..4], b"\x7fELF");
         bytes[8..11].copy_from_slice(b"AI\x02");
@@ -174,29 +174,29 @@ fn fixture(wrong_identity: bool) -> Fixture {
         let (kind, target, relative, package) = (
             InstallKind::WindowsPortable,
             root.join("installed"),
-            PathBuf::from("bin/OpenNOW.exe"),
-            directory.join("OpenNOW-1.2.3.zip"),
+            PathBuf::from("bin/Cloudlight.exe"),
+            directory.join("Cloudlight-1.2.3.zip"),
         );
         #[cfg(target_os = "macos")]
         let (kind, target, relative, package) = (
             InstallKind::MacBundle,
-            root.join("OpenNOW.app"),
-            PathBuf::from("Contents/MacOS/OpenNOW"),
-            directory.join("OpenNOW-1.2.3.dmg"),
+            root.join("Cloudlight.app"),
+            PathBuf::from("Contents/MacOS/Cloudlight"),
+            directory.join("Cloudlight-1.2.3.dmg"),
         );
         let application = target.join(&relative);
         stage_executable(&previous, &application);
         let image_root = root.join("image-root");
         #[cfg(target_os = "macos")]
-        let payload = image_root.join("OpenNOW.app");
+        let payload = image_root.join("Cloudlight.app");
         #[cfg(windows)]
         let payload = image_root.clone();
         let payload_application = payload.join(&relative);
         stage_executable(&candidate, &payload_application);
         let suffix = if cfg!(windows) { ".exe" } else { "" };
         for (name, source) in [
-            (format!("opennow-core{suffix}"), &previous),
-            (format!("opennow-update-helper{suffix}"), &helper),
+            (format!("cloudlight-core{suffix}"), &previous),
+            (format!("cloudlight-update-helper{suffix}"), &helper),
         ] {
             stage_executable(source, &application.parent().unwrap().join(&name));
             stage_executable(source, &payload_application.parent().unwrap().join(&name));
@@ -232,7 +232,7 @@ fn fixture(wrong_identity: bool) -> Fixture {
                         "-format",
                         "UDZO",
                         "-volname",
-                        "OpenNOW integration",
+                        "Cloudlight integration",
                         "-srcfolder",
                     ])
                     .arg(&image_root)

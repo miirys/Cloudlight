@@ -1,6 +1,6 @@
-# OpenNOW Qt shell
+# Cloudlight Qt shell
 
-The supported OpenNOW Qt Quick/QML desktop application. It targets Qt 6.8
+The supported Cloudlight Qt Quick/QML desktop application. It targets Qt 6.8
 or newer and uses SDL3 for controller input. A bundled Rust process owns settings
 and is the start of the shell-neutral application core. See
 `docs/qt-migration.md` for the migration history and remaining release checklist.
@@ -133,7 +133,7 @@ acceptance checklist](../docs/raspberry-pi.md).
 
 Settings → About → Copy diagnostics exports a bounded report containing both
 `native-streamer.log` and `qt-native.log` from the core's diagnostics directory
-(`%APPDATA%/OpenNOW/diagnostics` on Windows, or `OPENNOW_DATA_DIR/diagnostics`).
+(`%APPDATA%/Cloudlight/diagnostics` on Windows, or `OPENNOW_DATA_DIR/diagnostics`).
 Reproduce the problem, wait at least 10 seconds, then export before closing the app.
 
 The `diagnostics-v2` Qt startup marker identifies the detailed trace build. The trace
@@ -230,7 +230,7 @@ cmake -S opennow-qt -B build/opennow-qt -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_OSX_ARCHITECTURES="$arch"
 cmake --build build/opennow-qt --parallel 4
 ctest --test-dir build/opennow-qt --output-on-failure --parallel 2
-./build/opennow-qt/OpenNOW.app/Contents/MacOS/OpenNOW
+./build/opennow-qt/Cloudlight.app/Contents/MacOS/Cloudlight
 cpack --config build/opennow-qt/CPackConfig.cmake -G 'DragNDrop;ZIP' -B build/qt-packages
 ```
 
@@ -258,7 +258,7 @@ unlocks the pointer; server cursor notifications do not override that choice unt
 the session resets. Unlocked absolute mode deliberately allows the pointer to leave
 the window. Opening input-blocking overlays, switching applications, hiding the
 window, or ending the session releases native capture and restores the Mac cursor.
-While the seat still composites its cursor at startup, OpenNOW hides the local
+While the seat still composites its cursor at startup, Cloudlight hides the local
 cursor over the active video to avoid displaying both.
 
 Run `ctest --test-dir build/opennow-qt --output-on-failure -R 'macpointer|streamvideo-tests'`
@@ -282,7 +282,7 @@ not replace the wizard while its settings are being saved. No payment or diagnos
 upload happens during onboarding.
 
 To repeat setup, open **Settings → About → Replay onboarding** at the bottom of
-the page, then confirm **Restart and replay**. OpenNOW saves only
+the page, then confirm **Restart and replay**. Cloudlight saves only
 `onboardingCompleted=false` before restarting; other preferences and saved accounts
 are kept. End an active or starting stream first. A failed save leaves the app open
 and allows retrying. The replacement process starts after the old window, core,
@@ -300,9 +300,9 @@ completion-marker write after the other settings. Enabled, unreadable and busy
 states block completion and return to Boost without discarding the draft. A
 confirmed absent interface needs no change; other platforms have no AWDL requirement.
 Re-enabling AWDL from the card undoes the network change and blocks completion again.
-OpenNOW never disables AWDL automatically, stores administrator credentials, or
+Cloudlight never disables AWDL automatically, stores administrator credentials, or
 installs a service. Disabling AWDL can interrupt AirDrop, AirPlay, Sidecar and other
-Continuity features for all users. macOS may re-enable it after the check; OpenNOW
+Continuity features for all users. macOS may re-enable it after the check; Cloudlight
 does not enforce its state after setup. An interface-down reading is not proof of
 zero AWDL radio traffic or a guaranteed fix for streaming stutter.
 
@@ -310,7 +310,7 @@ Run persistence and whole-app acceptance without an account:
 
 ```sh
 ctest --test-dir build/opennow-qt -R 'onboarding' --output-on-failure
-QT_QPA_PLATFORM=offscreen build/opennow-qt/opennow-qt \
+QT_QPA_PLATFORM=offscreen build/opennow-qt/cloudlight \
   --smoke-test --allow-multiple-instances --desktop --route home \
   --smoke-onboarding --onboarding-step 0 --smoke-width 1440 \
   --reduced-motion --screenshot /absolute/path/onboarding.png
@@ -335,7 +335,7 @@ Capture every setup step in desktop, compact 1.25×, and light appearances, plus
 desktop and compact login, for visual comparison with the Paper design:
 
 ```sh
-bash scripts/capture-qt-onboarding.sh build/opennow-qt/opennow-qt /absolute/path/onboarding-review
+bash scripts/capture-qt-onboarding.sh build/opennow-qt/cloudlight /absolute/path/onboarding-review
 ```
 
 The compact scroll checks focus every eligible control, verify that the focused
@@ -349,7 +349,7 @@ illustrations, not the signed-in user's library.
 Run with the offscreen Qt platform plugin for a startup smoke test:
 
 ```sh
-QT_QPA_PLATFORM=offscreen ./build/opennow-qt/opennow-qt \
+QT_QPA_PLATFORM=offscreen ./build/opennow-qt/cloudlight \
   --smoke-test --allow-multiple-instances --route home
 ```
 
@@ -413,7 +413,7 @@ presentation is not capped or renegotiated by this guard.
 
 The Qt render-thread helper samples native GPU textures into two retained histories, estimates
 bidirectional motion through three reduced-resolution pyramids, and synthesizes one midpoint.
-Unreliable regions and detected scene cuts use the actual current image. OpenNOW's overlays
+Unreliable regions and detected scene cuts use the actual current image. Cloudlight's overlays
 are composed afterward on the existing video surface. There is no CPU image readback, separate
 presenter, neural model, or additional runtime dependency. The Off path allocates no interpolation
 resources. Source frame identifiers, protocol feedback, audio, and source-stream recording are
@@ -578,7 +578,7 @@ Settings → Audio contains two independent, default-off background options.
 **Mute when out of focus** silences local playback while another app is active and
 restores it on return. It does not pause video, microphone capture, or recording.
 **Background stream reminder** requests taskbar or dock attention every five minutes
-while a session is streaming in the background. Returning to OpenNOW, ending the
+while a session is streaming in the background. Returning to Cloudlight, ending the
 stream, or disabling the option stops the timer. Desktop support determines how
 the attention request appears; this is not an AFK-timeout warning or anti-AFK control.
 
@@ -640,7 +640,7 @@ The desktop controller rows and source picker use SDL's reported device name and
 for PlayStation (PS3/PS4/PS5) and Xbox (360/One-family) logos. Unknown devices keep
 the generic gamepad icon. This ignores button-layout mapping overrides, but a
 remapper that exposes only a virtual Xbox device can still hide the physical pad's
-identity; OpenNOW does not guess its brand from the name.
+identity; Cloudlight does not guess its brand from the name.
 
 Battery status uses [`SDL_GetGamepadPowerInfo`](https://wiki.libsdl.org/SDL3/SDL_GetGamepadPowerInfo)
 on the existing SDL handle, refreshed every two seconds without a second HID reader.
@@ -666,7 +666,7 @@ The representative-hardware performance workload drives production route and pop
 checks focus after every transition, and records refresh-relative frame budgets atomically:
 
 ```sh
-./build/opennow-qt/opennow-qt --allow-multiple-instances \
+./build/opennow-qt/cloudlight --allow-multiple-instances \
   --performance-report "$PWD/opennow-1080p.json" \
   --performance-width 1920 --performance-height 1080 \
   --performance-cycles 3 --performance-label linux-intel-uhd \
@@ -695,8 +695,8 @@ chrome. The shell sends one complete CloudMatch session context and never
 proxies RTSPS, ICE, SRTP or encoded media. Decoders publish native GPU frames
 through the C FFI; `StreamVideoItem` imports and samples them on Qt's QRhi
 render command stream without a child streamer process or native presenter
-window. CPack installs the Qt executable, `opennow-core`, the runtime library
-and `opennow-streamer` for the core's capability probe. Qt streaming still runs
+window. CPack installs the Qt executable, `cloudlight-core`, the runtime library
+and `cloudlight-streamer` for the core's capability probe. Qt streaming still runs
 in process through the runtime library, not in the probe executable. CI produces
 the platform packages from that layout.
 The screenshot shortcut captures the exact stream region, and F12 records the

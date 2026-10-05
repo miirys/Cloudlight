@@ -1,4 +1,4 @@
-# Contributing to OpenNOW
+# Contributing to Cloudlight
 
 Thanks for contributing.
 
@@ -16,7 +16,7 @@ toolchain, SDL3, Cargo and the platform media dependencies. See
 [`opennow-qt/README.md`](../opennow-qt/README.md) for runtime and smoke-test guidance.
 
 ```bash
-git clone https://github.com/OpenCloudGaming/OpenNOW.git
+git clone https://github.com/miirys/OpenNOW.git
 cd OpenNOW
 cmake -S opennow-qt -B build/opennow-qt -DCMAKE_BUILD_TYPE=Debug
 cmake --build build/opennow-qt

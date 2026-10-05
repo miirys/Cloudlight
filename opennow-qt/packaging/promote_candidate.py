@@ -24,7 +24,7 @@ def validate_provenance(run, run_id, repository, commit):
 
 
 def assemble(source, destination, version, commit, public_key):
-    assets = expected_packages(version, commit, "stable") | {f"OpenNOW-Qt-{version}-Darwin-arm64.zip"}
+    assets = expected_packages(version, commit, "stable") | {f"Cloudlight-Qt-{version}-Darwin-arm64.zip"}
     expected = assets | {name + ".manifest.json" for name in assets}
     files = {}
     paths = {}
@@ -47,7 +47,7 @@ def assemble(source, destination, version, commit, public_key):
         raise ValueError("Missing candidate asset or manifest")
     inventory = source / "RELEASE-CANDIDATE-INVENTORY.txt"
     lines = inventory.read_text().splitlines()
-    if (len(lines) < 4 or lines[:3] != ["OpenNOW Qt release candidate",
+    if (len(lines) < 4 or lines[:3] != ["Cloudlight Qt release candidate",
                                       f"version={version}", f"sourceCommit={commit}"]
             or lines[3] not in ("windowsSigningMode=unsigned", "windowsSigningMode=authenticode")):
         raise ValueError("Candidate inventory identity does not match the release")

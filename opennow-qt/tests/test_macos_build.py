@@ -15,13 +15,13 @@ class MacOSBuildContractTest(unittest.TestCase):
         commands = [
             'hdiutil verify "${dmgs[0]}"',
             'hdiutil attach "${dmgs[0]}" -readonly -nobrowse -mountpoint "$mount"',
-            'ditto "$mount/OpenNOW.app" "$RUNNER_TEMP/dmg-relocated/OpenNOW.app"',
+            'ditto "$mount/Cloudlight.app" "$RUNNER_TEMP/dmg-relocated/Cloudlight.app"',
             'hdiutil detach "$mount"\n',
-            'for app in "$zip_app" "$RUNNER_TEMP/dmg-relocated/OpenNOW.app"; do',
+            'for app in "$zip_app" "$RUNNER_TEMP/dmg-relocated/Cloudlight.app"; do',
             '/usr/bin/codesign --verify --deep --strict "$app"',
-            "grep -Fx 'Identifier=io.github.opencloudgaming.OpenNOW'",
+            "grep -Fx 'Identifier=io.github.miirys.Cloudlight'",
             'mv "$QT_ROOT_DIR" "$QT_ROOT_DIR.unavailable"',
-            '[bin_dir / "OpenNOW", "--smoke-test"',
+            '[bin_dir / "Cloudlight", "--smoke-test"',
         ]
         positions = [workflow.index(command) for command in commands]
         self.assertEqual(positions, sorted(positions))
@@ -36,7 +36,7 @@ class MacOSBuildContractTest(unittest.TestCase):
         self.assertEqual(
             commands,
             [["lipo", "$bin/$executable", "-verify_arch", "arm64"],
-             ["lipo", "$bin/libopennow_streamer_ffi.dylib", "-verify_arch", "arm64"]],
+             ["lipo", "$bin/libcloudlight_streamer_ffi.dylib", "-verify_arch", "arm64"]],
         )
 
     def configure(self, arch="arm64", rust_target="", adhoc=False):
@@ -50,7 +50,7 @@ class MacOSBuildContractTest(unittest.TestCase):
 project(MacOSBuildContract VERSION 1.0.0 LANGUAGES CXX)
 include(GNUInstallDirs)
 add_executable(opennow-qt main.cpp)
-set_target_properties(opennow-qt PROPERTIES MACOSX_BUNDLE_GUI_IDENTIFIER "io.github.opencloudgaming.OpenNOW")
+set_target_properties(opennow-qt PROPERTIES MACOSX_BUNDLE_GUI_IDENTIFIER "io.github.miirys.Cloudlight")
 set(APPLE TRUE)
 set(WIN32 FALSE)
 set(CMAKE_SYSTEM_NAME Darwin)
@@ -61,7 +61,7 @@ set(CARGO_EXECUTABLE cargo)
 set(OPENNOW_MACOS_ADHOC_SIGN {"ON" if adhoc else "OFF"})
 include("{QT_SOURCE.as_posix()}/cmake/BuildMetadata.cmake")
 include("{QT_SOURCE.as_posix()}/cmake/NativeRuntime.cmake")
-set(OPENNOW_EXECUTABLE_NAME OpenNOW)
+set(OPENNOW_EXECUTABLE_NAME Cloudlight)
 set(OPENNOW_SDL3_RUNTIME_TARGET SDL3-runtime)
 add_library(SDL3-runtime SHARED IMPORTED)
 set_target_properties(SDL3-runtime PROPERTIES
@@ -95,7 +95,7 @@ file(GENERATE OUTPUT "${{CMAKE_BINARY_DIR}}/contract.txt" CONTENT
                 self.assertEqual(contract[0], target)
                 self.assertTrue(contract[1].endswith(f"rust-target/{target}"))
                 self.assertTrue(contract[2].endswith(
-                    f"streamer-rust-target/{target}/release/libopennow_streamer_ffi.dylib"))
+                    f"streamer-rust-target/{target}/release/libcloudlight_streamer_ffi.dylib"))
                 self.assertIn("@loader_path", contract[3])
                 self.assertIn("@loader_path", contract[4])
 
@@ -120,24 +120,24 @@ file(GENERATE OUTPUT "${{CMAKE_BINARY_DIR}}/contract.txt" CONTENT
         result, build = self.configure()
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         rule = (build / "CMakeFiles/opennow-update-helper-build.dir/build.make").read_text()
-        self.assertIn("--bin opennow-update-helper", rule)
-        self.assertIn("rust-target/aarch64-apple-darwin/release/opennow-update-helper", rule)
+        self.assertIn("--bin cloudlight-update-helper", rule)
+        self.assertIn("rust-target/aarch64-apple-darwin/release/cloudlight-update-helper", rule)
         cpack = (build / "CPackConfig.cmake").read_text()
         self.assertIn('set(CPACK_GENERATOR "DragNDrop;ZIP")', cpack)
-        self.assertIn('set(CPACK_PACKAGE_FILE_NAME "OpenNOW-Qt-1.0.0-Darwin-arm64")', cpack)
+        self.assertIn('set(CPACK_PACKAGE_FILE_NAME "Cloudlight-Qt-1.0.0-Darwin-arm64")', cpack)
         install = (build / "cmake_install.cmake").read_text()
-        self.assertIn("OpenNOW.app/Contents/MacOS", install)
-        for helper in ("opennow-core", "opennow-acceptance-verify", "opennow-update-helper"):
+        self.assertIn("Cloudlight.app/Contents/MacOS", install)
+        for helper in ("cloudlight-core", "cloudlight-acceptance-verify", "cloudlight-update-helper"):
             self.assertIn(f"rust-target/aarch64-apple-darwin/release/{helper}", install)
-        for runtime in ("opennow-streamer", "libopennow_streamer_ffi.dylib"):
+        for runtime in ("cloudlight-streamer", "libcloudlight_streamer_ffi.dylib"):
             self.assertIn(f"streamer-rust-target/aarch64-apple-darwin/release/{runtime}", install)
 
     def test_deployment_scans_helper_dependencies(self):
         result, build = self.configure()
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         arguments = (build / "deploy-args.txt").read_text().split(";")
-        for helper in ("opennow-core", "opennow-acceptance-verify", "opennow-update-helper", "opennow-streamer"):
-            self.assertIn(f"-executable=OpenNOW.app/Contents/MacOS/{helper}", arguments)
+        for helper in ("cloudlight-core", "cloudlight-acceptance-verify", "cloudlight-update-helper", "cloudlight-streamer"):
+            self.assertIn(f"-executable=Cloudlight.app/Contents/MacOS/{helper}", arguments)
 
     def test_nightly_deployment_explicitly_seals_bundle_with_adhoc_identity(self):
         for enabled in (False, True):
@@ -151,16 +151,16 @@ file(GENERATE OUTPUT "${{CMAKE_BINARY_DIR}}/contract.txt" CONTENT
                 if enabled:
                     self.assertLess(install.index("/deploy.cmake"), install.index("/macos-adhoc-seal.cmake"))
                     seal = (build / "macos-adhoc-seal.cmake").read_text()
-                    self.assertIn('--identifier "io.github.opencloudgaming.OpenNOW"', seal)
+                    self.assertIn('--identifier "io.github.miirys.Cloudlight"', seal)
                     self.assertIn("--verify --deep --strict", seal)
-                    self.assertIn('$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/OpenNOW.app', seal)
+                    self.assertIn('$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/Cloudlight.app', seal)
         workflow = (QT_SOURCE.parent / ".github/workflows/qt-build.yml").read_text()
         self.assertIn("-DOPENNOW_MACOS_ADHOC_SIGN=ON", workflow)
         self.assertIn("grep -Fx 'Signature=adhoc'", workflow)
         self.assertIn("grep -Fx 'TeamIdentifier=not set'", workflow)
         self.assertIn("Print :CFBundleIdentifier", workflow)
         main = (QT_SOURCE / "CMakeLists.txt").read_text()
-        self.assertIn('MACOSX_BUNDLE_GUI_IDENTIFIER "io.github.opencloudgaming.OpenNOW"', main)
+        self.assertIn('MACOSX_BUNDLE_GUI_IDENTIFIER "io.github.miirys.Cloudlight"', main)
         self.assertIn("${MACOSX_BUNDLE_GUI_IDENTIFIER}", (QT_SOURCE / "packaging/Info.plist.in").read_text())
         candidate = (QT_SOURCE.parent / ".github/workflows/qt-release-candidate.yml").read_text()
         self.assertNotIn("OPENNOW_MACOS_ADHOC_SIGN", candidate)

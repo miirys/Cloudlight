@@ -17,8 +17,8 @@ namespace OpenNow.Playnite
         {
             var dialog = new OpenFileDialog
             {
-                Filter = "OpenNOW|OpenNOW.exe|Executables|*.exe|All files|*.*",
-                Title = "Select OpenNOW executable",
+                Filter = "Cloudlight|Cloudlight.exe;OpenNOW.exe|Executables|*.exe|All files|*.*",
+                Title = "Select Cloudlight executable",
             };
 
             if (dialog.ShowDialog() == true && DataContext is OpenNowSettingsViewModel viewModel)

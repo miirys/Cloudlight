@@ -6,6 +6,9 @@ license.workspace = true
 rust-version.workspace = true
 
 [lib]
+# The shipped library carries the Cloudlight name; the C ABI symbols and header
+# keep their opennow_streamer_* names.
+name = "cloudlight_streamer_ffi"
 crate-type = ["cdylib", "rlib"]
 
 [features]

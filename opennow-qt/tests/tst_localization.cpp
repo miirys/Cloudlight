@@ -92,6 +92,44 @@ private slots:
         }
     }
 
+    void translationsFollowTheCurrentProductName()
+    {
+        QFile catalog(QStringLiteral(":/locales/en.json"));
+        QVERIFY(catalog.open(QIODevice::ReadOnly));
+        const auto document = QJsonDocument::fromJson(catalog.readAll());
+        QVERIFY(document.isObject());
+        QHash<QString, QString> english;
+        const auto collect = [&english](const auto &self, const QJsonObject &object,
+                                        const QString &prefix) -> void {
+            for (auto iterator = object.begin(); iterator != object.end(); ++iterator) {
+                const auto key = prefix.isEmpty() ? iterator.key() : prefix + u'.' + iterator.key();
+                if (iterator->isString()) english.insert(key, iterator->toString());
+                else if (iterator->isObject()) self(self, iterator->toObject(), key);
+            }
+        };
+        collect(collect, document.object(), QString());
+        QCOMPARE(english.value(QStringLiteral("app.name")), QStringLiteral("Cloudlight"));
+
+        Localization localization;
+        QStringList stale;
+        for (const auto &locale : localization.availableLocales()) {
+            localization.setLocale(locale);
+            for (auto iterator = english.cbegin(); iterator != english.cend(); ++iterator) {
+                if (iterator.value().contains(QStringLiteral("OpenNOW"), Qt::CaseInsensitive)) continue;
+                const auto translated = localization.text(iterator.key());
+                if (translated.contains(QStringLiteral("OpenNOW"))
+                    || translated.contains(QStringLiteral("OPENNOW"))) {
+                    stale.push_back(locale + QStringLiteral(": ") + iterator.key());
+                }
+            }
+        }
+        QVERIFY2(stale.isEmpty(), qPrintable(stale.join(u'\n')));
+
+        localization.setLocale(QStringLiteral("de"));
+        QCOMPARE(localization.text(QStringLiteral("app.name")), QStringLiteral("Cloudlight"));
+        QVERIFY(localization.translate(nullptr, "Welcome to Cloudlight").contains(QStringLiteral("Cloudlight")));
+    }
+
     void everyExtractedQmlSourceExistsInEnglishCatalog()
     {
         QFile catalog(QStringLiteral(OPENNOW_SOURCE_DIR "/locales/en.json"));
