@@ -56,7 +56,7 @@ Item {
     }
     MotionProgress { id: reveal; shown: root.expanded; enterDuration: 170; exitDuration: 130 }
     onExpandedChanged: {
-        if (expanded) { raiseAncestors(true); search.clear(); if (search.visible) search.forceActiveFocus(); else scroll.forceActiveFocus() }
+        if (expanded) { raiseAncestors(true); search.clear(); if (root.items.length > 8) search.forceActiveFocus(); else scroll.forceActiveFocus() }
         else selector.forceActiveFocus()
     }
     Connections {
@@ -92,7 +92,9 @@ Item {
         id: menuSurface
         // Hidden items take no input, so the list needs no enabled gate; gating it
         // would also report every option as disabled while the list is closed.
-        visible: reveal.present
+        // Visible from the moment it opens (before the reveal binding updates), so the
+        // filter field or list can take keyboard focus in the same handler.
+        visible: root.expanded || reveal.present
         readonly property real controlX: header.width - header.rightInset - header.controlWidth
         width: Math.max(header.controlWidth, DesktopTokens.px(260))
         x: Math.max(0, Math.min(controlX, header.width - width))
