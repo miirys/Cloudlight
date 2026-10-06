@@ -7074,7 +7074,16 @@ fn run_nvst_webrtc_bundle(
                                             message.cursor_id,
                                             message.visible,
                                             message.raw.len(),
-                                            diagnostic_hex(&message.raw, 96),
+                                            diagnostic_hex(
+                                                &message.raw,
+                                                // Whole bitmap cursors (0x0110), once per
+                                                // change, so their layout can be decoded.
+                                                if message.command == 0x0110 {
+                                                    20_000
+                                                } else {
+                                                    96
+                                                },
+                                            ),
                                         ),
                                     );
                                 }

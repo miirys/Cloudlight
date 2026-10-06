@@ -196,7 +196,7 @@ mod tests {
         ]);
         assert_eq!(messages.len(), 1);
         for message in messages {
-            assert_eq!(message.normalized, Some(vec![0, 1, 0, 0, 0, 0, 0]));
+            assert_eq!(message.normalized, Some(vec![0, 0xfe, 0, 0, 0, 0, 0]));
             assert_eq!(message.visible, Some(true));
             capture.notify(now);
         }

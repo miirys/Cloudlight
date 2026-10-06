@@ -1144,9 +1144,10 @@ void StreamVideoItem::updateLocalCursor()
     // Like RDP and GeForce NOW, the pointer is always the local hardware
     // cursor, shaped like the host's, so it moves at the display's rate and
     // never waits for a video frame. It is hidden only while the game has
-    // locked the mouse (relative input).
+    // locked the mouse (relative input), or while the game shows its own
+    // bitmap cursor, which is still drawn in the video.
     const bool hiddenDuringDrag = m_pendingRelativeMouse.value_or(false);
-    if (m_relativeMouse || hiddenDuringDrag) {
+    if (m_relativeMouse || hiddenDuringDrag || m_remoteCursorHostHidden) {
         setCursor(Qt::BlankCursor);
         return;
     }
@@ -1183,11 +1184,10 @@ void StreamVideoItem::applyRemoteCursor(const QByteArray &bytes)
     const auto metadata = remoteCursorMetadata(bytes);
     m_remoteCursorKnown = true;
     m_remoteCursorVisible = !hidden;
-    // The streamer appends a 0 after the position when the game hid its
-    // cursor without releasing the pointer (visible=0). Stop drawing the
-    // local arrow over the game, but keep absolute input: only ID 0 locks.
-    m_remoteCursorHostHidden = messageType == 0 && !hidden && bytes.size() == 12
-        && static_cast<quint8>(bytes[11]) == 0;
+    // ID 0xFE is a game's own bitmap cursor, which the streamer cannot decode
+    // yet; the game still draws it in the video, so the local arrow steps
+    // aside instead of doubling it. Input stays absolute: only ID 0 locks.
+    m_remoteCursorHostHidden = messageType == 0 && cursorId == 0xfe;
     setRelativeMouse(m_manualRelativeMouse.value_or(hidden));
     updateLocalCursor();
     if (hidden) return;

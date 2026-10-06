@@ -22,8 +22,9 @@ const CUSTOM_PARTIAL_MAX_RETRANSMITS: u16 = 2;
 
 const COMMAND_SYSTEM_CURSOR: u16 = 0x010f;
 const COMMAND_BITMAP_CURSOR: u16 = 0x0110;
-/// Predefined arrow shown for bitmap cursors until their layout is decoded.
-const BITMAP_CURSOR_FALLBACK_ID: u8 = 1;
+// The game's own cursor image is drawn in the video until 0x0110 is decoded,
+// so Qt hides its local arrow for this ID instead of drawing a second pointer.
+const BITMAP_CURSOR_FALLBACK_ID: u8 = 0xfe;
 const COMMAND_KEEPALIVE: u16 = 0x0200;
 const COMMAND_REMOTE_INPUT: u16 = 0x0206;
 const COMMAND_ENABLE_INPUT: u16 = 0x020b;
