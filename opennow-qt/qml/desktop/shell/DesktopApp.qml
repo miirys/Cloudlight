@@ -152,10 +152,6 @@ FocusScope {
             id: pageLoader
             objectName: "desktopPageLoader"
             anchors.fill: parent
-            // Build Home/Library/Store over several frames so switching tabs never
-            // freezes the window; the page cross-fades in once ready. The test
-            // harness reads pages synchronously.
-            asynchronous: !SmokeTestMode
             sourceComponent: root.contentForRoute(root.contentRoute)
             opacity: pageEntrance.pageOpacity
             scale: pageEntrance.pageScale

@@ -841,10 +841,6 @@ FocusScope {
                 id: pageLoader
                 objectName: "settingsPageLoader"
                 width: contentFlick.width
-                // Build the next page over a few frames instead of stalling the
-                // window on one; it fades in once ready. Tests read pages
-                // synchronously, so the harness keeps the blocking load.
-                asynchronous: !SmokeTestMode
                 sourceComponent: SmokeTestMode && root.acceptancePanel !== ""
                     ? root.acceptancePanels[root.acceptancePanel] : root.pageComponents[root.selectedSection]
                 opacity: sectionEntrance.pageOpacity
