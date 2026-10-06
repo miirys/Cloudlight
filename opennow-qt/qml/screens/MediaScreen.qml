@@ -13,11 +13,11 @@ FocusScope {
 
     Column {
         x: 92; y: 116; width: parent.width - 184; spacing: 10
-        Text {
+        Text { renderType: Text.CurveRendering;
             text: qsTr("Captures")
             color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 42; font.weight: Font.Bold
         }
-        Text {
+        Text { renderType: Text.CurveRendering;
             text: ShellStore.mediaMessage || qsTr("Screenshots and recordings from your streams")
             color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 16
         }
@@ -60,15 +60,15 @@ FocusScope {
                     Rectangle {
                         visible: modelData.kind === "recording"
                         anchors.centerIn: parent; width: 54; height: 54; radius: 27; color: Qt.rgba(0, 0, 0, 0.74)
-                        Text { anchors.centerIn: parent; text: qsTr("▶"); color: Theme.label; font.pixelSize: 21 }
+                        Text { renderType: Text.CurveRendering; anchors.centerIn: parent; text: qsTr("▶"); color: Theme.label; font.pixelSize: 21 }
                     }
                     Rectangle {
                         x: 10; y: 10; width: 94; height: 27; radius: Theme.radius
                         color: modelData.kind === "recording" ? Theme.coral : Theme.violet
-                        Text { anchors.centerIn: parent; text: modelData.kind === "recording" ? qsTr("Recording") : qsTr("Screenshot"); color: Theme.contrastText(modelData.kind === "recording" ? Theme.coral : Theme.violet); font.family: Theme.bodyFont; font.pixelSize: 10; font.weight: Font.Bold }
+                        Text { renderType: Text.CurveRendering; anchors.centerIn: parent; text: modelData.kind === "recording" ? qsTr("Recording") : qsTr("Screenshot"); color: Theme.contrastText(modelData.kind === "recording" ? Theme.coral : Theme.violet); font.family: Theme.bodyFont; font.pixelSize: 10; font.weight: Font.Bold }
                     }
                 }
-                Text {
+                Text { renderType: Text.CurveRendering;
                     width: parent.width; text: modelData.fileName; elide: Text.ElideMiddle
                     color: tile.highlighted ? Theme.focus : Theme.label; font.family: Theme.bodyFont; font.pixelSize: 14; font.weight: Font.Bold
                 }
@@ -132,8 +132,8 @@ FocusScope {
         anchors.centerIn: mediaGrid; width: 560; height: 160; panelRadius: 30; strong: true
         Column {
             anchors.centerIn: parent; spacing: 10
-            Text { anchors.horizontalCenter: parent.horizontalCenter; text: ShellStore.mediaState === "loading" ? qsTr("Loading captures…") : qsTr("No captures yet"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 25; font.weight: Font.Bold }
-            Text { anchors.horizontalCenter: parent.horizontalCenter; text: qsTr("Screenshots and recordings will appear here."); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 15 }
+            Text { renderType: Text.CurveRendering; anchors.horizontalCenter: parent.horizontalCenter; text: ShellStore.mediaState === "loading" ? qsTr("Loading captures…") : qsTr("No captures yet"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 25; font.weight: Font.Bold }
+            Text { renderType: Text.CurveRendering; anchors.horizontalCenter: parent.horizontalCenter; text: qsTr("Screenshots and recordings will appear here."); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 15 }
         }
     }
 
@@ -146,8 +146,8 @@ FocusScope {
         Keys.onEscapePressed: { root.pendingDelete = null; mediaGrid.forceActiveFocus() }
         Column {
             anchors.fill: parent; anchors.margins: 26; spacing: 14
-            Text { text: qsTr("Delete this capture?"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 26; font.weight: Font.Bold }
-            Text { width: parent.width; text: root.pendingDelete ? root.pendingDelete.fileName : ""; elide: Text.ElideMiddle; color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 14 }
+            Text { renderType: Text.CurveRendering; text: qsTr("Delete this capture?"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 26; font.weight: Font.Bold }
+            Text { renderType: Text.CurveRendering; width: parent.width; text: root.pendingDelete ? root.pendingDelete.fileName : ""; elide: Text.ElideMiddle; color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 14 }
             Row {
                 spacing: 10
                 GlassButton { id: keepButton; width: 240; text: qsTr("Keep capture"); primary: true; KeyNavigation.right: deleteButton; onClicked: { root.pendingDelete = null; mediaGrid.forceActiveFocus() } }

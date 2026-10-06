@@ -11,7 +11,7 @@ Column {
     readonly property var variant: game && (game.variants || [])[Number(game.selectedVariantIndex || 0)]
     readonly property bool owned: Boolean(variant) && ["MANUAL", "PLATFORM_SYNC"].indexOf(variant.libraryStatus) >= 0
     spacing: DesktopTokens.px(8)
-    Text {
+    Text { renderType: Text.CurveRendering;
         width: parent.width
         objectName: "cloudLibraryStatus"
         text: I18n.source(ShellStore.cloudMutationMessage || ShellStore.selectedLaunchDecision.message || "", I18n.revision)
@@ -80,7 +80,7 @@ Column {
         closePolicy: Popup.CloseOnEscape
         onClosed: ShellStore.ownershipConfirmation = null
         background: Rectangle { color: Theme.shell; radius: DesktopTokens.px(16); border.width: 0; border.color: Theme.seam }
-        header: Label {
+        header: Label { renderType: Text.CurveRendering;
             text: confirmation.title
             color: Theme.label
             font.family: Theme.bodyFont
@@ -91,7 +91,7 @@ Column {
         }
         contentItem: Column {
             spacing: DesktopTokens.px(16)
-            Text {
+            Text { renderType: Text.CurveRendering;
                 width: parent.width
                 wrapMode: Text.WordWrap
                 color: Theme.label

@@ -99,12 +99,12 @@ FocusScope {
         height: 520
         panelRadius: 40
         strong: true
-        color: "#10131C"
+        color: Theme.surface
         scale: root.opened ? 1 : 0.96
         transformOrigin: Item.Bottom
         Behavior on scale { NumberAnimation { duration: Theme.overlayDuration; easing.type: Easing.OutCubic } }
 
-        Text {
+        Text { renderType: Text.CurveRendering;
             x: 32; y: 24
             text: qsTr("Search the GeForce NOW library")
             color: Theme.label
@@ -112,7 +112,7 @@ FocusScope {
             font.pixelSize: 24
             font.weight: Font.Bold
         }
-        TextField {
+        TextField { renderType: TextInput.CurveRendering;
             id: queryField
             x: 32; y: 66
             width: parent.width - 64
@@ -161,7 +161,7 @@ FocusScope {
                     border.color: keyDelegate.highlighted ? Theme.focus : Theme.seam
                     border.width: keyDelegate.highlighted ? 3 : 1
                 }
-                contentItem: Text {
+                contentItem: Text { renderType: Text.CurveRendering;
                     text: modelData
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter

@@ -81,8 +81,8 @@ FocusScope {
         }
         Column {
             x: 38; y: parent.height - height - 38; spacing: 8
-            Text { text: (root.game.publisherName || root.game.developerName || "").toUpperCase() + (root.game.genres && root.game.genres.length ? (root.game.publisherName || root.game.developerName ? " · " : "") + root.game.genres.join(" · ").toUpperCase() : ""); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 14; font.weight: Font.Bold; font.letterSpacing: 0 }
-            Text { text: root.game.title; color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 52; font.weight: Font.Bold }
+            Text { renderType: Text.CurveRendering; text: (root.game.publisherName || root.game.developerName || "").toUpperCase() + (root.game.genres && root.game.genres.length ? (root.game.publisherName || root.game.developerName ? " · " : "") + root.game.genres.join(" · ").toUpperCase() : ""); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 14; font.weight: Font.Bold; font.letterSpacing: 0 }
+            Text { renderType: Text.CurveRendering; text: root.game.title; color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 52; font.weight: Font.Bold }
         }
         Rectangle {
             anchors.fill: parent
@@ -96,7 +96,7 @@ FocusScope {
 
     GlassPanel {
         x: 1146; y: 225; width: 560; height: 650; panelRadius: 34
-        Text {
+        Text { renderType: Text.CurveRendering;
             x: 28; y: 28; width: 504; height: 52
             wrapMode: Text.WordWrap; elide: Text.ElideRight; maximumLineCount: 2
             text: ShellStore.readinessNotice(root.game) || root.game.longDescription || root.game.description || qsTr("Stream this title from your GeForce NOW library with your controller, keyboard, or mouse.")
@@ -112,13 +112,13 @@ FocusScope {
                 ]
                 Rectangle { required property var modelData; width: (504 - 20) / 3; height: 72; radius: Theme.radiusLarge; color: Theme.glassStrong
                     Column { anchors.left: parent.left; anchors.leftMargin: 16; anchors.verticalCenter: parent.verticalCenter; spacing: 2
-                        Text { text: modelData.value; color: modelData.label === qsTr("Last played") ? Theme.mint : Theme.label; font.family: Theme.bodyFont; font.pixelSize: 24; font.weight: Font.Bold }
-                        Text { text: modelData.label; color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 11; font.weight: Font.Bold; font.letterSpacing: 0 }
+                        Text { renderType: Text.CurveRendering; text: modelData.value; color: modelData.label === qsTr("Last played") ? Theme.mint : Theme.label; font.family: Theme.bodyFont; font.pixelSize: 24; font.weight: Font.Bold }
+                        Text { renderType: Text.CurveRendering; text: modelData.label; color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 11; font.weight: Font.Bold; font.letterSpacing: 0 }
                     }
                 }
             }
         }
-        Text { x: 28; y: 185; text: qsTr("Platform"); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 11; font.weight: Font.Bold; font.letterSpacing: 0 }
+        Text { renderType: Text.CurveRendering; x: 28; y: 185; text: qsTr("Platform"); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 11; font.weight: Font.Bold; font.letterSpacing: 0 }
         PlatformPicker {
             id: platformPicker
             x: 28; y: 205; width: 504
@@ -134,11 +134,11 @@ FocusScope {
                 GlassPanel {
                     required property string modelData
                     width: chipLabel.implicitWidth + 26; height: 34; panelRadius: 17; strong: true
-                    Text { id: chipLabel; anchors.centerIn: parent; text: modelData; color: modelData.indexOf("●") === 0 ? Theme.mint : Theme.label; font.family: Theme.bodyFont; font.pixelSize: 13; font.weight: Font.Bold }
+                    Text { renderType: Text.CurveRendering; id: chipLabel; anchors.centerIn: parent; text: modelData; color: modelData.indexOf("●") === 0 ? Theme.mint : Theme.label; font.family: Theme.bodyFont; font.pixelSize: 13; font.weight: Font.Bold }
                 }
             }
         }
-        Text {
+        Text { renderType: Text.CurveRendering;
             x: 40; y: 328
             text: qsTr("Change in Settings")
             color: Theme.textMuted

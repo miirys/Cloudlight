@@ -11,7 +11,7 @@ GlassPanel {
     height: 609
     panelRadius: 34
     strong: true
-    color: "#10131C"
+    color: Theme.surface
     focus: visible
     Accessible.name: qsTr("Social and local co-op")
     Accessible.role: Accessible.Pane
@@ -32,7 +32,7 @@ GlassPanel {
         height: 483
         panelRadius: 30
         strong: true
-        color: "#10131C"
+        color: Theme.surface
         Column {
             anchors.fill: parent
             anchors.margins: 19
@@ -47,13 +47,13 @@ GlassPanel {
                         GradientStop { position: 0; color: Theme.violet }
                         GradientStop { position: 1; color: Theme.shell }
                     }
-                    Text { anchors.centerIn: parent; text: qsTr("GFN"); color: Theme.mediaForeground; font.family: Theme.displayFont; font.pixelSize: 12; font.weight: Font.Bold }
+                    Text { renderType: Text.CurveRendering; anchors.centerIn: parent; text: qsTr("GFN"); color: Theme.mediaForeground; font.family: Theme.displayFont; font.pixelSize: 12; font.weight: Font.Bold }
                 }
                 Column {
                     anchors.verticalCenter: parent.verticalCenter
                     width: parent.width - 70
-                    Text { width: parent.width; text: qsTr("Provider social actions"); color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 16; font.weight: Font.Bold; elide: Text.ElideRight }
-                    Text { width: parent.width; text: root.capabilities.reason || qsTr("Friends API unavailable"); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 12; elide: Text.ElideRight }
+                    Text { renderType: Text.CurveRendering; width: parent.width; text: qsTr("Provider social actions"); color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 16; font.weight: Font.Bold; elide: Text.ElideRight }
+                    Text { renderType: Text.CurveRendering; width: parent.width; text: root.capabilities.reason || qsTr("Friends API unavailable"); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 12; elide: Text.ElideRight }
                 }
             }
             ListView {
@@ -84,7 +84,7 @@ GlassPanel {
                 Keys.onReturnPressed: if (currentItem) currentItem.clicked()
                 Keys.onEnterPressed: if (currentItem) currentItem.clicked()
             }
-            Text {
+            Text { renderType: Text.CurveRendering;
                 width: parent.width
                 height: 54
                 text: root.actionMessage || qsTr("Invite and friend actions require a provider-supported social API.")
@@ -106,7 +106,7 @@ GlassPanel {
             width: parent.width
             height: 48
             spacing: 10
-            Text {
+            Text { renderType: Text.CurveRendering;
                 anchors.verticalCenter: parent.verticalCenter
                 text: qsTr("Social & co-op")
                 color: Theme.label
@@ -118,7 +118,7 @@ GlassPanel {
                 anchors.verticalCenter: parent.verticalCenter
                 width: comingSoon.implicitWidth + 24; height: 30; panelRadius: 15
                 strong: true
-                Text {
+                Text { renderType: Text.CurveRendering;
                     id: comingSoon
                     anchors.centerIn: parent
                     text: qsTr("Coming soon")
@@ -143,16 +143,16 @@ GlassPanel {
                 Rectangle {
                     width: 48; height: 48; radius: 24
                     color: Theme.glassStrong
-                    Text { anchors.centerIn: parent; text: qsTr("◎"); color: Theme.focus; font.pixelSize: 24; font.weight: Font.Bold }
+                    Text { renderType: Text.CurveRendering; anchors.centerIn: parent; text: qsTr("◎"); color: Theme.focus; font.pixelSize: 24; font.weight: Font.Bold }
                 }
-                Text {
+                Text { renderType: Text.CurveRendering;
                     text: qsTr("GeForce NOW friends are unavailable")
                     color: Theme.label
                     font.family: Theme.bodyFont
                     font.pixelSize: 18
                     font.weight: Font.Bold
                 }
-                Text {
+                Text { renderType: Text.CurveRendering;
                     width: parent.width
                     text: root.capabilities.reason || qsTr("The provider does not expose a supported friends service.")
                     wrapMode: Text.WordWrap
@@ -164,7 +164,7 @@ GlassPanel {
             }
         }
 
-        Text {
+        Text { renderType: Text.CurveRendering;
             text: qsTr("Local controllers")
             color: Theme.textMuted
             font.family: Theme.bodyFont
@@ -189,9 +189,9 @@ GlassPanel {
                     spacing: 14
                     Rectangle {
                         width: 34; height: 34; radius: 17; color: Theme.mint
-                        Text { anchors.centerIn: parent; text: qsTr("P") + modelData.slot; color: Theme.contrastText(Theme.mint); font.weight: Font.Bold }
+                        Text { renderType: Text.CurveRendering; anchors.centerIn: parent; text: qsTr("P") + modelData.slot; color: Theme.contrastText(Theme.mint); font.weight: Font.Bold }
                     }
-                    Text {
+                    Text { renderType: Text.CurveRendering;
                         anchors.verticalCenter: parent.verticalCenter
                         width: 300
                         elide: Text.ElideRight
@@ -201,7 +201,7 @@ GlassPanel {
                         font.pixelSize: 15
                         font.weight: Font.Bold
                     }
-                    Text {
+                    Text { renderType: Text.CurveRendering;
                         anchors.verticalCenter: parent.verticalCenter
                         text: modelData.batteryPercent >= 0 ? modelData.batteryPercent + "%" : qsTr("Ready")
                         color: Theme.textMuted

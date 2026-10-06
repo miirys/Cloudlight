@@ -244,15 +244,17 @@ jobs:
           $captures = @(
             @{ name = "home"; args = @("--desktop", "--route", "home", "--smoke-paper-design") },
             @{ name = "library"; args = @("--desktop", "--route", "library", "--smoke-collections") },
-            @{ name = "signin"; args = @("--desktop", "--route", "sign-in") },
+            @{ name = "signin"; args = @("--desktop", "--smoke-paper-design", "--smoke-alliance-routing") },
+            @{ name = "signin-light"; args = @("--desktop", "--smoke-alliance-routing") },
             @{ name = "settings-stream"; args = @("--desktop", "--route", "settings", "--smoke-paper-design", "--smoke-settings-page", "stream") },
             @{ name = "settings-network"; args = @("--desktop", "--route", "settings", "--smoke-paper-design", "--smoke-settings-page", "network") },
             @{ name = "settings-appearance"; args = @("--desktop", "--route", "settings", "--smoke-paper-design", "--smoke-settings-page", "appearance") },
             @{ name = "settings-experimental"; args = @("--desktop", "--route", "settings", "--smoke-paper-design", "--smoke-settings-page", "experimental") },
-            @{ name = "console-home"; args = @("--console", "--route", "home") },
-            @{ name = "console-library"; args = @("--console", "--route", "library") },
-            @{ name = "console-settings"; args = @("--console", "--route", "settings") },
-            @{ name = "console-signin"; args = @("--console", "--route", "sign-in") },
+            @{ name = "console-home"; args = @("--console", "--route", "home", "--smoke-paper-design") },
+            @{ name = "console-library"; args = @("--console", "--route", "library", "--smoke-paper-design") },
+            @{ name = "console-settings"; args = @("--console", "--route", "settings", "--smoke-paper-design") },
+            @{ name = "console-signin"; args = @("--console", "--smoke-paper-design", "--smoke-alliance-routing") },
+            @{ name = "console-home-light"; args = @("--console", "--route", "home") },
             @{ name = "stream-stats"; args = @("--desktop", "--route", "stream", "--smoke-stream-stats", "--smoke-stats-expanded") },
             @{ name = "stream-menu"; args = @("--desktop", "--route", "stream", "--overlay", "desktop-stream-menu", "--smoke-stream-stats") }
           )

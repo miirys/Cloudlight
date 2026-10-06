@@ -68,14 +68,14 @@ FocusScope {
         height: 570
         panelRadius: 36
         strong: true
-        color: "#10131C"
+        color: Theme.surface
 
         Column {
             x: 24
             y: 24
             width: parent.width - 48
             spacing: 4
-            Text {
+            Text { renderType: Text.CurveRendering;
                 text: qsTr("Edit Home tile")
                 color: Theme.label
                 font.family: Theme.displayFont
@@ -83,7 +83,7 @@ FocusScope {
                 font.weight: Font.Bold
                 font.letterSpacing: 0
             }
-            Text {
+            Text { renderType: Text.CurveRendering;
                 width: 330
                 text: root.game
                     ? String(root.game.title || qsTr("Game")).toUpperCase()
@@ -104,7 +104,7 @@ FocusScope {
             height: 30
             radius: Theme.radiusLarge
             color: Theme.surfaceRaised
-            Text {
+            Text { renderType: Text.CurveRendering;
                 id: rightClickLabel
                 anchors.centerIn: parent
                 text: qsTr("Right-click")
@@ -174,7 +174,7 @@ FocusScope {
                         height: width
                         radius: index < 2 ? 10 : 9
                         color: modelData.color
-                        Text {
+                        Text { renderType: Text.CurveRendering;
                             anchors.centerIn: parent
                             text: modelData.icon
                             color: Theme.faceText
@@ -189,7 +189,7 @@ FocusScope {
                         anchors.verticalCenter: parent.verticalCenter
                         width: modelData.sizes ? 220 : parent.width - x - 70
                         spacing: 2
-                        Text {
+                        Text { renderType: Text.CurveRendering;
                             width: parent.width
                             text: modelData.title
                             color: action.highlighted ? Theme.faceText
@@ -199,11 +199,11 @@ FocusScope {
                             font.weight: Font.Bold
                             elide: Text.ElideRight
                         }
-                        Text {
+                        Text { renderType: Text.CurveRendering;
                             width: parent.width
                             visible: modelData.description.length > 0
                             text: modelData.description
-                            color: action.highlighted ? "#5C5C5C" : Theme.textMuted
+                            color: action.highlighted ? Theme.faceMuted : Theme.textMuted
                             font.family: Theme.bodyFont
                             font.pixelSize: 13
                             font.weight: Font.Bold
@@ -228,9 +228,9 @@ FocusScope {
                                     ? (action.highlighted ? Theme.faceText : Theme.face)
                                     : "transparent"
                                 border.color: root.tileSize === modelData ? "transparent"
-                                    : action.highlighted ? "#B0B0B0" : Theme.seam
+                                    : action.highlighted ? Theme.faceSeam : Theme.seam
                                 border.width: 1
-                                Text {
+                                Text { renderType: Text.CurveRendering;
                                     id: sizeLabel
                                     anchors.centerIn: parent
                                     text: modelData === "wide" ? qsTr("Wide") : qsTr("Square")
@@ -256,7 +256,7 @@ FocusScope {
                         glyphSize: 28
                     }
 
-                    Text {
+                    Text { renderType: Text.CurveRendering;
                         visible: index === 2
                         anchors.right: parent.right
                         anchors.rightMargin: 18
@@ -267,13 +267,13 @@ FocusScope {
                         font.weight: Font.Bold
                     }
 
-                    Text {
+                    Text { renderType: Text.CurveRendering;
                         visible: index === 3
                         anchors.right: parent.right
                         anchors.rightMargin: 16
                         anchors.verticalCenter: parent.verticalCenter
                         text: qsTr("Still available in Library")
-                        color: action.highlighted ? "#5C5C5C" : Theme.textMuted
+                        color: action.highlighted ? Theme.faceMuted : Theme.textMuted
                         font.family: Theme.bodyFont
                         font.pixelSize: 13
                         font.weight: Font.Bold
@@ -298,7 +298,7 @@ FocusScope {
             ControllerGlyph { glyph: "B"; label: qsTr("Close"); glyphSize: 24 }
         }
 
-        Text {
+        Text { renderType: Text.CurveRendering;
             anchors.right: parent.right
             anchors.rightMargin: 30
             y: 491

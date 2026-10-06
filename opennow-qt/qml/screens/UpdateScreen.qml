@@ -20,7 +20,7 @@ FocusScope {
         title: root.state.downloadedVersion ? qsTr("Install %1 and restart").arg(root.state.downloadedVersion) : qsTr("Install and restart")
         standardButtons: Dialog.Ok | Dialog.Cancel
         onAccepted: ShellStore.installUpdate(true)
-        contentItem: Label {
+        contentItem: Label { renderType: Text.CurveRendering;
             wrapMode: Text.WordWrap
             text: qsTr("Cloudlight will prepare the verified update, close, replace this installation, and restart. Continue?")
         }
@@ -35,15 +35,15 @@ FocusScope {
                 width: parent.width; height: 62; spacing: 20
                 Rectangle {
                     width: 62; height: 62; radius: Theme.radiusLarge; color: root.available ? Theme.mint : Theme.violet
-                    Text { anchors.centerIn: parent; text: root.state.status === "succeeded" ? "✓" : root.available ? "↑" : "↓"; color: Theme.contrastText(root.available ? Theme.mint : Theme.violet); font.pixelSize: 30; font.weight: Font.Bold }
+                    Text { renderType: Text.CurveRendering; anchors.centerIn: parent; text: root.state.status === "succeeded" ? "✓" : root.available ? "↑" : "↓"; color: Theme.contrastText(root.available ? Theme.mint : Theme.violet); font.pixelSize: 30; font.weight: Font.Bold }
                 }
                 Column {
                     anchors.verticalCenter: parent.verticalCenter; spacing: 3
-                    Text { text: root.available ? qsTr("Update available") : qsTr("Cloudlight updates"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 31; font.weight: Font.Bold }
-                    Text { text: qsTr("Installed version %1 · %2 channel").arg(root.state.currentVersion || qsTr("unknown")).arg(ShellStore.settings.updateChannel === "nightly" ? qsTr("Nightly") : qsTr("Stable")); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 12 }
+                    Text { renderType: Text.CurveRendering; text: root.available ? qsTr("Update available") : qsTr("Cloudlight updates"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 31; font.weight: Font.Bold }
+                    Text { renderType: Text.CurveRendering; text: qsTr("Installed version %1 · %2 channel").arg(root.state.currentVersion || qsTr("unknown")).arg(ShellStore.settings.updateChannel === "nightly" ? qsTr("Nightly") : qsTr("Stable")); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 12 }
                 }
             }
-            Text {
+            Text { renderType: Text.CurveRendering;
                 width: parent.width; wrapMode: Text.WordWrap
                 text: ShellStore.updaterError || root.state.message || qsTr("Check GitHub Releases for a newer Cloudlight build.")
                 color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 17
@@ -56,7 +56,7 @@ FocusScope {
                 indeterminate: true
                 Accessible.name: root.state.message || qsTr("Update in progress")
             }
-            Text {
+            Text { renderType: Text.CurveRendering;
                 width: parent.width; wrapMode: Text.WordWrap
                 visible: !ShellStore.updaterSessionSafe
                 text: qsTr("End your streaming session before installing an update. Background updates will wait.")

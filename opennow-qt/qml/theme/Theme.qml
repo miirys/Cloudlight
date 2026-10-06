@@ -43,8 +43,12 @@ QtObject {
     readonly property color surfaceHover: tone.hover || (lightMode ? "#E0E0E0" : "#2E2E2E")
     readonly property color surfaceStrong: tone.strong || (lightMode ? "#D4D4D4" : "#383838")
 
-    readonly property color face: lightMode ? "#141414" : "#FFFFFF"
-    readonly property color faceText: lightMode ? "#FFFFFF" : "#141414"
+    // Console selection (the highlighted row, pill or tile): the pack accent,
+    // as on desktop, so both shells share one interaction colour.
+    readonly property color face: focus
+    readonly property color faceText: focusText
+    readonly property color faceMuted: Qt.rgba(faceText.r, faceText.g, faceText.b, 0.72)
+    readonly property color faceSeam: Qt.rgba(faceText.r, faceText.g, faceText.b, 0.4)
     // Artwork scrims and dark store-colour fallbacks always need a light foreground,
     // independently of the shell's light/dark mode.
     readonly property color mediaForeground: "#FFFFFF"

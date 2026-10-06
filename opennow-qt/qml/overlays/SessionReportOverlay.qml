@@ -43,9 +43,9 @@ FocusScope {
             Column {
                 id: reportContents
                 width: parent.width; spacing: 18
-                Text { text: qsTr("Session complete"); color: Theme.mint; font.family: Theme.bodyFont; font.pixelSize: 13; font.weight: Font.Bold; font.letterSpacing: 0 }
-                Text { width: parent.width; text: root.report.gameTitle || qsTr("GeForce NOW"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 36; font.weight: Font.Bold; elide: Text.ElideRight }
-                Text { text: qsTr("Played for %1").arg(root.duration(root.report.durationMs)); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 18 }
+                Text { renderType: Text.CurveRendering; text: qsTr("Session complete"); color: Theme.mint; font.family: Theme.bodyFont; font.pixelSize: 13; font.weight: Font.Bold; font.letterSpacing: 0 }
+                Text { renderType: Text.CurveRendering; width: parent.width; text: root.report.gameTitle || qsTr("GeForce NOW"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 36; font.weight: Font.Bold; elide: Text.ElideRight }
+                Text { renderType: Text.CurveRendering; text: qsTr("Played for %1").arg(root.duration(root.report.durationMs)); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 18 }
                 Grid {
                     id: reportGrid
                     width: parent.width; columns: 3; columnSpacing: 12; rowSpacing: 12
@@ -67,18 +67,18 @@ FocusScope {
                             width: (reportGrid.width - 24) / 3; height: 92; panelRadius: 22
                             Column {
                                 anchors.centerIn: parent; spacing: 5
-                                Text { anchors.horizontalCenter: parent.horizontalCenter; text: reportCard.modelData.label; color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 12 }
-                                Text { anchors.horizontalCenter: parent.horizontalCenter; text: reportCard.modelData.value; color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 18; font.weight: Font.Bold }
+                                Text { renderType: Text.CurveRendering; anchors.horizontalCenter: parent.horizontalCenter; text: reportCard.modelData.label; color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 12 }
+                                Text { renderType: Text.CurveRendering; anchors.horizontalCenter: parent.horizontalCenter; text: reportCard.modelData.value; color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 18; font.weight: Font.Bold }
                             }
                         }
                     }
                 }
-                Text {
+                Text { renderType: Text.CurveRendering;
                     visible: Number(root.report.drops && root.report.drops.otherQueueDropCount || 0) > 0
                     text: qsTr("Unclassified drops: %1").arg(root.dropValue("otherQueueDropCount", qsTr("items")))
                     color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 15
                 }
-                Text {
+                Text { renderType: Text.CurveRendering;
                     width: parent.width
                     text: !root.errorCountsKnown
                         ? qsTr("Error telemetry was unavailable for this session.")

@@ -48,7 +48,7 @@ ItemDelegate {
             y: parent.height - height - 14
             width: root.session ? parent.width - 180 : parent.width - 28
             spacing: 3
-            Text {
+            Text { renderType: Text.CurveRendering;
                 visible: root.eyebrow.length > 0
                 text: root.eyebrow
                 color: Theme.mediaMuted
@@ -57,7 +57,7 @@ ItemDelegate {
                 font.weight: Font.Bold
                 font.letterSpacing: 0
             }
-            Text {
+            Text { renderType: Text.CurveRendering;
                 width: parent.width
                 visible: ShellStore.settings.showTileLabels !== false
                 text: root.title
@@ -78,7 +78,7 @@ ItemDelegate {
             Row {
                 anchors.centerIn: parent; spacing: 8
                 ControllerGlyph { glyph: "A"; label: ""; glyphSize: 24; glyphColor: Theme.faceText }
-                Text { id: resumeText; anchors.verticalCenter: parent.verticalCenter; text: qsTr("Jump back in!"); color: Theme.faceText; font.family: Theme.bodyFont; font.pixelSize: 14; font.weight: Font.Bold }
+                Text { renderType: Text.CurveRendering; id: resumeText; anchors.verticalCenter: parent.verticalCenter; text: qsTr("Jump back in!"); color: Theme.faceText; font.family: Theme.bodyFont; font.pixelSize: 14; font.weight: Font.Bold }
             }
         }
 
@@ -87,9 +87,9 @@ ItemDelegate {
             anchors.centerIn: parent
             spacing: 10
             Rectangle { anchors.horizontalCenter: parent.horizontalCenter; width: 38; height: 38; radius: 19; color: Theme.surfaceStrong
-                Text { anchors.centerIn: parent; text: "+"; color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 30; font.weight: Font.Bold }
+                Text { renderType: Text.CurveRendering; anchors.centerIn: parent; text: "+"; color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 30; font.weight: Font.Bold }
             }
-            Text { anchors.horizontalCenter: parent.horizontalCenter; text: qsTr("Add a game"); color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 16; font.weight: Font.DemiBold }
+            Text { renderType: Text.CurveRendering; anchors.horizontalCenter: parent.horizontalCenter; text: qsTr("Add a game"); color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 16; font.weight: Font.DemiBold }
         }
     }
 

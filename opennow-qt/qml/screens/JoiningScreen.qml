@@ -17,8 +17,8 @@ FocusScope {
             anchors.fill: parent
             anchors.margins: 40
             spacing: 22
-            Text { text: qsTr("Bring player two online"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 38; font.weight: Font.Bold }
-            Text {
+            Text { renderType: Text.CurveRendering; text: qsTr("Bring player two online"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 38; font.weight: Font.Bold }
+            Text { renderType: Text.CurveRendering;
                 width: parent.width
                 text: qsTr("Cloudlight forwards up to four standard controllers directly to the active GeForce NOW session. Connect a second controller, then return to the game.")
                 wrapMode: Text.WordWrap
@@ -43,17 +43,17 @@ FocusScope {
                                 anchors.verticalCenter: parent.verticalCenter
                                 width: 48; height: 48; radius: 24
                                 color: slotCard.controller ? Theme.mint : Theme.focus
-                                Text { anchors.centerIn: parent; text: qsTr("P") + (slotCard.modelData + 1); color: Theme.contrastText(slotCard.controller ? Theme.mint : Theme.focus); font.weight: Font.Bold }
+                                Text { renderType: Text.CurveRendering; anchors.centerIn: parent; text: qsTr("P") + (slotCard.modelData + 1); color: Theme.contrastText(slotCard.controller ? Theme.mint : Theme.focus); font.weight: Font.Bold }
                             }
                             Column {
                                 anchors.verticalCenter: parent.verticalCenter
                                 width: 350
-                                Text {
+                                Text { renderType: Text.CurveRendering;
                                     width: parent.width; elide: Text.ElideRight
                                     text: slotCard.controller ? slotCard.controller.name : qsTr("Waiting for controller")
                                     color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 17; font.weight: Font.Bold
                                 }
-                                Text {
+                                Text { renderType: Text.CurveRendering;
                                     text: slotCard.controller ? qsTr("Connected and ready") : qsTr("Connect or wake a controller")
                                     color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 14
                                 }
@@ -66,8 +66,8 @@ FocusScope {
                 width: parent.width; height: 142; panelRadius: 24
                 Column {
                     anchors.fill: parent; anchors.margins: 20; spacing: 8
-                    Text { text: root.playerTwoReady ? qsTr("Player two is ready") : qsTr("Waiting for player two"); color: root.playerTwoReady ? Theme.mint : Theme.focus; font.family: Theme.bodyFont; font.pixelSize: 18; font.weight: Font.Bold }
-                    Text {
+                    Text { renderType: Text.CurveRendering; text: root.playerTwoReady ? qsTr("Player two is ready") : qsTr("Waiting for player two"); color: root.playerTwoReady ? Theme.mint : Theme.focus; font.family: Theme.bodyFont; font.pixelSize: 18; font.weight: Font.Bold }
+                    Text { renderType: Text.CurveRendering;
                         width: parent.width
                         text: root.playerTwoReady
                               ? qsTr("Both controllers will be sent with distinct player slots. The Guide button remains reserved for the Cloudlight overlay.")

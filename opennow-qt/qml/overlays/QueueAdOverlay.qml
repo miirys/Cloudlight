@@ -62,8 +62,8 @@ FocusScope {
         Column {
             anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom
             anchors.margins: 42; spacing: 10
-            Text { text: qsTr("Your rig is getting ready"); color: Theme.mint; font.family: Theme.bodyFont; font.pixelSize: 12; font.weight: Font.Bold; font.letterSpacing: 0 }
-            Text { text: root.ad ? (root.ad.title || root.adState.message || qsTr("A short message while you wait")) : qsTr("Preparing your session"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 30; font.weight: Font.Bold }
+            Text { renderType: Text.CurveRendering; text: qsTr("Your rig is getting ready"); color: Theme.mint; font.family: Theme.bodyFont; font.pixelSize: 12; font.weight: Font.Bold; font.letterSpacing: 0 }
+            Text { renderType: Text.CurveRendering; text: root.ad ? (root.ad.title || root.adState.message || qsTr("A short message while you wait")) : qsTr("Preparing your session"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 30; font.weight: Font.Bold }
             ProgressBar { width: parent.width; from: 0; to: Math.max(1, player.duration); value: player.position }
         }
     }

@@ -117,7 +117,7 @@ FocusScope {
                     radius: Theme.radiusLarge
                     color: root.filterIndex === index ? Theme.face : Theme.surfaceRaised
                     border.color: root.filterIndex === index ? "transparent" : Theme.seam
-                    Text {
+                    Text { renderType: Text.CurveRendering;
                         id: filterLabel
                         anchors.centerIn: parent
                         text: root.filterLabels[index] + (index === 0 ? " " + root.themes.length : "")
@@ -136,7 +136,7 @@ FocusScope {
                 height: 40
                 panelRadius: 20
                 strong: true
-                Text {
+                Text { renderType: Text.CurveRendering;
                     anchors.centerIn: parent
                     text: qsTr("Built in")
                     color: Theme.label
@@ -206,7 +206,7 @@ FocusScope {
                                 anchors.margins: 10
                                 height: 22
                                 spacing: 6
-                                Rectangle { width: 18; height: 18; radius: 9; color: modelData.accent; Text { anchors.centerIn: parent; text: qsTr("Z"); color: "#141414"; font.pixelSize: 8; font.weight: Font.Bold } }
+                                Rectangle { width: 18; height: 18; radius: 9; color: modelData.accent; Text { renderType: Text.CurveRendering; anchors.centerIn: parent; text: qsTr("Z"); color: "#141414"; font.pixelSize: 8; font.weight: Font.Bold } }
                                 Rectangle { width: Math.max(54, preview.width - 150); height: 18; radius: 9; color: Theme.surfaceStrong }
                                 Rectangle { width: 62; height: 18; radius: 9; color: Theme.surfaceStrong }
                             }
@@ -243,8 +243,8 @@ FocusScope {
                             anchors.bottom: parent.bottom
                             anchors.bottomMargin: 10
                             spacing: 1
-                            Text { text: modelData.name; color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 17; font.weight: Font.Bold }
-                            Text { text: qsTr("BY @") + modelData.author + " · " + I18n.source(modelData.detail, I18n.revision); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 10; font.letterSpacing: 0 }
+                            Text { renderType: Text.CurveRendering; text: modelData.name; color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 17; font.weight: Font.Bold }
+                            Text { renderType: Text.CurveRendering; text: qsTr("BY @") + modelData.author + " · " + I18n.source(modelData.detail, I18n.revision); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 10; font.letterSpacing: 0 }
                         }
                         Rectangle {
                             anchors.right: parent.right
@@ -256,7 +256,7 @@ FocusScope {
                             radius: Theme.radiusLarge
                             color: ShellStore.settings.themePack === modelData.id ? modelData.accent : Theme.surfaceRaised
                             border.color: Theme.seam
-                            Text {
+                            Text { renderType: Text.CurveRendering;
                                 id: installedText
                                 anchors.centerIn: parent
                                 text: ShellStore.settings.themePack === modelData.id ? qsTr("✓ Active") : qsTr("Apply")
@@ -283,7 +283,7 @@ FocusScope {
                 color: "transparent"
                 border.color: "transparent"
                 Rectangle { anchors.left: parent.left; anchors.right: parent.right; height: 1; color: Theme.seam }
-                Text {
+                Text { renderType: Text.CurveRendering;
                     anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
                     text: root.statusMessage + qsTr("  ·  Built-in Cloudlight palettes")

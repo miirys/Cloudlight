@@ -30,7 +30,7 @@ FocusScope {
                 anchors.margins: 44
                 spacing: 22
 
-                Text {
+                Text { renderType: Text.CurveRendering;
                     width: parent.width
                     text: root.connected ? qsTr("You’re ready to play.") : qsTr("Bring your games to the big screen.")
                     color: Theme.label
@@ -38,7 +38,7 @@ FocusScope {
                     font.pixelSize: 38
                     font.weight: Font.Bold
                 }
-                Text {
+                Text { renderType: Text.CurveRendering;
                     width: parent.width
                     wrapMode: Text.WordWrap
                     text: root.connected
@@ -109,7 +109,7 @@ FocusScope {
                 Row {
                     spacing: 12
                     Rectangle { width: 9; height: 9; radius: 5; color: ShellStore.authState === "error" ? Theme.coral : Theme.mint }
-                    Text {
+                    Text { renderType: Text.CurveRendering;
                         width: 590
                         text: ShellStore.authState === "error" ? ShellStore.authMessage
                               : ShellStore.authMessage || (ShellStore.ready ? qsTr("No password is entered in Cloudlight") : qsTr("Starting the secure Cloudlight core…"))
@@ -159,11 +159,11 @@ FocusScope {
                         anchors.centerIn: parent
                         spacing: 10
                         visible: root.qrSize === 0
-                        Text { anchors.horizontalCenter: parent.horizontalCenter; text: root.connected ? "✓" : "◎"; color: "#111827"; font.pixelSize: 72; font.weight: Font.Bold }
-                        Text { anchors.horizontalCenter: parent.horizontalCenter; text: root.connected ? qsTr("Connected") : qsTr("Ready when you are"); color: "#111827"; font.family: Theme.bodyFont; font.pixelSize: 16; font.weight: Font.Bold }
+                        Text { renderType: Text.CurveRendering; anchors.horizontalCenter: parent.horizontalCenter; text: root.connected ? "✓" : "◎"; color: "#111827"; font.pixelSize: 72; font.weight: Font.Bold }
+                        Text { renderType: Text.CurveRendering; anchors.horizontalCenter: parent.horizontalCenter; text: root.connected ? qsTr("Connected") : qsTr("Ready when you are"); color: "#111827"; font.family: Theme.bodyFont; font.pixelSize: 16; font.weight: Font.Bold }
                     }
                 }
-                Text {
+                Text { renderType: Text.CurveRendering;
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: root.challenge ? root.challenge.userCode : root.connected ? ShellStore.authSession.user.membershipTier : qsTr("Scan with your phone")
                     color: Theme.label
@@ -172,7 +172,7 @@ FocusScope {
                     font.weight: Font.Bold
                     font.letterSpacing: 0
                 }
-                Text {
+                Text { renderType: Text.CurveRendering;
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: root.challenge ? qsTr("Expires in %1 · %2").arg(root.timeLeft).arg(root.challenge.verificationUri.replace(/^https?:\/\//, ""))
                                          : root.connected ? qsTr("GeForce NOW account") : qsTr("A real QR code appears after sign-in starts")

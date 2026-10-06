@@ -25,7 +25,7 @@ Rectangle {
         anchors.margins: 16
         spacing: 6
 
-        Text {
+        Text { renderType: Text.CurveRendering;
             id: heading
             width: parent.width
             text: qsTr("Relative mouse input unavailable")
@@ -34,7 +34,7 @@ Rectangle {
             color: "#E8A33D"
             wrapMode: Text.Wrap
         }
-        Text {
+        Text { renderType: Text.CurveRendering;
             id: detail
             width: parent.width
             text: root.message + "\n" + qsTr("Video and audio are still running.")

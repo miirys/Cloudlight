@@ -18,7 +18,7 @@ Dialog {
     onAccepted: dismissed()
     onRejected: dismissed()
 
-    contentItem: Label {
+    contentItem: Label { renderType: Text.CurveRendering;
         text: root.failureMessage
         textFormat: Text.PlainText
         wrapMode: Text.WordWrap

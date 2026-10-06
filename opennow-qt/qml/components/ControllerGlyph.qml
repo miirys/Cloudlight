@@ -32,7 +32,7 @@ Row {
             radius: root.glyph.length > 2 ? 7 : root.glyphSize / 2
             color: root.glyphColor
 
-            Text {
+            Text { renderType: Text.CurveRendering;
                 anchors.centerIn: parent
                 text: root.glyph
                 color: Theme.contrastText(root.glyphColor)
@@ -43,7 +43,7 @@ Row {
         }
     }
 
-    Text {
+    Text { renderType: Text.CurveRendering;
         visible: root.label !== ""
         anchors.verticalCenter: parent.verticalCenter
         text: I18n.source(root.label, I18n.revision)

@@ -53,7 +53,7 @@ Column {
             width: 8; height: 8; radius: 4
             color: "#F2665B"
         }
-        Text {
+        Text { renderType: Text.CurveRendering;
             id: recordingText
             x: 30; anchors.verticalCenter: parent.verticalCenter
             width: parent.width - 44
@@ -79,7 +79,7 @@ Column {
         Accessible.role: Accessible.StaticText
         Accessible.name: root.notice
 
-        Text {
+        Text { renderType: Text.CurveRendering;
             id: noticeText
             x: 16; y: 12
             width: parent.width - 32

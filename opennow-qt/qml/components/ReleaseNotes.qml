@@ -4,7 +4,7 @@ import OpenNOW
 
 // Use Qt's document renderer for headings, lists, tables, links and code blocks.
 // Keep release content selectable without allowing it to edit app state.
-TextArea {
+TextArea { renderType: TextEdit.CurveRendering;
     objectName: "releaseNotesDocument"
     readOnly: true
     selectByMouse: true

@@ -37,7 +37,7 @@ ItemDelegate {
             storeGlyph: root.storeGlyph
             storeColor: root.storeColor
         }
-        Text {
+        Text { renderType: Text.CurveRendering;
             x: 12; y: parent.height - height - 12; width: parent.width - 24
             visible: root.showLabel
             text: root.title

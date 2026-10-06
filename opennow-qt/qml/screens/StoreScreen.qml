@@ -60,7 +60,7 @@ FocusScope {
             anchors.fill: parent
             anchors.margins: 28
 
-            Text {
+            Text { renderType: Text.CurveRendering;
                 text: qsTr("Available games")
                 color: Theme.label
                 font.family: Theme.displayFont
@@ -69,7 +69,7 @@ FocusScope {
                 font.letterSpacing: 0
             }
 
-            Text {
+            Text { renderType: Text.CurveRendering;
                 anchors.right: parent.right
                 text: ShellStore.storeTotalCount > 0
                     ? qsTr("%1 games").arg(ShellStore.storeTotalCount)
@@ -133,7 +133,7 @@ FocusScope {
                 id: pageStatus
                 anchors.bottom: parent.bottom; width: parent.width; spacing: 16
                 visible: root.games.length > 0 && (ShellStore.storeLoading || ShellStore.storeHasMore || ShellStore.storeError !== "" || ShellStore.storeWarning !== "")
-                Text {
+                Text { renderType: Text.CurveRendering;
                     width: parent.width - 220
                     text: ShellStore.storeError || ShellStore.storeWarning || qsTr("Loaded %1 of %2 games").arg(root.games.length).arg(ShellStore.storeTotalCount)
                     color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 16
@@ -150,7 +150,7 @@ FocusScope {
                 width: Math.min(parent.width - 48, 800)
                 spacing: 12
                 visible: root.games.length === 0
-                Text {
+                Text { renderType: Text.CurveRendering;
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: ShellStore.storeState === "error" ? qsTr("Catalog unavailable")
                         : ShellStore.storeState === "ready" ? qsTr("No games match these filters") : qsTr("Loading the live catalog…")
@@ -167,7 +167,7 @@ FocusScope {
                     primary: true
                     onClicked: ShellStore.retryStore()
                 }
-                Text {
+                Text { renderType: Text.CurveRendering;
                     width: parent.width; text: ShellStore.storeError; visible: text !== ""
                     horizontalAlignment: Text.AlignHCenter; wrapMode: Text.Wrap; textFormat: Text.PlainText
                     color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 16

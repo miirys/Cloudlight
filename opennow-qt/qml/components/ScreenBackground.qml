@@ -40,8 +40,10 @@ Rectangle {
     }
     Rectangle {
         anchors.fill: parent
+        // Per-screen colour washes are retired: every screen sits on the
+        // theme's own shell so console and desktop read as one app.
         color: root.tint
-        opacity: 0.12
+        opacity: 0
     }
     Rectangle {
         anchors.left: parent.left

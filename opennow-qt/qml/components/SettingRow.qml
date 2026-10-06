@@ -45,7 +45,7 @@ ItemDelegate {
             anchors.right: trailing.left
             anchors.rightMargin: 24
             anchors.verticalCenter: parent.verticalCenter
-            Text {
+            Text { renderType: Text.CurveRendering;
                 width: parent.width
                 text: I18n.source(root.title, I18n.revision)
                 color: Theme.label
@@ -54,7 +54,7 @@ ItemDelegate {
                 font.weight: Font.DemiBold
                 elide: Text.ElideRight
             }
-            Text {
+            Text { renderType: Text.CurveRendering;
                 width: parent.width
                 visible: root.description.length > 0
                 text: I18n.source(root.description, I18n.revision)
@@ -79,7 +79,7 @@ ItemDelegate {
                  : valuePill.width
             height: 42
 
-            Text {
+            Text { renderType: Text.CurveRendering;
                 id: infoValue
                 visible: root.controlType === "info"
                 anchors.right: parent.right
@@ -113,7 +113,7 @@ ItemDelegate {
                         border.color: index === root.selectedChoice ? "transparent" : Theme.seam
                         border.width: index === root.selectedChoice ? 0 : 1
                         opacity: available ? 1 : 0.38
-                        Text {
+                        Text { renderType: Text.CurveRendering;
                             id: segmentLabel
                             anchors.centerIn: parent
                             text: I18n.source(modelData, I18n.revision)
@@ -160,7 +160,7 @@ ItemDelegate {
                         Behavior on width { NumberAnimation { duration: Theme.focusDuration; easing.type: Easing.OutCubic } }
                     }
                 }
-                Text {
+                Text { renderType: Text.CurveRendering;
                     width: 84
                     text: I18n.source(root.value, I18n.revision)
                     color: Theme.label
@@ -198,7 +198,7 @@ ItemDelegate {
                 color: Theme.surfaceStrong
                 border.color: root.rowData.danger ? Theme.coral : Theme.seam
                 border.width: 1
-                Text {
+                Text { renderType: Text.CurveRendering;
                     id: valueLabel
                     visible: !root.rowData.shortcut
                     anchors.left: parent.left
@@ -220,7 +220,7 @@ ItemDelegate {
                     shortcut: visible ? root.value : ""
                     keySize: 26
                 }
-                Text {
+                Text { renderType: Text.CurveRendering;
                     id: chevron
                     visible: root.controlType === "dropdown"
                     anchors.right: parent.right
@@ -245,24 +245,24 @@ ItemDelegate {
                 width: 88; height: 88; radius: 44
                 color: Theme.violet
                 border.color: Theme.face; border.width: 3
-                Text { anchors.centerIn: parent; text: root.rowData.initial || "O"; color: Theme.faceText; font.family: Theme.displayFont; font.pixelSize: 34; font.weight: Font.Bold }
+                Text { renderType: Text.CurveRendering; anchors.centerIn: parent; text: root.rowData.initial || "O"; color: Theme.faceText; font.family: Theme.displayFont; font.pixelSize: 34; font.weight: Font.Bold }
             }
             Column {
                 x: 112; anchors.verticalCenter: parent.verticalCenter; width: parent.width - 340; spacing: 5
                 Row {
                     spacing: 12
-                    Text { text: root.rowData.name || qsTr("Cloudlight profile"); color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 24; font.weight: Font.Bold }
+                    Text { renderType: Text.CurveRendering; text: root.rowData.name || qsTr("Cloudlight profile"); color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 24; font.weight: Font.Bold }
                     Rectangle { anchors.verticalCenter: parent.verticalCenter; width: tierText.implicitWidth + 18; height: 28; radius: Theme.radiusLarge; color: Theme.yellow
-                        Text { id: tierText; anchors.centerIn: parent; text: root.rowData.tier || "—"; color: Theme.faceText; font.family: Theme.bodyFont; font.pixelSize: 12; font.weight: Font.Bold }
+                        Text { renderType: Text.CurveRendering; id: tierText; anchors.centerIn: parent; text: root.rowData.tier || "—"; color: Theme.faceText; font.family: Theme.bodyFont; font.pixelSize: 12; font.weight: Font.Bold }
                     }
                 }
-                Text { width: parent.width; text: root.rowData.subtitle || qsTr("NVIDIA account"); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 15; font.weight: Font.DemiBold; elide: Text.ElideRight }
-                Text { width: parent.width; text: root.rowData.meta || qsTr("This PC"); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 13; font.weight: Font.DemiBold; elide: Text.ElideRight }
+                Text { renderType: Text.CurveRendering; width: parent.width; text: root.rowData.subtitle || qsTr("NVIDIA account"); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 15; font.weight: Font.DemiBold; elide: Text.ElideRight }
+                Text { renderType: Text.CurveRendering; width: parent.width; text: root.rowData.meta || qsTr("This PC"); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 13; font.weight: Font.DemiBold; elide: Text.ElideRight }
             }
             Rectangle {
                 anchors.right: parent.right; anchors.rightMargin: 10; anchors.verticalCenter: parent.verticalCenter
                 width: 194; height: 42; radius: Theme.radiusLarge; color: Theme.glassStrong; border.color: Theme.seam; border.width: 1
-                Text { anchors.centerIn: parent; text: root.rowData.v || qsTr("Manage account"); color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 15; font.weight: Font.DemiBold }
+                Text { renderType: Text.CurveRendering; anchors.centerIn: parent; text: root.rowData.v || qsTr("Manage account"); color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 15; font.weight: Font.DemiBold }
             }
         }
 
@@ -277,15 +277,15 @@ ItemDelegate {
                     width: (root.width - 12) / 2; height: 84; anchors.verticalCenter: parent.verticalCenter
                     radius: Theme.radiusLarge; color: Theme.glassStrong; border.color: Theme.seam; border.width: 1
                     Rectangle { x: 16; anchors.verticalCenter: parent.verticalCenter; width: 48; height: 48; radius: 24; color: modelData.connected ? Theme.face : Theme.glass
-                        Text { anchors.centerIn: parent; text: String(modelData.slot || "2"); color: modelData.connected ? Theme.faceText : Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 18; font.weight: Font.Bold }
+                        Text { renderType: Text.CurveRendering; anchors.centerIn: parent; text: String(modelData.slot || "2"); color: modelData.connected ? Theme.faceText : Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 18; font.weight: Font.Bold }
                     }
                     ControllerGlyph { x: 76; anchors.verticalCenter: parent.verticalCenter; glyph: "controller"; label: ""; glyphSize: 36; opacity: modelData.connected ? 1 : 0.35 }
                     Column { x: 128; anchors.verticalCenter: parent.verticalCenter; width: parent.width - 220
-                        Text { width: parent.width; text: modelData.name; color: modelData.connected ? Theme.label : Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 17; font.weight: Font.DemiBold; elide: Text.ElideRight }
-                        Text { width: parent.width; text: modelData.connected ? qsTr("Connected") : qsTr("Press a button to join"); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 13; font.weight: Font.DemiBold; elide: Text.ElideRight }
+                        Text { renderType: Text.CurveRendering; width: parent.width; text: modelData.name; color: modelData.connected ? Theme.label : Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 17; font.weight: Font.DemiBold; elide: Text.ElideRight }
+                        Text { renderType: Text.CurveRendering; width: parent.width; text: modelData.connected ? qsTr("Connected") : qsTr("Press a button to join"); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 13; font.weight: Font.DemiBold; elide: Text.ElideRight }
                     }
                     Rectangle { anchors.right: parent.right; anchors.rightMargin: 16; anchors.verticalCenter: parent.verticalCenter; width: batteryLabel.implicitWidth + 18; height: 30; radius: Theme.radiusLarge; color: modelData.connected ? Theme.glass : "transparent"; border.color: Theme.seam; border.width: modelData.connected ? 1 : 0
-                        Text { id: batteryLabel; anchors.centerIn: parent; text: modelData.battery; color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 13; font.weight: Font.DemiBold }
+                        Text { renderType: Text.CurveRendering; id: batteryLabel; anchors.centerIn: parent; text: modelData.battery; color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 13; font.weight: Font.DemiBold }
                     }
                 }
             }

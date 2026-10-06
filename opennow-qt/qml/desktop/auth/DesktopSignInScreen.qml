@@ -327,7 +327,7 @@ FocusScope {
                             width: parent.width
                             text: root.failed ? (ShellStore.authMessage || qsTr("Your provider returned without a usable session. Nothing was saved."))
                                 : root.waiting ? (root.qrRequested ? qsTr("Scan with your phone and approve the request on your provider. This screen moves on by itself.") : qsTr("A secure provider page is open. Approve it there and return to Cloudlight."))
-                                : qsTr("Nothing works until your provider tells us who you are.")
+                                : qsTr("Sign in with your GeForce NOW provider to see your library and play.")
                         }
                     }
 
@@ -393,8 +393,8 @@ FocusScope {
                                     width: DesktopTokens.px(32)
                                     height: width
                                     radius: DesktopTokens.radius
-                                    color: "#76B900"
-                                    BodyText { anchors.centerIn: parent; text: String(root.selectedProvider.displayName || "").slice(0, 1).toUpperCase(); color: "#141414"; font.pixelSize: DesktopTokens.px(14); font.weight: Font.Bold }
+                                    color: DesktopTokens.focus
+                                    BodyText { anchors.centerIn: parent; text: String(root.selectedProvider.displayName || "").slice(0, 1).toUpperCase(); color: Theme.lightMode ? "#FFFFFF" : "#15111C"; font.pixelSize: DesktopTokens.px(14); font.weight: Font.Bold }
                                 }
                                 Column {
                                     x: DesktopTokens.px(58)
@@ -494,7 +494,7 @@ FocusScope {
                             primary: true
                             external: true
                             font.pixelSize: DesktopTokens.px(14)
-                            text: qsTr("Continue with %1").arg(root.selectedProvider.displayName)
+                            text: ShellStore.selectedProvider ? qsTr("Continue with %1").arg(root.selectedProvider.displayName) : qsTr("Continue")
                             enabled: ShellStore.ready && ShellStore.selectedProvider !== null
                             onClicked: ShellStore.startDeviceLogin(root.selectedProvider.idpId || "", root.staySignedIn)
                         }

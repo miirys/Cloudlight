@@ -135,7 +135,7 @@ FocusScope {
             text: root.cloudFavoritesOnly ? qsTr("Show all library games") : qsTr("GeForce NOW favorites")
             onClicked: { root.cloudFavoritesOnly = !root.cloudFavoritesOnly; if (root.cloudFavoritesOnly) ShellStore.refreshCloudFavorites() }
         }
-        Text {
+        Text { renderType: Text.CurveRendering;
             width: 780; anchors.verticalCenter: parent.verticalCenter
             visible: root.cloudFavoritesOnly
             text: ShellStore.remoteFavoritesError || qsTr("Favorites coverage is partial or unknown. Home pins are separate.")
@@ -154,7 +154,7 @@ FocusScope {
             id: filters
             x: 28; y: 24; spacing: 12
             z: 200
-            TextField {
+            TextField { renderType: TextInput.CurveRendering;
                 id: searchField
                 width: 400; height: 52
                 placeholderText: qsTr("Search GeForce NOW games")
@@ -263,7 +263,7 @@ FocusScope {
                         visible: ShellStore.isFavorite(modelData)
                         x: 102; y: 10
                         width: 28; height: 28; radius: 14; color: Theme.yellow
-                        Text { anchors.centerIn: parent; text: "★"; color: Theme.contrastText(Theme.yellow); font.pixelSize: 15; font.weight: Font.Bold }
+                        Text { renderType: Text.CurveRendering; anchors.centerIn: parent; text: "★"; color: Theme.contrastText(Theme.yellow); font.pixelSize: 15; font.weight: Font.Bold }
                     }
                 }
             }
@@ -273,8 +273,8 @@ FocusScope {
             anchors.centerIn: parent
             spacing: 12
             visible: root.games.length === 0
-            Text { anchors.horizontalCenter: parent.horizontalCenter; text: ShellStore.catalogState === "error" ? qsTr("Couldn’t reach the catalog") : qsTr("Loading GeForce NOW games…"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 24; font.weight: Font.Bold }
-            Text { anchors.horizontalCenter: parent.horizontalCenter; text: ShellStore.catalogGames.length > 0 ? qsTr("No games match these filters.") : (ShellStore.catalogState === "error" ? ShellStore.lastError : qsTr("The shell stays responsive while the Rust core fetches NVIDIA’s public list.")); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 14 }
+            Text { renderType: Text.CurveRendering; anchors.horizontalCenter: parent.horizontalCenter; text: ShellStore.catalogState === "error" ? qsTr("Couldn’t reach the catalog") : qsTr("Loading GeForce NOW games…"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 24; font.weight: Font.Bold }
+            Text { renderType: Text.CurveRendering; anchors.horizontalCenter: parent.horizontalCenter; text: ShellStore.catalogGames.length > 0 ? qsTr("No games match these filters.") : (ShellStore.catalogState === "error" ? ShellStore.lastError : qsTr("The shell stays responsive while the Rust core fetches NVIDIA’s public list.")); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 14 }
             GlassButton { anchors.horizontalCenter: parent.horizontalCenter; visible: ShellStore.catalogState === "error"; text: qsTr("Try again"); glyph: "A"; primary: true; onClicked: ShellStore.refreshCatalog("") }
         }
     }
@@ -297,8 +297,8 @@ FocusScope {
                 fallbackColor: root.selectedGame ? root.storeColor(root.storeGlyph(root.selectedGame)) : Theme.cartSteam
                 artwork: root.selectedGame ? (root.selectedGame.heroImageUrl || root.selectedGame.imageUrl || "") : ""
             }
-            Text { width: parent.width; text: root.selectedGame ? root.selectedGame.title : qsTr("GeForce NOW catalog"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 28; font.weight: Font.Bold; elide: Text.ElideRight }
-            Text { width: parent.width; text: root.selectedGame ? qsTr("%1 · Available on GeForce NOW").arg(root.storeName(root.selectedGame)) : (ShellStore.catalogSource === "account-library" ? qsTr("%1 games in your library").arg(ShellStore.catalogTotalCount) : qsTr("%1 supported games").arg(ShellStore.catalogTotalCount)); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 15; elide: Text.ElideRight }
+            Text { renderType: Text.CurveRendering; width: parent.width; text: root.selectedGame ? root.selectedGame.title : qsTr("GeForce NOW catalog"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 28; font.weight: Font.Bold; elide: Text.ElideRight }
+            Text { renderType: Text.CurveRendering; width: parent.width; text: root.selectedGame ? qsTr("%1 · Available on GeForce NOW").arg(root.storeName(root.selectedGame)) : (ShellStore.catalogSource === "account-library" ? qsTr("%1 games in your library").arg(ShellStore.catalogTotalCount) : qsTr("%1 supported games").arg(ShellStore.catalogTotalCount)); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 15; elide: Text.ElideRight }
             Row {
                 spacing: 8
                 Repeater {
@@ -308,7 +308,7 @@ FocusScope {
                     GlassPanel {
                         required property string modelData
                         width: chipText.implicitWidth + 26; height: 36; panelRadius: 18; strong: true
-                        Text { id: chipText; anchors.centerIn: parent; text: modelData; color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 13; font.weight: Font.Bold }
+                        Text { renderType: Text.CurveRendering; id: chipText; anchors.centerIn: parent; text: modelData; color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 13; font.weight: Font.Bold }
                     }
                 }
             }
@@ -323,7 +323,7 @@ FocusScope {
                 onClicked: ShellStore.toggleFavorite(root.selectedGame)
             }
             GlassButton { id: detailsButton; width: parent.width; text: qsTr("Details"); glyph: "X"; enabled: root.selectedGame !== null; onClicked: ShellStore.openGame(root.selectedGame) }
-            Text {
+            Text { renderType: Text.CurveRendering;
                 width: parent.width
                 visible: ShellStore.catalogSource === "account-library" && ShellStore.catalogState !== "ready"
                 text: ShellStore.catalogError || qsTr("The library refresh is incomplete. Your available games are still shown.")

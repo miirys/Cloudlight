@@ -133,14 +133,14 @@ FocusScope {
             x: 56
             anchors.verticalCenter: parent.verticalCenter
             spacing: 1
-            Text {
+            Text { renderType: Text.CurveRendering;
                 text: root.platformName(root.currentVariant)
                 color: Theme.label
                 font.family: Theme.bodyFont
                 font.pixelSize: 16
                 font.weight: Font.Bold
             }
-            Text {
+            Text { renderType: Text.CurveRendering;
                 text: root.ownershipText(root.currentVariant)
                 color: root.owned(root.currentVariant) ? Theme.mint : Theme.textMuted
                 font.family: Theme.bodyFont
@@ -148,7 +148,7 @@ FocusScope {
                 font.weight: Font.DemiBold
             }
         }
-        Text {
+        Text { renderType: Text.CurveRendering;
             anchors.right: parent.right
             anchors.rightMargin: 18
             anchors.verticalCenter: parent.verticalCenter
@@ -186,7 +186,7 @@ FocusScope {
         height: Math.min(304, 16 + root.variants.length * 56)
         panelRadius: 26
         strong: true
-        color: "#10131C"
+        color: Theme.surface
         opacity: root.expanded ? 1 : 0
         scale: root.expanded ? 1 : 0.96
         transformOrigin: Item.TopRight
@@ -225,7 +225,7 @@ FocusScope {
                         storeGlyph: root.platformGlyph(modelData)
                         storeColor: root.platformColor(modelData)
                     }
-                    Text {
+                    Text { renderType: Text.CurveRendering;
                         x: 52
                         anchors.verticalCenter: parent.verticalCenter
                         width: parent.width - x - ownership.width - 32
@@ -249,13 +249,13 @@ FocusScope {
                             : "transparent"
                         border.color: root.owned(modelData) ? Theme.mint : Theme.seam
                         border.width: 1
-                        Text {
+                        Text { renderType: Text.CurveRendering;
                             id: ownershipText
                             anchors.centerIn: parent
                             text: root.ownershipText(modelData)
                             color: root.owned(modelData)
                                 ? (platformOption.highlighted ? Theme.faceText : Theme.mint)
-                                : (platformOption.highlighted ? "#5C5C5C" : Theme.textMuted)
+                                : (platformOption.highlighted ? Theme.faceMuted : Theme.textMuted)
                             font.family: Theme.bodyFont
                             font.pixelSize: 12
                             font.weight: Font.Bold

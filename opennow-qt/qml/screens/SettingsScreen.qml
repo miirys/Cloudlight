@@ -663,7 +663,7 @@ FocusScope {
                     Rectangle { width: 30; height: 30; radius: Theme.radius; color: modelData.color
                         Image { anchors.centerIn: parent; width: modelData.icon === "settings-input.svg" ? 20 : 18; height: width; source: "qrc:/qt/qml/OpenNOW/res/icons/" + modelData.icon; sourceSize: Qt.size(width, height) }
                     }
-                    Text { anchors.verticalCenter: parent.verticalCenter; text: I18n.source(modelData.name, I18n.revision); color: root.selectedSection === index ? Theme.faceText : Theme.label; font.family: Theme.bodyFont; font.pixelSize: 17; font.weight: Font.DemiBold }
+                    Text { renderType: Text.CurveRendering; anchors.verticalCenter: parent.verticalCenter; text: I18n.source(modelData.name, I18n.revision); color: root.selectedSection === index ? Theme.faceText : Theme.label; font.family: Theme.bodyFont; font.pixelSize: 17; font.weight: Font.DemiBold }
                 }
             }
         }
@@ -729,7 +729,7 @@ FocusScope {
         height: root.dropdownPanelHeight
         panelRadius: 28
         strong: true
-        color: "#10131C"
+        color: Theme.surface
         opacity: root.dropdownOpen ? 1 : 0
         scale: root.dropdownOpen ? 1 : 0.96
         transformOrigin: Item.TopRight
@@ -791,7 +791,7 @@ FocusScope {
                         }
 
                         contentItem: Item {
-                            Text {
+                            Text { renderType: Text.CurveRendering;
                                 visible: modelData.kind === "heading"
                                 x: 12
                                 anchors.verticalCenter: parent.verticalCenter
@@ -807,7 +807,7 @@ FocusScope {
                                 x: 12
                                 anchors.verticalCenter: parent.verticalCenter
                                 spacing: 8
-                                Text {
+                                Text { renderType: Text.CurveRendering;
                                     visible: root.resolutionItemSelected(modelData)
                                     anchors.verticalCenter: parent.verticalCenter
                                     text: "✓"
@@ -816,7 +816,7 @@ FocusScope {
                                     font.pixelSize: 16
                                     font.weight: Font.Bold
                                 }
-                                Text {
+                                Text { renderType: Text.CurveRendering;
                                     anchors.verticalCenter: parent.verticalCenter
                                     text: modelData.label
                                     color: resolutionItem.highlighted ? Theme.faceText : Theme.label
@@ -825,14 +825,14 @@ FocusScope {
                                     font.weight: Font.Bold
                                 }
                             }
-                            Text {
+                            Text { renderType: Text.CurveRendering;
                                 visible: modelData.kind === "choice"
                                 anchors.right: parent.right
                                 anchors.rightMargin: 12
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: modelData.detail || ""
                                 color: resolutionItem.highlighted
-                                    ? "#5C5C5C" : Theme.textMuted
+                                    ? Theme.faceMuted : Theme.textMuted
                                 font.family: Theme.bodyFont
                                 font.pixelSize: 13
                                 font.weight: Font.Bold
@@ -865,7 +865,7 @@ FocusScope {
         Item {
             visible: root.dropdownKey !== "resolution"
             anchors.fill: parent
-            Text {
+            Text { renderType: Text.CurveRendering;
                 x: 24
                 y: 16
                 text: I18n.source(root.dropdownTitle, I18n.revision).toUpperCase()
@@ -903,7 +903,7 @@ FocusScope {
                         border.width: dropdownItem.highlighted ? 3 : 0
                     }
                     contentItem: Item {
-                        Text {
+                        Text { renderType: Text.CurveRendering;
                             visible: root.dropdownChoiceSelected(index)
                             x: 12
                             anchors.verticalCenter: parent.verticalCenter
@@ -913,7 +913,7 @@ FocusScope {
                             font.pixelSize: 16
                             font.weight: Font.Bold
                         }
-                        Text {
+                        Text { renderType: Text.CurveRendering;
                             x: root.dropdownChoiceSelected(index) ? 38 : 12
                             anchors.verticalCenter: parent.verticalCenter
                             width: parent.width - x - 12
@@ -925,7 +925,7 @@ FocusScope {
                             font.weight: Font.Bold
                             elide: Text.ElideRight
                         }
-                        Text {
+                        Text { renderType: Text.CurveRendering;
                             id: disabledReason
                             visible: text !== ""
                             x: 12
@@ -978,9 +978,9 @@ FocusScope {
         strong: true
         Column {
             anchors.fill: parent; anchors.margins: 26; spacing: 14
-            Text { text: qsTr("Session proxy"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 24; font.weight: Font.Bold }
-            Text { width: parent.width; text: qsTr("Enter host:port or an explicit http, https, socks4 or socks5 URL."); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 14; wrapMode: Text.WordWrap }
-            TextField {
+            Text { renderType: Text.CurveRendering; text: qsTr("Session proxy"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 24; font.weight: Font.Bold }
+            Text { renderType: Text.CurveRendering; width: parent.width; text: qsTr("Enter host:port or an explicit http, https, socks4 or socks5 URL."); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 14; wrapMode: Text.WordWrap }
+            TextField { renderType: TextInput.CurveRendering;
                 id: proxyField
                 width: parent.width; height: 52
                 placeholderText: qsTr("proxy.example.com:8080")
@@ -994,7 +994,7 @@ FocusScope {
             }
             Row {
                 spacing: 12
-                Text { width: 260; anchors.verticalCenter: parent.verticalCenter; text: I18n.source(root.proxyEditorMessage, I18n.revision); color: Theme.coral; font.family: Theme.bodyFont; font.pixelSize: 12; wrapMode: Text.WordWrap }
+                Text { renderType: Text.CurveRendering; width: 260; anchors.verticalCenter: parent.verticalCenter; text: I18n.source(root.proxyEditorMessage, I18n.revision); color: Theme.coral; font.family: Theme.bodyFont; font.pixelSize: 12; wrapMode: Text.WordWrap }
                 GlassButton { width: 130; height: 44; text: qsTr("Cancel"); glyph: "B"; onClicked: root.proxyEditorOpen = false }
                 GlassButton {
                     width: 150; height: 44; text: qsTr("Save"); glyph: "A"; primary: true
@@ -1034,14 +1034,14 @@ FocusScope {
             Keys.onPressed: event => root.captureShortcut(event)
             Column {
                 anchors.fill: parent; anchors.margins: 28; spacing: 16
-                Text { text: I18n.source(root.shortcutEditorTitle, I18n.revision); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 25; font.weight: Font.Bold }
+                Text { renderType: Text.CurveRendering; text: I18n.source(root.shortcutEditorTitle, I18n.revision); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 25; font.weight: Font.Bold }
                 Rectangle {
                     width: parent.width; height: 66; radius: Theme.radiusLarge; color: Theme.glass
                     border.color: shortcutCapture.activeFocus ? Theme.focus : Theme.seam
                     border.width: shortcutCapture.activeFocus ? 3 : 1
-                    Text { anchors.centerIn: parent; text: qsTr("Press a key combination…"); color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 18; font.weight: Font.Bold }
+                    Text { renderType: Text.CurveRendering; anchors.centerIn: parent; text: qsTr("Press a key combination…"); color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 18; font.weight: Font.Bold }
                 }
-                Text { width: parent.width; text: I18n.source(root.shortcutEditorMessage, I18n.revision); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 13; wrapMode: Text.WordWrap }
+                Text { renderType: Text.CurveRendering; width: parent.width; text: I18n.source(root.shortcutEditorMessage, I18n.revision); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 13; wrapMode: Text.WordWrap }
                 Row {
                     spacing: 14
                     GlassButton { width: 130; height: 44; text: qsTr("Cancel"); glyph: "B"; onClicked: root.shortcutEditorOpen = false }

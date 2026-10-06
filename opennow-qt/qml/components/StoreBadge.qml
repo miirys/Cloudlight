@@ -31,7 +31,7 @@ Rectangle {
         fillMode: Image.PreserveAspectFit
         visible: source.toString().length > 0
     }
-    Text {
+    Text { renderType: Text.CurveRendering;
         anchors.centerIn: parent
         text: root.storeGlyph
         visible: root.storeIcon().length === 0

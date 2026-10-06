@@ -32,8 +32,8 @@ FocusScope {
         anchors.centerIn: parent; width: 690; height: 680; panelRadius: 44; strong: true
         Column {
             anchors.fill: parent; anchors.margins: 42; spacing: 18
-            Text { anchors.horizontalCenter: parent.horizontalCenter; text: I18n.source(root.heading, I18n.revision); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 34; font.weight: Font.Bold }
-            Text { anchors.horizontalCenter: parent.horizontalCenter; text: I18n.source(root.instruction, I18n.revision); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 16 }
+            Text { renderType: Text.CurveRendering; anchors.horizontalCenter: parent.horizontalCenter; text: I18n.source(root.heading, I18n.revision); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 34; font.weight: Font.Bold }
+            Text { renderType: Text.CurveRendering; anchors.horizontalCenter: parent.horizontalCenter; text: I18n.source(root.instruction, I18n.revision); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 16 }
             Row {
                 anchors.horizontalCenter: parent.horizontalCenter; spacing: 16
                 Repeater {
@@ -44,11 +44,11 @@ FocusScope {
                         color: index < root.entry.length ? Theme.focus : Theme.glassStrong
                         border.color: index === root.entry.length ? Theme.focus : Theme.seam
                         border.width: index === root.entry.length ? 3 : 1
-                        Text { anchors.centerIn: parent; text: index < root.entry.length ? "●" : ""; color: Theme.faceText; font.pixelSize: 18 }
+                        Text { renderType: Text.CurveRendering; anchors.centerIn: parent; text: index < root.entry.length ? "●" : ""; color: Theme.faceText; font.pixelSize: 18 }
                     }
                 }
             }
-            Text { anchors.horizontalCenter: parent.horizontalCenter; height: 24; text: I18n.source(ShellStore.pinMessage, I18n.revision); color: Theme.coral; font.family: Theme.bodyFont; font.pixelSize: 14; font.weight: Font.Bold }
+            Text { renderType: Text.CurveRendering; anchors.horizontalCenter: parent.horizontalCenter; height: 24; text: I18n.source(ShellStore.pinMessage, I18n.revision); color: Theme.coral; font.family: Theme.bodyFont; font.pixelSize: 14; font.weight: Font.Bold }
             Grid {
                 id: keypad
                 anchors.horizontalCenter: parent.horizontalCenter; columns: 3; spacing: 10

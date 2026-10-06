@@ -50,7 +50,7 @@ FocusScope {
 
         Rectangle { visible: row.activeFocus; width: 4; height: parent.height; color: Theme.focus }
         Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: Theme.seam }
-        Text {
+        Text { renderType: Text.CurveRendering;
             x: 24
             width: parent.width - controlArea.width - 72
             anchors.verticalCenter: parent.verticalCenter
@@ -84,7 +84,7 @@ FocusScope {
                         color: Theme.focus
                     }
                 }
-                Text {
+                Text { renderType: Text.CurveRendering;
                     anchors.verticalCenter: parent.verticalCenter
                     text: row.value
                     color: Theme.textMuted
@@ -107,7 +107,7 @@ FocusScope {
                     Behavior on x { NumberAnimation { duration: AppController.reducedMotion ? 0 : 110; easing.type: Easing.OutCubic } }
                 }
             }
-            Text {
+            Text { renderType: Text.CurveRendering;
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
                 visible: !row.sliderVisible && !row.toggleVisible
@@ -140,7 +140,7 @@ FocusScope {
             ? -1 : controller.batteryPercent)
 
         Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: Theme.seam }
-        Text {
+        Text { renderType: Text.CurveRendering;
             x: 24; width: 56; anchors.verticalCenter: parent.verticalCenter
             text: qsTr("P%1").arg(Number(controllerRow.controller.slot || 1))
             color: Theme.textMuted
@@ -148,7 +148,7 @@ FocusScope {
             font.pixelSize: 17
             font.weight: Font.DemiBold
         }
-        Text {
+        Text { renderType: Text.CurveRendering;
             x: 80; width: parent.width - x - 150; anchors.verticalCenter: parent.verticalCenter
             text: String(controllerRow.controller.name || qsTr("Game controller"))
             color: Theme.label
@@ -156,7 +156,7 @@ FocusScope {
             font.pixelSize: 17
             elide: Text.ElideRight
         }
-        Text {
+        Text { renderType: Text.CurveRendering;
             anchors.right: parent.right; anchors.rightMargin: 24
             anchors.verticalCenter: parent.verticalCenter
             text: controllerRow.battery >= 0 ? qsTr("Battery %1%").arg(controllerRow.battery) : qsTr("Connected")
@@ -170,7 +170,7 @@ FocusScope {
         property alias text: label.text
         width: root.contentWidth
         height: 52
-        Text {
+        Text { renderType: Text.CurveRendering;
             id: label
             x: 24
             anchors.bottom: parent.bottom
@@ -198,8 +198,8 @@ FocusScope {
                 Column {
                     x: 24; anchors.verticalCenter: parent.verticalCenter
                     spacing: 6
-                    Text { text: qsTr("Quick settings"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 26; font.weight: Font.Bold }
-                    Text { text: root.tier !== "" ? qsTr("%1 · applies to your next launch").arg(root.tier) : qsTr("Applies to your next launch"); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 16 }
+                    Text { renderType: Text.CurveRendering; text: qsTr("Quick settings"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 26; font.weight: Font.Bold }
+                    Text { renderType: Text.CurveRendering; text: root.tier !== "" ? qsTr("%1 · applies to your next launch").arg(root.tier) : qsTr("Applies to your next launch"); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 16 }
                 }
                 Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: Theme.seam }
             }
@@ -276,7 +276,7 @@ FocusScope {
                         required property var modelData
                         spacing: 10
                         ControllerGlyph { glyph: modelData.key; label: ""; glyphSize: 28; glyphColor: Theme.label }
-                        Text { anchors.verticalCenter: parent.verticalCenter; text: modelData.label; color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 16 }
+                        Text { renderType: Text.CurveRendering; anchors.verticalCenter: parent.verticalCenter; text: modelData.label; color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 16 }
                     }
                 }
             }

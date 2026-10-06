@@ -98,7 +98,7 @@ FocusScope {
         border.width: root.activeFocus || root.expanded ? 3 : 1
         Behavior on color { ColorAnimation { duration: Theme.focusDuration } }
 
-        Text {
+        Text { renderType: Text.CurveRendering;
             x: 18
             anchors.verticalCenter: parent.verticalCenter
             width: parent.width - 52
@@ -109,7 +109,7 @@ FocusScope {
             font.pixelSize: 14
             font.weight: Font.Bold
         }
-        Text {
+        Text { renderType: Text.CurveRendering;
             anchors.right: parent.right
             anchors.rightMargin: 17
             anchors.verticalCenter: parent.verticalCenter
@@ -147,7 +147,7 @@ FocusScope {
         height: Math.min(304, 16 + root.options.length * 44)
         panelRadius: 24
         strong: true
-        color: "#10131C"
+        color: Theme.surface
         opacity: root.expanded ? 1 : 0
         scale: root.expanded ? 1 : 0.96
         transformOrigin: Item.TopLeft
@@ -178,7 +178,7 @@ FocusScope {
                     border.width: option.highlighted ? 2 : 0
                 }
                 contentItem: Item {
-                    Text {
+                    Text { renderType: Text.CurveRendering;
                         x: 12
                         anchors.verticalCenter: parent.verticalCenter
                         width: parent.width - 52
@@ -189,7 +189,7 @@ FocusScope {
                         font.pixelSize: 14
                         font.weight: Font.Bold
                     }
-                    Text {
+                    Text { renderType: Text.CurveRendering;
                         visible: index === root.currentIndex
                         anchors.right: parent.right
                         anchors.rightMargin: 12

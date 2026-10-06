@@ -14,8 +14,8 @@ FocusScope {
         x: 96; y: 128; width: root.width * 0.56; height: root.height - 264; panelRadius: 40
         Column {
             anchors.fill: parent; anchors.margins: 34; spacing: 14
-            Text { text: qsTr("Connected game stores"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 36; font.weight: Font.Bold }
-            Text { text: qsTr("Link and sync your libraries directly with GeForce NOW."); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 16 }
+            Text { renderType: Text.CurveRendering; text: qsTr("Connected game stores"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 36; font.weight: Font.Bold }
+            Text { renderType: Text.CurveRendering; text: qsTr("Link and sync your libraries directly with GeForce NOW."); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 16 }
             ListView {
                 id: accountList
                 width: parent.width; height: parent.height - 112; spacing: 8; clip: true
@@ -41,14 +41,14 @@ FocusScope {
                         Rectangle {
                             width: 52; height: 52; radius: Theme.radiusLarge
                             color: modelData.isConnected ? Theme.mint : Theme.violet
-                            Text { anchors.centerIn: parent; text: String(modelData.label || "G").slice(0, 1); color: Theme.contrastText(modelData.isConnected ? Theme.mint : Theme.violet); font.pixelSize: 22; font.weight: Font.Bold }
+                            Text { renderType: Text.CurveRendering; anchors.centerIn: parent; text: String(modelData.label || "G").slice(0, 1); color: Theme.contrastText(modelData.isConnected ? Theme.mint : Theme.violet); font.pixelSize: 22; font.weight: Font.Bold }
                         }
                         Column {
                             anchors.verticalCenter: parent.verticalCenter; width: parent.width - 205; spacing: 2
-                            Text { text: modelData.label || modelData.provider; color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 18; font.weight: Font.Bold }
-                            Text { text: modelData.displayName || (modelData.isConnected ? qsTr("%1 synced games").arg(modelData.syncedGames) : qsTr("Not connected")); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 13 }
+                            Text { renderType: Text.CurveRendering; text: modelData.label || modelData.provider; color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 18; font.weight: Font.Bold }
+                            Text { renderType: Text.CurveRendering; text: modelData.displayName || (modelData.isConnected ? qsTr("%1 synced games").arg(modelData.syncedGames) : qsTr("Not connected")); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 13 }
                         }
-                        Text {
+                        Text { renderType: Text.CurveRendering;
                             anchors.verticalCenter: parent.verticalCenter
                             text: modelData.status === "connected" ? qsTr("Connected") : modelData.status === "sync_error" ? qsTr("Sync error") : modelData.status === "expired" ? qsTr("Expired") : qsTr("Available")
                             color: modelData.status === "connected" ? Theme.mint : modelData.status === "not_connected" ? Theme.textMuted : Theme.coral
@@ -65,8 +65,8 @@ FocusScope {
         x: root.width * 0.69; y: 170; width: root.width * 0.24; height: 500; panelRadius: 36; strong: true
         Column {
             anchors.fill: parent; anchors.margins: 26; spacing: 13
-            Text { width: parent.width; text: root.selectedAccount ? root.selectedAccount.label : qsTr("Game accounts"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 27; font.weight: Font.Bold; wrapMode: Text.WordWrap }
-            Text { width: parent.width; text: ShellStore.gameAccountMessage || (root.selectedAccount && root.selectedAccount.isConnected ? qsTr("Your linked library is managed by NVIDIA.") : qsTr("Connect this store in your browser, then return to Cloudlight.")); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 15; wrapMode: Text.WordWrap; lineHeight: 1.2 }
+            Text { renderType: Text.CurveRendering; width: parent.width; text: root.selectedAccount ? root.selectedAccount.label : qsTr("Game accounts"); color: Theme.label; font.family: Theme.displayFont; font.pixelSize: 27; font.weight: Font.Bold; wrapMode: Text.WordWrap }
+            Text { renderType: Text.CurveRendering; width: parent.width; text: ShellStore.gameAccountMessage || (root.selectedAccount && root.selectedAccount.isConnected ? qsTr("Your linked library is managed by NVIDIA.") : qsTr("Connect this store in your browser, then return to Cloudlight.")); color: Theme.textMuted; font.family: Theme.bodyFont; font.pixelSize: 15; wrapMode: Text.WordWrap; lineHeight: 1.2 }
             GlassButton {
                 id: actionButton; width: parent.width; glyph: "A"; primary: true
                 enabled: !ShellStore.syncOperation && root.primaryAction !== "none"

@@ -69,7 +69,7 @@ Item {
                 width: 40; height: 40; radius: 20
                 color: Theme.violet
                 border.color: Theme.face; border.width: 2
-                Text {
+                Text { renderType: Text.CurveRendering;
                     anchors.centerIn: parent
                     text: root.profileInitial
                     color: Theme.contrastText(Theme.violet)
@@ -78,7 +78,7 @@ Item {
                     font.weight: Font.Bold
                 }
             }
-            Text {
+            Text { renderType: Text.CurveRendering;
                 anchors.verticalCenter: parent.verticalCenter
                 width: Math.min(180, implicitWidth)
                 text: root.displayName
@@ -93,7 +93,7 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: 6
                 Rectangle { anchors.verticalCenter: parent.verticalCenter; width: 8; height: 8; radius: 4; color: ShellStore.signedIn ? Theme.mint : Theme.textMuted }
-                Text {
+                Text { renderType: Text.CurveRendering;
                     text: ShellStore.signedIn ? qsTr("Connected") : qsTr("Offline")
                     color: Theme.label
                     font.family: Theme.bodyFont
@@ -116,7 +116,7 @@ Item {
         height: 56
         panelRadius: 28
         strong: true
-        Text {
+        Text { renderType: Text.CurveRendering;
             id: titleText
             anchors.centerIn: parent
             width: parent.width - 36
@@ -148,13 +148,13 @@ Item {
             Row {
                 spacing: 6; anchors.verticalCenter: parent.verticalCenter
                 Rectangle { anchors.verticalCenter: parent.verticalCenter; width: 8; height: 8; radius: 4; color: Theme.mint }
-                Text {
+                Text { renderType: Text.CurveRendering;
                     text: root.regionStatus()
                     color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 16; font.weight: Font.Bold
                 }
             }
             Rectangle { anchors.verticalCenter: parent.verticalCenter; width: 1; height: 20; color: Theme.seam }
-            Text {
+            Text { renderType: Text.CurveRendering;
                 objectName: "consoleClock"
                 anchors.verticalCenter: parent.verticalCenter
                 text: Qt.formatDateTime(root.now, "hh:mm | MM/dd")
@@ -166,7 +166,7 @@ Item {
             Rectangle { anchors.verticalCenter: parent.verticalCenter; width: 1; height: 20; color: Theme.seam }
             Row {
                 spacing: 6; anchors.verticalCenter: parent.verticalCenter
-                Text {
+                Text { renderType: Text.CurveRendering;
                     anchors.verticalCenter: parent.verticalCenter
                     text: root.controllerStatus()
                     color: Theme.label; font.family: Theme.bodyFont; font.pixelSize: 16; font.weight: Font.Bold

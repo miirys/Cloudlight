@@ -27,7 +27,7 @@ Dialog {
     focus: true
     closePolicy: Popup.CloseOnEscape
     title: qsTr("10-bit color")
-    header: Text {
+    header: Text { renderType: Text.CurveRendering;
         text: root.title
         padding: DesktopTokens.px(22)
         bottomPadding: 0
@@ -46,7 +46,7 @@ Dialog {
         id: copy
         width: root.contentWidth
         spacing: DesktopTokens.px(16)
-        Text {
+        Text { renderType: Text.CurveRendering;
             width: parent.width
             text: qsTr("10-bit color may cause stuttering on some systems. If you notice stuttering, switch back to 8-bit.")
             color: Theme.textMuted
@@ -70,7 +70,7 @@ Dialog {
                 color: dontNotify.checked ? Theme.focus : "transparent"
                 border.color: dontNotify.activeFocus ? Theme.focus : Theme.textMuted
                 border.width: dontNotify.activeFocus ? 2 : 0
-                Text {
+                Text { renderType: Text.CurveRendering;
                     anchors.centerIn: parent
                     text: "✓"
                     visible: dontNotify.checked
@@ -78,7 +78,7 @@ Dialog {
                     font.pixelSize: DesktopTokens.px(15)
                 }
             }
-            contentItem: Text {
+            contentItem: Text { renderType: Text.CurveRendering;
                 leftPadding: dontNotify.indicator.width + dontNotify.spacing
                 text: dontNotify.text
                 color: Theme.label

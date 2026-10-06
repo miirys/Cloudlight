@@ -31,7 +31,7 @@ Row {
                 radius: parent.radius
                 color: Qt.rgba(root.ink.r, root.ink.g, root.ink.b, root.ink.a * 0.08)
             }
-            Text {
+            Text { renderType: Text.CurveRendering;
                 id: keyText
                 anchors.centerIn: parent
                 anchors.verticalCenterOffset: -Math.round(root.keySize * 0.02)

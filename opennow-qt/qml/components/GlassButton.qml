@@ -47,7 +47,7 @@ Button {
             glyphSize: 28
             glyphColor: root.primary ? Theme.focusText : root.danger ? Theme.contrastText(Theme.coral) : Theme.label
         }
-        Text {
+        Text { renderType: Text.CurveRendering;
             anchors.verticalCenter: parent.verticalCenter
             text: I18n.source(root.text, I18n.revision)
             color: root.primary ? Theme.focusText : root.danger ? Theme.contrastText(Theme.coral) : Theme.label

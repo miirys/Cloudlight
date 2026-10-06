@@ -38,7 +38,7 @@ FocusScope {
             width: parent.width - 64
             spacing: 18
 
-            Text {
+            Text { renderType: Text.CurveRendering;
                 text: qsTr("Your game is still running")
                 color: Theme.mint
                 font.family: Theme.bodyFont
@@ -46,7 +46,7 @@ FocusScope {
                 font.weight: Font.Bold
                 font.letterSpacing: 0
             }
-            Text {
+            Text { renderType: Text.CurveRendering;
                 width: parent.width
                 text: qsTr("Return to your game?")
                 color: Theme.label
@@ -55,7 +55,7 @@ FocusScope {
                 font.weight: Font.Bold
                 wrapMode: Text.WordWrap
             }
-            Text {
+            Text { renderType: Text.CurveRendering;
                 width: parent.width
                 text: root.sessionDescription()
                 color: Theme.textMuted
@@ -63,7 +63,7 @@ FocusScope {
                 font.pixelSize: 18
                 wrapMode: Text.WordWrap
             }
-            Text {
+            Text { renderType: Text.CurveRendering;
                 width: parent.width
                 text: ShellStore.streamMessage
                 color: Theme.textMuted
@@ -71,7 +71,7 @@ FocusScope {
                 font.pixelSize: 16
                 wrapMode: Text.WordWrap
             }
-            Text {
+            Text { renderType: Text.CurveRendering;
                 width: parent.width
                 text: ShellStore.pendingLaunchParams
                     ? qsTr("Ending the running game will close it before starting %1. Unsaved progress may be lost.").arg(ShellStore.pendingLaunchParams.title || qsTr("your selected game"))

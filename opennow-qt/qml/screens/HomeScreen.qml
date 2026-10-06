@@ -266,8 +266,7 @@ FocusScope {
         y: 207
         width: 1586
         height: 626
-        panelRadius: 42
-        color: Qt.rgba(0, 0, 0, 0.58)
+        panelRadius: 28
 
         Item {
             x: 33
@@ -323,7 +322,7 @@ FocusScope {
             y: 88
             spacing: 6
             visible: root.games.length === 0
-            Text {
+            Text { renderType: Text.CurveRendering;
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: qsTr("Your Home is ready")
                 color: Theme.label
@@ -331,7 +330,7 @@ FocusScope {
                 font.pixelSize: 28
                 font.weight: Font.Bold
             }
-            Text {
+            Text { renderType: Text.CurveRendering;
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: qsTr("Add games from Library to build your own layout")
                 color: Theme.textMuted
@@ -352,7 +351,7 @@ FocusScope {
         strong: true
         border.color: Theme.focus
         border.width: 3
-        Text {
+        Text { renderType: Text.CurveRendering;
             id: moveLabel
             anchors.centerIn: parent
             text: qsTr("Move tile  ·  D-pad move  ·  A place  ·  B cancel")
