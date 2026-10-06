@@ -815,6 +815,12 @@ fn publisher_launcher_variants_need_no_store_account() {
         super::launch_decision(&game, "parent-app", "123", &Value::Null, &account).status,
         LaunchStatus::Ready
     );
+    raw["variants"][0]["appStore"] = json!("UNKNOWN");
+    let game = app_to_game(&raw).unwrap();
+    assert_eq!(
+        super::launch_decision(&game, "parent-app", "123", &Value::Null, &account).status,
+        LaunchStatus::Ready
+    );
     // A real store with no account metadata still asks for a refresh.
     raw["variants"][0]["appStore"] = json!("GOG");
     let game = app_to_game(&raw).unwrap();

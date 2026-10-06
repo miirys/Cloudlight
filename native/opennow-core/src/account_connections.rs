@@ -640,7 +640,7 @@ fn bind_callback() -> Result<(TcpListener, u16), ServiceError> {
 
 /// `NONE` is GFN's value for a variant with no third-party store: the game runs
 /// from its publisher's own launcher (Wuthering Waves, Zenless Zone Zero), so it
-/// has no store account to link. `UNKNOWN` is the enum's unset value.
+/// has no store account to link. GFN uses `UNKNOWN` for such games too.
 pub(crate) fn is_sentinel_store(store: &str) -> bool {
     matches!(
         store.trim().to_ascii_uppercase().as_str(),

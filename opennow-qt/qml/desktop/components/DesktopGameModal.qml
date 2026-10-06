@@ -64,12 +64,12 @@ FocusScope {
             return qsTr("Not played yet")
         return DesktopTokens.relativeLastPlayed(raw, Date.now()) || qsTr("—")
     }
-    // GFN's store value NONE means the game runs from its publisher's own
+    // GFN's store values NONE and UNKNOWN mean the game runs from its publisher's own
     // launcher (for example Wuthering Waves); name the publisher when known.
     function storeName(store) {
         const game = root.game || ({})
         const publisher = String(game.publisherName || game.publisher || "").trim()
-        return String(store).toUpperCase() === "NONE" && publisher !== ""
+        return ["NONE", "UNKNOWN"].indexOf(String(store).toUpperCase()) >= 0 && publisher !== ""
             ? qsTr("%1 launcher").arg(publisher) : DesktopTokens.storeLabel(store)
     }
     readonly property string storesText: {
@@ -90,8 +90,8 @@ FocusScope {
         const store = variant && variant.store
             ? String(variant.store)
             : ((game && game.availableStores && game.availableStores[0]) || "")
-        // NONE is the publisher's own launcher: no third-party store to name.
-        const direct = store.toUpperCase() === "NONE"
+        // NONE/UNKNOWN are the publisher's own launcher: no third-party store to name.
+        const direct = ["NONE", "UNKNOWN"].indexOf(store.toUpperCase()) >= 0
         if (store && root.isOwned)
             return direct ? qsTr("In your library") : qsTr("Owned on %1").arg(DesktopTokens.storeLabel(store))
         if (store)

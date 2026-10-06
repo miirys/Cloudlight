@@ -43,7 +43,7 @@ Column {
             objectName: "cloudOwnershipRemove"
             visible: root.owned
             enabled: !ShellStore.cloudMutationBusy
-            text: root.variant && String(root.variant.store).toUpperCase() === "NONE"
+            text: root.variant && ["NONE", "UNKNOWN"].indexOf(String(root.variant.store).toUpperCase()) >= 0
                 ? qsTr("Remove from library")
                 : qsTr("Remove %1 ownership").arg(root.variant ? DesktopTokens.storeLabel(root.variant.store) : "")
             onClicked: ShellStore.requestOwnershipConfirmation("remove")

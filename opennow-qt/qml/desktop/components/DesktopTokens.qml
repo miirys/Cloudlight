@@ -129,7 +129,7 @@ QtObject {
     function storeLabel(value) {
         const labels = {steam:"Steam", epic:"Epic Games", ubisoft:"Ubisoft Connect", battlenet:"Battle.net",
             xbox:"Xbox", gog:"GOG", gaijin:"Gaijin", ea:"EA app", nvidia:"NVIDIA"}
-        return labels[storeKey(value)] || (String(value).toUpperCase() === "NONE" ? qsTr("Direct launch") : String(value))
+        return labels[storeKey(value)] || (["NONE", "UNKNOWN"].indexOf(String(value).toUpperCase()) >= 0 ? qsTr("Direct launch") : String(value))
     }
     function genreLabel(value) {
         return String(value).toLowerCase().replace(/_/g, " ").replace(/\b\w/g, letter => letter.toUpperCase())
