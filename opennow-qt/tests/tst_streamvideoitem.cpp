@@ -670,7 +670,8 @@ private slots:
         item.m_usesMacPointerCapture = true;
         item.m_captureActive = true;
         item.updateLocalCursor();
-        QCOMPARE(item.cursor().shape(), Qt::BlankCursor);
+        // RDP-style: the local arrow shows even while the server composites.
+        QCOMPARE(item.cursor().shape(), Qt::ArrowCursor);
         item.m_manualRelativeMouse = false;
         item.updateLocalCursor();
         QCOMPARE(item.cursor().shape(), Qt::ArrowCursor);
@@ -704,7 +705,7 @@ private slots:
         QVERIFY(item.isVisible());
         QTRY_VERIFY(item.captureActive());
         QVERIFY(!item.m_remoteCursorKnown);
-        QCOMPARE(item.cursor().shape(), Qt::BlankCursor);
+        QCOMPARE(item.cursor().shape(), Qt::ArrowCursor);
         session.composition(false);
         QTRY_COMPARE(item.cursor().shape(), Qt::ArrowCursor);
         QVERIFY(!item.m_remoteCursorKnown);
@@ -784,7 +785,7 @@ private slots:
                         item.m_remoteCursor = QCursor(Qt::CrossCursor);
                         item.updateLocalCursor();
                         QCOMPARE(item.cursor().shape(), !capture ? Qt::ArrowCursor
-                            : relative || composited ? Qt::BlankCursor : Qt::CrossCursor);
+                            : relative ? Qt::BlankCursor : Qt::CrossCursor);
                     }
                 }
             }
