@@ -379,6 +379,10 @@ impl DiagnosticsService {
             "native-streamer.previous.log",
             "qt-native.log",
             "qt-native.log.previous",
+            // Written by the Qt shell: QML/Qt warnings and, on Windows, one line
+            // per crash (exception code and faulting module).
+            "qt-messages.log",
+            "crash.log",
         ] {
             if let Ok(tail) = native_log_tail(&self.directory.join(name)) {
                 output.push_str(&format!(

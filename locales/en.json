@@ -4026,6 +4026,7 @@
     "s_cl_151": "Session running",
     "s_cl_152": "%1 launcher",
     "s_cl_153": "Keyboard and mouse",
-    "s_cl_154": "Remove from library"
+    "s_cl_154": "Remove from library",
+    "s_cl_155": "Save diagnostics report"
   }
 }

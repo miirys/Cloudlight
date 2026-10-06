@@ -641,7 +641,7 @@ FocusScope {
 
     function projectLinks() {
         return [
-            {id: "diagnostics", label: qsTr("Copy diagnostics"), hint: "NO PERSONAL DATA"},
+            {id: "diagnostics", label: qsTr("Save diagnostics report"), hint: "NO PERSONAL DATA"},
             {id: "source", label: qsTr("Source on GitHub"), hint: "↗"}
         ]
     }
