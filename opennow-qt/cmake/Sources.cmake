@@ -59,6 +59,8 @@ qt_add_executable(opennow-qt
     src/app/SingleInstance.h
     src/core/CoreClient.cpp
     src/core/CoreClient.h
+    src/diagnostics/CrashLog.cpp
+    src/diagnostics/CrashLog.h
     src/diagnostics/DiagnosticsPaths.h
     src/input/ControllerInput.cpp
     src/input/ControllerInput.h

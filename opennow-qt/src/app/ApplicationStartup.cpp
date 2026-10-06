@@ -16,6 +16,7 @@
 #include "streaming/NativeStreamRuntime.h"
 #endif
 #include "app/SingleInstance.h"
+#include "diagnostics/CrashLog.h"
 #include "streaming/StreamVideoItem.h"
 #include "media/ThumbnailGenerator.h"
 
@@ -139,6 +140,7 @@ static int runApplicationSession(int argc, char *argv[], QString &restartExecuta
     applicationFont.setStyleStrategy(QFont::PreferAntialias);
     application.setFont(applicationFont);
     const auto arguments = application.arguments();
+    if (!arguments.contains(u"--smoke-test"_s)) installCrashLog();
     SingleInstance singleInstance;
     if (!arguments.contains(u"--allow-multiple-instances"_s)) {
         const auto acquisition = singleInstance.acquire(arguments);
