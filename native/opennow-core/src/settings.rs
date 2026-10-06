@@ -28,6 +28,15 @@ const SHORTCUT_KEYS: [&str; 12] = [
     "shortcutGameFilter3",
 ];
 const RESERVED_SHORTCUTS: [&str; 2] = ["Ctrl+G", "Shift+F3"];
+// Preferences of features Cloudlight no longer ships (Discord Rich Presence and
+// opt-in telemetry). Older settings files may still carry them; they are dropped
+// on load instead of being preserved, so the anonymous installation identifier
+// does not linger on disk.
+const RETIRED_KEYS: [&str; 3] = [
+    "discordRichPresence",
+    "errorReportingConsent",
+    "telemetryInstallId",
+];
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum LoadPolicy {
@@ -65,6 +74,7 @@ impl SettingsStore {
         let mut values = defaults.clone();
         let mut passthrough = Map::new();
         let mut migrate_onboarding = false;
+        let mut dropped_retired = false;
         let mut recovered_backup = false;
         let backup = path.with_extension("json.bak");
         if path.exists() || backup.exists() {
@@ -111,6 +121,8 @@ impl SettingsStore {
                                 value
                             };
                             values.insert(key, value);
+                        } else if RETIRED_KEYS.contains(&key.as_str()) {
+                            dropped_retired = true;
                         } else if !matches!(key.as_str(), "nativeHdrSupported" | "nativeHdrDisplay")
                         {
                             if policy == LoadPolicy::ReadWrite
@@ -166,7 +178,10 @@ impl SettingsStore {
                 || store.values["fallbackCodec"] != fallback_before_normalize);
         if policy == LoadPolicy::ReadWrite
             && (recovered_backup
-                || ((migrate_console_policy || migrate_onboarding || codec_color_healed)
+                || ((migrate_console_policy
+                    || migrate_onboarding
+                    || codec_color_healed
+                    || dropped_retired)
                     && store.path.exists()))
         {
             store.save()?;
@@ -968,7 +983,6 @@ fn normalize_bounded_strings(values: &mut Map<String, Value>) {
         ("sessionProxyUrl", 2_048),
         ("nativeStreamerExecutablePath", 2_048),
         ("microphoneDeviceId", 512),
-        ("telemetryInstallId", 128),
         ("lastSeenReleaseHighlightsVersion", 128),
     ] {
         let value = values
@@ -1356,14 +1370,13 @@ fn defaults() -> Map<String, Value> {
         "windowWidth":1400, "windowHeight":900, "keyboardLayout":"en-US",
         "gameLanguage":"en_US", "enablePersistingInGameSettings":true, "enableL4S":false,
         "identifyAsSteamDeck":false, "steamBigPictureMode":false,
-        "enableCloudGsync":false, "discordRichPresence":false,
+        "enableCloudGsync":false,
         "autoCheckForUpdates":true, "autoDownloadUpdates":false,
         "updateChannel":crate::version::update_channel(crate::version::APPLICATION_VERSION),
         "allowEscapeToExitFullscreen":false, "lastSeenReleaseHighlightsVersion":"",
         "videoShader":{"enabled":false,"sharpen":40,"saturation":100,"contrast":100,"brightness":100,"vibrance":0,"filmGrain":0},
         "gameFilters":{"active":0,"styles":[{"name":"","filters":[]},{"name":"","filters":[]},{"name":"","filters":[]}]},
-        "frameInterpolation":{"enabled":false,"factor":2,"quality":480},
-        "errorReportingConsent":"unset", "telemetryInstallId":""
+        "frameInterpolation":{"enabled":false,"factor":2,"quality":480}
     })
     .as_object()
     .cloned()
@@ -2604,6 +2617,73 @@ mod tests {
             serde_json::from_slice(&fs::read(directory.join("settings.json")).unwrap()).unwrap();
         assert_eq!(persisted["unrelatedLegacySetting"], json!("preserve"));
         fs::remove_dir_all(directory).unwrap();
+    }
+
+    #[test]
+    fn settings_from_builds_with_discord_and_telemetry_load_and_drop_those_keys() {
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("settings.json");
+        fs::write(
+            &path,
+            serde_json::to_vec(&json!({
+                "onboardingCompleted": true,
+                "fps": 120,
+                "windowWidth": 1600,
+                "discordRichPresence": true,
+                "errorReportingConsent": "granted",
+                "telemetryInstallId": "0123456789abcdef0123456789abcdef",
+                "unrelatedLegacySetting": "preserve"
+            }))
+            .unwrap(),
+        )
+        .unwrap();
+
+        let mut store = SettingsStore::load(Some(directory.path().to_owned())).unwrap();
+        let settings = store.all();
+        assert_eq!(settings["fps"], 120);
+        assert_eq!(settings["windowWidth"], 1600);
+        assert_eq!(settings["onboardingCompleted"], true);
+        for key in RETIRED_KEYS {
+            assert!(settings.get(key).is_none(), "{key} is still exposed");
+            assert!(!defaults().contains_key(key), "{key} is still a default");
+            assert!(
+                store.set(key, json!(true)).is_err(),
+                "{key} is still writable"
+            );
+        }
+
+        // The load rewrites the file without the retired keys, keeps unrelated
+        // passthrough values, and the rewritten file loads to the same state.
+        let persisted: Value = serde_json::from_slice(&fs::read(&path).unwrap()).unwrap();
+        for key in RETIRED_KEYS {
+            assert!(persisted.get(key).is_none(), "{key} is still on disk");
+        }
+        assert_eq!(persisted["unrelatedLegacySetting"], "preserve");
+        assert_eq!(persisted["fps"], 120);
+        assert_eq!(
+            SettingsStore::load(Some(directory.path().to_owned()))
+                .unwrap()
+                .all(),
+            settings
+        );
+
+        // A read-only bootstrap load tolerates the keys without touching disk.
+        fs::write(
+            &path,
+            serde_json::to_vec(&json!({
+                "windowsGpuDeviceId": "fixture-gpu",
+                "telemetryInstallId": "0123456789abcdef0123456789abcdef"
+            }))
+            .unwrap(),
+        )
+        .unwrap();
+        let before = fs::read(&path).unwrap();
+        assert_eq!(
+            SettingsStore::windows_gpu_device_id_read_only(Some(directory.path().to_owned()))
+                .unwrap(),
+            "fixture-gpu"
+        );
+        assert_eq!(fs::read(&path).unwrap(), before);
     }
 
     #[test]

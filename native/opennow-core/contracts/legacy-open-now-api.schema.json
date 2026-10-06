@@ -24,7 +24,7 @@
           { "type": "string", "minLength": 1 },
           { "enum": ["core", "qt", "streamer"] },
           { "type": "string", "minLength": 1 },
-          { "enum": ["ported", "superseded", "pending"] },
+          { "enum": ["ported", "superseded", "pending", "removed"] },
           {},
           {}
         ],

@@ -592,7 +592,6 @@ const QStringList &AppController::routes()
         u"media"_s,
         u"diagnostics"_s,
         u"updates"_s,
-        u"feedback"_s,
     };
     return value;
 }

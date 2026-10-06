@@ -2,7 +2,7 @@ import QtQuick
 import OpenNOW
 
 // The lighter bar across the top of the panel. The main page shows the app name with
-// feedback, settings and close; a sub-page shows a back arrow, its title and close.
+// settings and close; a sub-page shows a back arrow, its title and close.
 Rectangle {
     id: root
     property string title: ""
@@ -11,7 +11,6 @@ Rectangle {
     signal backRequested()
     signal closeRequested()
     signal settingsRequested()
-    signal feedbackRequested()
     color: OverlayStyle.header
     height: OverlayStyle.headerHeight
 
@@ -68,13 +67,6 @@ Rectangle {
         anchors.rightMargin: OverlayStyle.u(17)
         anchors.verticalCenter: parent.verticalCenter
         spacing: OverlayStyle.u(24)
-        HeaderButton {
-            visible: root.showActions
-            objectName: "overlayFeedback"
-            icon: "feedback"
-            label: qsTr("Send feedback")
-            onClicked: root.feedbackRequested()
-        }
         HeaderButton {
             visible: root.showActions
             objectName: "overlaySettings"

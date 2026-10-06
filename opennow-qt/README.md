@@ -686,8 +686,9 @@ the local plain-file theme directory.
 The versioned Rust core owns settings, NVIDIA device login and token refresh,
 OS-protected accounts, PINs, catalogs, subscriptions, regions and latency tests,
 account connections, persistent storage, CloudMatch lifecycle/recovery/ads,
-NVST session orchestration, diagnostics, media listing, Discord, telemetry,
-feedback and update discovery. The protocol-v7 native streamer is linked into
+NVST session orchestration, diagnostics, media listing and update discovery.
+Cloudlight ships no Discord Rich Presence, telemetry, feedback or bug-report
+upload. The protocol-v7 native streamer is linked into
 the Qt executable as an in-process Rust library. It owns NVST RTSPS negotiation,
 Mjolnir video, the ICE/DTLS/SCTP control bundle, decode, audio and native input.
 Qt/QML owns stream status, stats, menus, recovery, failure and fullscreen

@@ -78,11 +78,8 @@ void startSettingsMotionAcceptance(QQuickWindow *window, AppController *controll
         if (tick == 1) controller->navigate(QStringLiteral("settings-account"));
         if (tick == 20) {
             state->settings = find("desktopSettingsScreen");
-            auto *sharing = find("accountActivitySharing");
-            auto *reports = find("accountCrashReports");
-            if (!require(state->settings && !state->settings->property("advancedOpen").toBool()
-                         && sharing && sharing->isVisible() && reports && reports->isVisible(),
-                         "privacy controls hidden behind Advanced")) return;
+            if (!require(state->settings && !state->settings->property("advancedOpen").toBool(),
+                         "settings opened with Advanced expanded")) return;
             state->settings->setProperty("selectedSection", 6);
         }
         if (tick == 21) {

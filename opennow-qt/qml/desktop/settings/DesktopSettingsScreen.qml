@@ -26,7 +26,7 @@ FocusScope {
     TenBitWarningDialog { id: tenBitWarning; settingsStore: ShellStore }
 
     readonly property var sections: [
-        {label: qsTr("Account"), detail: qsTr("Profile, membership, game stores"), icon: "person", page: 0, keywords: "profile subscription membership stores steam epic xbox ubisoft battle gaijin privacy connections"},
+        {label: qsTr("Account"), detail: qsTr("Profile, membership, game stores"), icon: "person", page: 0, keywords: "profile subscription membership stores steam epic xbox ubisoft battle gaijin connections"},
         {label: qsTr("Streaming quality"), detail: qsTr("Resolution, frame rate, bit rate"), icon: "monitor", page: 3, keywords: "resolution fps frame rate hdr color precision stats overlay timer bitrate bit rate codec g-sync gsync vrr backend gpu directx vulkan steam big picture launch gamepad fullscreen session ready persistent in-game graphics settings background reminder afk taskbar upscaling"},
         {label: qsTr("Server location"), detail: qsTr("Region, network test, proxy"), icon: "globe", page: 6, keywords: "server region location ping network test proxy"},
         {label: qsTr("Audio"), detail: qsTr("Output and microphone"), icon: "wave", page: 4, keywords: "sound audio volume output microphone mute focus"},
@@ -46,8 +46,6 @@ FocusScope {
         {title: qsTr("Membership"), detail: qsTr("Your plan, playtime left and when it resets"), page: 0},
         {title: qsTr("Refresh membership"), detail: qsTr("Reload your plan and playtime from NVIDIA."), page: 0},
         {title: qsTr("Profiles"), detail: qsTr("Manage saved account profiles"), page: 0},
-        {title: qsTr("Show what I am playing"), detail: qsTr("Discord activity sharing"), page: 0},
-        {title: qsTr("Crash reports"), detail: qsTr("Optional error reporting"), page: 0},
         {title: qsTr("Sign out"), detail: "", page: 0},
         {title: qsTr("Mode"), detail: "", page: 3},
         {title: qsTr("Resolution"), detail: qsTr("Stream resolution. The picture is scaled to fit your display."), page: 3},
@@ -644,7 +642,6 @@ FocusScope {
     function projectLinks() {
         return [
             {id: "diagnostics", label: qsTr("Copy diagnostics"), hint: "NO PERSONAL DATA"},
-            {id: "issues", label: qsTr("Report an issue"), hint: "↗"},
             {id: "source", label: qsTr("Source on GitHub"), hint: "↗"}
         ]
     }
@@ -654,8 +651,6 @@ FocusScope {
             return
         if (link.id === "source")
             AppController.openExternalUrl("https://github.com/miirys/OpenNOW")
-        else if (link.id === "issues")
-            AppController.openExternalUrl("https://github.com/miirys/OpenNOW/issues")
         else if (link.id === "diagnostics")
             ShellStore.exportDiagnostics()
     }

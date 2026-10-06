@@ -1583,7 +1583,6 @@ private slots:
             function inspectStreamerRecordingRequest() {}
             function inspectStreamerShortcutAction() {}
             function setStreamInputPaused() {}
-            function syncDiscordPresence() {}
             function sendNativeCommand() {}
             function updateStreamerFields(fields) { acceptStreamerSnapshot(Object.assign({}, streamer, fields)); }
         )JS")).isError());

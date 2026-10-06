@@ -9,7 +9,6 @@ mod console_profiles;
 mod credential_vault;
 mod device_identity;
 mod diagnostics;
-mod discord;
 mod frame_rate;
 mod gfn;
 mod language;
@@ -29,7 +28,6 @@ mod store_catalog_page;
 mod store_index;
 mod store_requests;
 mod streamer;
-mod telemetry;
 mod thanks;
 mod updater;
 mod version;
@@ -37,7 +35,6 @@ mod version;
 use fs2::FileExt;
 use gfn::GfnService;
 use opennow_core::update_apply;
-use rand::RngCore;
 use serde_json::{Map, Value, json};
 use settings::{PROFILE_LOCK_FILE, SettingsStore, prepare_data_dir, resolve_data_dir};
 use std::env;
@@ -64,8 +61,6 @@ struct AppCore {
     push: Mutex<push_registry::PushRegistry>,
     community: community::CommunityService,
     thanks: thanks::ThanksService,
-    discord: discord::DiscordService,
-    telemetry: telemetry::TelemetryService,
 }
 
 fn main() {
@@ -143,9 +138,6 @@ fn run() -> Result<(), String> {
             .map_err(|error| format!("Could not initialize community services: {error}"))?,
         thanks: thanks::ThanksService::new()
             .map_err(|error| format!("Could not initialize acknowledgements: {error}"))?,
-        discord: discord::DiscordService::new(),
-        telemetry: telemetry::TelemetryService::new()
-            .map_err(|error| format!("Could not initialize reporting services: {error}"))?,
     });
     reconcile_push(&core);
     let requests = Arc::new(requests::Requests::default());
@@ -399,7 +391,7 @@ fn dispatch(method: &str, params: &Value, core: &AppCore) -> DispatchResult {
                 ));
             }
             Ok((
-                json!({"protocolVersion":PROTOCOL_VERSION, "coreVersion":version::APPLICATION_VERSION, "capabilities":["settings", "gfn.deviceAuth", "gfn.providers", "gfn.publicCatalog", "catalog.storePages.v1", "catalog.libraryPages.v1", "catalog.metadata.v1", "account.syncObservation.v1", "account.pushInvalidation.v1", "catalog.languages.v1", "queue.servers.v1", "catalog.storeLocal.v1", "gfn.accountLibrary", "gfn.regions", "gfn.subscription", "gfn.cloudmatch", "sessionProxy", "catalogArtworkCache.v1", "nativeStreamer.v7", "nativeStreamer.ownedNvstNegotiation", "nativeStreamer.dynamicSurface", "nativeStreamer.acceptanceEvidence", "liveAcceptance.v1", "osCredentialStore", "electronAccountMigration", "redactedDiagnostics", "mediaLibrary", "githubUpdateDiscovery", "discordRpc", "optInTelemetry", "feedback", "bugReports", "social.capabilitySurface"]}),
+                json!({"protocolVersion":PROTOCOL_VERSION, "coreVersion":version::APPLICATION_VERSION, "capabilities":["settings", "gfn.deviceAuth", "gfn.providers", "gfn.publicCatalog", "catalog.storePages.v1", "catalog.libraryPages.v1", "catalog.metadata.v1", "account.syncObservation.v1", "account.pushInvalidation.v1", "catalog.languages.v1", "queue.servers.v1", "catalog.storeLocal.v1", "gfn.accountLibrary", "gfn.regions", "gfn.subscription", "gfn.cloudmatch", "sessionProxy", "catalogArtworkCache.v1", "nativeStreamer.v7", "nativeStreamer.ownedNvstNegotiation", "nativeStreamer.dynamicSurface", "nativeStreamer.acceptanceEvidence", "liveAcceptance.v1", "osCredentialStore", "electronAccountMigration", "redactedDiagnostics", "mediaLibrary", "githubUpdateDiscovery", "social.capabilitySurface"]}),
                 None,
             ))
         }
@@ -1113,80 +1105,11 @@ fn dispatch(method: &str, params: &Value, core: &AppCore) -> DispatchResult {
                 .map(|value| (value, None))
                 .map_err(|message| ("update_install_failed".to_owned(), message))
         }
-        "discord.activity.sync" => core
-            .discord
-            .sync(params)
-            .map(|value| (value, None))
-            .map_err(|message| ("discord_rpc_failed".to_owned(), message)),
-        "discord.activity.clear" => core
-            .discord
-            .clear()
-            .map(|value| (value, None))
-            .map_err(|message| ("discord_rpc_failed".to_owned(), message)),
-        "telemetry.sync" => {
-            let settings = core.settings.lock().expect("settings poisoned").all();
-            let consent = settings["errorReportingConsent"]
-                .as_str()
-                .unwrap_or("unset");
-            if consent != "granted" {
-                return Ok((json!({"enabled":false,"sent":false}), None));
-            }
-            let install_id = ensure_install_id(core)?;
-            core.telemetry
-                .sync(consent, &install_id)
-                .map(|value| (value, None))
-                .map_err(|message| ("telemetry_failed".to_owned(), message))
-        }
-        "feedback.submit" => {
-            let install_id = ensure_install_id(core)?;
-            core.telemetry
-                .feedback(&install_id, params)
-                .map(|value| (value, None))
-                .map_err(|message| ("feedback_failed".to_owned(), message))
-        }
-        "bug_report.submit" => {
-            let install_id = ensure_install_id(core)?;
-            let diagnostic =
-                if params["includeDiagnostics"].as_bool() == Some(true) {
-                    Some(core.diagnostics.export().map_err(|error| {
-                        ("diagnostics_export_failed".to_owned(), error.to_string())
-                    })?)
-                } else {
-                    None
-                };
-            let diagnostic_path = diagnostic
-                .as_ref()
-                .and_then(|value| value["path"].as_str())
-                .map(PathBuf::from);
-            core.telemetry
-                .bug_report(&install_id, params, diagnostic_path.as_deref())
-                .map(|value| (value, None))
-                .map_err(|message| ("bug_report_failed".to_owned(), message))
-        }
         _ => Err((
             "method_not_found".to_owned(),
             format!("Unknown core method: {method}"),
         )),
     }
-}
-
-fn ensure_install_id(core: &AppCore) -> Result<String, (String, String)> {
-    let mut settings = core.settings.lock().expect("settings poisoned");
-    let current = settings.all()["telemetryInstallId"]
-        .as_str()
-        .unwrap_or_default()
-        .replace('-', "");
-    let install_id = if telemetry::valid_install_id(&current) {
-        current
-    } else {
-        let mut bytes = [0_u8; 16];
-        rand::rng().fill_bytes(&mut bytes);
-        bytes.iter().map(|value| format!("{value:02x}")).collect()
-    };
-    settings
-        .set("telemetryInstallId", json!(install_id.clone()))
-        .map_err(|message| ("settings_write_failed".to_owned(), message))?;
-    Ok(install_id)
 }
 
 fn gfn_error(error: gfn::ServiceError) -> (String, String) {

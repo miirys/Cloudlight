@@ -281,8 +281,6 @@ FocusScope {
                 {t:"Profiles", d:"Each profile has its own My games shelf and settings", v:qsTr("%1 saved").arg(ShellStore.savedAccounts.length), route:"accounts"},
                 {t:"Profile PIN", d:"Ask for a 4-digit PIN when switching to this profile", v:"Set up", route:"profile-pin"},
                 toggle(qsTr("Persistent in-game settings"), qsTr("Keep your in-game graphics settings between sessions for supported games and memberships. Applies to new sessions."), "enablePersistingInGameSettings"),
-                toggle("Discord Rich Presence", "Show what you're playing on Discord", "discordRichPresence"),
-                choice("Error reporting", "Send anonymous crash reports to help fix Cloudlight", "errorReportingConsent", ["denied","granted"], ["Off","Anonymous"], "segments"),
                 {t:"Sign out", d:"Removes the NVIDIA token from this PC; My games stay", v:"Sign out of NVIDIA", action:"sign-out", danger:true},
                 {t:"Game accounts", d:"Steam, Epic, Ubisoft and Xbox", v:qsTr("%1 detected").arg(ShellStore.gameAccounts.length), route:"game-accounts"},
                 {t:"Persistent storage", d:ShellStore.subscription && ShellStore.subscription.storageAddon ? (ShellStore.subscription.storageAddon.regionName || "Cloud storage active") : "Manage cloud storage locations", v:"Open", route:"persistent-storage"}
@@ -558,8 +556,6 @@ FocusScope {
             shortcutEditorOpen = true
         } else if (row.action === "select-streamer") {
             streamerExecutableDialog.open()
-        } else if (row.action === "telemetry") {
-            ShellStore.setSetting("errorReportingConsent", ShellStore.settings.errorReportingConsent === "granted" ? "denied" : "granted")
         } else if (row.action === "sign-out") {
             ShellStore.logout()
         } else if (row.action === "anti-afk") {

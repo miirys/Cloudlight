@@ -432,8 +432,15 @@ and artwork only near the viewport, using the section's local category ID
 - `updater.state.get`, `updater.check`, `updater.download`, `updater.install`, `updater.startup.ack`
 - `updater.highlights.get`, `updater.highlights.ack`
 - `social.capabilities.get`
-- `discord.activity.sync`, `discord.activity.clear`
-- `telemetry.sync`, `feedback.submit`, `bug_report.submit`
+
+Cloudlight does not ship Discord Rich Presence, telemetry, feedback or bug-report
+upload. The former `discord.activity.sync`, `discord.activity.clear`,
+`telemetry.sync`, `feedback.submit` and `bug_report.submit` methods answer
+`method_not_found`, and the `discordRpc`, `optInTelemetry`, `feedback` and
+`bugReports` capabilities are no longer advertised. Settings files written by
+earlier builds may still contain `discordRichPresence`, `errorReportingConsent`
+or `telemetryInstallId`; the core drops those keys on load and rewrites the file
+without them.
 
 `diagnostics.export` optionally accepts `embeddedStream.drops` and
 `lastSessionReport.drops` from the Qt session owner. Each contains the cumulative
@@ -742,7 +749,7 @@ opennow-core --graphics-preferences
 ```
 
 This mode emits one JSON line, then exits without initializing account, network,
-catalog, telemetry, or streaming services:
+catalog, or streaming services:
 
 ```json
 {"version":1,"windowsGpuDeviceId":""}
@@ -1194,7 +1201,10 @@ suppression after cancellation. The full Electron API inventory remains tracked
 in [the machine-readable parity manifest](../native/opennow-core/contracts/legacy-open-now-api.json),
 validated against its [JSON schema](../native/opennow-core/contracts/legacy-open-now-api.schema.json)
 and executable golden-fixture tests. A method is not considered ported until its
-owner, wire shape, fixtures and replacement disposition are recorded there.
+owner, wire shape, fixtures and replacement disposition are recorded there. Legacy
+operations that Cloudlight deliberately dropped (Discord activity and bug-report
+upload) are recorded with the `removed` status, and the contract tests require that
+their former core methods are absent from the dispatcher.
 
 ### Push invalidation capability
 
