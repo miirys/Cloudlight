@@ -64,6 +64,14 @@ FocusScope {
             return qsTr("Not played yet")
         return DesktopTokens.relativeLastPlayed(raw, Date.now()) || qsTr("—")
     }
+    // GFN's store value NONE means the game runs from its publisher's own
+    // launcher (for example Wuthering Waves); name the publisher when known.
+    function storeName(store) {
+        const game = root.game || ({})
+        const publisher = String(game.publisherName || game.publisher || "").trim()
+        return String(store).toUpperCase() === "NONE" && publisher !== ""
+            ? qsTr("%1 launcher").arg(publisher) : DesktopTokens.storeLabel(store)
+    }
     readonly property string storesText: {
         const game = root.game
         if (!game)
@@ -72,7 +80,7 @@ FocusScope {
         const stores = fromStores.length
             ? fromStores
             : (game.variants || []).map(variant => variant && variant.store).filter(Boolean)
-        return stores.length ? stores.join(" · ") : qsTr("—")
+        return stores.length ? stores.map(store => root.storeName(store)).join(" · ") : qsTr("—")
     }
     readonly property bool isOwned: root.selectedVariant
         && ["MANUAL", "PLATFORM_SYNC"].indexOf(root.selectedVariant.libraryStatus) >= 0
@@ -82,19 +90,21 @@ FocusScope {
         const store = variant && variant.store
             ? String(variant.store)
             : ((game && game.availableStores && game.availableStores[0]) || "")
+        // NONE is the publisher's own launcher: no third-party store to name.
+        const direct = store.toUpperCase() === "NONE"
         if (store && root.isOwned)
-            return qsTr("Owned on %1").arg(store.toUpperCase())
+            return direct ? qsTr("In your library") : qsTr("Owned on %1").arg(DesktopTokens.storeLabel(store))
         if (store)
-            return store.toUpperCase()
+            return root.storeName(store)
         return root.isOwned ? qsTr("In library") : qsTr("Not owned")
     }
     readonly property string membershipText: {
         const sub = ShellStore.subscription
         if (sub && sub.membershipTier)
-            return String(sub.membershipTier).toUpperCase()
+            return DesktopTokens.genreLabel(sub.membershipTier)
         const user = ShellStore.authSession && ShellStore.authSession.user
         if (user && user.membershipTier)
-            return String(user.membershipTier).toUpperCase()
+            return DesktopTokens.genreLabel(user.membershipTier)
         return ""
     }
     readonly property string resolutionText: {
@@ -145,19 +155,21 @@ FocusScope {
         if (root.gameAvailable)
             add(qsTr("Ready to play"))
         else if (game.playabilityState)
-            add(String(game.playabilityState).replace(/_/g, " "))
+            add(DesktopTokens.genreLabel(game.playabilityState))
         const playType = String(game.playType || "").replace(/_/g, " ")
         if (playType && playType.toUpperCase() !== "READY TO PLAY")
-            add(playType)
+            add(DesktopTokens.genreLabel(playType))
         const controls = game.supportedControls || []
         for (let i = 0; i < controls.length; ++i) {
             const control = String(controls[i] || "").toUpperCase()
             if (control === "GAMEPAD")
                 add(qsTr("Controller"))
-            else if (control === "KEYBOARD_MOUSE" || control === "KEYBOARD AND MOUSE")
-                add(qsTr("Keyboard"))
+            else if (control.indexOf("KEYBOARD") === 0 || control === "MOUSE")
+                add(qsTr("Keyboard and mouse"))
+            else if (control === "TOUCH")
+                add(qsTr("Touch"))
             else if (control)
-                add(control.replace(/_/g, " "))
+                add(DesktopTokens.genreLabel(control))
         }
         if (root.hasRtx)
             add("RTX")
@@ -453,7 +465,7 @@ FocusScope {
                                         required property var modelData
                                         required property int index
                                         objectName: "desktopStoreVariant" + index
-                                        text: String(modelData.store || qsTr("Unknown"))
+                                        text: modelData.store ? root.storeName(modelData.store) : qsTr("Unknown")
                                         height: DesktopTokens.px(36)
                                         leftPadding: DesktopTokens.px(12)
                                         rightPadding: DesktopTokens.px(14)

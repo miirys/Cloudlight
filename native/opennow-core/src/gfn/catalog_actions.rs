@@ -138,33 +138,43 @@ pub(super) fn account_decision(
     }
     let store =
         crate::catalog_types::normalize_store(variant["store"].as_str().unwrap_or_default());
-    let Some(account) = access["accounts"]
+    let account = access["accounts"]
         .as_array()
-        .and_then(|accounts| accounts.iter().find(|account| account["provider"] == store))
-    else {
-        return Some(decide(
-            MetadataUnconfirmed,
-            "The selected store's account requirements are unavailable. Refresh and try again.",
-        ));
-    };
-    let linking = &account["accountLinkingMetadata"];
-    let applies = linking["supportedVariantIds"]
-        .as_array()
-        .is_none_or(|ids| ids.is_empty() || ids.iter().any(|id| id == variant_id));
-    if applies
-        && account["isRequired"] == true
-        && (account["isConnected"] != true || account["status"] == "expired")
-    {
-        return Some(decide(
-            LinkRequired,
-            "Link or reconnect the selected store account in Settings before launching this version.",
-        ));
-    }
-    if applies && account["supportsLinking"] == true && !account["isRequired"].is_boolean() {
-        return Some(decide(
-            MetadataUnconfirmed,
-            "The selected store's linking requirement could not be confirmed.",
-        ));
+        .and_then(|accounts| accounts.iter().find(|account| account["provider"] == store));
+    match account {
+        // A variant without a third-party store (the publisher's own launcher)
+        // has no store account to link; only the subscription checks apply.
+        None if crate::account_connections::is_sentinel_store(&store) => {}
+        None => {
+            return Some(decide(
+                MetadataUnconfirmed,
+                "The selected store's account requirements are unavailable. Refresh and try again.",
+            ));
+        }
+        Some(account) => {
+            let linking = &account["accountLinkingMetadata"];
+            let applies = linking["supportedVariantIds"]
+                .as_array()
+                .is_none_or(|ids| ids.is_empty() || ids.iter().any(|id| id == variant_id));
+            if applies
+                && account["isRequired"] == true
+                && (account["isConnected"] != true || account["status"] == "expired")
+            {
+                return Some(decide(
+                    LinkRequired,
+                    "Link or reconnect the selected store account in Settings before launching this version.",
+                ));
+            }
+            if applies
+                && account["supportsLinking"] == true
+                && !account["isRequired"].is_boolean()
+            {
+                return Some(decide(
+                    MetadataUnconfirmed,
+                    "The selected store's linking requirement could not be confirmed.",
+                ));
+            }
+        }
     }
     if let Some(id) = variant["subscription"].as_str().filter(|id| !id.is_empty()) {
         if !access["subscriptions"]

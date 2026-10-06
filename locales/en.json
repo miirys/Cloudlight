@@ -4023,6 +4023,9 @@
     "s_cl_148": "Your plan could not be loaded. Try refreshing.",
     "s_cl_149": "Your plan, playtime left and when it resets",
     "s_cl_150": "includes %1 rolled over",
-    "s_cl_151": "Session running"
+    "s_cl_151": "Session running",
+    "s_cl_152": "%1 launcher",
+    "s_cl_153": "Keyboard and mouse",
+    "s_cl_154": "Remove from library"
   }
 }

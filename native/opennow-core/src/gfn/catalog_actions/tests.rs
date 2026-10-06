@@ -801,3 +801,25 @@ fn membership_requirements_preserve_all_existing_tier_cases_in_the_shared_policy
         );
     }
 }
+
+#[test]
+fn publisher_launcher_variants_need_no_store_account() {
+    // Wuthering Waves and Zenless Zone Zero list a NONE variant (the publisher's
+    // own launcher) next to EPIC. NONE has no linkable account, so the store
+    // account list has no entry for it; that must not block the launch.
+    let mut raw = app("MANUAL", true, false);
+    raw["variants"][0]["appStore"] = json!("NONE");
+    let game = app_to_game(&raw).unwrap();
+    let account = access();
+    assert_eq!(
+        super::launch_decision(&game, "parent-app", "123", &Value::Null, &account).status,
+        LaunchStatus::Ready
+    );
+    // A real store with no account metadata still asks for a refresh.
+    raw["variants"][0]["appStore"] = json!("GOG");
+    let game = app_to_game(&raw).unwrap();
+    assert_eq!(
+        super::launch_decision(&game, "parent-app", "123", &Value::Null, &account).status,
+        LaunchStatus::MetadataUnconfirmed
+    );
+}

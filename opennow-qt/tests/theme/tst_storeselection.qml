@@ -58,7 +58,7 @@ TestCase {
         compare(modal.selectedVariant.id, "1003")
         verify(xbox.checked)
         verify(!steam.checked)
-        compare(modal.ownershipText, "OWNED ON XBOX")
+        compare(modal.ownershipText, "Owned on Xbox")
         compare(launches.count, 0)
         waitForRendering(modal)
         mouseClick(findChild(modal, "desktopGamePlay"))
