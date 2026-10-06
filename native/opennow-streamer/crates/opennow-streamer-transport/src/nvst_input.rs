@@ -512,12 +512,11 @@ pub(crate) fn server_cursor_messages(bytes: &[u8]) -> Vec<NvstServerCursorMessag
                 });
             }
             COMMAND_BITMAP_CURSOR if payload.len() >= 8 => {
-                // Bitmap cursor payloads have a distinct native pixel layout
-                // that is not decoded yet. A bitmap cursor is still a visible
-                // host cursor: without this the client stayed in the hidden,
-                // relative state of the previous message and showed no
-                // pointer at all. Show the standard arrow until the bitmap
-                // layout is known; the raw bytes go to the streamer log.
+                // A game's own cursor image. It is drawn locally when its
+                // pixels can be decoded; otherwise the marker ID makes Qt
+                // leave the game's in-video cursor alone. Either way it is a
+                // visible cursor with absolute input, never the hidden,
+                // relative state of a previous message.
                 updates.push(NvstServerCursorMessage {
                     command: code,
                     offset,
@@ -525,7 +524,10 @@ pub(crate) fn server_cursor_messages(bytes: &[u8]) -> Vec<NvstServerCursorMessag
                     cursor_id: None,
                     position: None,
                     visible: Some(true),
-                    normalized: Some(vec![0, BITMAP_CURSOR_FALLBACK_ID, 0, 0, 0, 0, 0]),
+                    normalized: Some(
+                        crate::nvst_cursor_bitmap::normalized_bitmap_cursor(payload)
+                            .unwrap_or_else(|| vec![0, BITMAP_CURSOR_FALLBACK_ID, 0, 0, 0, 0, 0]),
+                    ),
                 });
             }
             _ => {}
