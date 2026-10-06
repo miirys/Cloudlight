@@ -723,7 +723,8 @@ private slots:
             item.applyRemoteCursor(QByteArray::fromHex("0002"));
             QCOMPARE(item.cursor().shape(), Qt::IBeamCursor);
             session.composition(true);
-            QTRY_COMPARE(item.cursor().shape(), Qt::BlankCursor);
+            // RDP-style: server composition no longer hides the local cursor.
+            QTRY_COMPARE(item.cursor().shape(), Qt::IBeamCursor);
             session.composition(false);
             QTRY_COMPARE(item.cursor().shape(), Qt::IBeamCursor);
             item.applyRemoteCursor(QByteArray::fromHex("0000"));
