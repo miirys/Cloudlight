@@ -3192,7 +3192,9 @@ private slots:
         item.m_pressedMouseButtons.insert(1);
         item.applyRemoteCursor(QByteArray::fromHex("0000"));
         QVERIFY(!item.relativeMouse());
-        QCOMPARE(item.cursor().shape(), Qt::IBeamCursor);
+        // The input mode waits for the release, the local arrow does not:
+        // keeping it mid-drag left a second pointer over the game's own.
+        QCOMPARE(item.cursor().shape(), Qt::BlankCursor);
         item.releaseInput();
         QVERIFY(item.relativeMouse());
         QCOMPARE(item.cursor().shape(), Qt::ArrowCursor);
