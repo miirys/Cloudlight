@@ -165,9 +165,7 @@ pub(super) fn account_decision(
                     "Link or reconnect the selected store account in Settings before launching this version.",
                 ));
             }
-            if applies
-                && account["supportsLinking"] == true
-                && !account["isRequired"].is_boolean()
+            if applies && account["supportsLinking"] == true && !account["isRequired"].is_boolean()
             {
                 return Some(decide(
                     MetadataUnconfirmed,
