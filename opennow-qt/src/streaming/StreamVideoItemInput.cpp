@@ -1099,6 +1099,7 @@ void StreamVideoItem::setRelativeMouse(bool relative)
     // Focus loss/overlays still release everything through releaseInput().
     if (!m_pressedMouseButtons.isEmpty()) {
         m_pendingRelativeMouse = relative;
+        updateLocalCursor();
         return;
     }
     m_pendingRelativeMouse.reset();
@@ -1136,7 +1137,13 @@ void StreamVideoItem::updateLocalCursor()
         unsetCursor();
         return;
     }
-    if (m_relativeMouse || (m_serverCursorComposited && m_manualRelativeMouse != false)) {
+    // The input mode switch waits for the buttons to come up, but the picture
+    // must not: when a game hides its cursor during a drag (camera drags, drag
+    // and drop), the local arrow goes at once, as on GeForce NOW. Keeping it
+    // until release left a second pointer over the game's own.
+    const bool hiddenDuringDrag = m_pendingRelativeMouse.value_or(false);
+    if (m_relativeMouse || hiddenDuringDrag
+            || (m_serverCursorComposited && m_manualRelativeMouse != false)) {
         setCursor(Qt::BlankCursor);
         return;
     }

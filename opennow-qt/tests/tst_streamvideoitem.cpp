@@ -631,6 +631,24 @@ private slots:
         QVERIFY(!item.relativeMouse());
     }
 
+    void cursorHiddenDuringDragBlanksAtOnceAndSwitchesModeOnRelease()
+    {
+        StreamVideoItem item;
+        item.m_captureActive = true;
+        item.m_serverCursorComposited = false;
+        item.m_remoteCursorKnown = true;
+        item.setRemoteCursorShape(QCursor(Qt::ArrowCursor));
+        QCOMPARE(item.cursor().shape(), Qt::ArrowCursor);
+        item.m_pressedMouseButtons.insert(1);
+        item.applyRemoteCursor(QByteArray::fromHex("0000"));
+        // The mode switch waits for the release; the local arrow does not.
+        QVERIFY(!item.relativeMouse());
+        QVERIFY(item.m_pendingRelativeMouse.value_or(false));
+        QCOMPARE(item.cursor().shape(), Qt::BlankCursor);
+        item.applyRemoteCursor(QByteArray::fromHex("0001"));
+        QCOMPARE(item.cursor().shape(), Qt::ArrowCursor);
+    }
+
     void macCursorVisibilityTracksCaptureAndServerHandoff()
     {
         StreamVideoItem item;
