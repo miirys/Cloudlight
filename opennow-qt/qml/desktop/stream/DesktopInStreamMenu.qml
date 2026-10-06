@@ -289,17 +289,17 @@ FocusScope {
 
     Component { id: pageBacking; Rectangle { z: -1; anchors.fill: parent; color: OverlayStyle.body } }
     Component { id: mainPage; OverlayMainPage { menu: root } }
-    Component { id: galleryPage; OverlayGalleryPage {} }
-    Component { id: filtersPage; OverlayFiltersPage {} }
-    Component { id: settingsPage; OverlaySettingsPage {} }
-    Component { id: generalPage; OverlayGeneralPage {} }
-    Component { id: gameplayPage; OverlayGameplayPage {} }
-    Component { id: systemPage; OverlaySystemPage {} }
-    Component { id: shortcutsPage; OverlayShortcutsPage {} }
-    Component { id: hudPage; OverlayHudPage {} }
-    Component { id: notificationsPage; OverlayNotificationsPage {} }
-    Component { id: capturePage; OverlayCapturePage {} }
-    Component { id: filesPage; OverlayFilesPage {} }
+    Component { id: galleryPage; OverlayGalleryPage { menu: root } }
+    Component { id: filtersPage; OverlayFiltersPage { menu: root } }
+    Component { id: settingsPage; OverlaySettingsPage { menu: root } }
+    Component { id: generalPage; OverlayGeneralPage { menu: root } }
+    Component { id: gameplayPage; OverlayGameplayPage { menu: root } }
+    Component { id: systemPage; OverlaySystemPage { menu: root } }
+    Component { id: shortcutsPage; OverlayShortcutsPage { menu: root } }
+    Component { id: hudPage; OverlayHudPage { menu: root } }
+    Component { id: notificationsPage; OverlayNotificationsPage { menu: root } }
+    Component { id: capturePage; OverlayCapturePage { menu: root } }
+    Component { id: filesPage; OverlayFilesPage { menu: root } }
 
     onOpenedChanged: if (opened) {
         closing = false
