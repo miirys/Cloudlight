@@ -366,7 +366,6 @@ qt_add_qml_module(opennow-qt
         qml/overlays/SessionReportOverlay.qml
         qml/screens/AccountsScreen.qml
         qml/screens/DiagnosticsScreen.qml
-        qml/screens/FeedbackScreen.qml
         qml/screens/GameAccountsScreen.qml
         qml/screens/GameDetailScreen.qml
         qml/screens/HomeScreen.qml

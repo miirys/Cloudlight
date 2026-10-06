@@ -75,6 +75,12 @@ fn protocol_five_shells_receive_the_paged_library_capabilities() {
     ] {
         assert!(capabilities.contains(&json!(capability)));
     }
+    for removed in ["discordRpc", "optInTelemetry", "feedback", "bugReports"] {
+        assert!(
+            !capabilities.contains(&json!(removed)),
+            "core still advertises {removed}"
+        );
+    }
 }
 
 #[test]

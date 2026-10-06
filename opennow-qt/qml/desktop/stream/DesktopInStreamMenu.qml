@@ -152,7 +152,6 @@ FocusScope {
             onBackRequested: root.back()
             onCloseRequested: root.runAction(0)
             onSettingsRequested: root.openPage("settings")
-            onFeedbackRequested: AppController.openExternalUrl("https://github.com/miirys/OpenNOW/issues")
         }
 
         // A small page stack of our own: pages are created on push and

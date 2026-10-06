@@ -105,7 +105,7 @@ ApplicationWindow {
         || (effectiveLaunchMode !== "console" && !consolePreferred)
     readonly property bool desktopEligibleRoute: ["joining",
         "accounts", "profile-pin", "game-accounts", "persistent-storage", "media",
-        "diagnostics", "feedback", "theme-store"].indexOf(activeRoute) < 0
+        "diagnostics", "theme-store"].indexOf(activeRoute) < 0
     readonly property bool targetDesktopSurface: streamSurfaceLocked
         ? lockedStreamDesktopSurface : onboardingVisible || (desktopRequested && desktopEligibleRoute)
     readonly property bool streamQmlOverlayActive: (activeRoute === "stream" || activeRoute === "inserting")
@@ -504,8 +504,6 @@ ApplicationWindow {
             return diagnosticsScreen
         if (route === "updates")
             return updateScreen
-        if (route === "feedback")
-            return feedbackScreen
         return homeScreen
     }
 
@@ -816,7 +814,6 @@ ApplicationWindow {
                 "media": qsTr("Captures"),
                 "diagnostics": qsTr("Diagnostics"),
                 "updates": qsTr("Updates"),
-                "feedback": qsTr("Feedback"),
                 "friends": qsTr("Friends"),
                 "friend-actions": qsTr("Friend actions"),
                 "quick-settings": qsTr("Quick settings"),
@@ -917,5 +914,4 @@ ApplicationWindow {
     Component { id: mediaScreen; MediaScreen {} }
     Component { id: diagnosticsScreen; DiagnosticsScreen {} }
     Component { id: updateScreen; UpdateScreen {} }
-    Component { id: feedbackScreen; FeedbackScreen {} }
 }

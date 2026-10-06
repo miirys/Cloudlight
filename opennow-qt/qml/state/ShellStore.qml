@@ -64,8 +64,6 @@ QtObject {
         nativeRuntimeCapabilities: root.nativeRuntimeCapabilities
         refreshAccountServices: root.refreshAccountServices
         refreshStreamerDetection: root.refreshStreamerDetection
-        syncDiscordPresence: root.syncDiscordPresence
-        syncTelemetry: root.syncTelemetry
         lastError: root.lastError
         onConsoleSurfaceRequested: enabled => root.consoleSurfaceRequested(enabled)
         onAccessibilityAnnounced: message => root.accessibilityMessage = message
@@ -341,8 +339,6 @@ QtObject {
         localControllerJoin: true,
         reason: qsTr("Checking provider social capabilities…")
     })
-    property string reportingMessage: ""
-    property string reportingState: "idle"
     property string pinMode: "unlock"
     property string pinTargetUserId: ""
     property string pinTargetName: qsTr("Profile")
@@ -732,11 +728,7 @@ QtObject {
     property string updaterDownloadRequestId: ""
     property string updaterInstallRequestId: ""
     property string socialCapabilitiesRequestId: ""
-    property string discordRequestId: ""
     property double streamStartedAtMs: 0
-    property string telemetryRequestId: ""
-    property string feedbackRequestId: ""
-    property string bugReportRequestId: ""
     property string streamInputPauseRequestId: ""
     property string streamControlRequestId: ""
     property string streamControlAction: ""
@@ -1486,36 +1478,6 @@ QtObject {
             CoreClient.request("updater.highlights.ack", {version: releaseHighlights.version})
     }
 
-    function syncTelemetry() {
-        if (!ready || telemetryRequestId !== "")
-            return
-        telemetryRequestId = CoreClient.request("telemetry.sync", {}, 30000)
-    }
-
-    function submitFeedback(category, message) {
-        if (!ready || feedbackRequestId !== "")
-            return
-        reportingState = "submitting"
-        reportingMessage = qsTr("Sending feedback…")
-        feedbackRequestId = CoreClient.request("feedback.submit", {
-            category: category,
-            message: message,
-            includeSystemInfo: true
-        }, 30000)
-    }
-
-    function submitBugReport(title, description, includeDiagnostics) {
-        if (!ready || bugReportRequestId !== "")
-            return
-        reportingState = "submitting"
-        reportingMessage = qsTr("Uploading bug report…")
-        bugReportRequestId = CoreClient.request("bug_report.submit", {
-            title: title,
-            description: description,
-            includeDiagnostics: includeDiagnostics
-        }, 60000)
-    }
-
     function switchAccount(userId, pin) {
         cancelDeviceLogin()
         if (ready && accountSwitchRequestId === "") {
@@ -1996,7 +1958,6 @@ QtObject {
             streamMessage = qsTr("")
             streamPollTimer.stop()
             streamStartedAtMs = 0
-            syncDiscordPresence()
             return
         }
         // A seat still being ready does not mean its media path recovered.
@@ -2026,27 +1987,6 @@ QtObject {
                 : sessionSetupProgress.title + "\n" + sessionSetupProgress.detail
             streamPollTimer.restart()
         }
-        syncDiscordPresence()
-    }
-
-    function syncDiscordPresence() {
-        if (!ready || discordRequestId !== "")
-            return
-        if (!Boolean(settings.discordRichPresence) || !activeSession) {
-            discordRequestId = CoreClient.request("discord.activity.clear", {}, 5000)
-            return
-        }
-        const status = Number(activeSession.status || 0)
-        const kind = status >= 3 ? "streaming"
-            : Number(activeSession.queuePosition || 0) > 0 ? "queued" : "starting"
-        discordRequestId = CoreClient.request("discord.activity.sync", {
-            enabled: true,
-            gameName: selectedGame ? selectedGame.title : String(activeSession.appId || "GeForce NOW"),
-            gameImageUrl: selectedGame ? (selectedGame.boxArtUrl || selectedGame.imageUrl || "") : "",
-            kind: kind,
-            queuePosition: Number(activeSession.queuePosition || 0),
-            startTimestampMs: streamStartedAtMs
-        }, 5000)
     }
 
     function reportSessionAd(action, ad, watchedTimeMs, cancelReason) {
@@ -3467,8 +3407,6 @@ QtObject {
             } else if (requestId === root.settingsRequestId && result.settings) {
                 settingsOwner.acceptSettings(result)
                 root.resolveDirectLaunch()
-                root.syncTelemetry()
-                root.syncDiscordPresence()
                 root.refreshStreamerDetection()
             } else if (requestId === root.consoleSurfaceRequestId) {
                 settingsOwner.acceptConsoleSurface(result)
@@ -3721,20 +3659,6 @@ QtObject {
             } else if (requestId === root.socialCapabilitiesRequestId) {
                 root.socialCapabilitiesRequestId = ""
                 root.socialCapabilities = result
-            } else if (requestId === root.discordRequestId) {
-                root.discordRequestId = ""
-            } else if (requestId === root.telemetryRequestId) {
-                root.telemetryRequestId = ""
-            } else if (requestId === root.feedbackRequestId) {
-                root.feedbackRequestId = ""
-                root.reportingState = "sent"
-                root.reportingMessage = result.message || qsTr("Thanks — your feedback was sent.")
-            } else if (requestId === root.bugReportRequestId) {
-                root.bugReportRequestId = ""
-                root.reportingState = "sent"
-                root.reportingMessage = result.reference
-                    ? qsTr("Bug report sent · reference %1").arg(result.reference)
-                    : qsTr("Bug report sent successfully.")
             } else if (requestId === root.sessionAdRequestId) {
                 root.sessionAdRequestId = ""
                 root.acceptStreamingSession(result.session || root.activeSession)
@@ -3999,18 +3923,6 @@ QtObject {
                 root.socialCapabilities = Object.assign({}, root.socialCapabilities, {
                     reason: qsTr("Provider social capabilities could not be checked.")
                 })
-            } else if (requestId === root.discordRequestId) {
-                root.discordRequestId = ""
-            } else if (requestId === root.telemetryRequestId) {
-                root.telemetryRequestId = ""
-            } else if (requestId === root.feedbackRequestId) {
-                root.feedbackRequestId = ""
-                root.reportingState = "error"
-                root.reportingMessage = message
-            } else if (requestId === root.bugReportRequestId) {
-                root.bugReportRequestId = ""
-                root.reportingState = "error"
-                root.reportingMessage = message
             } else if (requestId === root.sessionAdRequestId) {
                 root.sessionAdRequestId = ""
                 root.streamMessage = message

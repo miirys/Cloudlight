@@ -203,7 +203,7 @@ TestCase {
 
     function test_completionFlagCannotBeSetThroughControls() {
         state.setSetting("onboardingCompleted", true)
-        state.setSetting("errorReportingConsent", "granted")
+        state.setSetting("autoCheckForUpdates", false)
         compare(Object.keys(state.draft).length, 0)
         verify(state.needed)
     }

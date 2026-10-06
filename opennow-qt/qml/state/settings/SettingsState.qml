@@ -12,8 +12,6 @@ QtObject {
     required property var nativeRuntimeCapabilities
     required property var refreshAccountServices
     required property var refreshStreamerDetection
-    required property var syncDiscordPresence
-    required property var syncTelemetry
     required property string lastError
     signal consoleSurfaceRequested(bool enabled)
     signal accessibilityAnnounced(string message)
@@ -768,10 +766,6 @@ QtObject {
             appController.reducedMotion = Boolean(value)
         if (key === "appLanguage")
             i18n.setLocale(String(value || "system"))
-        if (key === "discordRichPresence")
-            syncDiscordPresence()
-        if (key === "errorReportingConsent")
-            syncTelemetry()
     }
 
     function acceptSettings(result) {

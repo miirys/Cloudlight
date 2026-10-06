@@ -336,6 +336,7 @@ impl DiagnosticsService {
         })
     }
 
+    #[cfg(test)]
     pub fn export(&self) -> io::Result<Value> {
         self.export_with_runtime(None)
     }

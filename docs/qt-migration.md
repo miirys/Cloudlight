@@ -117,7 +117,7 @@ stream without creating another application window or presenter process.
 - [x] Implement signed update discovery, channels, highlights, automatic checks, trusted external URLs, Ed25519 verification, atomic install and rollback. Production signing credentials and release assets remain a Phase 8 release gate.
 - [x] Screenshots, media listing, generated recording thumbnails and reveal-in-folder.
 - [x] Record the negotiated H.264, H.265 or AV1 source stream and Opus audio into an atomic Matroska file without re-encoding; malformed configuration, discontinuity and bounded-queue overflow fail closed.
-- [x] Discord presence, telemetry consent, feedback and bug reports.
+- [x] Discord presence, telemetry consent, feedback and bug reports (later removed from Cloudlight).
 
 ### 6. Native streaming
 
@@ -161,7 +161,7 @@ stream without creating another application window or presenter process.
 - [x] Port account connections.
 - [x] Port fresh-session lifecycle and CloudMatch coordination for NVST-only media sessions.
 - [x] Port active-session claim, recovery and native-owned NVST RTSP negotiation.
-- [x] Port updater discovery/channels, media library, diagnostics, Discord and opt-in telemetry.
+- [x] Port updater discovery/channels, media library and diagnostics (Discord and opt-in telemetry were ported, then removed from Cloudlight).
 - [x] No temporary Node service was introduced.
 
 ### 8. Packaging and migration

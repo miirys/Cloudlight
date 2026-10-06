@@ -61,7 +61,7 @@ fn legacy_api_manifest_is_complete_unique_and_fixture_backed() {
         );
         assert!(matches!(
             fields[6].as_str(),
-            Some("ported" | "superseded" | "pending")
+            Some("ported" | "superseded" | "pending" | "removed")
         ));
         assert!(fields.get(7).is_some(), "{name} request fixture");
         assert!(fields.get(8).is_some(), "{name} result fixture");
@@ -108,5 +108,35 @@ fn every_ported_core_rpc_is_present_in_the_dispatcher() {
                 fields[0]
             );
         }
+    }
+}
+
+#[test]
+fn removed_core_rpcs_are_absent_from_the_dispatcher() {
+    let manifest: Value = serde_json::from_str(MANIFEST).unwrap();
+    let mut removed = 0;
+    for operation in manifest["operations"].as_array().unwrap() {
+        let fields = operation.as_array().unwrap();
+        if fields[6] != "removed" {
+            continue;
+        }
+        removed += 1;
+        assert_eq!(fields[4], "core", "{} removed outside the core", fields[0]);
+        let method = fields[5].as_str().unwrap();
+        assert!(
+            !CORE_DISPATCH.contains(&format!("\"{method}\"")),
+            "{} is recorded as removed but core still dispatches {method}",
+            fields[0]
+        );
+    }
+    assert_eq!(
+        removed, 3,
+        "Discord activity and bug-report upload are removed"
+    );
+    for method in ["telemetry.sync", "feedback.submit"] {
+        assert!(
+            !CORE_DISPATCH.contains(&format!("\"{method}\"")),
+            "core still dispatches {method}"
+        );
     }
 }

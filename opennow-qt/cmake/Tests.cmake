@@ -1130,7 +1130,7 @@ if(BUILD_TESTING)
         endforeach()
     endif()
 
-    foreach(route home library store theme-store controllers settings settings-account settings-streaming settings-video settings-video-dropdown settings-input settings-network settings-themes settings-advanced settings-advanced-dropdown game-detail game-detail-platform-dropdown sign-in joining inserting stream accounts profile-pin game-accounts persistent-storage media diagnostics updates feedback)
+    foreach(route home library store theme-store controllers settings settings-account settings-streaming settings-video settings-video-dropdown settings-input settings-network settings-themes settings-advanced settings-advanced-dropdown game-detail game-detail-platform-dropdown sign-in joining inserting stream accounts profile-pin game-accounts persistent-storage media diagnostics updates)
         add_test(NAME "qml-route-${route}"
                  COMMAND opennow-qt --smoke-test --allow-multiple-instances
                          --console --route "${route}" --reduced-motion)
