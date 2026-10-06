@@ -246,6 +246,8 @@ private:
     bool m_remoteCursorKnown = false;
     bool m_serverCursorComposited = true;
     bool m_remoteCursorVisible = false;
+    // The host cursor still has a shape but the game hid it (visible=0).
+    bool m_remoteCursorHostHidden = false;
     QCursor m_remoteCursor;
     std::optional<bool> m_pendingRelativeMouse;
     std::optional<bool> m_manualRelativeMouse;

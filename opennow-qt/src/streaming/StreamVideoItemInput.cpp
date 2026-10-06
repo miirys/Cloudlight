@@ -1142,7 +1142,7 @@ void StreamVideoItem::updateLocalCursor()
     // and drop), the local arrow goes at once, as on GeForce NOW. Keeping it
     // until release left a second pointer over the game's own.
     const bool hiddenDuringDrag = m_pendingRelativeMouse.value_or(false);
-    if (m_relativeMouse || hiddenDuringDrag
+    if (m_relativeMouse || hiddenDuringDrag || m_remoteCursorHostHidden
             || (m_serverCursorComposited && m_manualRelativeMouse != false)) {
         setCursor(Qt::BlankCursor);
         return;
@@ -1154,6 +1154,7 @@ void StreamVideoItem::resetRemoteCursor()
 {
     m_remoteCursorKnown = false;
     m_remoteCursorVisible = false;
+    m_remoteCursorHostHidden = false;
     m_serverCursorComposited = s_nativeRuntime ? s_nativeRuntime->serverCursorComposited() : true;
     m_remoteCursor = QCursor();
     setRelativeMouse(m_manualRelativeMouse.value_or(false));
@@ -1179,6 +1180,11 @@ void StreamVideoItem::applyRemoteCursor(const QByteArray &bytes)
     const auto metadata = remoteCursorMetadata(bytes);
     m_remoteCursorKnown = true;
     m_remoteCursorVisible = !hidden;
+    // The streamer appends a 0 after the position when the game hid its
+    // cursor without releasing the pointer (visible=0). Stop drawing the
+    // local arrow over the game, but keep absolute input: only ID 0 locks.
+    m_remoteCursorHostHidden = messageType == 0 && !hidden && bytes.size() == 12
+        && static_cast<quint8>(bytes[11]) == 0;
     setRelativeMouse(m_manualRelativeMouse.value_or(hidden));
     updateLocalCursor();
     if (hidden) return;

@@ -22,6 +22,8 @@ const CUSTOM_PARTIAL_MAX_RETRANSMITS: u16 = 2;
 
 const COMMAND_SYSTEM_CURSOR: u16 = 0x010f;
 const COMMAND_BITMAP_CURSOR: u16 = 0x0110;
+/// Predefined arrow shown for bitmap cursors until their layout is decoded.
+const BITMAP_CURSOR_FALLBACK_ID: u8 = 1;
 const COMMAND_KEEPALIVE: u16 = 0x0200;
 const COMMAND_REMOTE_INPUT: u16 = 0x0206;
 const COMMAND_ENABLE_INPUT: u16 = 0x020b;
@@ -487,6 +489,14 @@ pub(crate) fn server_cursor_messages(bytes: &[u8]) -> Vec<NvstServerCursorMessag
                     let mut normalized = vec![0, cursor_id, 0, 0, 0, 0, 0];
                     if payload.len() >= 8 {
                         normalized.extend_from_slice(&payload[4..8]);
+                        // A host cursor the game has hidden (ShowCursor(FALSE),
+                        // as during camera drags) keeps its ID with visible=0.
+                        // Forward that as a trailing 0 so the client stops
+                        // drawing its arrow over the game; it does not select
+                        // locked input.
+                        if visible == Some(false) {
+                            normalized.push(0);
+                        }
                     }
                     normalized
                 });
@@ -501,17 +511,20 @@ pub(crate) fn server_cursor_messages(bytes: &[u8]) -> Vec<NvstServerCursorMessag
                 });
             }
             COMMAND_BITMAP_CURSOR if payload.len() >= 8 => {
-                // Bitmap cursor payloads have a distinct native pixel layout.
-                // Keep detecting them explicitly so they cannot be mistaken for
-                // input/control commands while raw bitmap support is added.
+                // Bitmap cursor payloads have a distinct native pixel layout
+                // that is not decoded yet. A bitmap cursor is still a visible
+                // host cursor: without this the client stayed in the hidden,
+                // relative state of the previous message and showed no
+                // pointer at all. Show the standard arrow until the bitmap
+                // layout is known; the raw bytes go to the streamer log.
                 updates.push(NvstServerCursorMessage {
                     command: code,
                     offset,
                     raw: bytes[offset..payload_end].to_vec(),
                     cursor_id: None,
                     position: None,
-                    visible: None,
-                    normalized: None,
+                    visible: Some(true),
+                    normalized: Some(vec![0, BITMAP_CURSOR_FALLBACK_ID, 0, 0, 0, 0, 0]),
                 });
             }
             _ => {}
@@ -1580,7 +1593,10 @@ mod tests {
         concatenated.extend_from_slice(&hex("0f0109000c0000000000000000"));
         assert_eq!(
             server_cursor_updates(&concatenated),
-            vec![hex("000100000000000c801680"), hex("000c000000000000000000")]
+            vec![
+                hex("000100000000000c801680"),
+                hex("000c00000000000000000000")
+            ]
         );
 
         assert_eq!(
@@ -1593,6 +1609,16 @@ mod tests {
         );
         assert!(server_cursor_updates(&hex("0f010400010000")).is_empty());
         assert!(server_cursor_updates(&hex("0a0102007b7d")).is_empty());
+    }
+
+    #[test]
+    fn invisible_system_cursor_keeps_its_id_and_marks_hidden() {
+        // ID 1 at (0x800c, 0x8016) with the visibility byte cleared keeps
+        // its ID (no locked input) and carries a trailing hidden marker.
+        assert_eq!(
+            server_cursor_updates(&hex("0f010900010000000c80168000")),
+            vec![hex("000100000000000c80168000")]
+        );
     }
 
     #[test]

@@ -6420,6 +6420,7 @@ fn run_nvst_webrtc_bundle(
     let mut last_input_types = Vec::new();
     let mut mouse_motion_packets = 0_u64;
     let mut cursor_capture = NvstCursorCapture::default();
+    let mut last_logged_cursor: Option<(u16, Option<u32>, Option<bool>, usize)> = None;
     let mut control_keepalive_at = next_control_keepalive(Instant::now());
     let mut input_timeout_reported = false;
     let mut upstream_ready = upstream_ready;
@@ -7049,6 +7050,34 @@ fn run_nvst_webrtc_bundle(
                             };
                             for message in cursor_messages {
                                 cursor_capture.notify(Instant::now());
+                                // Windows builds have no stderr; keep each change of
+                                // cursor shape/visibility in the streamer log so
+                                // pointer reports can be read from a user's log.
+                                let cursor_key = (
+                                    message.command,
+                                    message.cursor_id,
+                                    message.visible,
+                                    if message.cursor_id.is_none() {
+                                        message.raw.len()
+                                    } else {
+                                        0
+                                    },
+                                );
+                                if last_logged_cursor != Some(cursor_key) {
+                                    last_logged_cursor = Some(cursor_key);
+                                    opennow_streamer_protocol::log::diagnostic(
+                                        "INFO",
+                                        "nvst-cursor",
+                                        &format!(
+                                            "cursor rx command=0x{:04x} cursorId={:?} visible={:?} bytes={} raw={}",
+                                            message.command,
+                                            message.cursor_id,
+                                            message.visible,
+                                            message.raw.len(),
+                                            diagnostic_hex(&message.raw, 96),
+                                        ),
+                                    );
+                                }
                                 eprintln!(
                                     "NVST cursor wire rx: channel={label} id={:?} command=0x{:04x} offset={} cursorId={:?} position={:?} visible={:?} bytes={} raw={}",
                                     data.id,
@@ -7081,6 +7110,26 @@ fn run_nvst_webrtc_bundle(
                                     continue;
                                 }
                                 cursor_capture.notify(Instant::now());
+                                let cursor_key = (
+                                    0,
+                                    data.data.get(1).map(|id| u32::from(*id)),
+                                    data.data.first().map(|kind| *kind == 1),
+                                    data.data.len(),
+                                );
+                                if last_logged_cursor != Some(cursor_key) {
+                                    last_logged_cursor = Some(cursor_key);
+                                    opennow_streamer_protocol::log::diagnostic(
+                                        "INFO",
+                                        "nvst-cursor",
+                                        &format!(
+                                            "cursor-channel rx type={:?} cursorId={:?} bytes={} raw={}",
+                                            data.data.first(),
+                                            data.data.get(1),
+                                            data.data.len(),
+                                            diagnostic_hex(&data.data, 48),
+                                        ),
+                                    );
+                                }
                                 eprintln!(
                                     "NVST cursor-channel raw rx: id={:?} bytes={} type={:?} cursorId={:?} raw={}",
                                     data.id,

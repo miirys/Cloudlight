@@ -649,6 +649,20 @@ private slots:
         QCOMPARE(item.cursor().shape(), Qt::ArrowCursor);
     }
 
+    void hostHiddenCursorBlanksArrowWithoutLockingInput()
+    {
+        StreamVideoItem item;
+        item.m_captureActive = true;
+        item.m_serverCursorComposited = false;
+        // ID 1 at a position with the streamer's trailing hidden marker.
+        item.applyRemoteCursor(QByteArray::fromHex("000100000000000c80168000"));
+        QVERIFY(!item.relativeMouse());
+        QCOMPARE(item.cursor().shape(), Qt::BlankCursor);
+        item.applyRemoteCursor(QByteArray::fromHex("000100000000000c801680"));
+        QVERIFY(!item.relativeMouse());
+        QCOMPARE(item.cursor().shape(), Qt::ArrowCursor);
+    }
+
     void macCursorVisibilityTracksCaptureAndServerHandoff()
     {
         StreamVideoItem item;

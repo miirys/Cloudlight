@@ -104,16 +104,22 @@ impl NvstCursorCapture {
             } if now >= *retry_at => {
                 *attempts += 1;
                 let sent = send(CursorCommand::Capture(false));
-                eprintln!(
-                    "NVST cursor capture tx: command=0x0308 enabled=false reason={reason} attempt={attempts} queued={sent}"
+                opennow_streamer_protocol::log::diagnostic(
+                    "INFO",
+                    "nvst-cursor",
+                    &format!(
+                        "cursor capture tx command=0x0308 enabled=false reason={reason} attempt={attempts} queued={sent}"
+                    ),
                 );
                 if sent {
                     self.state = CaptureState::Local;
                     return true;
                 }
                 if *attempts == MAX_ATTEMPTS {
-                    eprintln!(
-                        "NVST cursor capture disable retries exhausted; retaining server-composited cursor until reactivation"
+                    opennow_streamer_protocol::log::diagnostic(
+                        "WARN",
+                        "nvst-cursor",
+                        "cursor capture disable retries exhausted; retaining server-composited cursor until reactivation",
                     );
                     self.state = CaptureState::Exhausted;
                 } else {
@@ -181,7 +187,7 @@ mod tests {
     }
 
     #[test]
-    fn bitmap_notification_hands_off_without_synthesizing_shape_or_mode() {
+    fn bitmap_notification_hands_off_and_shows_a_visible_arrow() {
         let now = Instant::now();
         let mut capture = NvstCursorCapture::default();
         capture.activate(now);
@@ -190,8 +196,8 @@ mod tests {
         ]);
         assert_eq!(messages.len(), 1);
         for message in messages {
-            assert_eq!(message.normalized, None);
-            assert_eq!(message.visible, None);
+            assert_eq!(message.normalized, Some(vec![0, 1, 0, 0, 0, 0, 0]));
+            assert_eq!(message.visible, Some(true));
             capture.notify(now);
         }
         assert!(capture.update(now, |command| {
