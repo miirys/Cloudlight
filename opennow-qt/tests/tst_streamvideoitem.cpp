@@ -649,15 +649,16 @@ private slots:
         QCOMPARE(item.cursor().shape(), Qt::ArrowCursor);
     }
 
-    void hostHiddenCursorBlanksArrowWithoutLockingInput()
+    void hostHiddenCursorKeepsLocalArrowWithoutLockingInput()
     {
         StreamVideoItem item;
         item.m_captureActive = true;
         item.m_serverCursorComposited = false;
-        // ID 1 at a position with the streamer's trailing hidden marker.
+        // ID 1 at a position with the streamer's trailing hidden marker:
+        // the local arrow stays, as in RDP and GeForce NOW.
         item.applyRemoteCursor(QByteArray::fromHex("000100000000000c80168000"));
         QVERIFY(!item.relativeMouse());
-        QCOMPARE(item.cursor().shape(), Qt::BlankCursor);
+        QCOMPARE(item.cursor().shape(), Qt::ArrowCursor);
         item.applyRemoteCursor(QByteArray::fromHex("000100000000000c801680"));
         QVERIFY(!item.relativeMouse());
         QCOMPARE(item.cursor().shape(), Qt::ArrowCursor);

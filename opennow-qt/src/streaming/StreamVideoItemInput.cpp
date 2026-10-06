@@ -1141,9 +1141,12 @@ void StreamVideoItem::updateLocalCursor()
     // must not: when a game hides its cursor during a drag (camera drags, drag
     // and drop), the local arrow goes at once, as on GeForce NOW. Keeping it
     // until release left a second pointer over the game's own.
+    // Like RDP and GeForce NOW, the pointer is always the local hardware
+    // cursor, shaped like the host's, so it moves at the display's rate and
+    // never waits for a video frame. It is hidden only while the game has
+    // locked the mouse (relative input).
     const bool hiddenDuringDrag = m_pendingRelativeMouse.value_or(false);
-    if (m_relativeMouse || hiddenDuringDrag || m_remoteCursorHostHidden
-            || (m_serverCursorComposited && m_manualRelativeMouse != false)) {
+    if (m_relativeMouse || hiddenDuringDrag) {
         setCursor(Qt::BlankCursor);
         return;
     }
