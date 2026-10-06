@@ -14,11 +14,13 @@ QtObject {
         {id:"cobalt", name:"Light Blue", author:"CLOUDLIGHT", category:"Light", detail:"BLUE", bg:"#F2F2F2", darkBg:"#141414", mid:"#D6D6D6", accent:"#1764C0", darkAccent:"#4C9EFF"},
         {id:"hibiscus", name:"Graphite Rose", author:"CLOUDLIGHT", category:"Dark", detail:"ROSE", bg:"#141414", lightBg:"#F2F2F2", mid:"#2A2A2A", accent:"#F0607F", lightAccent:"#A8243F"},
         {id:"chapel", name:"Graphite Violet", author:"CLOUDLIGHT", category:"Dark", detail:"VIOLET", bg:"#141414", lightBg:"#F2F2F2", mid:"#2A2A2A", accent:"#9B7BFF", lightAccent:"#5B3FC0"},
-        // Cloudlight's house theme: a black dress and white hair. Neutrals carry a faint
-        // lilac cast in both modes, and the accent is pearl on dark, ink on light.
-        {id:"cloudlight", name:"Cloudlight", author:"CLOUDLIGHT", category:"Dark", detail:"PEARL", bg:"#100E13", lightBg:"#F4F2F7", mid:"#2A2530", accent:"#ECE6F5", lightAccent:"#1D1823",
-         dark:{surface:"#18151C", raised:"#211D26", hover:"#2A252F", strong:"#352F3C", seam:"#2C2732", label:"#F4F1F8", muted:"#A39CAD"},
-         light:{surface:"#FFFFFF", raised:"#EBE7F0", hover:"#E2DDE9", strong:"#D4CEDD", seam:"#D9D3E1", label:"#17141B", muted:"#5E5768"}}
+        // Cloudlight's house theme (Echidna): a black dress, white hair, lavender.
+        // Ink-violet neutrals with clear steps between page, panel and control
+        // surfaces; pearl text; lavender marks everything interactive. Every text
+        // tone clears WCAG AA on every surface (muted ≥ 7:1 on dark, ≥ 5.5:1 on light).
+        {id:"cloudlight", name:"Cloudlight", author:"CLOUDLIGHT", category:"Dark", detail:"LAVENDER", bg:"#0E0C13", lightBg:"#F4F2F8", mid:"#2B2537", accent:"#C4B2FF", lightAccent:"#5B3FC0",
+         dark:{surface:"#16131D", raised:"#1F1B28", hover:"#282334", strong:"#342D42", seam:"#2B2537", label:"#F5F2FA", muted:"#B3ABC1"},
+         light:{surface:"#FFFFFF", raised:"#ECE8F3", hover:"#E2DCEC", strong:"#D3CCE0", seam:"#D9D3E3", label:"#15111C", muted:"#574F66"}}
     ]
     readonly property string mode: String(ShellStore.settings.appTheme || "auto")
     readonly property string themePack: ShellStore.previewThemePack !== ""

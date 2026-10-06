@@ -242,19 +242,24 @@ jobs:
           $out = (Resolve-Path build/screens-windows).Path
           $env:PATH = "$env:QT_ROOT_DIR\bin;$($app.DirectoryName);$env:PATH"
           $captures = @(
-            @{ name = "home"; args = @("--route", "home", "--smoke-paper-design") },
-            @{ name = "library"; args = @("--route", "library", "--smoke-collections") },
-            @{ name = "settings-stream"; args = @("--route", "settings", "--smoke-paper-design", "--smoke-settings-page", "stream") },
-            @{ name = "settings-network"; args = @("--route", "settings", "--smoke-paper-design", "--smoke-settings-page", "network") },
-            @{ name = "settings-appearance"; args = @("--route", "settings", "--smoke-paper-design", "--smoke-settings-page", "appearance") },
-            @{ name = "settings-experimental"; args = @("--route", "settings", "--smoke-paper-design", "--smoke-settings-page", "experimental") },
-            @{ name = "stream-stats"; args = @("--route", "stream", "--smoke-stream-stats", "--smoke-stats-expanded") },
-            @{ name = "stream-menu"; args = @("--route", "stream", "--overlay", "desktop-stream-menu", "--smoke-stream-stats") }
+            @{ name = "home"; args = @("--desktop", "--route", "home", "--smoke-paper-design") },
+            @{ name = "library"; args = @("--desktop", "--route", "library", "--smoke-collections") },
+            @{ name = "signin"; args = @("--desktop", "--route", "sign-in") },
+            @{ name = "settings-stream"; args = @("--desktop", "--route", "settings", "--smoke-paper-design", "--smoke-settings-page", "stream") },
+            @{ name = "settings-network"; args = @("--desktop", "--route", "settings", "--smoke-paper-design", "--smoke-settings-page", "network") },
+            @{ name = "settings-appearance"; args = @("--desktop", "--route", "settings", "--smoke-paper-design", "--smoke-settings-page", "appearance") },
+            @{ name = "settings-experimental"; args = @("--desktop", "--route", "settings", "--smoke-paper-design", "--smoke-settings-page", "experimental") },
+            @{ name = "console-home"; args = @("--console", "--route", "home") },
+            @{ name = "console-library"; args = @("--console", "--route", "library") },
+            @{ name = "console-settings"; args = @("--console", "--route", "settings") },
+            @{ name = "console-signin"; args = @("--console", "--route", "sign-in") },
+            @{ name = "stream-stats"; args = @("--desktop", "--route", "stream", "--smoke-stream-stats", "--smoke-stats-expanded") },
+            @{ name = "stream-menu"; args = @("--desktop", "--route", "stream", "--overlay", "desktop-stream-menu", "--smoke-stream-stats") }
           )
           foreach ($capture in $captures) {
             $png = Join-Path $out "$($capture.name).png"
             $log = Join-Path $out "$($capture.name).log"
-            $arguments = @("--smoke-test", "--allow-multiple-instances", "--desktop", "--reduced-motion",
+            $arguments = @("--smoke-test", "--allow-multiple-instances", "--reduced-motion",
               "--smoke-width", "1600", "--smoke-height", "900", "--screenshot", $png) + $capture.args
             $process = Start-Process -FilePath $app.FullName -ArgumentList $arguments -PassThru -NoNewWindow `
               -RedirectStandardError $log -RedirectStandardOutput "$log.out"

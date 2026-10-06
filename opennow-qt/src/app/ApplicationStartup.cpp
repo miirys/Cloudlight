@@ -82,11 +82,11 @@ static int runApplicationSession(int argc, char *argv[], QString &restartExecuta
     QGuiApplication::setApplicationVersion(QString::fromLatin1(OPENNOW_VERSION));
     QQuickWindow::setDefaultAlphaBuffer(true);
 #if defined(Q_OS_WIN)
-    // Distance-field glyphs looked washed out on Windows, and native glyph bitmaps
-    // fringe and pixelate over the translucent shell surfaces and under any scale
-    // transform. Curve rendering draws the real outlines with exact coverage at
-    // every size and scale factor, like macOS text.
-    QQuickWindow::setTextRenderType(QQuickWindow::CurveTextRendering);
+    // Native DirectWrite glyphs, hinted to the pixel grid, are the crispest text
+    // at UI sizes; curve and distance-field outlines read soft below ~16 px.
+    // Subpixel (ClearType) antialiasing is turned off on the application font
+    // below, because coloured fringes appear over the alpha-buffered window.
+    QQuickWindow::setTextRenderType(QQuickWindow::NativeTextRendering);
 #else
     QQuickWindow::setTextRenderType(QQuickWindow::QtTextRendering);
 #endif
@@ -137,7 +137,11 @@ static int runApplicationSession(int argc, char *argv[], QString &restartExecuta
 #else
     applicationFont.setHintingPreference(QFont::PreferNoHinting);
 #endif
+#if defined(Q_OS_WIN)
+    applicationFont.setStyleStrategy(QFont::StyleStrategy(QFont::PreferAntialias | QFont::NoSubpixelAntialias));
+#else
     applicationFont.setStyleStrategy(QFont::PreferAntialias);
+#endif
     application.setFont(applicationFont);
     const auto arguments = application.arguments();
     if (!arguments.contains(u"--smoke-test"_s)) installCrashLog();

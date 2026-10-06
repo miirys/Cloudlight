@@ -83,7 +83,7 @@ Item {
             text: root.title
             color: Theme.label
             font.family: Theme.bodyFont
-            font.pixelSize: DesktopTokens.px(15)
+            font.pixelSize: DesktopTokens.px(16)
             font.weight: Font.Medium
             wrapMode: Text.WordWrap
         }
@@ -93,8 +93,8 @@ Item {
             text: root.description
             color: Theme.textMuted
             font.family: Theme.bodyFont
-            font.pixelSize: DesktopTokens.px(13)
-            lineHeight: 1.2
+            font.pixelSize: DesktopTokens.px(14)
+            lineHeight: 1.25
             wrapMode: Text.WordWrap
         }
     }
