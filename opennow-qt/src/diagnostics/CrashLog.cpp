@@ -8,7 +8,10 @@
 #include <QMutex>
 #include <QString>
 
+#include <csignal>
 #include <cstdio>
+#include <cstdlib>
+#include <exception>
 
 #ifdef Q_OS_WIN
 #include <windows.h>
@@ -47,10 +50,14 @@ void messageHandler(QtMsgType type, const QMessageLogContext &context, const QSt
 wchar_t s_crashLogPath[MAX_PATH]{};
 wchar_t s_dumpPath[MAX_PATH]{};
 
-LONG WINAPI writeCrash(EXCEPTION_POINTERS *exception)
+// Not an NTSTATUS: marks crash.log lines written for abort()/std::terminate,
+// which end the process without raising a structured exception.
+constexpr unsigned long AbortCode = 0xE0000AB0ul;
+
+void recordCrash(EXCEPTION_POINTERS *exception, unsigned long fallbackCode)
 {
     static volatile LONG entered = 0;
-    if (InterlockedExchange(&entered, 1) != 0) return EXCEPTION_CONTINUE_SEARCH;
+    if (InterlockedExchange(&entered, 1) != 0) return;
     const auto *record = exception ? exception->ExceptionRecord : nullptr;
     const auto address = record ? reinterpret_cast<ULONG_PTR>(record->ExceptionAddress) : 0;
     HMODULE module = nullptr;
@@ -72,7 +79,7 @@ LONG WINAPI writeCrash(EXCEPTION_POINTERS *exception)
     const int length = std::snprintf(line, sizeof line,
         "%04u-%02u-%02uT%02u:%02u:%02uZ crash code=0x%08lX address=0x%llX module=%ls+0x%llX thread=%lu\r\n",
         now.wYear, now.wMonth, now.wDay, now.wHour, now.wMinute, now.wSecond,
-        record ? static_cast<unsigned long>(record->ExceptionCode) : 0ul,
+        record ? static_cast<unsigned long>(record->ExceptionCode) : fallbackCode,
         static_cast<unsigned long long>(address), moduleName,
         static_cast<unsigned long long>(module ? address - reinterpret_cast<ULONG_PTR>(module) : 0),
         static_cast<unsigned long>(GetCurrentThreadId()));
@@ -93,7 +100,28 @@ LONG WINAPI writeCrash(EXCEPTION_POINTERS *exception)
                           exception ? &info : nullptr, nullptr, nullptr);
         CloseHandle(dump);
     }
+}
+
+LONG WINAPI writeCrash(EXCEPTION_POINTERS *exception)
+{
+    recordCrash(exception, 0);
     return EXCEPTION_CONTINUE_SEARCH;
+}
+
+// qFatal, failed CRT checks and std::terminate end in abort(), which raises
+// SIGABRT instead of an exception the filter above would see. Record those too
+// (the dump still holds every thread's stack), then let the default action run.
+void onAbortSignal(int)
+{
+    recordCrash(nullptr, AbortCode);
+    std::signal(SIGABRT, SIG_DFL);
+}
+
+void onTerminate()
+{
+    recordCrash(nullptr, AbortCode);
+    std::signal(SIGABRT, SIG_DFL);
+    std::abort();
 }
 #endif
 
@@ -116,6 +144,8 @@ void installCrashLog()
         crashLog.toWCharArray(s_crashLogPath);
         dump.toWCharArray(s_dumpPath);
         SetUnhandledExceptionFilter(writeCrash);
+        std::signal(SIGABRT, onAbortSignal);
+        std::set_terminate(onTerminate);
     }
 #endif
 }
