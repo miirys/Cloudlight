@@ -1589,7 +1589,11 @@ fn negotiated_dynamic_streaming_mode(context: &SessionContext) -> u8 {
     }
     // Official shared-settings schema: 0 off, 1 prefer FPS ("Optimal
     // latency"), 2 prefer resolution ("Optimal quality").
-    match context.settings.get("networkAdjust").and_then(Value::as_str) {
+    match context
+        .settings
+        .get("networkAdjust")
+        .and_then(Value::as_str)
+    {
         Some("latency") => return 1,
         Some("quality") => return 2,
         Some("off") => return 0,

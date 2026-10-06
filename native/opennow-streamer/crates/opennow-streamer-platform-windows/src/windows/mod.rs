@@ -247,12 +247,12 @@ fn percentile_absolute_deviation(
 /// The official GFN renderer uses an accurate-sleep pacing path and elevated
 /// RTP/media threads; without this, a nominal 1 ms idle sleep can occasionally
 /// become a visible multi-frame stall.
-struct LowLatencyThreadGuard {
+pub struct LowLatencyThreadGuard {
     timer_resolution_active: bool,
 }
 
 impl LowLatencyThreadGuard {
-    fn enter() -> Self {
+    pub fn enter() -> Self {
         let timer_resolution_active = unsafe { timeBeginPeriod(1) == TIMERR_NOERROR };
         unsafe {
             let _ = SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);

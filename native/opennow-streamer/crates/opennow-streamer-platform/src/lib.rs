@@ -51,6 +51,8 @@ pub enum SharedVulkanDevice {}
 pub use opennow_streamer_platform_macos::{
     AdoptedMetalContext, EmbeddedFrameProducer, MetalFrame, MetalRecordedFrame,
 };
+#[cfg(windows)]
+pub use opennow_streamer_platform_windows::LowLatencyThreadGuard;
 pub use opennow_streamer_platform_windows::WindowsAdapterLuid;
 #[cfg(target_os = "windows")]
 pub use opennow_streamer_platform_windows::{

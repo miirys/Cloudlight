@@ -1086,6 +1086,9 @@ fn run_decoder_worker(
     frame_ready: Arc<dyn Fn() + Send + Sync>,
     startup_sender: std::sync::mpsc::SyncSender<Result<(), String>>,
 ) {
+    // Same pacing guard as the owned-window media loop: without it Windows
+    // rounds the 1 ms decoder waits up to its default ~15.6 ms timer tick.
+    let _low_latency_thread = super::LowLatencyThreadGuard::enter();
     let _apartment = match DecoderThreadApartment::initialize() {
         Ok(apartment) => apartment,
         Err(error) => {

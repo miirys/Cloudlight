@@ -17,12 +17,13 @@ use windows_sys::Win32::UI::Input::{
 };
 use windows_sys::Win32::UI::WindowsAndMessaging::{
     CREATESTRUCTW, CreateWindowExW, DefWindowProcW, DestroyWindow, DispatchMessageW, GWLP_USERDATA,
-    GetCursorPos, GetForegroundWindow, GetMessageW, GetWindowLongPtrW, HWND_MESSAGE, MSG, PostMessageW,
-    PostQuitMessage, RI_MOUSE_BUTTON_4_DOWN, RI_MOUSE_BUTTON_4_UP, RI_MOUSE_BUTTON_5_DOWN,
-    RI_MOUSE_BUTTON_5_UP, RI_MOUSE_HWHEEL, RI_MOUSE_LEFT_BUTTON_DOWN, RI_MOUSE_LEFT_BUTTON_UP,
-    RI_MOUSE_MIDDLE_BUTTON_DOWN, RI_MOUSE_MIDDLE_BUTTON_UP, RI_MOUSE_RIGHT_BUTTON_DOWN,
-    RI_MOUSE_RIGHT_BUTTON_UP, RI_MOUSE_WHEEL, RegisterClassW, SetWindowLongPtrW, TranslateMessage,
-    WM_APP, WM_CLOSE, WM_INPUT, WM_NCCREATE, WM_NCDESTROY, WNDCLASSW,
+    GetCursorPos, GetForegroundWindow, GetMessageW, GetWindowLongPtrW, HWND_MESSAGE, MSG,
+    PostMessageW, PostQuitMessage, RI_MOUSE_BUTTON_4_DOWN, RI_MOUSE_BUTTON_4_UP,
+    RI_MOUSE_BUTTON_5_DOWN, RI_MOUSE_BUTTON_5_UP, RI_MOUSE_HWHEEL, RI_MOUSE_LEFT_BUTTON_DOWN,
+    RI_MOUSE_LEFT_BUTTON_UP, RI_MOUSE_MIDDLE_BUTTON_DOWN, RI_MOUSE_MIDDLE_BUTTON_UP,
+    RI_MOUSE_RIGHT_BUTTON_DOWN, RI_MOUSE_RIGHT_BUTTON_UP, RI_MOUSE_WHEEL, RegisterClassW,
+    SetWindowLongPtrW, TranslateMessage, WM_APP, WM_CLOSE, WM_INPUT, WM_NCCREATE, WM_NCDESTROY,
+    WNDCLASSW,
 };
 
 use crate::embedded_input::InputViewport;
@@ -469,7 +470,7 @@ mod tests {
         RawInputState, push_absolute_sample, push_mouse_delta, push_raw_mouse_buttons,
         release_pressed_buttons,
     };
-use crate::media::{CapturedInput, CapturedInputQueue};
+    use crate::media::{CapturedInput, CapturedInputQueue};
     use windows_sys::Win32::UI::WindowsAndMessaging::{
         RI_MOUSE_LEFT_BUTTON_DOWN, RI_MOUSE_LEFT_BUTTON_UP, RI_MOUSE_RIGHT_BUTTON_DOWN,
     };

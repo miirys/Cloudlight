@@ -39,8 +39,8 @@ impl InputViewport {
     pub fn sample(self, screen_x: i32, screen_y: i32) -> (CapturedInput, bool) {
         let dx = i64::from(screen_x) - i64::from(self.left);
         let dy = i64::from(screen_y) - i64::from(self.top);
-        let inside = (0..i64::from(self.width)).contains(&dx)
-            && (0..i64::from(self.height)).contains(&dy);
+        let inside =
+            (0..i64::from(self.width)).contains(&dx) && (0..i64::from(self.height)).contains(&dy);
         let x = dx.clamp(0, i64::from(self.width) - 1) as u16;
         let y = dy.clamp(0, i64::from(self.height) - 1) as u16;
         (
@@ -271,7 +271,11 @@ const fn raw_capture_enabled(active: bool, relative_mouse: bool) -> bool {
 }
 
 #[cfg(any(target_os = "windows", test))]
-const fn windows_raw_capture_enabled(active: bool, relative_mouse: bool, has_viewport: bool) -> bool {
+const fn windows_raw_capture_enabled(
+    active: bool,
+    relative_mouse: bool,
+    has_viewport: bool,
+) -> bool {
     active && (relative_mouse || has_viewport)
 }
 

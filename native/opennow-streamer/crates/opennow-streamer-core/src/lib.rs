@@ -1750,6 +1750,12 @@ fn forward_nvst_session_events<R: NvstSessionResources>(
         shortcut_runtime,
         transport: resources,
     } = event_resources;
+    // This loop forwards mouse and keyboard samples between 250 us waits for
+    // transport events. Windows rounds those waits up to its default ~15.6 ms
+    // timer tick, which batched pointer motion into visible steps; raise the
+    // timer resolution and priority for the session, as the media loop does.
+    #[cfg(windows)]
+    let _low_latency_thread = opennow_streamer_platform::LowLatencyThreadGuard::enter();
     let mut feedback_state = NvstMediaFeedbackState::new(false);
     feedback_state.previous_socket_receive_bytes = resources.socket_receive_bytes().unwrap_or(0);
     feedback_state.start_id = start_id.clone();
