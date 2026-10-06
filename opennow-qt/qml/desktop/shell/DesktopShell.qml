@@ -204,25 +204,79 @@ FocusScope {
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: DesktopTokens.px(12)
 
-                DesktopButton {
+                // A session still running in the cloud: the game's name (elided to
+                // fit) and a Resume action, in one chip sized to its content. Narrow
+                // windows keep only the play glyph so the tabs never collide with it.
+                AbstractButton {
                     id: activeSessionButton
                     objectName: "desktopHeaderResume"
+                    readonly property string gameTitle: ShellStore.resumableSession
+                        ? String(ShellStore.sessionGameTitle(ShellStore.resumableSession) || "") : ""
+                    readonly property bool compact: root.headerCompact
+                    readonly property bool keyboardFocus: activeFocus && AppController.inputMode !== "pointer"
                     visible: ShellStore.resumableSession !== null && root.route !== "stream"
                     anchors.verticalCenter: parent.verticalCenter
-                    // Narrow windows keep the action as a play icon so the tabs never collide with it.
-                    width: root.headerCompact ? DesktopTokens.px(44)
-                        : Math.min(DesktopTokens.px(root.headerTight ? 200 : 300), Math.max(DesktopTokens.px(140), implicitWidth))
                     height: DesktopTokens.px(44)
-                    leftPadding: root.headerCompact ? 0 : DesktopTokens.px(20)
-                    rightPadding: leftPadding
-                    primary: true
-                    glyph: root.headerCompact ? "desktop-play.svg" : ""
-                    text: root.headerCompact ? "" : root.headerTight ? qsTr("Resume game") : root.activeSessionPrompt()
+                    width: compact ? height : resumeContent.width + DesktopTokens.px(32)
+                    padding: 0
+                    focusPolicy: Qt.StrongFocus
+                    Accessible.role: Accessible.Button
                     Accessible.name: root.activeSessionPrompt()
-                    ToolTip.visible: hovered
+                    ToolTip.visible: hovered && (compact || sessionName.truncated)
                     ToolTip.text: root.activeSessionPrompt()
-                    ToolTip.delay: 700
+                    ToolTip.delay: 600
                     onClicked: ShellStore.resumeActiveSession()
+
+                    background: Rectangle {
+                        radius: height / 2
+                        color: activeSessionButton.down ? DesktopTokens.raisedStrong
+                            : activeSessionButton.hovered || activeSessionButton.keyboardFocus ? DesktopTokens.hover
+                            : DesktopTokens.raised
+                        border.width: activeSessionButton.keyboardFocus ? DesktopTokens.focusOutline : 0
+                        border.color: Theme.label
+                        Behavior on color { ColorAnimation { duration: DesktopTokens.motionDuration } }
+                    }
+                    contentItem: Item {
+                        DesktopGlyph {
+                            visible: activeSessionButton.compact
+                            anchors.centerIn: parent
+                            width: DesktopTokens.px(18); height: width
+                            icon: "desktop-play.svg"
+                        }
+                        Row {
+                            id: resumeContent
+                            visible: !activeSessionButton.compact
+                            x: DesktopTokens.px(16)
+                            anchors.verticalCenter: parent.verticalCenter
+                            spacing: DesktopTokens.px(10)
+                            // Live indicator: the session is still running.
+                            Rectangle {
+                                anchors.verticalCenter: parent.verticalCenter
+                                width: DesktopTokens.px(8); height: width; radius: width / 2
+                                color: Theme.mint
+                            }
+                            Text {
+                                id: sessionName
+                                anchors.verticalCenter: parent.verticalCenter
+                                width: Math.min(implicitWidth, DesktopTokens.px(root.headerTight ? 120 : 220))
+                                text: activeSessionButton.gameTitle !== "" ? activeSessionButton.gameTitle : qsTr("Session running")
+                                elide: Text.ElideRight
+                                color: DesktopTokens.textHigh
+                                font.family: DesktopTokens.bodyFont; font.pixelSize: DesktopTokens.captionSize; font.weight: Font.DemiBold
+                            }
+                            Rectangle {
+                                anchors.verticalCenter: parent.verticalCenter
+                                width: 1; height: DesktopTokens.px(18)
+                                color: DesktopTokens.seam
+                            }
+                            Text {
+                                anchors.verticalCenter: parent.verticalCenter
+                                text: qsTr("Resume")
+                                color: DesktopTokens.focus
+                                font.family: DesktopTokens.bodyFont; font.pixelSize: DesktopTokens.captionSize; font.weight: Font.Bold
+                            }
+                        }
+                    }
                 }
 
                 Text {
