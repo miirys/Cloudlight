@@ -18,7 +18,7 @@ use std::env;
 use std::io::Read;
 use std::net::ToSocketAddrs;
 use std::path::PathBuf;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 pub(crate) mod catalog;
@@ -292,7 +292,7 @@ struct ServiceState {
     providers_default: Option<String>,
     attempts: HashMap<String, DeviceAttempt>,
     session: Option<AuthSession>,
-    public_games: Vec<Value>,
+    public_games: Arc<Vec<Value>>,
     public_games_proxy_scope: String,
     restore_attempted: bool,
     persistence_state: String,
@@ -1244,7 +1244,7 @@ impl GfnService {
         let mut state = self.state.lock().expect("GFN state poisoned");
         let catalog_entries = state.public_games.len();
         let provider_entries = state.providers.len();
-        state.public_games.clear();
+        state.public_games = Arc::default();
         state.providers.clear();
         state.providers_expires = None;
         state.providers_retry = None;
@@ -1468,12 +1468,13 @@ impl GfnService {
         let bypass_cache = proxy.as_ref().is_some_and(|value| value.has_credentials);
         let client = client_for_settings(&self.client, settings).map_err(ServiceError::invalid)?;
         let refresh = params["refresh"].as_bool().unwrap_or(false) || bypass_cache;
+        // Shared rather than copied: the cached catalog holds every public game.
         let mut cached = {
             let state = self.state.lock().expect("GFN state poisoned");
             if state.public_games_proxy_scope == proxy_scope {
-                state.public_games.clone()
+                Arc::clone(&state.public_games)
             } else {
-                Vec::new()
+                Arc::default()
             }
         };
         if cached.is_empty() || refresh {
@@ -1492,17 +1493,15 @@ impl GfnService {
             let raw = response
                 .json::<Vec<Value>>()
                 .map_err(|error| ServiceError::network("Invalid public games response", error))?;
-            cached = raw.iter().filter_map(public_game_to_info).collect();
-            cached.sort_by(|left, right| {
-                left["title"]
-                    .as_str()
-                    .unwrap_or("")
-                    .to_lowercase()
-                    .cmp(&right["title"].as_str().unwrap_or("").to_lowercase())
-            });
+            let mut games = raw
+                .iter()
+                .filter_map(public_game_to_info)
+                .collect::<Vec<_>>();
+            games.sort_by_cached_key(|game| game["title"].as_str().unwrap_or("").to_lowercase());
+            cached = Arc::new(games);
             if !bypass_cache {
                 let mut state = self.state.lock().expect("GFN state poisoned");
-                state.public_games = cached.clone();
+                state.public_games = Arc::clone(&cached);
                 state.public_games_proxy_scope = proxy_scope;
             }
         }

@@ -352,12 +352,12 @@ impl DiagnosticsService {
         );
         if let Ok(previous) = fs::read_to_string(&self.previous_path) {
             output.push_str("Previous run\n------------\n");
-            output.push_str(&redact_lines(&previous, 500_000));
+            output.push_str(&redact_tail_lines(&previous, 500_000));
             output.push_str("\n\n");
         }
         output.push_str("Current run\n-----------\n");
         if let Ok(current) = fs::read_to_string(&self.current_path) {
-            output.push_str(&redact_lines(&current, 900_000));
+            output.push_str(&redact_tail_lines(&current, 900_000));
         } else {
             let entries = self.entries.lock().expect("diagnostics poisoned");
             for entry in entries.iter() {
@@ -546,10 +546,50 @@ fn redact_lines(value: &str, limit: usize) -> String {
     output
 }
 
+/// Like `redact_lines`, but keeps the most recent lines when the log is over
+/// the limit: the end of a run is where a failure or crash shows up.
+fn redact_tail_lines(value: &str, limit: usize) -> String {
+    let mut kept = Vec::new();
+    let mut used = 0_usize;
+    let mut truncated = false;
+    for line in value.lines().rev() {
+        let remaining = limit.saturating_sub(used);
+        if remaining < 4 {
+            truncated = true;
+            break;
+        }
+        let rendered = redact(line, remaining - 4);
+        used += rendered.len() + 1;
+        kept.push(rendered);
+    }
+    let mut output = String::with_capacity(used + 32);
+    if truncated {
+        output.push_str("[earlier lines omitted]\n");
+    }
+    for line in kept.iter().rev() {
+        output.push_str(line);
+        output.push('\n');
+    }
+    output
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use std::env;
+
+    #[test]
+    fn long_runs_keep_their_latest_lines_in_exports() {
+        let log = (0..1_000)
+            .map(|index| format!("line {index}"))
+            .collect::<Vec<_>>()
+            .join("\n");
+        let tail = redact_tail_lines(&log, 200);
+        assert!(tail.starts_with("[earlier lines omitted]\n"));
+        assert!(tail.ends_with("line 999\n"));
+        assert!(!tail.contains("line 0\n"));
+        assert_eq!(redact_tail_lines("a\nb", 200), "a\nb\n");
+    }
 
     #[test]
     fn diagnostics_rotate_during_a_session_and_replace_the_previous_log() {
