@@ -5,7 +5,7 @@
 <p align="center"><strong>Your GeForce NOW games, in an app that feels nice to use.</strong></p>
 
 <p align="center">
-  <a href="#getting-it"><img src="https://img.shields.io/badge/Download-Cloudlight-C4B2FF?style=for-the-badge&labelColor=0E0C13" alt="Download Cloudlight" /></a>
+  <a href="https://github.com/miirys/OpenNOW/releases/latest"><img src="https://img.shields.io/badge/Download-Cloudlight-C4B2FF?style=for-the-badge&labelColor=0E0C13" alt="Download Cloudlight" /></a>
 </p>
 
 ## So what is this?
@@ -38,15 +38,16 @@ can flip between the two whenever you like.
 
 ## Getting it
 
-There's no official release yet. Until there is, the newest builds live on GitHub:
+Grab the newest version from the [Releases page](https://github.com/miirys/OpenNOW/releases/latest).
+Right now that's Windows only.
 
-1. Sign in to GitHub and open the [Actions page](https://github.com/miirys/OpenNOW/actions).
-2. Click the newest run with a green tick.
-3. Scroll down to "Artifacts" and download the Windows or Linux build.
+Download the `.zip`, unzip the whole folder and open `bin/Cloudlight.exe`. The builds
+aren't signed yet, so Windows might warn you about an unknown publisher. That's
+expected. Click "More info" and then "Run anyway".
 
-On Windows, unzip the whole folder and open `bin/Cloudlight.exe`. The builds aren't
-signed, so Windows might warn you about an unknown publisher. That's expected. Click
-"More info" and then "Run anyway".
+Want the very latest changes before they're released? Sign in to GitHub, open the
+[Actions page](https://github.com/miirys/OpenNOW/actions), click the newest run with a
+green tick and download the build under "Artifacts".
 
 ## What you can do with it
 
