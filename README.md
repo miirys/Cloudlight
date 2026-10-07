@@ -72,6 +72,13 @@ Cloudlight started life as a fork of [OpenNOW](https://github.com/OpenCloudGamin
 a community-made GeForce NOW app. A huge thanks to everyone who built it. Cloudlight
 keeps its engine and gives it a new look and a lot of polish on top.
 
+## Who made it
+
+- [miirys](https://github.com/miirys), who runs Cloudlight.
+- [Claude](https://claude.ai), an AI from Anthropic, who helped with the design, the
+  code and the writing.
+- Everyone who built [OpenNOW](https://github.com/OpenCloudGaming/OpenNOW/graphs/contributors).
+
 ## For tinkerers
 
 If you want to build it yourself, you'll need Qt 6.8 or newer, CMake, a C++ compiler,
