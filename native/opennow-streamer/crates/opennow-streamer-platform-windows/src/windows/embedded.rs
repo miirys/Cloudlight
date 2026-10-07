@@ -607,10 +607,11 @@ impl AdoptedResources {
                 &processor,
                 output_color_space(self.format.transfer_function),
             );
-            if self.format.transfer_function != VideoTransferFunction::Sdr {
-                self.video_context_1
-                    .VideoProcessorSetStreamAutoProcessingMode(&processor, 0, false);
-            }
+            // Auto processing lets the driver add its own denoise and edge
+            // enhancement passes. They cost GPU time on every frame (noticeable on
+            // integrated GPUs), alter the host's picture, and break PQ precision.
+            self.video_context_1
+                .VideoProcessorSetStreamAutoProcessingMode(&processor, 0, false);
         }
         // QRhi owns slot reuse. Allocate only the slots it actually visits;
         // reserving the ABI maximum would waste seven 4K textures on D3D11.
@@ -1139,17 +1140,18 @@ fn run_decoder_worker(
                     let mut ready = decoded
                         .lock()
                         .unwrap_or_else(|poisoned| poisoned.into_inner());
-                    while let Some(frame) = output.pop_front() {
-                        if ready.len() == ADAPTIVE_VIDEO_QUEUE_CAPACITY {
-                            ready.pop_front();
-                            let _ = events
-                                .push(BackendEvent::QueueOverflow(Subsystem::VideoPresentation));
-                        }
+                    // Presentation only ever takes the newest frame. Release superseded
+                    // frames here rather than on Qt's next render: each one leases a
+                    // surface from the MFT's fixed sample pool, and holding several
+                    // stalls the decoder until the render thread catches up.
+                    ready.clear();
+                    if let Some(frame) = output.pop_back() {
                         ready.push_back(ReadyDecodedFrame {
                             frame,
                             decoder_generation: generation,
                         });
                     }
+                    output.clear();
                     drop(ready);
                     frame_ready();
                 }

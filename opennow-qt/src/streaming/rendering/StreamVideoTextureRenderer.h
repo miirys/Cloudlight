@@ -13,6 +13,7 @@
 #include <array>
 #include <iterator>
 #include <memory>
+#include <optional>
 
 // Render-thread owner for imported video textures and the scene-graph material.
 // Each QRhi slot keeps its own import/bindings; rotating slots must not recreate
@@ -136,6 +137,7 @@ public:
         }
         m_currentSlot = slot;
         m_externalSlot = -1;
+        ++m_sourceVersion;
         ensurePipelines();
         return m_pipelines[0] && m_pipelines[1];
     }
@@ -178,6 +180,7 @@ public:
                 entry.texture = texture;
             }
             m_externalSlot = int(slot);
+            ++m_sourceVersion;
             return true;
         }
         return false;
@@ -201,6 +204,12 @@ public:
         auto *source = m_externalSlot >= 0 ? m_external[m_externalSlot].texture
                                           : importedTexture();
         if (!m_uniforms || !m_sampler || !source) return;
+        // Qt also renders for overlays, cursor moves and stats. Re-running full-resolution
+        // filter and FSR passes over an unchanged frame would only burn GPU time.
+        const PostProcessKey key{source->globalResourceId(), m_sourceVersion, target, upscale,
+                                 sdr, sharpness, m_filter};
+        if (m_postKey && *m_postKey == key) return;
+        m_postKey = key;
         auto *filtered = m_filters.render(m_rhi, cb, source, m_filter);
         auto *output = m_fsr.render(m_rhi, cb, filtered, target, upscale, sdr, sharpness);
         if (!output || output == source) {
@@ -264,6 +273,7 @@ public:
 private:
     void clearUpscaling()
     {
+        m_postKey.reset();
         m_postBinding.reset();
         m_postOutputId = 0;
         m_fsr.release();
@@ -310,6 +320,16 @@ private:
         }
     }
 
+    struct PostProcessKey {
+        quint64 source = 0;
+        quint64 version = 0;
+        QSize target;
+        bool upscale = false;
+        bool sdr = false;
+        int sharpness = 0;
+        StreamVideoFilter filter;
+        bool operator==(const PostProcessKey &) const = default;
+    };
     struct ImportedFrame {
         std::unique_ptr<QRhiTexture> texture;
         std::unique_ptr<QRhiShaderResourceBindings> bindings;
@@ -329,6 +349,8 @@ private:
     StreamVideoFilter m_filter;
     std::unique_ptr<QRhiShaderResourceBindings> m_postBinding;
     quint64 m_postOutputId = 0;
+    std::optional<PostProcessKey> m_postKey;
+    quint64 m_sourceVersion = 0;
     std::array<std::unique_ptr<QRhiGraphicsPipeline>, 2> m_pipelines;
     std::unique_ptr<QRhiSampler> m_sampler;
     std::unique_ptr<QRhiBuffer> m_uniforms;
