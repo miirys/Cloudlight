@@ -94,11 +94,11 @@ pub(super) fn measure_queue_region(region_url: &str) -> Option<u64> {
         return None;
     }
     let parsed = Url::parse(region_url).ok()?;
-    let addresses = resolve_bounded(
+    let mut addresses = resolve_bounded(
         parsed.host_str()?.to_owned(),
         parsed.port_or_known_default()?,
     )?;
-    let _ = bounded_tcp_ping(&addresses);
+    let _ = bounded_tcp_ping(&mut addresses);
     let mut samples = Vec::with_capacity(2);
     for attempt in 0..2 {
         if crate::requests::check().is_err() {
@@ -107,22 +107,25 @@ pub(super) fn measure_queue_region(region_url: &str) -> Option<u64> {
         if attempt > 0 {
             thread::sleep(Duration::from_millis(50));
         }
-        if let Some(sample) = bounded_tcp_ping(&addresses) {
+        if let Some(sample) = bounded_tcp_ping(&mut addresses) {
             samples.push(sample);
         }
     }
     (!samples.is_empty()).then(|| samples.iter().sum::<u64>().div_ceil(samples.len() as u64))
 }
 
-fn bounded_tcp_ping(addresses: &[SocketAddr]) -> Option<u64> {
+fn bounded_tcp_ping(addresses: &mut [SocketAddr]) -> Option<u64> {
     let started = Instant::now();
-    for address in addresses {
+    for index in 0..addresses.len() {
         let remaining = QUEUE_PROBE_TIMEOUT.saturating_sub(started.elapsed());
         if remaining.is_zero() || crate::requests::check().is_err() {
             return None;
         }
-        if TcpStream::connect_timeout(address, remaining).is_ok() {
-            return Some(started.elapsed().as_millis() as u64);
+        let attempt = Instant::now();
+        if TcpStream::connect_timeout(&addresses[index], remaining).is_ok() {
+            let elapsed = attempt.elapsed().as_millis() as u64;
+            addresses[..=index].rotate_right(1);
+            return Some(elapsed);
         }
     }
     None
@@ -166,11 +169,11 @@ fn measure_region(region_url: &str) -> Value {
     if crate::requests::check().is_err() {
         return Value::Null;
     }
-    let endpoint = match region_endpoint(region_url) {
+    let mut endpoint = match region_endpoint(region_url) {
         Ok(endpoint) => endpoint,
         Err(error) => return json!({"url":region_url,"pingMs":null,"error":error}),
     };
-    let _ = tcp_ping(&endpoint);
+    let _ = tcp_ping(&mut endpoint);
     let mut samples = Vec::with_capacity(3);
     for attempt in 0..3 {
         if crate::requests::check().is_err() {
@@ -179,7 +182,7 @@ fn measure_region(region_url: &str) -> Value {
         if attempt > 0 {
             thread::sleep(Duration::from_millis(100));
         }
-        if let Some(sample) = tcp_ping(&endpoint) {
+        if let Some(sample) = tcp_ping(&mut endpoint) {
             samples.push(sample);
         }
     }
@@ -213,14 +216,20 @@ fn region_endpoint(region_url: &str) -> Result<Vec<SocketAddr>, String> {
     Ok(addresses)
 }
 
-fn tcp_ping(addresses: &[SocketAddr]) -> Option<u128> {
-    let started = Instant::now();
-    for address in addresses {
+/// Times one connection to the first reachable address. Only the successful
+/// attempt is timed, and that address moves to the front so later samples do
+/// not wait on an unreachable one first (for example an IPv6 address on an
+/// IPv4-only network).
+fn tcp_ping(addresses: &mut [SocketAddr]) -> Option<u128> {
+    for index in 0..addresses.len() {
         if crate::requests::check().is_err() {
             return None;
         }
-        if TcpStream::connect_timeout(address, CONNECT_TIMEOUT).is_ok() {
-            return Some(started.elapsed().as_millis());
+        let attempt = Instant::now();
+        if TcpStream::connect_timeout(&addresses[index], CONNECT_TIMEOUT).is_ok() {
+            let elapsed = attempt.elapsed().as_millis();
+            addresses[..=index].rotate_right(1);
+            return Some(elapsed);
         }
     }
     None
@@ -247,6 +256,20 @@ mod tests {
         });
         assert!(measure_queue_region(&format!("http://127.0.0.1:{port}")).is_some());
         worker.join().unwrap();
+    }
+
+    #[test]
+    fn region_pings_move_the_reachable_address_first() {
+        let closed = TcpListener::bind(("127.0.0.1", 0)).unwrap();
+        let closed_address = closed.local_addr().unwrap();
+        drop(closed);
+        let listener = TcpListener::bind(("127.0.0.1", 0)).unwrap();
+        let open_address = listener.local_addr().unwrap();
+        let mut addresses = vec![closed_address, open_address];
+        assert!(tcp_ping(&mut addresses).is_some());
+        assert_eq!(addresses, vec![open_address, closed_address]);
+        assert!(bounded_tcp_ping(&mut addresses).is_some());
+        assert_eq!(addresses, vec![open_address, closed_address]);
     }
 
     #[test]

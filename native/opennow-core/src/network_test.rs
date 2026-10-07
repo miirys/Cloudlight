@@ -845,7 +845,9 @@ pub fn measure_path(
     };
     for index in 0..probes {
         let started = std::time::Instant::now();
-        if started >= deadline || crate::requests::check().is_err() {
+        // A probe sent without its full reply window left would be cut short by
+        // the overall budget and reported as loss on slow paths, so stop instead.
+        if started + reply_wait > deadline || crate::requests::check().is_err() {
             break;
         }
         measurement.sent += 1;
@@ -909,6 +911,30 @@ mod probe_tests {
         assert_eq!(measurement.loss_pct(), Some(25.0));
         assert!(measurement.median_ms().is_some());
         assert!(measurement.jitter_ms().is_some());
+    }
+
+    #[test]
+    fn slow_paths_are_not_reported_as_loss_when_the_budget_runs_out() {
+        let (address, server) = vendor_server(1_472, |size| {
+            std::thread::sleep(Duration::from_millis(30));
+            vec![vendor_datagram(SESSION, size, MESSAGE_TYPE_MTU_RESPONSE)]
+        });
+        let socket = UdpSocket::bind("127.0.0.1:0").unwrap();
+        let measurement = measure_path(
+            &socket,
+            address,
+            &KEY,
+            SESSION,
+            40,
+            Duration::from_millis(1),
+            Duration::from_millis(60),
+            Duration::from_millis(200),
+        );
+        drop(socket);
+        server.join().unwrap();
+        assert!(measurement.sent > 0);
+        assert_eq!(measurement.received, measurement.sent);
+        assert_eq!(measurement.loss_pct(), Some(0.0));
     }
 
     const KEY: [u8; 32] = [0x33; 32];
