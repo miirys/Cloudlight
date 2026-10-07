@@ -3154,7 +3154,11 @@ impl VideoAccessUnitAssembler {
             return Ok(None);
         }
 
-        let mut bytes = std::mem::take(&mut self.bytes);
+        // The finished access unit moves downstream. Give the next one a buffer
+        // sized like this one, so assembly costs one allocation per frame instead
+        // of a chain of doubling reallocations and copies.
+        let next_capacity = self.bytes.len().min(self.max_access_unit_bytes);
+        let mut bytes = std::mem::replace(&mut self.bytes, Vec::with_capacity(next_capacity));
         if self.codec == NvstVideoCodec::Av1
             && let Some(reported) = self.expected_access_unit_length
         {
