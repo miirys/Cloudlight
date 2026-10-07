@@ -2,203 +2,90 @@
   <img src="docs/assets/brand/cloudlight-banner.png" alt="Cloudlight: your GeForce NOW library, on the big screen." width="100%" />
 </p>
 
-<p align="center"><strong>Cloudlight is a couch-first GeForce NOW client, built on <a href="https://github.com/OpenCloudGaming/OpenNOW">OpenNOW</a>.</strong></p>
+<p align="center"><strong>Your GeForce NOW games, in an app that feels nice to use.</strong></p>
 
 <p align="center">
-  <a href="https://github.com/miirys/OpenNOW/releases"><img src="https://img.shields.io/badge/Download-Desktop_builds-56E6A5?style=for-the-badge&labelColor=101916" alt="Download desktop builds" /></a>
-    <a href="https://play.google.com/store/apps/details?id=com.opencloudgaming.opennow"><img src="https://img.shields.io/badge/Download-Android_app-56E6A5?style=for-the-badge&labelColor=101916" alt="Download Android Build" /></a>
-  <a href="https://opennow.zortos.me"><img src="https://img.shields.io/badge/Read_the-Docs-FFFFFF?style=for-the-badge&labelColor=101916" alt="Read the documentation" /></a>
-  <a href="https://discord.gg/8EJYaJcNfD"><img src="https://img.shields.io/badge/Join-Discord-5865F2?style=for-the-badge&labelColor=101916" alt="Join Discord" /></a>
+  <a href="#getting-it"><img src="https://img.shields.io/badge/Download-Cloudlight-C4B2FF?style=for-the-badge&labelColor=0E0C13" alt="Download Cloudlight" /></a>
+</p>
+
+## So what is this?
+
+Cloudlight is an app for playing GeForce NOW. You sign in with your normal GeForce NOW
+account, pick a game from your library and play it, same as the official app. The
+difference is how it looks and feels: a calmer white, black and lavender look, a
+proper couch mode for controllers, and settings that actually explain themselves.
+
+It works with a mouse and keyboard on a desk, or with a controller from the sofa. You
+can flip between the two whenever you like.
+
+<p align="center">
+  <img src="docs/assets/readme/cloudlight-signin.webp" alt="The Cloudlight sign-in screen, with the cloud logo on the left and the sign-in options on the right." width="100%" />
 </p>
 
 <p align="center">
-  <a href="https://github.com/miirys/OpenNOW/releases"><img src="https://img.shields.io/github/downloads/miirys/OpenNOW/total?style=for-the-badge&label=Downloads&color=56E6A5&labelColor=101916" alt="Total GitHub release downloads" /></a>
-  <a href="https://github.com/miirys/OpenNOW/stargazers"><img src="https://img.shields.io/github/stars/miirys/OpenNOW?style=for-the-badge&label=Stars&color=7FD4FF&labelColor=101916" alt="GitHub stars" /></a>
+  <img src="docs/assets/readme/cloudlight-console.webp" alt="Cloudlight in couch mode, showing the streaming settings with a controller-friendly layout." width="100%" />
 </p>
 
-<p align="center">
-  <a href="#get-cloudlight">Downloads</a> ·
-  <a href="#inside-the-client">Features</a> ·
-  <a href="#how-it-works">Architecture</a> ·
-  <a href="#build-from-source">Build from source</a> ·
-  <a href="#contributing">Contribute</a>
-</p>
+## A few things to know first
 
-<p align="center">
-  <img src="docs/assets/readme/desktop-home.webp" alt="Paper design preview of current Cloudlight Home, with a compact sidebar, full-width continue-playing card, and favourites." width="100%" />
-</p>
+- You need your own GeForce NOW membership. What you can play, and at what quality,
+  depends on your plan, where you live and your computer.
+- Cloudlight isn't made by NVIDIA and NVIDIA doesn't support it. GeForce NOW is
+  NVIDIA's service and their trademark.
+- It's still being worked on, so expect the odd bug, especially with streaming on
+  less common graphics cards.
+- Cloudlight doesn't collect any data about you. There's no tracking and no analytics.
 
-<p align="center"><em>Desktop Home, from the OpenNOW Paper design.</em></p>
+## Getting it
 
-Cloudlight is a community-built GeForce NOW client based on OpenNOW. The desktop app uses Qt Quick for
-the interface and Rust for account services and streaming. Use a keyboard and mouse,
-or switch to the console layout for a controller. Both layouts run in the same app.
+There's no official release yet. Until there is, the newest builds live on GitHub:
 
-> [!NOTE]
-> OpenNOW 1.0.0, which Cloudlight builds on, rebuilt the desktop client with Qt Quick and a native Rust streaming
-> engine. It replaces the retired Electron app. See the
-> [announcement post](https://x.com/Zortosdev/status/2093023076191440963) for a first look at the new UI.
+1. Sign in to GitHub and open the [Actions page](https://github.com/miirys/OpenNOW/actions).
+2. Click the newest run with a green tick.
+3. Scroll down to "Artifacts" and download the Windows or Linux build.
 
-> [!IMPORTANT]
-> You need your own GeForce NOW account. Your subscription, region, and hardware
-> determine which games and stream settings you can use. Cloudlight is not affiliated
-> with, endorsed by, or sponsored by NVIDIA. NVIDIA and GeForce NOW are trademarks
-> of NVIDIA Corporation.
+On Windows, unzip the whole folder and open `bin/Cloudlight.exe`. The builds aren't
+signed, so Windows might warn you about an unknown publisher. That's expected. Click
+"More info" and then "Run anyway".
 
-> [!WARNING]
-> The Qt app is still under development. Expect bugs, including platform-specific
-> streaming and GPU issues. It has no Chromium/WebRTC fallback. Publishing a build
-> does not mean it has passed every check in the [acceptance checklist](docs/qt-acceptance.md).
+## What you can do with it
 
-## Get Cloudlight
+- Browse the store, save favourites and sort your games into your own collections.
+- Pick your resolution, frame rate, quality and codec, within what your plan allows.
+- Open the in-game menu with Ctrl+G for stats, filters, screenshots and settings,
+  without the game stopping.
+- Record clips and take screenshots. You'll find them in the Media tab.
+- If something goes wrong, go to Settings, then About, and save a diagnostics report.
+  It helps a lot when you report a bug.
 
-Look for packages starting with `Cloudlight-Qt-` in
-[GitHub Releases](https://github.com/miirys/OpenNOW/releases). Older releases
-may contain the retired Electron app, so check the release notes before downloading.
-If there's no published Qt nightly, sign in to GitHub and download the artifacts from a successful
-[GitHub Actions run](https://github.com/miirys/OpenNOW/actions).
+## Something not working?
 
-| Platform | Qt package | How to run it |
-| --- | --- | --- |
-| Windows x64 / ARM64 | `.msi`, portable `.zip` | Install the MSI, or extract the entire ZIP and run `bin/Cloudlight.exe`. |
-| Linux x64 / ARM64 | `.AppImage`, recommended | Make the file executable, then launch it. |
-| Linux x64 / ARM64 | `.deb` | Your distribution must provide Qt 6.8+ and SDL3. Use the AppImage on stock Ubuntu 24.04. |
-| macOS Apple Silicon, macOS 13+ | `.dmg`, nightlies | Open the DMG and drag Cloudlight into Applications. Intel Macs are not included. |
+Open an [issue](https://github.com/miirys/OpenNOW/issues) and tell us what happened,
+what you were doing, and which computer and graphics card you have. If it's about the
+stream itself, attach a diagnostics report. Have a quick look through it first in case
+there's anything personal in there.
 
-Nightly platform packages are unsigned. Windows may show an unknown-publisher warning.
-The macOS app is not notarized; if Gatekeeper blocks it, use System Settings → Privacy &
-Security → Open Anyway when offered. Do not disable Gatekeeper globally.
-Published update-enabled nightlies use signed update manifests. Older builds without a
-pinned signing key need one manual upgrade. Checksums alone detect corrupted downloads;
-they do not verify who published a package.
+## Where it came from
 
-The [nightly guide](docs/qt-nightly-release.md) covers these packages. The signed
-1.0.0 candidate workflow currently builds Windows and Linux only; see the
-[release-candidate guide](docs/qt-release-candidate.md). The separate
-[OpenNOW-Mac](https://github.com/OpenCloudGaming/OpenNOW-Mac) project is also available.
+Cloudlight started life as a fork of [OpenNOW](https://github.com/OpenCloudGaming/OpenNOW),
+a community-made GeForce NOW app. A huge thanks to everyone who built it. Cloudlight
+keeps its engine and gives it a new look and a lot of polish on top.
 
-### Other platforms
+## For tinkerers
 
-These projects are separate from the Qt desktop app.
-
-- Try the iOS beta through [TestFlight](https://testflight.apple.com/join/u1XPJKH2).
-  The SwiftUI prototype is on the [`kief5555/ios` branch](https://github.com/OpenCloudGaming/OpenNOW/tree/kief5555/ios/ios/OpenNOWiOS).
-- Get the Android app from [Google Play](https://play.google.com/store/apps/details?id=com.opencloudgaming.opennow).
-- Get [OpenNOW-Switch](https://github.com/OpenCloudGaming/OpenNOW-Switch/releases/latest)
-  for a modded Nintendo Switch. It runs as native Horizon OS homebrew.
-
-## Inside the client
-
-These images come from the [OpenNOW Paper design](https://app.paper.design/file/01M11SPTRPMYQB9S9AX948A6WH/4-0).
-The boards follow the current Qt layouts, but they aren't app screenshots. The games,
-account details, and statistics are sample content, not proof of game availability or performance.
-
-### Desktop library
-
-![Paper design preview of the current desktop Library, showing the compact sidebar, collection controls, store filters, and larger game covers.](docs/assets/readme/desktop-library.webp)
-
-### Controller-first console layout
-
-![Paper design preview of console Home, showing a controller-focused game grid, navigation dock, and button prompts.](docs/assets/readme/console-home.webp)
-
-You can:
-
-- Browse the catalog, save favorites, and organize your library into collections.
-- Set the resolution, frame rate, bitrate, and codec your account and device support.
-- Open stream menus and statistics without leaving the video.
-- Take screenshots and record the source stream to Matroska files. Find both in Media.
-- Export a diagnostic report through Settings → About → Copy diagnostics when something breaks.
-
-The [Qt app guide](opennow-qt/README.md) lists hardware requirements, experimental
-features, and platform limitations.
-
-## How it works
-
-Qt draws the interface and handles windows, navigation, focus, and overlays.
-The Rust core runs in a separate process. It manages accounts, settings, and catalog
-requests, then prepares the session. Qt talks to it over a
-[versioned JSON protocol](docs/core-protocol.md).
-
-The native Rust streamer handles NVST transport, decoding, audio, gameplay input,
-and recording. Qt loads it in the desktop process through a
-[versioned C ABI](native/opennow-streamer/crates/opennow-streamer-ffi/README.md).
-Video stays on the GPU, and Qt draws menus over it in the same window. The app doesn't
-embed a browser or open a separate video window. The [streamer guide](native/opennow-streamer/README.md)
-explains the graphics backends and how Qt uses them.
-
-## Build from source
-
-Use `main` for the release source or `dev` for ongoing development. Before building, install:
-
-- Qt 6.8+ with Quick, Multimedia, and ShaderTools.
-- CMake 3.24+ and a C++20 toolchain.
-- SDL3, Cargo, and the media dependencies for your platform.
-
-Linux also needs `pkg-config`, `libwayland-dev`, and `wayland-protocols`, even for
-X11 builds. Check the [build guide](opennow-qt/README.md#build) for platform-specific details.
+If you want to build it yourself, you'll need Qt 6.8 or newer, CMake, a C++ compiler,
+Rust and SDL3. Then:
 
 ```sh
 git clone https://github.com/miirys/OpenNOW.git
 cd OpenNOW
-cmake -S opennow-qt -B build/opennow-qt -DCMAKE_BUILD_TYPE=Debug
+cmake -S opennow-qt -B build/opennow-qt -DCMAKE_BUILD_TYPE=Release
 cmake --build build/opennow-qt
-ctest --test-dir build/opennow-qt --output-on-failure
 ```
 
-You don't need Node.js or npm to build or run the desktop app. The repository uses
-JavaScript for tools such as the localization checker.
-
-Testing login and gameplay requires a GeForce NOW account. Without one, you can
-run the smoke tests, screenshot fixtures, and performance checks in the
-[Qt app guide](opennow-qt/README.md) and [acceptance runbook](docs/qt-acceptance.md).
-
-## Documentation
-
-Start at [opennow.zortos.me](https://opennow.zortos.me) for setup and configuration help.
-
-| For players | For contributors |
-| --- | --- |
-| [Getting started](https://opennow.zortos.me/guides/getting-started/) | [Development guide](https://opennow.zortos.me/development/) |
-| [Configuration](https://opennow.zortos.me/reference/configuration/) | [Qt application](opennow-qt/README.md) |
-| [Native streamer](https://opennow.zortos.me/reference/native-streamer/) | [Protocol, release, and acceptance docs](docs/) |
-
-### Repository map
-
-```text
-opennow-qt/               Qt Quick desktop app, C++ integration, and Qt tests
-native/opennow-core/      Rust accounts, settings, catalog, and session services
-native/opennow-streamer/  Native NVST transport, media, input, and Qt FFI
-locales/                 English source and Crowdin-managed translations
-docs/                    Architecture, protocols, acceptance, and release guides
-scripts/                 Repository-only localization tooling
-.github/                 CI workflows and contributor guidance
-```
-
-## Contributing
-
-For code changes, read the [contributing guide](.github/CONTRIBUTING.md) and
-[repository guidance](AGENTS.md). Keep pull requests focused on one change.
-For translations, edit only `locales/en.json`. Crowdin manages the other locale files.
-
-Found a bug? Open a [GitHub issue](https://github.com/miirys/OpenNOW/issues)
-with your build, OS, GPU, and steps to reproduce it. For streaming bugs, include a
-diagnostic export. Check attachments for personal information before posting them.
-You can also ask for help on [Discord](https://discord.gg/8EJYaJcNfD).
-
-## Sponsors
-
-[Blacksmith](https://www.blacksmith.sh/) sponsors OpenNOW's CI.
-
-## Star history
-
-<a href="https://www.star-history.com/?repos=OpenCloudGaming%2FOpenNOW&type=date&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=OpenCloudGaming/OpenNOW&type=date&theme=dark&legend=top-left&sealed_token=13YQdHqPNeJl_PZ60Tn1heFHwLWvLm3sH5u-7HePhBdXpG1poEyGeM3QG_jf08kKYWxfy65fe7OZDjBzuhznLOS5gdEMLDUXY6D7NCLdFIpOTHrmG_JN8Q" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=OpenCloudGaming/OpenNOW&type=date&legend=top-left&sealed_token=13YQdHqPNeJl_PZ60Tn1heFHwLWvLm3sH5u-7HePhBdXpG1poEyGeM3QG_jf08kKYWxfy65fe7OZDjBzuhznLOS5gdEMLDUXY6D7NCLdFIpOTHrmG_JN8Q" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=OpenCloudGaming/OpenNOW&type=date&legend=top-left&sealed_token=13YQdHqPNeJl_PZ60Tn1heFHwLWvLm3sH5u-7HePhBdXpG1poEyGeM3QG_jf08kKYWxfy65fe7OZDjBzuhznLOS5gdEMLDUXY6D7NCLdFIpOTHrmG_JN8Q" />
- </picture>
-</a>
+The folders still use the old OpenNOW names on the inside so nothing breaks. The
+[contributing guide](.github/CONTRIBUTING.md) has the rest.
 
 ## License
 
-OpenNOW uses the [MIT License](LICENSE).
+MIT. See [LICENSE](LICENSE).

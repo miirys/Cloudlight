@@ -21,11 +21,9 @@ body:
     attributes:
       label: Operating System
       options:
-        - macOS
         - Windows
         - Linux
-        - Android
-        - iOS
+        - macOS
     validations:
       required: true
 
