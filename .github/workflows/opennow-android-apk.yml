@@ -1,0 +1,140 @@
+name: Build upstream OpenNOW Android APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_ref:
+        description: Branch, tag, or commit SHA from OpenCloudGaming/OpenNOW
+        required: false
+        default: android-native
+        type: string
+      run_tests:
+        description: Run Android unit tests before assembling release
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  build-upstream-apk:
+    name: Build OpenNOW Android release APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      SOURCE_REPOSITORY: OpenCloudGaming/OpenNOW
+
+    steps:
+      - name: Checkout upstream OpenNOW source
+        uses: actions/checkout@v4
+        with:
+          repository: OpenCloudGaming/OpenNOW
+          ref: ${{ inputs.source_ref }}
+          path: opennow-upstream
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Python 3
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Rust Android targets
+        run: |
+          rustup target add \
+            aarch64-linux-android \
+            armv7-linux-androideabi \
+            x86_64-linux-android \
+            i686-linux-android
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android packages, CMake, and NDK
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          sdkmanager --install \
+            "platform-tools" \
+            "platforms;android-37" \
+            "build-tools;37.0.0" \
+            "cmake;3.22.1"
+
+          NDK_VERSION="$(grep -RhoP 'ndkVersion\\s*[=:]\\s*["'\'' ]?\\K[0-9A-Za-z._-]+' \
+            opennow-upstream/android/build.gradle \
+            opennow-upstream/android/build.gradle.kts \
+            opennow-upstream/android/app/build.gradle \
+            opennow-upstream/android/app/build.gradle.kts \
+            opennow-upstream/android/gradle.properties \
+            2>/dev/null | head -n1 || true)"
+
+          if [[ -z "${NDK_VERSION}" ]]; then
+            NDK_VERSION="27.2.12479018"
+          fi
+
+          sdkmanager --install "ndk;${NDK_VERSION}"
+
+          {
+            echo "ANDROID_NDK_HOME=${ANDROID_SDK_ROOT}/ndk/${NDK_VERSION}"
+            echo "ANDROID_NDK_ROOT=${ANDROID_SDK_ROOT}/ndk/${NDK_VERSION}"
+            echo "NDK_VERSION=${NDK_VERSION}"
+          } >> "${GITHUB_ENV}"
+          echo "${ANDROID_SDK_ROOT}/cmake/3.22.1/bin" >> "${GITHUB_PATH}"
+
+      - name: Ensure Gradle wrapper is executable
+        working-directory: opennow-upstream/android
+        run: chmod +x ./gradlew
+
+      - name: Run Android unit tests
+        if: ${{ inputs.run_tests }}
+        working-directory: opennow-upstream/android
+        run: ./gradlew :app:testDebugUnitTest
+
+      - name: Assemble release APK
+        working-directory: opennow-upstream/android
+        run: ./gradlew :app:assembleRelease
+
+      - name: Generate build metadata
+        shell: bash
+        working-directory: opennow-upstream/android
+        run: |
+          set -euo pipefail
+
+          COMMIT_SHA="$(git -C .. rev-parse HEAD)"
+          VERSION_NAME="$(./gradlew -q :app:properties | sed -n 's/^versionName: //p' | head -n1 | tr -d '\\r')"
+          VERSION_CODE="$(./gradlew -q :app:properties | sed -n 's/^versionCode: //p' | head -n1 | tr -d '\\r')"
+
+          : "${VERSION_NAME:=unknown}"
+          : "${VERSION_CODE:=unknown}"
+
+          cat > "${GITHUB_WORKSPACE}/opennow-android-build-metadata.txt" <<EOF
+          source_repository=${SOURCE_REPOSITORY}
+          source_ref=${{ inputs.source_ref }}
+          checked_out_commit_sha=${COMMIT_SHA}
+          apk_filename=app-release.apk
+          android_version_name=${VERSION_NAME}
+          android_version_code=${VERSION_CODE}
+          EOF
+
+      - name: Upload release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: opennow-android-release-apk
+          path: opennow-upstream/android/app/build/outputs/apk/release/app-release.apk
+          if-no-files-found: error
+
+      - name: Upload build metadata
+        uses: actions/upload-artifact@v4
+        with:
+          name: opennow-android-release-metadata
+          path: opennow-android-build-metadata.txt
+          if-no-files-found: error
