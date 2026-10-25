@@ -14,8 +14,7 @@ on:
         default: false
         type: boolean
 
-permissions:
-  contents: read
+permissions: {}
 
 jobs:
   build-upstream-apk:
@@ -30,8 +29,16 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: OpenCloudGaming/OpenNOW
-          ref: ${{ inputs.source_ref }}
           path: opennow-upstream
+          persist-credentials: false
+
+      - name: Checkout selected source ref
+        shell: bash
+        working-directory: opennow-upstream
+        run: |
+          set -euo pipefail
+          git fetch --depth=1 origin "${{ inputs.source_ref }}"
+          git checkout --detach FETCH_HEAD
 
       - name: Set up Java 17
         uses: actions/setup-java@v4
