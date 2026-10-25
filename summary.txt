@@ -1,0 +1,13 @@
+ok   home (xcb, exit 0)
+ok   library (xcb, exit 0)
+ok   game-detail (xcb, exit 0)
+ok   store (xcb, exit 0)
+FAIL stream-stats (exit 1, see stream-stats.*.log)
+ok   settings-stream (xcb, exit 0)
+ok   settings-network (xcb, exit 0)
+ok   settings-audio (xcb, exit 0)
+ok   settings-controls (xcb, exit 0)
+ok   settings-appearance (xcb, exit 0)
+ok   settings-account (xcb, exit 0)
+ok   settings-about (xcb, exit 0)
+1 capture(s) failed
