@@ -100,11 +100,15 @@ fun GameDetailScreen(
                 style = type.overline,
             )
             Spacer(Modifier.height(10.dp))
-            Box(Modifier.reveal(0).height(96.dp).widthIn(max = 360.dp), contentAlignment = Alignment.BottomStart) {
+            Box(Modifier.reveal(0, soft = true).height(96.dp).widthIn(max = 360.dp), contentAlignment = Alignment.BottomStart) {
                 GameLogo(game.logo, game.title, Modifier.height(96.dp).widthIn(max = 360.dp))
             }
             Spacer(Modifier.height(14.dp))
             BasicText(metaLine(game), Modifier.reveal(1), style = type.body, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            game.description?.let {
+                Spacer(Modifier.height(10.dp))
+                BasicText(it, Modifier.reveal(1).widthIn(max = 460.dp), style = type.body.copy(color = Palette.textSecondary), maxLines = 4, overflow = TextOverflow.Ellipsis)
+            }
             if (session != null) {
                 Spacer(Modifier.height(10.dp))
                 val detail = listOfNotNull(

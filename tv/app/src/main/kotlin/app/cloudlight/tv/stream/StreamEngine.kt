@@ -24,6 +24,7 @@ import org.webrtc.audio.JavaAudioDeviceModule
 import java.nio.ByteBuffer
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
+import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 
@@ -42,7 +43,16 @@ object Rtc {
         )
         val audio = JavaAudioDeviceModule.builder(app)
             .setUseStereoOutput(true)
-            .setUseLowLatency(true)
+            // The low-latency output path makes some TV audio drivers throw inside WebRTC's
+            // native audio thread, which ends the app. The standard path is safe everywhere.
+            .setUseLowLatency(false)
+            .setUseHardwareAcousticEchoCanceler(false)
+            .setUseHardwareNoiseSuppressor(false)
+            .setAudioTrackErrorCallback(object : JavaAudioDeviceModule.AudioTrackErrorCallback {
+                override fun onWebRtcAudioTrackInitError(message: String?) { Log.w("Rtc", "audio init: $message") }
+                override fun onWebRtcAudioTrackStartError(code: JavaAudioDeviceModule.AudioTrackStartErrorCode?, message: String?) { Log.w("Rtc", "audio start: $message") }
+                override fun onWebRtcAudioTrackError(message: String?) { Log.w("Rtc", "audio: $message") }
+            })
             .setAudioAttributes(
                 AudioAttributes.Builder()
                     .setUsage(AudioAttributes.USAGE_GAME)
@@ -116,13 +126,50 @@ class StreamEngine(
 
     private val sink = VideoSink { }
 
+    /**
+     * Queues [block] on the worker. Work that arrives after shutdown is dropped, and a failure
+     * inside it ends the stream with a message instead of taking the app down: most of these
+     * calls come from WebRTC's native threads, where an escaping exception is fatal.
+     */
+    private fun post(block: () -> Unit) {
+        if (worker.isShutdown) return
+        try {
+            worker.execute { guarded(block) }
+        } catch (_: RejectedExecutionException) {
+        }
+    }
+
+    private fun every(seconds: Long, block: () -> Unit): ScheduledFuture<*>? = try {
+        worker.scheduleWithFixedDelay({ guarded(block) }, seconds, seconds, TimeUnit.SECONDS)
+    } catch (_: RejectedExecutionException) {
+        null
+    }
+
+    private fun guarded(block: () -> Unit) {
+        try {
+            block()
+        } catch (t: Throwable) {
+            Log.e(TAG, "stream task failed", t)
+            if (!closed) fail("The stream stopped because of an internal error (${t.javaClass.simpleName}).")
+        }
+    }
+
+    /** For callbacks on WebRTC and OkHttp threads: never let an exception escape. */
+    private inline fun safe(what: String, block: () -> Unit) {
+        try {
+            block()
+        } catch (t: Throwable) {
+            Log.e(TAG, "$what failed", t)
+        }
+    }
+
     fun start() {
         VideoOutput.rendered = 0
         VideoOutput.width = 0
         VideoOutput.height = 0
         VideoOutput.keyframeRequester = { requestKeyframe("decoder") }
         VideoOutput.onFirstFrame = { listener.onFirstFrame() }
-        worker.execute { open() }
+        post { open() }
     }
 
     private fun open() {
@@ -157,13 +204,13 @@ class StreamEngine(
     }
 
     private val signalingEvents = object : Signaling.Events {
-        override fun onOpen() = listener.onProgress("Waiting for the rig")
-        override fun onOffer(sdp: String) = worker.execute { answer(sdp) }
-        override fun onRemoteCandidate(candidate: String, sdpMid: String?, sdpMLineIndex: Int) = worker.execute {
+        override fun onOpen() = safe("open") { listener.onProgress("Waiting for the rig") }
+        override fun onOffer(sdp: String) = post { answer(sdp) }
+        override fun onRemoteCandidate(candidate: String, sdpMid: String?, sdpMLineIndex: Int) = post {
             val c = IceCandidate(sdpMid ?: sdpMLineIndex.toString(), sdpMLineIndex, candidate)
             if (remoteSet) pc?.addIceCandidate(c) else pendingCandidates += c
         }
-        override fun onClosed(reason: String) {
+        override fun onClosed(reason: String) = safe("signaling close") {
             if (!closed && !inputReady) fail("The rig closed the connection ($reason).")
         }
     }
@@ -192,7 +239,7 @@ class StreamEngine(
                 ch.registerObserver(object : DataChannel.Observer {
                     override fun onBufferedAmountChange(previous: Long) = Unit
                     override fun onStateChange() = Unit
-                    override fun onMessage(buffer: DataChannel.Buffer) = handshake(buffer.data)
+                    override fun onMessage(buffer: DataChannel.Buffer) = safe("input message") { handshake(buffer.data) }
                 })
             }
             partial = pc.createDataChannel(
@@ -205,6 +252,16 @@ class StreamEngine(
 
             await("offer") { obs -> pc.setRemoteDescription(obs, SessionDescription(SessionDescription.Type.OFFER, offer)) }
             remoteSet = true
+            // Receive only: the rig's microphone line would otherwise start recording, which
+            // needs a permission we don't ask for and fails on some TVs.
+            for (t in pc.transceivers) {
+                runCatching {
+                    val type = t.mediaType
+                    if (type == org.webrtc.MediaStreamTrack.MediaType.MEDIA_TYPE_AUDIO || type == org.webrtc.MediaStreamTrack.MediaType.MEDIA_TYPE_VIDEO) {
+                        t.direction = RtpTransceiver.RtpTransceiverDirection.RECV_ONLY
+                    }
+                }
+            }
             pendingCandidates.forEach { pc.addIceCandidate(it) }
             pendingCandidates.clear()
 
@@ -251,7 +308,7 @@ class StreamEngine(
                 pc.addIceCandidate(IceCandidate("0", 0, "candidate:2 1 tcp 1518149375 $ip ${m.port} typ host tcptype active$ufrag"))
             }
             listener.onProgress("Starting the video")
-            statsTask = worker.scheduleWithFixedDelay({ pollStats() }, 1, 1, TimeUnit.SECONDS)
+            statsTask = every(1) { pollStats() }
         } catch (t: Throwable) {
             Log.e(TAG, "negotiation failed", t)
             fail("The stream couldn't be negotiated: ${t.message ?: "unknown error"}")
@@ -291,14 +348,14 @@ class StreamEngine(
         }
         encoder.version = version
         inputReady = true
-        heartbeat = worker.scheduleWithFixedDelay({ sendReliable(encoder.heartbeat()) }, 2, 2, TimeUnit.SECONDS)
+        heartbeat = every(2) { sendReliable(encoder.heartbeat()) }
         listener.onInputReady()
     }
 
     private val observer = object : PeerConnection.Observer {
         override fun onSignalingChange(state: PeerConnection.SignalingState?) = Unit
         override fun onIceConnectionChange(state: PeerConnection.IceConnectionState?) = Unit
-        override fun onConnectionChange(state: PeerConnection.PeerConnectionState?) {
+        override fun onConnectionChange(state: PeerConnection.PeerConnectionState?) = safe("connection change") {
             when (state) {
                 PeerConnection.PeerConnectionState.CONNECTED -> listener.onConnected()
                 PeerConnection.PeerConnectionState.FAILED -> fail("The connection to the rig was lost.")
@@ -306,27 +363,27 @@ class StreamEngine(
             }
         }
         override fun onIceConnectionReceivingChange(receiving: Boolean) = Unit
-        override fun onIceGatheringChange(state: PeerConnection.IceGatheringState?) {
+        override fun onIceGatheringChange(state: PeerConnection.IceGatheringState?) = safe("gathering") {
             if (state == PeerConnection.IceGatheringState.COMPLETE) gathered?.countDown()
         }
-        override fun onIceCandidate(c: IceCandidate) {
+        override fun onIceCandidate(c: IceCandidate) = safe("candidate") {
             signaling?.sendCandidate(c.sdp, c.sdpMid, c.sdpMLineIndex)
         }
         override fun onIceCandidatesRemoved(candidates: Array<out IceCandidate>?) = Unit
         override fun onAddStream(stream: MediaStream?) = Unit
         override fun onRemoveStream(stream: MediaStream?) = Unit
-        override fun onDataChannel(channel: DataChannel) {
-            if (channel.label() != "control_channel") return
+        override fun onDataChannel(channel: DataChannel) = safe("data channel") {
+            if (channel.label() != "control_channel") return@safe
             control = channel
             channel.registerObserver(object : DataChannel.Observer {
                 override fun onBufferedAmountChange(previous: Long) = Unit
                 override fun onStateChange() = Unit
-                override fun onMessage(buffer: DataChannel.Buffer) = controlMessage(buffer.data)
+                override fun onMessage(buffer: DataChannel.Buffer) = safe("control message") { controlMessage(buffer.data) }
             })
         }
         override fun onRenegotiationNeeded() = Unit
         override fun onAddTrack(receiver: RtpReceiver?, streams: Array<out MediaStream>?) = Unit
-        override fun onTrack(transceiver: RtpTransceiver) {
+        override fun onTrack(transceiver: RtpTransceiver) = safe("track") {
             when (val track = transceiver.receiver?.track()) {
                 is VideoTrack -> {
                     videoTrack = track
@@ -350,8 +407,10 @@ class StreamEngine(
     private fun pollStats() {
         val pc = pc ?: return
         pc.getStats { report ->
-            val s = runCatching { statsReader.read(report) }.getOrNull() ?: return@getStats
-            listener.onStats(s.copy(codec = s.codec ?: codec))
+            safe("stats") {
+                val s = runCatching { statsReader.read(report) }.getOrNull() ?: return@safe
+                listener.onStats(s.copy(codec = s.codec ?: codec))
+            }
         }
     }
 
@@ -394,7 +453,7 @@ class StreamEngine(
 
     /** Taps a key combination: all down in order, then all up in reverse. */
     fun sendCombo(vararg keys: Keymap.Key) {
-        worker.execute {
+        post {
             var mods = 0
             for (k in keys) {
                 if (k == Keymap.ALT) mods = mods or InputEncoder.MOD_ALT
@@ -413,7 +472,7 @@ class StreamEngine(
         val now = SystemClock.uptimeMillis()
         if (now - lastKeyframeAt < 400) return
         lastKeyframeAt = now
-        worker.execute {
+        post {
             val c = control
             if (c != null && c.state() == DataChannel.State.OPEN) {
                 val msg = JSONObject().put("type", "request_keyframe").put("reason", reason).put("backlogFrames", 0).put("attempt", 1)
@@ -429,13 +488,13 @@ class StreamEngine(
     @Volatile var volume = 1.0
         set(value) {
             field = value.coerceIn(0.0, 1.0)
-            worker.execute { applyVolume() }
+            post { applyVolume() }
         }
 
     @Volatile var muted = false
         set(value) {
             field = value
-            worker.execute { applyVolume() }
+            post { applyVolume() }
         }
 
     private fun applyVolume() {
@@ -460,15 +519,25 @@ class StreamEngine(
         closed = true
         VideoOutput.keyframeRequester = null
         VideoOutput.onFirstFrame = null
-        worker.execute {
+        try {
+            worker.execute { shutdown() }
+        } catch (_: RejectedExecutionException) {
+        }
+    }
+
+    private fun shutdown() {
+        try {
             heartbeat?.cancel(false)
             statsTask?.cancel(false)
-            signaling?.close()
+            runCatching { signaling?.close() }
             runCatching { videoTrack?.removeSink(sink) }
             runCatching { input?.close() }
             runCatching { partial?.close() }
             runCatching { pc?.close() }
             runCatching { pc?.dispose() }
+        } catch (t: Throwable) {
+            Log.e(TAG, "shutdown failed", t)
+        } finally {
             pc = null
             worker.shutdown()
         }

@@ -46,6 +46,11 @@ class AppState(context: Context, private val scope: CoroutineScope) {
     private val seen = LinkedHashMap<String, Game>()
     var error by mutableStateOf<String?>(null)
         private set
+    /** The membership's tier and the stream modes it includes, once known. */
+    var membership by mutableStateOf<Nvidia.Membership?>(null)
+        private set
+    /** Why the app last closed unexpectedly, shown once at startup. */
+    var problem by mutableStateOf<app.cloudlight.tv.CrashLog.Problem?>(null)
 
     val signedIn: Boolean get() = profile != null
 
@@ -121,6 +126,7 @@ class AppState(context: Context, private val scope: CoroutineScope) {
         featured = emptyList()
         shelves = emptyList()
         sessions = emptyList()
+        membership = null
     }
 
     /** Reloads the library and the running sessions. */
@@ -135,6 +141,7 @@ class AppState(context: Context, private val scope: CoroutineScope) {
                     sessions = runCatching { Nvidia.activeSessions(streamingBase, token, deviceId) }.getOrDefault(emptyList())
                 }
                 val storesJob = scope.launch { runCatching { Stores.update(Nvidia.storeLabels(token)) } }
+                scope.launch { loadMembership(token, vpc) }
                 val storeJob = scope.launch {
                     runCatching {
                         val p = Nvidia.panels(token, vpc, "MARQUEE", "MAIN")
@@ -160,6 +167,18 @@ class AppState(context: Context, private val scope: CoroutineScope) {
             }
         }
     }
+
+    private suspend fun loadMembership(token: String, vpc: String?) {
+        val user = profile?.userId ?: return
+        val t = tokens
+        membership = runCatching { Nvidia.membership(token, user, vpc) }.recoverCatching {
+            // The subscription service sometimes wants the access token rather than the ID token.
+            if (t != null && t.access != token) Nvidia.membership(t.access, user, vpc) else throw it
+        }.onFailure { android.util.Log.w("AppState", "membership lookup failed", it) }.getOrNull() ?: membership
+    }
+
+    /** Membership modes, best first, or null when unknown. */
+    val allowedModes: List<Nvidia.Mode>? get() = membership?.modes?.takeIf { it.isNotEmpty() }
 
     /** Checks for sessions started elsewhere, without reloading the library. */
     fun refreshSessions() {

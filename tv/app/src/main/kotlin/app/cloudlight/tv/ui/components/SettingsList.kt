@@ -51,7 +51,9 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.KeyEvent
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.activity.compose.BackHandler
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
@@ -59,6 +61,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import app.cloudlight.tv.ui.motion.Motion
+import app.cloudlight.tv.ui.motion.reveal
 import app.cloudlight.tv.ui.theme.LocalType
 import app.cloudlight.tv.ui.theme.Palette
 import kotlin.math.roundToInt
@@ -70,7 +73,14 @@ import kotlinx.coroutines.launch
  * lighting up on its own. Also carries the focused row's hint for the footer.
  */
 @Stable
-class SettingsFocus {
+class SettingsFocus(
+    /**
+     * When true, left and right change a value as soon as its row is focused (fine for a
+     * single column like the in-game menu). When false, OK starts changing the value, so left
+     * and right stay free for moving between columns.
+     */
+    val inlineValues: Boolean = false,
+) {
     var top by mutableFloatStateOf(0f)
     var height by mutableFloatStateOf(0f)
     var active by mutableStateOf(false)
@@ -124,9 +134,10 @@ fun SettingsList(state: SettingsFocus = remember { SettingsFocus() }, modifier: 
 @Composable
 private fun SettingRowBase(
     hint: String?,
-    onKey: (Key) -> Boolean,
+    onKey: (KeyEvent) -> Boolean,
     onClick: () -> Unit,
     focusRequester: FocusRequester? = null,
+    onFocus: (Boolean) -> Unit = {},
     content: @Composable (focused: Boolean) -> Unit,
 ) {
     val state = LocalSettingsFocus.current
@@ -152,13 +163,17 @@ private fun SettingRowBase(
     Box(
         Modifier
             .fillMaxWidth()
+            .reveal(id, distance = 22.dp)
             .onGloballyPositioned {
                 top = it.positionInParent().y
                 h = it.size.height.toFloat()
             }
             .focusRequester(requester)
-            .onFocusChanged { focused = it.isFocused }
-            .onKeyEvent { e -> e.type == KeyEventType.KeyDown && onKey(e.key) }
+            .onFocusChanged {
+                focused = it.isFocused
+                onFocus(it.isFocused)
+            }
+            .onPreviewKeyEvent { e -> onKey(e) }
             .hoverable(source)
             .clickable(interactionSource = source, indication = null, onClick = onClick),
     ) {
@@ -184,8 +199,9 @@ private fun Divider() {
 }
 
 /**
- * A setting with a fixed list of values. Left and right change it on the spot; OK moves to
- * the next value and wraps around. The value slides in from the side it came from.
+ * A setting with a fixed list of values. OK starts changing it: left and right step through
+ * the values, and OK, back, up or down finish. (In the in-game menu, left and right change it
+ * straight away.) The value slides in from the side it came from.
  */
 @Composable
 fun ValueSetting(
@@ -196,7 +212,11 @@ fun ValueSetting(
     hint: String? = null,
     focusRequester: FocusRequester? = null,
 ) {
+    val state = LocalSettingsFocus.current
+    val inline = state?.inlineValues ?: true
     var dir by remember { mutableIntStateOf(1) }
+    var editing by remember { mutableStateOf(false) }
+    var okHeld by remember { mutableStateOf(false) }
     val i = index.coerceIn(0, (options.size - 1).coerceAtLeast(0))
     fun go(d: Int, wrap: Boolean) {
         val n = if (wrap) (i + d).mod(options.size) else (i + d).coerceIn(0, options.lastIndex)
@@ -205,26 +225,49 @@ fun ValueSetting(
             onSelect(n)
         }
     }
+    BackHandler(enabled = editing) { editing = false }
+    val live = inline || editing
     SettingRowBase(
-        hint = hint,
-        onKey = { k ->
-            when (k) {
-                Key.DirectionLeft -> { go(-1, false); true }
-                Key.DirectionRight -> { go(1, false); true }
+        hint = if (editing) "Left and right to change, OK when done." else hint,
+        onKey = { e ->
+            val down = e.type == KeyEventType.KeyDown
+            when (e.key) {
+                Key.DirectionLeft -> if (live) { if (down) go(-1, false); true } else false
+                Key.DirectionRight -> if (live) { if (down) go(1, false); true } else false
+                Key.DirectionUp, Key.DirectionDown -> { if (editing) editing = false; false }
+                Key.DirectionCenter, Key.Enter, Key.NumPadEnter -> when {
+                    inline -> false
+                    else -> {
+                        // Toggle once per press, however long OK is held.
+                        if (down && !okHeld) editing = !editing
+                        okHeld = down
+                        true
+                    }
+                }
                 else -> false
             }
         },
         onClick = { go(1, true) },
         focusRequester = focusRequester,
+        onFocus = { if (!it) editing = false },
     ) { focused ->
         RowLayout(label, focused) {
             val fg = onFocusColor(focused, Palette.textSecondary)
-            val arrows by animateFloatAsState(if (focused) 1f else 0f, Motion.fade(), label = "arrows")
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            val arrows by animateFloatAsState(if (focused) (if (live) 1f else 0.3f) else 0f, Motion.fade(), label = "arrows")
+            val edit by animateFloatAsState(if (editing) 1f else 0f, Motion.focus(), label = "edit")
+            val valueColor = if (editing) Palette.white else fg
+            Row(
+                Modifier
+                    .graphicsLayer { val sc = 1f + 0.04f * edit; scaleX = sc; scaleY = sc }
+                    .background(Palette.black.copy(alpha = 0.88f * edit), RoundedCornerShape(50))
+                    .padding(horizontal = 4.dp + 4.dp * edit, vertical = 3.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                val arrowTint = if (editing) Palette.white else fg
                 Image(
                     Icons.AutoMirrored.Rounded.KeyboardArrowLeft, null,
                     Modifier.size(16.dp).graphicsLayer { alpha = arrows * if (i > 0) 1f else 0.25f },
-                    colorFilter = ColorFilter.tint(fg),
+                    colorFilter = ColorFilter.tint(arrowTint),
                 )
                 AnimatedContent(
                     targetState = i,
@@ -236,27 +279,30 @@ fun ValueSetting(
                     contentAlignment = Alignment.Center,
                     label = "value",
                 ) { v ->
-                    BasicText(options.getOrElse(v) { "" }, Modifier.padding(horizontal = 4.dp), style = LocalType.current.label.copy(color = fg))
+                    BasicText(options.getOrElse(v) { "" }, Modifier.padding(horizontal = 4.dp), style = LocalType.current.label.copy(color = valueColor))
                 }
                 Image(
                     Icons.AutoMirrored.Rounded.KeyboardArrowRight, null,
                     Modifier.size(16.dp).graphicsLayer { alpha = arrows * if (i < options.lastIndex) 1f else 0.25f },
-                    colorFilter = ColorFilter.tint(fg),
+                    colorFilter = ColorFilter.tint(arrowTint),
                 )
             }
         }
     }
 }
 
-/** An on/off setting. OK flips it; left turns it off and right turns it on. */
+/** An on/off setting. OK flips it (in the in-game menu, left and right also set it). */
 @Composable
 fun SwitchSetting(label: String, on: Boolean, onToggle: () -> Unit, hint: String? = null) {
+    val inline = LocalSettingsFocus.current?.inlineValues ?: true
     SettingRowBase(
         hint = hint,
-        onKey = { k ->
-            when (k) {
-                Key.DirectionLeft -> { if (on) onToggle(); true }
-                Key.DirectionRight -> { if (!on) onToggle(); true }
+        onKey = { e ->
+            val down = e.type == KeyEventType.KeyDown
+            when {
+                !inline -> false
+                e.key == Key.DirectionLeft -> { if (down && on) onToggle(); true }
+                e.key == Key.DirectionRight -> { if (down && !on) onToggle(); true }
                 else -> false
             }
         },
@@ -302,5 +348,7 @@ fun InfoLine(label: String, value: String) {
 /** A small heading that starts a group of rows. */
 @Composable
 fun SettingsGroup(text: String) {
-    BasicText(text, Modifier.padding(start = 16.dp, top = 18.dp, bottom = 4.dp), style = LocalType.current.caption.copy(color = Palette.textTertiary))
+    val state = LocalSettingsFocus.current
+    val id = remember { (state?.next ?: 0).also { state?.next = it + 1 } }
+    BasicText(text, Modifier.reveal(id, distance = 22.dp).padding(start = 16.dp, top = 18.dp, bottom = 4.dp), style = LocalType.current.caption.copy(color = Palette.textTertiary))
 }

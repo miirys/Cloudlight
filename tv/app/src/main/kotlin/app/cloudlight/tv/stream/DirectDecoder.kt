@@ -138,6 +138,7 @@ class DirectDecoder(private val mime: String, private val codecName: String) : V
     private val stub: JavaI420Buffer = JavaI420Buffer.allocate(2, 2)
 
     override fun initDecode(settings: VideoDecoder.Settings, callback: VideoDecoder.Callback): VideoCodecStatus {
+        Log.i(TAG, "init $codecName ${settings.width}x${settings.height}")
         this.callback = callback
         if (settings.width > 0 && settings.height > 0) {
             width = settings.width
@@ -148,7 +149,17 @@ class DirectDecoder(private val mime: String, private val codecName: String) : V
 
     override fun getImplementationName(): String = codecName
 
-    override fun decode(frame: EncodedImage, info: VideoDecoder.DecodeInfo): VideoCodecStatus {
+    override fun decode(frame: EncodedImage, info: VideoDecoder.DecodeInfo): VideoCodecStatus = try {
+        decodeFrame(frame)
+    } catch (t: Throwable) {
+        // This runs inside a native call; an exception escaping here aborts the process.
+        Log.w(TAG, "decode crashed", t)
+        runCatching { teardown() }
+        needKeyframe = true
+        VideoCodecStatus.ERROR
+    }
+
+    private fun decodeFrame(frame: EncodedImage): VideoCodecStatus {
         val surface = VideoOutput.surface
         if (surface == null || !surface.isValid) {
             teardown()
@@ -166,7 +177,7 @@ class DirectDecoder(private val mime: String, private val codecName: String) : V
         }
         if (needKeyframe) {
             if (frame.frameType != EncodedImage.FrameType.VideoFrameKey) {
-                VideoOutput.keyframeRequester?.invoke()
+                runCatching { VideoOutput.keyframeRequester?.invoke() }
                 return VideoCodecStatus.NO_OUTPUT
             }
             needKeyframe = false
@@ -177,7 +188,7 @@ class DirectDecoder(private val mime: String, private val codecName: String) : V
             if (index < 0) {
                 // The decoder is backed up; skip and ask for a clean restart point.
                 needKeyframe = true
-                VideoOutput.keyframeRequester?.invoke()
+                runCatching { VideoOutput.keyframeRequester?.invoke() }
                 return VideoCodecStatus.NO_OUTPUT
             }
             val buf = c.getInputBuffer(index) ?: return VideoCodecStatus.ERROR
@@ -241,7 +252,16 @@ class DirectDecoder(private val mime: String, private val codecName: String) : V
     }
 
     private fun drain(c: MediaCodec) {
-        Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_DISPLAY)
+        runCatching { Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_DISPLAY) }
+        try {
+            drainLoop(c)
+        } catch (t: Throwable) {
+            // Never let the output thread take the app down; the next key frame restarts it.
+            Log.w(TAG, "output thread stopped", t)
+        }
+    }
+
+    private fun drainLoop(c: MediaCodec) {
         val info = MediaCodec.BufferInfo()
         var first = true
         while (running && codec === c) {
@@ -257,7 +277,7 @@ class DirectDecoder(private val mime: String, private val codecName: String) : V
                     VideoOutput.rendered++
                     if (first) {
                         first = false
-                        VideoOutput.onFirstFrame?.invoke()
+                        runCatching { VideoOutput.onFirstFrame?.invoke() }
                     }
                     val times = pending.remove(info.presentationTimeUs)
                     val decodeMs = times?.let { ((System.nanoTime() - it[0]) / 1_000_000).toInt() }
@@ -292,7 +312,7 @@ class DirectDecoder(private val mime: String, private val codecName: String) : V
     }
 
     override fun release(): VideoCodecStatus {
-        teardown()
+        runCatching { teardown() }
         callback = null
         return VideoCodecStatus.OK
     }

@@ -8,6 +8,13 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.unit.IntOffset
+import app.cloudlight.tv.ui.components.Avatar
+import app.cloudlight.tv.ui.components.InfoLine
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -95,6 +102,13 @@ private val PageItemGap = 4.dp
 @Composable
 fun SettingsScreen(hub: PadHub, app: AppState, settings: Settings) {
     var page by remember { mutableStateOf(Page.STREAM) }
+    var pageDir by remember { mutableIntStateOf(1) }
+    fun open(p: Page) {
+        if (p == page) return
+        pageDir = if (p.ordinal > page.ordinal) 1 else -1
+        page = p
+    }
+    val entry = LocalSectionEntry.current
     val pageFocus = remember { Page.entries.associateWith { FocusRequester() } }
     val pillY by animateDpAsState((PageItemHeight + PageItemGap) * page.ordinal, Motion.focus(), label = "pill")
     Row(Modifier.fillMaxSize().padding(start = 40.dp, end = 40.dp, top = TopBarHeight + 18.dp)) {
@@ -110,15 +124,17 @@ fun SettingsScreen(hub: PadHub, app: AppState, settings: Settings) {
             Column(verticalArrangement = Arrangement.spacedBy(PageItemGap)) {
                 for (p in Page.entries) {
                     Pressable(
-                        onClick = { page = p },
-                        modifier = Modifier.fillMaxWidth().height(PageItemHeight),
+                        onClick = { open(p) },
                         shape = RoundedCornerShape(50),
                         focusedScale = 1.03f,
                         color = Color.Transparent,
                         border = false,
                         focusRequester = pageFocus.getValue(p),
+                        modifier = Modifier.fillMaxWidth().height(PageItemHeight).then(
+                            if (p == page && entry != null) Modifier.focusRequester(entry) else Modifier,
+                        ),
                     ) { focused ->
-                        LaunchedEffect(focused) { if (focused) page = p }
+                        LaunchedEffect(focused) { if (focused) open(p) }
                         val fg = onFocusColor(focused, if (p == page) Palette.text else Palette.textSecondary)
                         Row(Modifier.fillMaxSize().padding(start = 14.dp), verticalAlignment = Alignment.CenterVertically) {
                             Image(p.icon, null, Modifier.size(14.dp), colorFilter = ColorFilter.tint(fg))
@@ -134,13 +150,17 @@ fun SettingsScreen(hub: PadHub, app: AppState, settings: Settings) {
             targetState = page,
             modifier = Modifier.fillMaxSize(),
             transitionSpec = {
-                fadeIn(tween(160, delayMillis = 60)).togetherWith(fadeOut(tween(110)) + scaleOut(tween(180), targetScale = 0.985f))
+                // Pages stack like the list beside them: moving down the list brings the next
+                // page up from below, and the old one lifts away.
+                val d = pageDir
+                (fadeIn(tween(220, delayMillis = 50)) + slideInVertically(Motion.springOf(0.55f, 0.84f, IntOffset(1, 1))) { it / 9 * d })
+                    .togetherWith(fadeOut(tween(140)) + slideOutVertically(Motion.springOf(0.45f, 1f, IntOffset(1, 1))) { -it / 14 * d } + scaleOut(tween(220), targetScale = 0.97f))
             },
             label = "page",
         ) { p ->
-            RevealPage(key = p) {
+            RevealPage(key = p, dx = 1) {
                 when (p) {
-                    Page.STREAM -> ListPage { StreamPage(settings) }
+                    Page.STREAM -> ListPage { StreamPage(settings, app) }
                     Page.GAME -> ListPage { GamePage(settings) }
                     Page.CONTROLLERS -> ControllerPage(hub)
                     Page.ACCOUNT -> ListPage { AccountPage(app) }
@@ -159,7 +179,7 @@ private fun ListPage(content: @Composable () -> Unit) {
         Box(Modifier.weight(1f).fillMaxWidth()) {
             PivotScroll(leadingFraction = 0.3f) {
                 Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 24.dp)) {
-                    SettingsList(focus, Modifier.reveal(1)) { content() }
+                    SettingsList(focus) { content() }
                 }
             }
         }
@@ -175,17 +195,33 @@ private fun ListPage(content: @Composable () -> Unit) {
     }
 }
 
+private fun modeLabel(height: Int, fps: Int) = "${if (height >= 2160) "4K" else "${height}p"} at $fps fps"
+
 private fun gbPerHour(mbps: Int) = mbps * 3600 / 8 / 1000.0
 
 @Composable
-private fun StreamPage(settings: Settings) {
+private fun StreamPage(settings: Settings, app: AppState) {
     SettingsGroup("Picture")
+    val m = settings.mode
+    val allowed = app.allowedModes
+    val tier = app.membership?.tier?.let { "Your $it membership" } ?: "Your membership"
+    val best = allowed?.maxWithOrNull(compareBy({ it.height }, { it.fps }))
+    val fits = allowed == null || allowed.any { it.height >= m.height && it.fps >= m.fps }
+    val modeHint = when {
+        allowed == null -> "Set your TV to 120 Hz to stream at 120 fps."
+        !fits && best != null -> "$tier goes up to ${modeLabel(best.height, best.fps)}, so games start there instead."
+        best != null -> "$tier goes up to ${modeLabel(best.height, best.fps)}." + if (m.fps > 60) " Set your TV to 120 Hz for 120 fps." else ""
+        else -> null
+    }
     ValueSetting(
         "Resolution",
-        StreamMode.entries.map { it.label },
+        StreamMode.entries.map { mode ->
+            val ok = allowed == null || allowed.any { it.height >= mode.height && it.fps >= mode.fps }
+            if (ok) mode.label else "${mode.label}, not included"
+        },
         settings.mode.ordinal,
         { settings.cycleMode(it - settings.mode.ordinal) },
-        hint = "Set your TV to 120 Hz to stream at 120 fps. 4K at 120 fps needs Ultimate.",
+        hint = modeHint,
     )
     val bi = Settings.BITRATES.indexOf(settings.bitrateMbps).coerceAtLeast(0)
     ValueSetting(
@@ -257,61 +293,6 @@ private fun GamePage(settings: Settings) {
 }
 
 @Composable
-private fun ControllerPage(hub: PadHub) {
-    val pads by hub.pads.collectAsState()
-    val type = LocalType.current
-    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 30.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-        if (pads.isEmpty()) {
-            Column(Modifier.reveal(1).padding(top = 18.dp, start = 4.dp)) {
-                BasicText("No controllers connected", style = type.title)
-                Spacer(Modifier.height(8.dp))
-                BasicText("Pair one in your TV's Bluetooth settings, or plug in a USB controller or its receiver.", style = type.body)
-            }
-        } else {
-            BasicText(
-                if (pads.size == 1) "1 controller" else "${pads.size} controllers",
-                Modifier.reveal(1).padding(start = 4.dp, top = 18.dp),
-                style = type.caption.copy(color = Palette.textTertiary),
-            )
-        }
-        pads.forEachIndexed { i, p -> Box(Modifier.reveal(2 + i)) { PadView(i + 1, p) } }
-    }
-}
-
-/** A live picture of one controller: sticks, triggers and buttons light up as you press them. */
-@Composable
-private fun PadView(player: Int, p: PadInfo) {
-    val type = LocalType.current
-    Column(Modifier.fillMaxWidth().padding(horizontal = 4.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.size(22.dp).background(Palette.white, CircleShape), contentAlignment = Alignment.Center) {
-                BasicText("$player", style = type.label.copy(color = Palette.black))
-            }
-            Spacer(Modifier.width(10.dp))
-            BasicText(p.name, Modifier.weight(1f), style = type.headline, maxLines = 1)
-            BasicText(p.route, style = type.caption)
-        }
-        Spacer(Modifier.height(14.dp))
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(18.dp)) {
-            Stick("L", p.state.lx, p.state.ly, p.state.has(Btn.LS))
-            Stick("R", p.state.rx, p.state.ry, p.state.has(Btn.RS))
-            Trigger("LT", p.state.lt)
-            Trigger("RT", p.state.rt)
-            Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                    for (b in listOf(Btn.A, Btn.B, Btn.X, Btn.Y, Btn.LB, Btn.RB)) Chip(b, p.state.buttons)
-                }
-                Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                    for (b in listOf(Btn.UP, Btn.DOWN, Btn.LEFT, Btn.RIGHT, Btn.VIEW, Btn.MENU, Btn.GUIDE)) Chip(b, p.state.buttons)
-                }
-            }
-        }
-        Spacer(Modifier.height(14.dp))
-        Box(Modifier.fillMaxWidth().height(0.75.dp).background(Palette.hairline))
-    }
-}
-
-@Composable
 private fun AccountPage(app: AppState) {
     val p = app.profile
     val type = LocalType.current
@@ -321,69 +302,18 @@ private fun AccountPage(app: AppState) {
         return
     }
     Row(Modifier.padding(start = 16.dp, top = 16.dp, bottom = 14.dp), verticalAlignment = Alignment.CenterVertically) {
-        Box(Modifier.size(48.dp).clip(CircleShape).background(Palette.glassStrong), contentAlignment = Alignment.Center) {
-            if (p.avatar != null) GameArt(p.avatar, "", Modifier.fillMaxSize())
-            else BasicText(p.name.take(1).uppercase(), style = type.title)
-        }
+        Avatar(p.avatar, Modifier.size(56.dp))
         Spacer(Modifier.width(14.dp))
         Column {
             BasicText(p.name, style = type.title)
-            BasicText(listOfNotNull(p.email, p.tier).joinToString("  ·  "), style = type.body)
+            BasicText(listOfNotNull(p.email, app.membership?.tier ?: p.tier).joinToString("  ·  "), style = type.body)
         }
+    }
+    app.membership?.let { mem ->
+        SettingsGroup("Membership")
+        mem.modes.maxWithOrNull(compareBy({ it.height }, { it.fps }))?.let { InfoLine("Best stream", modeLabel(it.height, it.fps)) }
+        InfoLine("Play time", if (mem.unlimited) "Unlimited" else mem.hoursLeft?.let { "%.1f hours left".format(it) } ?: "Unknown")
     }
     ActionSetting("Refresh library", app::refresh, value = "${app.library.size} games", hint = "Picks up games you added in another app.")
     ActionSetting("Sign out", app::signOut, hint = "You can sign back in with your phone.")
 }
-
-@Composable
-private fun Chip(bit: Int, buttons: Int) {
-    val on = buttons and bit != 0
-    val lit by animateFloatAsState(if (on) 1f else 0f, Motion.press(), label = "chip")
-    val name = Btn.names.first { it.first == bit }.second
-    Box(
-        Modifier
-            .graphicsLayer {
-                val s = 1f + 0.08f * lit
-                scaleX = s
-                scaleY = s
-            }
-            .background(if (on) Palette.white else Palette.glassStrong, RoundedCornerShape(6.dp))
-            .padding(horizontal = 7.dp, vertical = 4.dp),
-    ) {
-        BasicText(name, style = LocalType.current.caption.copy(color = if (on) Palette.black else Palette.textSecondary))
-    }
-}
-
-@Composable
-private fun Stick(label: String, x: Float, y: Float, pressed: Boolean) {
-    val size = 52.dp
-    val dot = 11.dp
-    Box(Modifier.size(size).border(1.dp, if (pressed) Palette.white else Palette.hairlineStrong, CircleShape)) {
-        Box(
-            Modifier
-                .align(Alignment.Center)
-                .offset(x = (size - dot) / 2 * x, y = (size - dot) / 2 * y)
-                .size(dot)
-                .background(Palette.white, CircleShape),
-        )
-        BasicText(label, Modifier.align(Alignment.BottomEnd), style = LocalType.current.caption)
-    }
-}
-
-@Composable
-private fun Trigger(label: String, v: Float) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Box(Modifier.size(width = 9.dp, height = 44.dp).background(Palette.glassStrong, RoundedCornerShape(5.dp))) {
-            Box(
-                Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .fillMaxHeight(v.coerceIn(0f, 1f))
-                    .background(Palette.white, RoundedCornerShape(5.dp)),
-            )
-        }
-        Spacer(Modifier.height(4.dp))
-        BasicText(label, style = LocalType.current.caption)
-    }
-}
-

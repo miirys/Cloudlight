@@ -36,12 +36,16 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.icons.Icons
@@ -70,6 +74,7 @@ import app.cloudlight.tv.data.Game
 import app.cloudlight.tv.ui.components.GameArt
 import app.cloudlight.tv.ui.components.GameLogo
 import app.cloudlight.tv.ui.motion.reveal
+import app.cloudlight.tv.ui.motion.revealAt
 import app.cloudlight.tv.ui.components.GlassButton
 import app.cloudlight.tv.ui.components.PivotScroll
 import app.cloudlight.tv.ui.components.Pressable
@@ -79,6 +84,10 @@ import app.cloudlight.tv.ui.theme.Palette
 import kotlinx.coroutines.delay
 
 private val ScreenStart = 40.dp
+private val WideW = 244.dp
+
+/** Tiles in a rail arrive left to right, a beat after their rail. */
+private fun Modifier.cascade(rail: Int, index: Int): Modifier = revealAt(55L * rail + 45L * index, distance = 20.dp)
 private const val SlideMs = 7000L
 
 /** One page of the banner: a game and why it's there. */
@@ -149,8 +158,8 @@ fun HomeScreen(
     PivotScroll(leadingFraction = 0.5f) {
         LazyColumn(
             Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 110.dp),
-            verticalArrangement = Arrangement.spacedBy(18.dp),
+            contentPadding = PaddingValues(bottom = 120.dp),
+            verticalArrangement = Arrangement.spacedBy(22.dp),
         ) {
             item(key = "hero") {
                 Hero(
@@ -171,12 +180,13 @@ fun HomeScreen(
             if (jump.isNotEmpty() || recent.isNotEmpty()) {
                 val r = row++
                 item(key = "continue") {
+                    val rest = recent.filter { g -> jump.none { it.second.id == g.id } }
                     Rail("Continue playing", Modifier.reveal(r)) {
-                        items(jump, key = { "s" + it.first.sessionId }) { (s, g) ->
-                            SessionCard(s, g, onFocus = { onTile(g) }, onClick = { onResume(s) })
+                        itemsIndexed(jump, key = { _, it -> "s" + it.first.sessionId }) { i, (s, g) ->
+                            Box(Modifier.cascade(r, i)) { SessionCard(s, g, onFocus = { onTile(g) }, onClick = { onResume(s) }) }
                         }
-                        items(recent.filter { g -> jump.none { it.second.id == g.id } }, key = { "r" + it.id }) { g ->
-                            WideTile(g, onFocus = { onTile(g) }, onClick = { onOpen(g) })
+                        itemsIndexed(rest, key = { _, it -> "r" + it.id }) { i, g ->
+                            Box(Modifier.cascade(r, jump.size + i)) { WideTile(g, onFocus = { onTile(g) }, onClick = { onOpen(g) }) }
                         }
                     }
                 }
@@ -185,7 +195,9 @@ fun HomeScreen(
                 val r = row++
                 item(key = "library") {
                     Rail("Your library", Modifier.reveal(r)) {
-                        items(library.take(40), key = { "l" + it.id }) { g -> PosterTile(g, 92.dp, onFocus = { onTile(g) }, onClick = { onOpen(g) }) }
+                        itemsIndexed(library.take(40), key = { _, it -> "l" + it.id }) { i, g ->
+                            Box(Modifier.cascade(r, i)) { GameCard(g, onFocus = { onTile(g) }, onClick = { onOpen(g) }) }
+                        }
                     }
                 }
             }
@@ -193,7 +205,9 @@ fun HomeScreen(
                 val r = row++
                 item(key = "shelf:" + shelf.id) {
                     Rail(shelf.title, Modifier.reveal(r)) {
-                        items(shelf.games.take(30), key = { shelf.id + it.id }) { g -> PosterTile(g, 92.dp, onFocus = { onTile(g) }, onClick = { onOpen(g) }) }
+                        itemsIndexed(shelf.games.take(30), key = { _, it -> shelf.id + it.id }) { i, g ->
+                            Box(Modifier.cascade(r, i)) { GameCard(g, onFocus = { onTile(g) }, onClick = { onOpen(g) }) }
+                        }
                     }
                 }
             }
@@ -232,7 +246,7 @@ private fun Hero(
             Column(Modifier.widthIn(max = 440.dp)) {
                 BasicText((slide?.tag ?: g.store ?: "").uppercase(), Modifier.reveal(0), style = type.overline)
                 Spacer(Modifier.height(10.dp))
-                Box(Modifier.reveal(0).height(84.dp).widthIn(max = 320.dp), contentAlignment = Alignment.BottomStart) {
+                Box(Modifier.reveal(0, soft = true).height(84.dp).widthIn(max = 320.dp), contentAlignment = Alignment.BottomStart) {
                     GameLogo(g.logo, g.title, Modifier.height(84.dp).widthIn(max = 320.dp), alignment = Alignment.BottomStart)
                 }
                 Spacer(Modifier.height(12.dp))
@@ -258,7 +272,13 @@ private fun Hero(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Box(Modifier.onFocusChanged { if (it.isFocused) focusedButton = 0 }) {
-                GlassButton(if (slide?.session != null) "Resume" else "Play", { shown?.let(onPlay) }, icon = Icons.Rounded.PlayArrow, primary = true)
+                GlassButton(
+                    if (slide?.session != null) "Resume" else "Play",
+                    { shown?.let(onPlay) },
+                    icon = Icons.Rounded.PlayArrow,
+                    primary = true,
+                    focusRequester = LocalSectionEntry.current,
+                )
             }
             Box(Modifier.onFocusChanged { if (it.isFocused) focusedButton = 1 }) {
                 GlassButton("Details", { shown?.let(onOpen) }, icon = Icons.Rounded.Info)
@@ -292,12 +312,14 @@ fun metaLine(g: Game): String = listOfNotNull(
 @Composable
 private fun Rail(title: String, modifier: Modifier = Modifier, content: androidx.compose.foundation.lazy.LazyListScope.() -> Unit) {
     val type = LocalType.current
-    Column(modifier) {
-        BasicText(title, Modifier.padding(start = ScreenStart, bottom = 2.dp), style = type.headline)
+    // Only the title uses [modifier]; the tiles arrive on their own, one after another.
+    Column {
+        BasicText(title, modifier.padding(start = ScreenStart, bottom = 4.dp), style = type.headline)
         PivotScroll(leadingFraction = 0.045f) {
             LazyRow(
                 contentPadding = PaddingValues(horizontal = ScreenStart, vertical = 12.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(14.dp),
+                verticalAlignment = Alignment.Top,
                 content = content,
             )
         }
@@ -345,18 +367,97 @@ fun ArtTile(
     }
 }
 
+private val CardW = 118.dp
+private val CardH = 157.dp
+private val CardOpen = 262.dp
+
+/**
+ * A game in a rail, as box art. Resting on it opens the card sideways, the way GeForce NOW
+ * does: the game's banner, title and description slide out to the right of the art.
+ */
+@Composable
+fun GameCard(g: Game, onFocus: () -> Unit, onClick: () -> Unit) {
+    val type = LocalType.current
+    var focused by remember { mutableStateOf(false) }
+    var open by remember { mutableStateOf(false) }
+    LaunchedEffect(focused) {
+        if (focused) {
+            // A short pause, so sweeping along a rail doesn't open every card on the way.
+            delay(120)
+            open = true
+        } else {
+            open = false
+        }
+    }
+    val t by animateFloatAsState(if (open) 1f else 0f, Motion.springOf(0.46f, 0.84f), label = "open")
+    Pressable(
+        onClick = onClick,
+        modifier = Modifier
+            .width(CardW + CardOpen * t.coerceAtLeast(0f))
+            .height(CardH)
+            .onFocusChanged {
+                focused = it.isFocused
+                if (it.isFocused) onFocus()
+            },
+        shape = RoundedCornerShape(12.dp),
+        focusedScale = 1.04f,
+        color = Palette.glassStrong,
+        border = false,
+    ) {
+        Row(Modifier.fillMaxSize().padding(1.5.dp).clip(RoundedCornerShape(10.5.dp))) {
+            GameArt(g.boxArt ?: g.banner, g.title, Modifier.width(CardW - 3.dp).fillMaxHeight())
+            if (t > 0.01f) {
+                Box(Modifier.weight(1f).fillMaxHeight()) {
+                    Box(
+                        Modifier
+                            .wrapContentWidth(Alignment.Start, unbounded = true)
+                            .width(CardOpen)
+                            .fillMaxHeight(),
+                    ) {
+                        GameArt(g.banner ?: g.hero, "", Modifier.fillMaxSize(), placeholder = false)
+                        Box(
+                            Modifier.fillMaxSize().background(
+                                Brush.horizontalGradient(0f to Color.Black.copy(alpha = 0.9f), 0.65f to Color.Black.copy(alpha = 0.62f), 1f to Color.Black.copy(alpha = 0.35f)),
+                            ),
+                        )
+                        Column(
+                            Modifier
+                                .align(Alignment.BottomStart)
+                                .padding(start = 14.dp, end = 16.dp, bottom = 12.dp)
+                                .graphicsLayer {
+                                    val a = ((t - 0.35f) / 0.65f).coerceIn(0f, 1f)
+                                    alpha = a
+                                    translationX = (1f - a) * 14.dp.toPx()
+                                },
+                        ) {
+                            BasicText(g.title, style = type.bodyStrong.copy(color = Palette.white), maxLines = 2, overflow = TextOverflow.Ellipsis)
+                            val meta = listOfNotNull(g.store, g.genres.firstOrNull()).joinToString("  ·  ")
+                            if (meta.isNotEmpty()) BasicText(meta, style = type.caption.copy(color = Palette.white.copy(alpha = 0.7f)), maxLines = 1)
+                            val about = g.description ?: g.publisher?.let { "By $it" }
+                            if (about != null) {
+                                Spacer(Modifier.height(5.dp))
+                                BasicText(about, style = type.caption.copy(color = Palette.white.copy(alpha = 0.86f)), maxLines = 3, overflow = TextOverflow.Ellipsis)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 @Composable
 fun PosterTile(g: Game, width: Dp, onFocus: () -> Unit, onClick: () -> Unit) =
     ArtTile(g, g.boxArt ?: g.banner, g.title, width, 3f / 4f, onFocus, onClick)
 
 @Composable
 private fun WideTile(g: Game, onFocus: () -> Unit, onClick: () -> Unit) =
-    ArtTile(g, g.banner ?: g.hero, g.title, 184.dp, 16f / 9f, onFocus, onClick, caption = g.store)
+    ArtTile(g, g.banner ?: g.hero, g.title, WideW, 16f / 9f, onFocus, onClick, caption = g.store)
 
 @Composable
 private fun SessionCard(s: ActiveSession, g: Game?, onFocus: () -> Unit, onClick: () -> Unit) {
     val detail = listOfNotNull(s.phase, s.resolution?.let { r -> s.fps?.let { "$r, $it fps" } ?: r }).joinToString("  ·  ")
-    ArtTile(g, g?.banner ?: g?.hero, g?.title ?: "Cloud session", 184.dp, 16f / 9f, onFocus, onClick, caption = detail, alwaysShowTitle = true)
+    ArtTile(g, g?.banner ?: g?.hero, g?.title ?: "Cloud session", WideW, 16f / 9f, onFocus, onClick, caption = detail, alwaysShowTitle = true)
 }
 
 @Composable
@@ -408,16 +509,17 @@ fun LibraryScreen(app: AppState, onFocusGame: (Game?) -> Unit, onOpen: (Game) ->
         }
         PivotScroll(leadingFraction = 0.28f) {
             LazyVerticalGrid(
-                columns = GridCells.Fixed(7),
+                columns = GridCells.Fixed(6),
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(start = ScreenStart, end = ScreenStart, top = 14.dp, bottom = 80.dp),
-                horizontalArrangement = Arrangement.spacedBy(14.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(18.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 items(games.size, key = { games[it].id }) { i ->
                     val g = games[i]
-                    Box(Modifier.fillMaxWidth().reveal(1 + i / 7 + i % 7 / 3)) {
-                        ArtTileFill(g, onFocus = { focused = g }, onClick = { onOpen(g) })
+                    val entry = if (i == 0) LocalSectionEntry.current else null
+                    Box(Modifier.fillMaxWidth().revealAt(90L + (i / 6) * 80L + (i % 6) * 45L)) {
+                        ArtTileFill(g, onFocus = { focused = g }, onClick = { onOpen(g) }, focusRequester = entry)
                     }
                 }
             }
@@ -427,7 +529,7 @@ fun LibraryScreen(app: AppState, onFocusGame: (Game?) -> Unit, onOpen: (Game) ->
 
 /** Poster tile that fills its grid cell. */
 @Composable
-internal fun ArtTileFill(g: Game, onFocus: () -> Unit, onClick: () -> Unit) {
+internal fun ArtTileFill(g: Game, onFocus: () -> Unit, onClick: () -> Unit, focusRequester: androidx.compose.ui.focus.FocusRequester? = null) {
     val type = LocalType.current
     var focused by remember { mutableStateOf(false) }
     val reveal by animateFloatAsState(if (focused) 1f else 0f, Motion.fade(), label = "reveal")
@@ -445,6 +547,7 @@ internal fun ArtTileFill(g: Game, onFocus: () -> Unit, onClick: () -> Unit) {
             focusedScale = 1.08f,
             color = Palette.glassStrong,
             border = false,
+            focusRequester = focusRequester,
         ) {
             GameArt(g.boxArt ?: g.banner, g.title, Modifier.fillMaxSize().padding(1.5.dp).clip(RoundedCornerShape(8.5.dp)))
         }

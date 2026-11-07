@@ -47,6 +47,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        CrashLog.install(this)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         settings = Settings(this)
         hub = PadHub(::perform)
@@ -57,6 +58,8 @@ class MainActivity : ComponentActivity() {
         )
         app = AppState(applicationContext, scope)
         streamer = Streamer(applicationContext, scope, app, settings, hub)
+        CrashLog.onBackgroundFailure = { streamer.internalFailure(it) }
+        app.problem = CrashLog.take(this)
         setContent {
             // The whole interface is laid out in a fixed 960 × 540 dp space and drawn at the
             // window's real pixel size, so on a 4K output every glyph and edge is 4K-sharp and

@@ -30,6 +30,8 @@ data class Game(
     /** Transparent title logo, if the store has one. */
     val logo: String?,
     val variants: List<Variant>,
+    /** A sentence or two about the game, when the catalog has one. */
+    val description: String? = null,
 ) {
     val lastPlayedMs: Long get() = variants.maxOfOrNull { it.lastPlayedMs } ?: 0L
     val store: String? get() = (variants.firstOrNull { it.selected } ?: variants.firstOrNull())?.let { Stores.label(it, publisher) }
@@ -68,8 +70,19 @@ data class Game(
                 banner = image(images, 1280, "TV_BANNER", "KEY_ART", "HERO_IMAGE", "FEATURE_IMAGE"),
                 logo = image(images, 1200, "GAME_LOGO", format = "png"),
                 variants = variants,
+                description = listOf("shortDescription", "description", "longDescription")
+                    .firstNotNullOfOrNull { k -> j.optString(k).trim().takeIf { it.isNotEmpty() && it != "null" } }
+                    ?.let(::plainText),
             )
         }
+
+        /** Catalog text sometimes carries HTML; keep the words. */
+        private fun plainText(s: String): String = s
+            .replace(Regex("<br\\s*/?>", RegexOption.IGNORE_CASE), " ")
+            .replace(Regex("<[^>]+>"), "")
+            .replace("&amp;", "&").replace("&quot;", "\"").replace("&#39;", "'").replace("&nbsp;", " ")
+            .replace(Regex("\\s+"), " ")
+            .trim()
 
         /** NVIDIA's image CDN resizes on request; ask for exactly what a 4K screen needs. */
         private fun image(images: JSONObject, width: Int, vararg keys: String, format: String = "jpg"): String? {

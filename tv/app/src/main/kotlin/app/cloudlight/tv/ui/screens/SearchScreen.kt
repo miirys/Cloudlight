@@ -50,6 +50,8 @@ import app.cloudlight.tv.ui.components.Pressable
 import app.cloudlight.tv.ui.components.onFocusColor
 import app.cloudlight.tv.ui.motion.Motion
 import app.cloudlight.tv.ui.motion.reveal
+import app.cloudlight.tv.ui.motion.revealAt
+import androidx.compose.ui.focus.focusRequester
 import app.cloudlight.tv.ui.theme.LocalType
 import app.cloudlight.tv.ui.theme.Palette
 import kotlinx.coroutines.delay
@@ -65,6 +67,7 @@ private fun norm(s: String) = s.lowercase().filter { it.isLetterOrDigit() }
 @Composable
 fun SearchScreen(app: AppState, onFocusGame: (Game?) -> Unit, onOpen: (Game) -> Unit) {
     val type = LocalType.current
+    val entry = LocalSectionEntry.current
     var query by rememberSaveable { mutableStateOf("") }
     var focused by remember { mutableStateOf<Game?>(null) }
     var results by remember { mutableStateOf<List<Game>>(emptyList()) }
@@ -74,12 +77,30 @@ fun SearchScreen(app: AppState, onFocusGame: (Game?) -> Unit, onOpen: (Game) -> 
         delay(160)
         if (focused != null) onFocusGame(focused)
     }
-    LaunchedEffect(query, app.library) {
+    // Before anything is typed: a mix of what you own and what you could play, side by side.
+    val seed = remember { System.currentTimeMillis() / 3_600_000L }
+    val browse = remember(app.library, app.featured, app.shelves) {
+        val rng = java.util.Random(seed)
+        val sources = buildList {
+            add(app.library.shuffled(rng))
+            add(app.featured)
+            for (sh in app.shelves) add(sh.games.shuffled(rng))
+        }.filter { it.isNotEmpty() }
+        val owned = app.library.associateBy { it.id }
+        val out = LinkedHashMap<String, Game>()
+        var i = 0
+        while (out.size < 60 && sources.any { i < it.size }) {
+            for (src in sources) src.getOrNull(i)?.let { g -> out.putIfAbsent(g.id, owned[g.id] ?: g) }
+            i++
+        }
+        out.values.take(60)
+    }
+    LaunchedEffect(query, app.library, browse) {
         val q = norm(query)
         failed = false
         if (q.isEmpty()) {
             searching = false
-            results = app.library.filter { it.lastPlayedMs > 0 }.sortedByDescending { it.lastPlayedMs }.take(20)
+            results = browse
             return@LaunchedEffect
         }
         val local = app.library.asSequence()
@@ -133,7 +154,10 @@ fun SearchScreen(app: AppState, onFocusGame: (Game?) -> Unit, onOpen: (Game) -> 
             Column(Modifier.reveal(2).focusGroup(), verticalArrangement = Arrangement.spacedBy(5.dp)) {
                 for (row in Keys.chunked(6)) {
                     Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                        for (k in row) Key(k, Modifier.size(41.dp)) { query += k }
+                        for (k in row) {
+                            val first = k == Keys[0] && entry != null
+                            Key(k, if (first) Modifier.size(41.dp).focusRequester(entry!!) else Modifier.size(41.dp)) { query += k }
+                        }
                     }
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
@@ -147,7 +171,7 @@ fun SearchScreen(app: AppState, onFocusGame: (Game?) -> Unit, onOpen: (Game) -> 
         Column(Modifier.weight(1f)) {
             AnimatedContent(
                 targetState = when {
-                    query.isBlank() -> if (results.isEmpty()) "Search every game on GeForce NOW" else "Recently played"
+                    query.isBlank() -> if (results.isEmpty()) "Search every game on GeForce NOW" else "Games to play"
                     results.isEmpty() && searching -> "Searching…"
                     results.isEmpty() && failed -> "Search isn't reachable right now"
                     results.isEmpty() -> "Nothing found for “${query.trim()}”"
@@ -167,7 +191,7 @@ fun SearchScreen(app: AppState, onFocusGame: (Game?) -> Unit, onOpen: (Game) -> 
                 ) {
                     items(results.size, key = { results[it].id }) { i ->
                         val g = results[i]
-                        Box(Modifier.fillMaxWidth().reveal(2 + i / 5)) {
+                        Box(Modifier.fillMaxWidth().revealAt(110L + (i / 5) * 80L + (i % 5) * 45L)) {
                             ArtTileFill(g, onFocus = { focused = g }, onClick = { onOpen(g) })
                         }
                     }
@@ -186,13 +210,17 @@ private fun QueryField(query: String, modifier: Modifier = Modifier) {
         modifier.fillMaxWidth().height(40.dp).background(Palette.glassStrong, RoundedCornerShape(12.dp)).padding(horizontal = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        val cursor = @Composable { Box(Modifier.width(1.5.dp).height(16.dp).graphicsLayer { alpha = caret }.background(Palette.white)) }
         if (query.isEmpty()) {
+            // The caret sits where typing will start, ahead of the placeholder.
+            cursor()
+            Spacer(Modifier.width(3.dp))
             BasicText("Game title", style = type.bodyStrong.copy(color = Palette.textTertiary))
         } else {
             BasicText(query, style = type.headline, maxLines = 1)
+            Spacer(Modifier.width(2.dp))
+            cursor()
         }
-        Spacer(Modifier.width(2.dp))
-        Box(Modifier.width(1.5.dp).height(16.dp).graphicsLayer { alpha = caret }.background(Palette.white))
     }
 }
 

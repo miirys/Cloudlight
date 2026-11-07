@@ -138,8 +138,8 @@ fun StreamMenu(streamer: Streamer, settings: Settings, hub: PadHub) {
                         )
                     }
                     Spacer(Modifier.height(14.dp))
-                    val menuFocus = remember { SettingsFocus() }
-                    val endFocus = remember { SettingsFocus() }
+                    val menuFocus = remember { SettingsFocus(inlineValues = true) }
+                    val endFocus = remember { SettingsFocus(inlineValues = true) }
                     PivotScroll(leadingFraction = 0.35f) {
                         Column(
                             Modifier.fillMaxWidth().weight(1f).verticalScroll(rememberScrollState()).focusGroup().padding(bottom = 20.dp),

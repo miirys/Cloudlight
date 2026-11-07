@@ -12,6 +12,23 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.IntOffset
+import app.cloudlight.tv.ui.components.Avatar
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusGroup
@@ -88,17 +105,42 @@ enum class Section(val label: String, val icon: ImageVector) {
 /** Height of the top bar; pages leave this much room above their content. */
 val TopBarHeight = 58.dp
 
+/**
+ * The element a section wants focus on when you come down from the top bar (Home's Play
+ * button, the first settings category and so on). Screens attach it with focusRequester.
+ */
+val LocalSectionEntry = compositionLocalOf<FocusRequester?> { null }
+
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun AppRoot(hub: PadHub, app: AppState, settings: Settings, streamer: Streamer, onExit: () -> Unit) {
     var section by remember { mutableStateOf(Section.HOME) }
+    var direction by remember { mutableIntStateOf(0) }
+    val entry = remember { Section.entries.associateWith { FocusRequester() } }
+    val content = remember { FocusRequester() }
     var detail by remember { mutableStateOf<Game?>(null) }
     var backdrop by remember { mutableStateOf<String?>(null) }
     val railFocus = remember { Section.entries.associateWith { FocusRequester() } }
     val streaming = streamer.active
 
     fun go(s: Section) {
-        if (s != section) section = s
+        if (s == section) return
+        direction = if (s.ordinal > section.ordinal) 1 else -1
+        section = s
+    }
+
+    /** Moves focus from the top bar into the page: its chosen element, else its first one. */
+    fun enterContent(): Boolean =
+        runCatching { entry.getValue(section).requestFocus(); true }.getOrDefault(false) ||
+            runCatching { content.requestFocus(); true }.getOrDefault(false)
+
+    // Focusing a tab shows its page after a short pause, so the highlighted tab and the page
+    // always agree, and sweeping across the bar doesn't build every page on the way.
+    var hovering by remember { mutableStateOf<Section?>(null) }
+    LaunchedEffect(hovering) {
+        val h = hovering ?: return@LaunchedEffect
+        delay(170)
+        go(h)
     }
 
     fun play(g: Game) {
@@ -147,18 +189,25 @@ fun AppRoot(hub: PadHub, app: AppState, settings: Settings, streamer: Streamer, 
                     },
             ) {
                 // Content first, so the bar draws over Home's banner.
-                Box(Modifier.fillMaxSize()) {
+                Box(Modifier.fillMaxSize().focusRequester(content).focusGroup()) {
                     AnimatedContent(
                         targetState = if (!app.signedIn && section != Section.SETTINGS) null else section,
                         transitionSpec = {
-                            // The old page steps back and fades; the new one builds itself up
-                            // part by part (see reveal), so only a short cross-fade is needed here.
-                            (fadeIn(tween(220, delayMillis = 70)))
-                                .togetherWith(fadeOut(tween(150)) + scaleOut(tween(220), targetScale = 0.975f))
+                            // The old page drifts away from the direction of travel and dims;
+                            // the new one slides in from the other side while its parts arrive
+                            // one after another (see reveal).
+                            val d = direction
+                            (fadeIn(tween(240, delayMillis = 60)) + slideInHorizontally(Motion.springOf(0.6f, 0.86f, IntOffset(1, 1))) { it / 16 * d })
+                                .togetherWith(
+                                    fadeOut(tween(170)) +
+                                        slideOutHorizontally(Motion.springOf(0.5f, 1f, IntOffset(1, 1))) { -it / 22 * d } +
+                                        scaleOut(tween(260), targetScale = 0.96f),
+                                )
                         },
                         label = "section",
                     ) { s ->
-                        RevealPage(key = s) {
+                        RevealPage(key = s, dx = direction) {
+                          CompositionLocalProvider(LocalSectionEntry provides s?.let { entry.getValue(it) }) {
                             when (s) {
                                 null -> SignInScreen(app)
                                 Section.HOME -> HomeScreen(
@@ -172,10 +221,19 @@ fun AppRoot(hub: PadHub, app: AppState, settings: Settings, streamer: Streamer, 
                                 Section.LIBRARY -> LibraryScreen(app, onFocusGame = { backdrop = it?.hero }, onOpen = { detail = it })
                                 Section.SETTINGS -> SettingsScreen(hub, app, settings)
                             }
+                          }
                         }
                     }
                 }
-                if (app.signedIn) TopBar(section, railFocus, app, onSelect = ::go)
+                if (app.signedIn) {
+                    TopBar(
+                        section, railFocus, app,
+                        onSelect = ::go,
+                        onFocusTab = { hovering = it },
+                        onDown = ::enterContent,
+                    )
+                }
+                ProblemNote(app)
             }
 
             AnimatedVisibility(
@@ -204,17 +262,18 @@ fun AppRoot(hub: PadHub, app: AppState, settings: Settings, streamer: Streamer, 
 
     val focusManager = LocalFocusManager.current
     LaunchedEffect(app.signedIn) {
-        delay(150)
+        delay(200)
         // Start on Home's banner, the way a console lands on its featured game.
-        runCatching { railFocus.getValue(Section.HOME).requestFocus() }
-        delay(60)
-        runCatching { focusManager.moveFocus(FocusDirection.Down) }
+        if (!enterContent()) {
+            runCatching { railFocus.getValue(section).requestFocus() }
+            runCatching { focusManager.moveFocus(FocusDirection.Down) }
+        }
     }
     // Coming back from a stream: put focus somewhere sensible again.
     LaunchedEffect(streaming) {
         if (!streaming) {
             delay(250)
-            runCatching { railFocus.getValue(section).requestFocus() }
+            if (!enterContent()) runCatching { railFocus.getValue(section).requestFocus() }
         }
     }
     // A brand-new library: show the most recent game until something is focused.
@@ -229,7 +288,14 @@ fun AppRoot(hub: PadHub, app: AppState, settings: Settings, streamer: Streamer, 
  */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-private fun TopBar(section: Section, focus: Map<Section, FocusRequester>, app: AppState, onSelect: (Section) -> Unit) {
+private fun TopBar(
+    section: Section,
+    focus: Map<Section, FocusRequester>,
+    app: AppState,
+    onSelect: (Section) -> Unit,
+    onFocusTab: (Section?) -> Unit,
+    onDown: () -> Boolean,
+) {
     val type = LocalType.current
     var focused by remember { mutableStateOf(false) }
     val glow by animateFloatAsState(if (focused) 1f else 0f, Motion.fade(), label = "bar")
@@ -252,7 +318,14 @@ private fun TopBar(section: Section, focus: Map<Section, FocusRequester>, app: A
                 .background(Palette.black.copy(alpha = 0.18f + 0.14f * glow), RoundedCornerShape(50))
                 .padding(4.dp)
                 .focusProperties { enter = { focus.getValue(section) } }
-                .onFocusChanged { focused = it.hasFocus }
+                .onFocusChanged {
+                    focused = it.hasFocus
+                    if (!it.hasFocus) onFocusTab(null)
+                }
+                .onPreviewKeyEvent { e ->
+                    // Down always lands somewhere sensible in the page below.
+                    e.type == KeyEventType.KeyDown && e.key == Key.DirectionDown && onDown()
+                }
                 .focusGroup(),
         ) {
             if (pillW > 0.dp) {
@@ -266,7 +339,13 @@ private fun TopBar(section: Section, focus: Map<Section, FocusRequester>, app: A
                             offsets[s] = it.positionInParent().x.toInt()
                         },
                     ) {
-                        TabItem(s.label, s.icon, selected = s == section, focusRequester = focus.getValue(s), onClick = { onSelect(s) })
+                        TabItem(
+                            s.label, s.icon,
+                            selected = s == section,
+                            focusRequester = focus.getValue(s),
+                            onFocused = { onFocusTab(s) },
+                            onClick = { onSelect(s) },
+                        )
                     }
                 }
             }
@@ -275,19 +354,16 @@ private fun TopBar(section: Section, focus: Map<Section, FocusRequester>, app: A
         Row(Modifier.align(Alignment.CenterEnd), verticalAlignment = Alignment.CenterVertically) {
             BasicText(p?.name ?: "", style = type.label.copy(color = Palette.textSecondary), maxLines = 1)
             Spacer(Modifier.width(10.dp))
-            Box(Modifier.size(28.dp).clip(CircleShape).background(Palette.glassStrong), contentAlignment = Alignment.Center) {
-                if (p?.avatar != null) GameArt(p.avatar, "", Modifier.fillMaxSize())
-                else BasicText((p?.name ?: "?").take(1).uppercase(), style = type.label)
-            }
+            Avatar(p?.avatar, Modifier.size(30.dp))
         }
     }
 }
 
 @Composable
-private fun TabItem(label: String, icon: ImageVector, selected: Boolean, focusRequester: FocusRequester, onClick: () -> Unit) {
+private fun TabItem(label: String, icon: ImageVector, selected: Boolean, focusRequester: FocusRequester, onFocused: () -> Unit, onClick: () -> Unit) {
     Pressable(
         onClick = onClick,
-        modifier = Modifier.height(30.dp),
+        modifier = Modifier.height(30.dp).onFocusChanged { if (it.isFocused) onFocused() },
         shape = RoundedCornerShape(50),
         focusedScale = 1.06f,
         color = Color.Transparent,
@@ -315,6 +391,46 @@ private fun Clock(modifier: Modifier = Modifier) {
     }
     val text = remember(now) { android.text.format.DateFormat.getTimeFormat(context).format(java.util.Date(now)) }
     BasicText(text, modifier, style = LocalType.current.headline)
+}
+
+/** Says once, at startup, that the app closed unexpectedly last time, then gets out of the way. */
+@Composable
+private fun ProblemNote(app: AppState) {
+    val problem = app.problem
+    var visible by remember { mutableStateOf(false) }
+    LaunchedEffect(problem) {
+        if (problem == null) return@LaunchedEffect
+        delay(900)
+        visible = true
+        delay(9000)
+        visible = false
+        delay(600)
+        app.problem = null
+    }
+    Box(Modifier.fillMaxSize().padding(bottom = 28.dp), contentAlignment = Alignment.BottomCenter) {
+        AnimatedVisibility(
+            visible = visible && problem != null,
+            enter = fadeIn(Motion.fade()) + slideInVertically(Motion.springOf(0.55f, 0.8f, IntOffset(1, 1))) { it },
+            exit = fadeOut(Motion.fade()) + slideOutVertically(Motion.pageOffset) { it / 2 },
+        ) {
+            val type = LocalType.current
+            Column(
+                Modifier
+                    .widthIn(max = 560.dp)
+                    .background(Palette.glassStrong, RoundedCornerShape(16.dp))
+                    .padding(horizontal = 20.dp, vertical = 14.dp),
+            ) {
+                BasicText("The app closed unexpectedly last time", style = type.bodyStrong)
+                Spacer(Modifier.height(3.dp))
+                BasicText(
+                    "${problem?.summary.orEmpty()}. The details are in Settings, under About.",
+                    style = type.caption,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
+    }
 }
 
 @Composable

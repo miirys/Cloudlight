@@ -46,7 +46,7 @@ class Signaling(
             .header("User-Agent", UA)
             .build()
         socket = client.newWebSocket(req, object : WebSocketListener() {
-            override fun onOpen(webSocket: WebSocket, response: Response) {
+            override fun onOpen(webSocket: WebSocket, response: Response) = guard {
                 send(
                     JSONObject().put("ackid", nextAck()).put(
                         "peer_info",
@@ -61,21 +61,31 @@ class Signaling(
                             .put("version", 2),
                     ),
                 )
-                beat = timer.scheduleWithFixedDelay({ send(JSONObject().put("hb", 1)) }, 5, 5, TimeUnit.SECONDS)
+                beat = timer.scheduleWithFixedDelay({ guard { send(JSONObject().put("hb", 1)) } }, 5, 5, TimeUnit.SECONDS)
                 events.onOpen()
             }
 
-            override fun onMessage(webSocket: WebSocket, text: String) = handle(text)
+            override fun onMessage(webSocket: WebSocket, text: String) = guard { handle(text) }
 
-            override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
+            override fun onClosing(webSocket: WebSocket, code: Int, reason: String) = guard {
                 webSocket.close(1000, null)
                 finish(reason.ifBlank { "closed ($code)" })
             }
 
-            override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+            override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) = guard {
+                android.util.Log.w("Signaling", "failed (${response?.code})", t)
                 finish(t.message ?: "connection failed")
             }
         })
+    }
+
+    /** OkHttp delivers these on its own threads, where an escaping exception ends the app. */
+    private inline fun guard(block: () -> Unit) {
+        try {
+            block()
+        } catch (t: Throwable) {
+            android.util.Log.e("Signaling", "callback failed", t)
+        }
     }
 
     private fun handle(text: String) {

@@ -34,6 +34,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.cloudlight.tv.BuildConfig
+import app.cloudlight.tv.CrashLog
 import app.cloudlight.tv.R
 import app.cloudlight.tv.data.AppState
 import app.cloudlight.tv.stream.TvDecoderFactory
@@ -58,8 +59,12 @@ fun AboutPage(app: AppState) {
     val screen = remember(display) { displaySpecs(display) }
     val video = remember { decoderSpecs() }
     val network = remember { networkSpecs(context) }
+    val problem = remember { runCatching { CrashLog.latest(context) }.getOrNull() }
     val account = listOfNotNull(
-        app.profile?.let { Spec("Account", it.name, listOfNotNull(it.tier, it.email).joinToString("  ·  ").ifEmpty { null }) },
+        app.profile?.let { Spec("Account", it.name, listOfNotNull(app.membership?.tier ?: it.tier, it.email).joinToString("  ·  ").ifEmpty { null }) },
+        app.allowedModes?.maxWithOrNull(compareBy({ it.height }, { it.fps }))?.let {
+            Spec("Best stream", "${if (it.height >= 2160) "4K" else "${it.height}p"} at ${it.fps} fps", "${it.width} × ${it.height}")
+        },
         app.region?.let { Spec("Region", it) },
         Spec("Session service", app.streamingBase.removePrefix("https://").trimEnd('/')),
         Spec("Library", "${app.library.size} games"),
@@ -89,6 +94,17 @@ fun AboutPage(app: AppState) {
             }
             Column(Modifier.weight(1f).reveal(4), verticalArrangement = Arrangement.spacedBy(18.dp)) {
                 SpecGroup("GeForce NOW", account)
+                if (problem != null) {
+                    val where = problem.detail.lineSequence().map { it.trim() }
+                        .firstOrNull { it.startsWith("at ") && "cloudlight" in it }?.removePrefix("at ")
+                    SpecGroup(
+                        "Last unexpected close",
+                        listOfNotNull(
+                            Spec("When", CrashLog.format(problem.whenMs)),
+                            Spec("What", problem.summary.ifBlank { "Unknown" }, where),
+                        ),
+                    )
+                }
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     GroupTitle("Credits")
                     BasicText("Not affiliated with NVIDIA. GeForce NOW is a trademark of NVIDIA Corporation.", style = type.caption)

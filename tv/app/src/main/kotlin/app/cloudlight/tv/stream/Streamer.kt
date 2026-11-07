@@ -104,29 +104,73 @@ class Streamer(
         val appId = v?.id ?: g.id
         begin(g) { cm ->
             phase = Phase.Starting("Requesting a rig")
-            val ask = request().copy(appId = appId, title = g.title, accountLinked = v?.owned ?: true)
-            var s = try {
-                cm.create(app.streamingBase, ask)
-            } catch (e: SessionException) {
-                // A server-side refusal of the stream shape (most often a resolution or colour
-                // depth the rig or membership can't do) usually goes through at 1080p 60.
-                if (!e.retryable || (ask.width <= 1920 && ask.fps <= 60 && ask.bitDepth == 8)) throw e
-                phase = Phase.Starting("Trying again at 1080p")
-                cm.create(app.streamingBase, ask.copy(width = 1920, height = 1080, fps = 60, bitDepth = 8))
-                    .also { notice = "Started at 1080p and 60 fps. GeForce NOW didn't accept ${ask.height}p at ${ask.fps} fps." }
-            }
+            val (w, h, fps) = target()
+            val ask = request().copy(appId = appId, title = g.title, accountLinked = v?.owned ?: true, width = w, height = h, fps = fps)
+            var s = start(cm, ask)
             session = s
             s = waitForSeat(cm, s)
             s
         }
     }
 
+    /**
+     * The mode to ask for: the one chosen in Settings, or the closest one the membership
+     * includes when the choice is beyond it (asking for more only gets the request refused).
+     */
+    private fun target(): Triple<Int, Int, Int> {
+        val m = settings.mode
+        val allowed = app.allowedModes ?: return Triple(m.width, m.height, m.fps)
+        if (allowed.any { it.height >= m.height && it.fps >= m.fps }) return Triple(m.width, m.height, m.fps)
+        val best = allowed.filter { it.height <= m.height && it.fps <= m.fps }.maxWithOrNull(compareBy({ it.height }, { it.fps }))
+            ?: allowed.minWithOrNull(compareBy({ it.height }, { it.fps }))
+            ?: return Triple(m.width, m.height, m.fps)
+        val tier = app.membership?.tier
+        notice = "Playing at ${modeName(best.height, best.fps)}, the most ${if (tier != null) "your $tier membership" else "your membership"} includes."
+        return Triple(best.width, best.height, best.fps)
+    }
+
+    /**
+     * Asks for a rig. If the service turns the stream shape down (it does for some games and
+     * regions even when the membership includes it), steps down one level at a time.
+     */
+    private suspend fun start(cm: Cloudmatch, ask: LaunchRequest): CloudSession {
+        val ladder = buildList {
+            add(ask)
+            if (ask.bitDepth == 10) add(ask.copy(bitDepth = 8))
+            for ((w, h, f) in listOf(Triple(2560, 1440, 120), Triple(2560, 1440, 60), Triple(1920, 1080, 120), Triple(1920, 1080, 60))) {
+                if (h <= ask.height && f <= ask.fps && !(h == ask.height && f == ask.fps)) add(ask.copy(width = w, height = h, fps = f, bitDepth = 8))
+            }
+        }
+        var last: SessionException? = null
+        for ((i, attempt) in ladder.withIndex()) {
+            try {
+                val s = cm.create(app.streamingBase, attempt)
+                if (i > 0) {
+                    notice = if (attempt.height == ask.height && attempt.fps == ask.fps) {
+                        "Playing in 8-bit colour; this game wouldn't start in 10-bit."
+                    } else {
+                        "Playing at ${modeName(attempt.height, attempt.fps)}; this game wouldn't start at ${modeName(ask.height, ask.fps)}."
+                    }
+                }
+                return s
+            } catch (e: SessionException) {
+                if (!e.retryable) throw e
+                last = e
+                ladder.getOrNull(i + 1)?.let { phase = Phase.Starting("Trying ${modeName(it.height, it.fps)}") }
+            }
+        }
+        throw last ?: SessionException("GeForce NOW couldn't start the game.")
+    }
+
+    private fun modeName(height: Int, fps: Int) = "${if (height >= 2160) "4K" else "${height}p"} at $fps fps"
+
     /** Takes over a session running elsewhere (or left running here). */
     fun resume(a: ActiveSession, g: Game?) {
         lastResume = a
         begin(g ?: app.gameFor(a)) { cm ->
             phase = Phase.Starting(if (a.status == 1) "Following your session" else "Taking over your session")
-            val s = cm.claim(a, request().copy(appId = a.appId))
+            val (w, h, fps) = target()
+            val s = cm.claim(a, request().copy(appId = a.appId, width = w, height = h, fps = fps))
             session = s
             s
         }
@@ -378,6 +422,12 @@ class Streamer(
     private fun appIdOf(g: Game?) = g?.let { (it.variants.firstOrNull { v -> v.selected } ?: it.variants.firstOrNull())?.id ?: it.id }.orEmpty()
 
     fun dismiss() = finish()
+
+    /** A background thread failed; end the stream cleanly rather than leaving it frozen. */
+    fun internalFailure(t: Throwable) {
+        if (phase == null || phase is Phase.Ended) return
+        end("The stream stopped because of an internal error (${t.javaClass.simpleName}). Your game is still running; try again to reconnect.", error = true)
+    }
 
     private fun end(message: String, error: Boolean, canRetry: Boolean = true) {
         stopEngine()

@@ -28,8 +28,9 @@ import com.google.zxing.qrcode.QRCodeWriter
 
 /** Game artwork with a quiet placeholder (the title on glass) while loading or when missing. */
 @Composable
-fun GameArt(url: String?, title: String, modifier: Modifier = Modifier, contentScale: ContentScale = ContentScale.Crop) {
-    val placeholder = @Composable {
+fun GameArt(url: String?, title: String, modifier: Modifier = Modifier, contentScale: ContentScale = ContentScale.Crop, placeholder: Boolean = true) {
+    val fallback = @Composable {
+        if (placeholder) {
         Box(
             Modifier
                 .fillMaxSize()
@@ -38,9 +39,10 @@ fun GameArt(url: String?, title: String, modifier: Modifier = Modifier, contentS
         ) {
             BasicText(title, Modifier.padding(10.dp), style = LocalType.current.label.copy(color = Palette.textSecondary, textAlign = TextAlign.Center))
         }
+        }
     }
     if (url == null) {
-        Box(modifier) { placeholder() }
+        Box(modifier) { fallback() }
         return
     }
     SubcomposeAsyncImage(
@@ -48,8 +50,8 @@ fun GameArt(url: String?, title: String, modifier: Modifier = Modifier, contentS
         contentDescription = title,
         contentScale = contentScale,
         modifier = modifier,
-        loading = { placeholder() },
-        error = { placeholder() },
+        loading = { fallback() },
+        error = { fallback() },
     )
 }
 

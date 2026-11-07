@@ -6,6 +6,7 @@ import kotlinx.coroutines.withContext
 import okhttp3.FormBody
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
@@ -187,6 +188,50 @@ object Nvidia {
         else -> raw.lowercase().replaceFirstChar { it.uppercase() }
     }
 
+    // ---------- Membership ----------
+
+    /** One resolution and frame rate the membership may stream. */
+    data class Mode(val width: Int, val height: Int, val fps: Int)
+
+    /** What the account's membership allows: its tier and the stream modes it includes. */
+    data class Membership(val tier: String?, val modes: List<Mode>, val hoursLeft: Double?, val unlimited: Boolean)
+
+    suspend fun membership(token: String, userId: String, vpcId: String?): Membership = io {
+        val url = "https://mes.geforcenow.com/v4/subscriptions".toHttpUrl().newBuilder()
+            .addQueryParameter("serviceName", "gfn_pc")
+            .addQueryParameter("languageCode", "en_US")
+            .addQueryParameter("vpcId", vpcId ?: "NP-AMS-08")
+            .addQueryParameter("userId", userId)
+            .build()
+        val req = Request.Builder().url(url)
+            .header("Authorization", "GFNJWT $token")
+            .header("Accept", "application/json")
+            .header("nv-client-id", LCARS_CLIENT_ID)
+            .header("nv-client-type", "NATIVE")
+            .header("nv-client-version", CLIENT_VERSION)
+            .header("nv-client-streamer", "NVIDIA-CLASSIC")
+            .header("nv-device-os", "WINDOWS")
+            .header("nv-device-type", "DESKTOP")
+            .build()
+        val j = call(req)
+        val all = ArrayList<Pair<Mode, Boolean>>()
+        val list = j.optJSONObject("features")?.optJSONArray("resolutions")
+        if (list != null) for (i in 0 until list.length()) {
+            val r = list.optJSONObject(i) ?: continue
+            val m = Mode(r.optInt("widthInPixels"), r.optInt("heightInPixels"), r.optInt("framesPerSecond"))
+            if (m.width > 0 && m.height > 0 && m.fps > 0) all += m to r.optBoolean("isEntitled", true)
+        }
+        // Some accounts list every mode without flags; then all of them are allowed.
+        val entitled = all.filter { it.second }.map { it.first }.ifEmpty { all.map { it.first } }
+        val remaining = j.opt("remainingTimeInMinutes")?.toString()?.toDoubleOrNull()
+        Membership(
+            tier = j.optString("membershipTier").ifEmpty { null }?.let(::tierName),
+            modes = entitled.distinct().sortedWith(compareByDescending<Mode> { it.height }.thenByDescending { it.fps }),
+            hoursLeft = remaining?.div(60),
+            unlimited = j.optString("subType") == "UNLIMITED",
+        )
+    }
+
     // ---------- Catalog ----------
 
     private fun lcars(b: Request.Builder, token: String) = b
@@ -237,6 +282,25 @@ object Nvidia {
         return j.optJSONObject("data") ?: throw ApiException("GeForce NOW sent an empty answer.")
     }
 
+    /**
+     * Whether the catalog accepts the description field. It isn't part of every catalog
+     * version, so the first query finds out and later ones only ask when it works.
+     */
+    @Volatile private var describe: Boolean? = null
+
+    private fun appsQuery(token: String, template: String, vars: JSONObject): JSONObject {
+        if (describe != false) {
+            try {
+                return graphql(token, template.replace("__EXTRA__", "shortDescription"), vars).also { describe = true }
+            } catch (e: ApiException) {
+                if (describe == true || (e.code != 0 && e.code != 400)) throw e
+                android.util.Log.i("Nvidia", "catalog has no descriptions: ${e.message}")
+                describe = false
+            }
+        }
+        return graphql(token, template.replace("__EXTRA__", ""), vars)
+    }
+
     /** Store codes to the names GeForce NOW shows for them. */
     suspend fun storeLabels(token: String): Map<String, String> = io {
         val arr = graphql(token, STORES_QUERY, JSONObject().put("locale", "en_US")).optJSONArray("appStoreDefinitions") ?: JSONArray()
@@ -256,7 +320,7 @@ object Nvidia {
             .put("cursor", "")
             .put("searchString", query)
             .put("filters", JSONObject())
-        val items = graphql(token, SEARCH_QUERY, vars).optJSONObject("apps")?.optJSONArray("items") ?: JSONArray()
+        val items = appsQuery(token, SEARCH_QUERY, vars).optJSONObject("apps")?.optJSONArray("items") ?: JSONArray()
         (0 until items.length()).mapNotNull { items.optJSONObject(it)?.let(Game::parse) }
     }
 
@@ -269,7 +333,7 @@ object Nvidia {
      */
     suspend fun panels(token: String, vpcId: String, vararg names: String): Map<String, List<Shelf>> = io {
         val vars = JSONObject().put("vpcId", vpcId).put("locale", "en_US").put("panelNames", JSONArray(names.toList()))
-        val panels = graphql(token, PANELS_QUERY, vars).optJSONArray("panels") ?: JSONArray()
+        val panels = appsQuery(token, PANELS_QUERY, vars).optJSONArray("panels") ?: JSONArray()
         val out = LinkedHashMap<String, List<Shelf>>()
         for (p in 0 until panels.length()) {
             val panel = panels.optJSONObject(p) ?: continue
@@ -296,7 +360,7 @@ object Nvidia {
                 .put("fetchCount", count)
                 .put("cursor", cursor)
                 .put("filters", filters)
-            val apps = graphql(token, LIBRARY_QUERY, vars).getJSONObject("apps")
+            val apps = appsQuery(token, LIBRARY_QUERY, vars).getJSONObject("apps")
             val items = apps.optJSONArray("items") ?: JSONArray()
             for (i in 0 until items.length()) Game.parse(items.getJSONObject(i))?.let(games::add)
             val page = apps.optJSONObject("pageInfo")
@@ -345,7 +409,7 @@ object Nvidia {
     private suspend fun <T> io(block: suspend () -> T): T = withContext(Dispatchers.IO) { block() }
 
     private const val APP_FIELDS = """
-      id title developerName publisherName genres
+      id title developerName publisherName genres __EXTRA__
       library { favorited }
       images { KEY_ART KEY_IMAGE GAME_BOX_ART TV_BANNER HERO_IMAGE MARQUEE_HERO_IMAGE FEATURE_IMAGE GAME_LOGO SCREENSHOTS }
       variants {
