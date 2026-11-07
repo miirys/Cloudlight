@@ -238,7 +238,7 @@ object Report {
         }
         val devices = usb.deviceList.values
         if (devices.isEmpty()) append("  none\n")
-        val inputPairs = InputDevice.getDeviceIds().mapNotNull { InputDevice.getDevice(it) }
+        val inputPairs = InputDevice.getDeviceIds().toList().mapNotNull { InputDevice.getDevice(it) }
             .filter { !it.isVirtual }.map { it.vendorId to it.productId }.toSet()
         for (d in devices) {
             val names = listOfNotNull(safe { d.manufacturerName }, safe { d.productName }).joinToString(" ")
