@@ -81,6 +81,7 @@ import app.cloudlight.tv.input.PadHub
 import app.cloudlight.tv.stream.StreamStats
 import app.cloudlight.tv.stream.Streamer
 import app.cloudlight.tv.stream.VideoOutput
+import app.cloudlight.tv.stream.Rtc
 import app.cloudlight.tv.ui.components.Backdrop
 import app.cloudlight.tv.ui.components.GameLogo
 import app.cloudlight.tv.ui.components.GlassButton
@@ -118,11 +119,32 @@ fun StreamScreen(streamer: Streamer, settings: Settings, hub: PadHub) {
 
     Box(Modifier.fillMaxSize().background(Color.Black)) {
         // 16:9 picture, letterboxed on other screen shapes.
-        AndroidView(
-            factory = { VideoSurface(it) },
-            modifier = Modifier.align(Alignment.Center).fillMaxHeight().aspectRatio(16f / 9f, matchHeightConstraintsFirst = true),
-            onRelease = { VideoOutput.surface = null },
-        )
+        val pictureModifier = Modifier.align(Alignment.Center).fillMaxHeight().aspectRatio(16f / 9f, matchHeightConstraintsFirst = true)
+        if (streamer.compatibleVideo) {
+            AndroidView(
+                factory = { ctx ->
+                    org.webrtc.SurfaceViewRenderer(ctx).apply {
+                        isFocusable = false
+                        isFocusableInTouchMode = false
+                        init(Rtc.egl.eglBaseContext, null)
+                        setScalingType(org.webrtc.RendererCommon.ScalingType.SCALE_ASPECT_FIT)
+                        setEnableHardwareScaler(false)
+                        VideoOutput.renderer = this
+                    }
+                },
+                modifier = pictureModifier,
+                onRelease = { r ->
+                    if (VideoOutput.renderer === r) VideoOutput.renderer = null
+                    runCatching { r.release() }
+                },
+            )
+        } else {
+            AndroidView(
+                factory = { VideoSurface(it) },
+                modifier = pictureModifier,
+                onRelease = { VideoOutput.surface = null },
+            )
+        }
 
         PointerCapture(enabled = live && !streamer.menuOpen, streamer = streamer)
 

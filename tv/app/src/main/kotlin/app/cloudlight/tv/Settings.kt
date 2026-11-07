@@ -25,6 +25,13 @@ enum class VideoCodec(val label: String, val sdpName: String) {
     H264("H.264", "H264"),
 }
 
+/** How decoded video reaches the screen. */
+enum class VideoPath(val label: String) {
+    AUTO("Automatic"),
+    DIRECT("Direct"),
+    COMPATIBLE("Compatible"),
+}
+
 enum class StatsMode(val label: String) { OFF("Off"), COMPACT("Compact"), DETAILED("Detailed") }
 
 enum class StatsCorner(val label: String) { TOP_LEFT("Top left"), TOP_RIGHT("Top right"), BOTTOM_LEFT("Bottom left"), BOTTOM_RIGHT("Bottom right") }
@@ -83,6 +90,22 @@ class Settings(context: Context) {
         private set
     var sessionTimer by mutableStateOf(prefs.getBoolean("timer", true))
         private set
+    var videoPath by mutableStateOf(load("videoPath", VideoPath.AUTO))
+        private set
+    /** Set when the direct path took the app down on this device; Automatic then avoids it. */
+    var directFailed by mutableStateOf(prefs.getBoolean("directFailed", false))
+        private set
+
+    fun cycleVideoPath(step: Int) {
+        videoPath = cycle(videoPath, step)
+        prefs.edit().putString("videoPath", videoPath.name).apply()
+    }
+
+    fun markDirectFailed() {
+        directFailed = true
+        prefs.edit().putBoolean("directFailed", true).apply()
+    }
+
     /** Name of the chosen server location, or empty for automatic. */
     var region by mutableStateOf(prefs.getString("region", "") ?: "")
         private set

@@ -67,6 +67,7 @@ import app.cloudlight.tv.StatsCorner
 import app.cloudlight.tv.StatsMode
 import app.cloudlight.tv.StreamMode
 import app.cloudlight.tv.VideoCodec
+import app.cloudlight.tv.VideoPath
 import app.cloudlight.tv.data.AppState
 import app.cloudlight.tv.input.Btn
 import app.cloudlight.tv.input.PadHub
@@ -248,6 +249,17 @@ private fun StreamPage(settings: Settings, app: AppState) {
         settings.codec.ordinal,
         { settings.cycleCodec(it - settings.codec.ordinal) },
         hint = "Automatic picks the best one your TV can decode.",
+    )
+    ValueSetting(
+        "Video output",
+        VideoPath.entries.map { it.label },
+        settings.videoPath.ordinal,
+        { settings.cycleVideoPath(it - settings.videoPath.ordinal) },
+        hint = when (settings.videoPath) {
+            VideoPath.AUTO -> "Direct for the lowest delay, unless this TV needs Compatible."
+            VideoPath.DIRECT -> "Lowest delay. Switch to Compatible if streams close the app."
+            VideoPath.COMPATIBLE -> "Works on more TVs, with a little more delay."
+        },
     )
     SwitchSetting("10-bit colour", settings.tenBit, settings::toggleTenBit, hint = "Smoother skies and shadows. Needs HEVC or AV1.")
     SettingsGroup("Game")

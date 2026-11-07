@@ -32,6 +32,9 @@ import java.util.concurrent.TimeUnit
 object Rtc {
     private var factory: PeerConnectionFactory? = null
 
+    /** Shared GL context for the compatible video path's decoder and renderer. */
+    val egl: org.webrtc.EglBase by lazy { org.webrtc.EglBase.create() }
+
     private const val TRIALS = "WebRTC-Video-H26xPacketBuffer/Enabled/WebRTC-ZeroPlayoutDelay/min_pacing:0ms,max_decode_queue_size:8/"
 
     @Synchronized
@@ -124,7 +127,23 @@ class StreamEngine(
     @Volatile var codec: String? = null
         private set
 
-    private val sink = VideoSink { }
+    /**
+     * The direct path renders inside the decoder, so this sees only tiny placeholder frames.
+     * In compatible mode the real pictures arrive here and go on to the screen's renderer.
+     */
+    private var compatFrames = 0L
+    private val sink = VideoSink { frame ->
+        if (!VideoOutput.compatible) return@VideoSink
+        try {
+            VideoOutput.renderer?.onFrame(frame)
+            VideoOutput.rendered++
+            VideoOutput.width = frame.rotatedWidth
+            VideoOutput.height = frame.rotatedHeight
+            if (compatFrames++ == 0L) VideoOutput.onFirstFrame?.invoke()
+        } catch (t: Throwable) {
+            Log.w(TAG, "render failed", t)
+        }
+    }
 
     /**
      * Queues [block] on the worker. Work that arrives after shutdown is dropped, and a failure

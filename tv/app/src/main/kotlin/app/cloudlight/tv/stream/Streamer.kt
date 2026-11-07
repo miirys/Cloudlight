@@ -8,8 +8,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import app.cloudlight.tv.CrashLog
 import app.cloudlight.tv.Diagnostics
 import app.cloudlight.tv.Settings
+import app.cloudlight.tv.VideoPath
 import app.cloudlight.tv.data.ActiveSession
 import app.cloudlight.tv.data.AppState
 import app.cloudlight.tv.data.CloudSession
@@ -63,6 +65,9 @@ class Streamer(
     var session by mutableStateOf<CloudSession?>(null)
         private set
     var inputReady by mutableStateOf(false)
+        private set
+    /** Whether this stream uses the compatible video path (WebRTC's renderer). */
+    var compatibleVideo by mutableStateOf(false)
         private set
 
     val active: Boolean get() = phase != null
@@ -245,6 +250,12 @@ class Streamer(
         liveSince = 0
         // The controller keeps driving our screens until the picture is up.
         hub.captured = false
+        // Chosen before the stream screen appears, since it decides what that screen draws into.
+        compatibleVideo = when (settings.videoPath) {
+            VideoPath.COMPATIBLE -> true
+            VideoPath.DIRECT -> false
+            VideoPath.AUTO -> settings.directFailed || TvDecoderFactory.preferStock()
+        }
         val cm = Cloudmatch(app::serviceToken).also { cloud = it }
         job = scope.launch {
             try {
@@ -278,6 +289,8 @@ class Streamer(
             listener,
         )
         engine = e
+        VideoOutput.compatible = compatibleVideo
+        CrashLog.markStreaming(context, if (compatibleVideo) "compatible" else "direct")
         input.engine = e
         input.holdMs = settings.holdToOpenMs.toLong()
         input.mouseSpeed = settings.mouseSpeed
@@ -478,6 +491,7 @@ class Streamer(
     }
 
     private fun stopEngine() {
+        CrashLog.markStreaming(context, null)
         input.enabled = false
         input.engine = null
         input.reset()

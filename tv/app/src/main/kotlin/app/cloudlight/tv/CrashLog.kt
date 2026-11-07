@@ -17,9 +17,10 @@ import java.util.Locale
  * unexpectedly so the next launch can say so.
  */
 object CrashLog {
-    data class Problem(val whenMs: Long, val summary: String, val detail: String)
+    data class Problem(val whenMs: Long, val summary: String, val detail: String, val native: Boolean = false)
 
     private const val FILE = "last-problem.txt"
+    private const val STREAMING = "streaming"
     private const val SEEN = "last-problem-seen"
 
     /** Called on the main thread when a background thread failed and was stopped. */
@@ -90,12 +91,65 @@ object CrashLog {
                 ApplicationExitInfo.REASON_INITIALIZATION_FAILURE -> "Failed to start"
                 else -> return@mapNotNull null
             }
-            // Only an ANR trace is text; a native crash's is a binary tombstone.
-            val trace = if (e.reason != ApplicationExitInfo.REASON_ANR) null else runCatching {
-                e.traceInputStream?.use { it.readBytes().take(6000).toByteArray().toString(Charsets.UTF_8) }
-            }.getOrNull()
+            val bytes = runCatching { e.traceInputStream?.use { it.readBytes() } }.getOrNull()
+            if (e.reason == ApplicationExitInfo.REASON_CRASH_NATIVE) {
+                val (summary, detail) = nativeSummary(bytes, e.description)
+                return@mapNotNull Problem(e.timestamp, summary, detail, native = true)
+            }
+            // An ANR trace is plain text.
+            val trace = bytes?.take(6000)?.toByteArray()?.toString(Charsets.UTF_8)
             Problem(e.timestamp, listOfNotNull(kind, e.description?.take(120)).joinToString(": "), trace ?: e.description.orEmpty())
         }
+    }
+
+    /** Notes that a stream is starting on [path], so a crash can be traced back to it. */
+    fun markStreaming(context: Context, path: String?) {
+        runCatching {
+            val f = File(context.filesDir, STREAMING)
+            if (path == null) f.delete() else f.writeText(path)
+        }
+    }
+
+    /** Which video path a stream was using when the app last went down, if one was. */
+    fun takeStreamingMark(context: Context): String? = runCatching {
+        val f = File(context.filesDir, STREAMING)
+        if (!f.exists()) null else f.readText().trim().also { f.delete() }
+    }.getOrNull()
+
+    /**
+     * Android stores a native crash as a binary tombstone. Its readable strings are enough to
+     * say which library failed and in which function.
+     */
+    private fun tombstoneStrings(bytes: ByteArray): List<String> {
+        val out = ArrayList<String>()
+        val sb = StringBuilder()
+        fun flush() {
+            if (sb.length >= 5) out += sb.toString()
+            sb.setLength(0)
+        }
+        for (b in bytes) {
+            val c = b.toInt() and 0xff
+            if (c in 0x20..0x7e) sb.append(c.toChar()) else flush()
+        }
+        flush()
+        return out
+    }
+
+    private fun nativeSummary(bytes: ByteArray?, fallback: String?): Pair<String, String> {
+        if (bytes == null || bytes.isEmpty()) return "Native crash${fallback?.let { ": $it" }.orEmpty()}" to fallback.orEmpty()
+        val strings = tombstoneStrings(bytes)
+        val libs = strings.filter { it.endsWith(".so") || ".so " in it || ".so!" in it }
+        val culprit = libs.map { it.substringAfterLast('/').substringBefore(' ') }
+            .firstOrNull { it !in setOf("libc.so", "libart.so", "libbase.so", "liblog.so", "libutils.so") }
+        val abort = strings.firstOrNull { it.startsWith("Abort message") || "Check failed" in it || "FATAL" in it }
+        val summary = buildString {
+            append("Native crash")
+            if (culprit != null) append(" in ").append(culprit)
+            if (abort != null) append(": ").append(abort.take(100))
+        }
+        val detail = (listOfNotNull(abort) + libs.take(12) + strings.filter { it.startsWith("_Z") || "::" in it }.take(12))
+            .distinct().joinToString("\n")
+        return summary to detail
     }
 
     fun format(ms: Long): String = SimpleDateFormat("d MMM, HH:mm", Locale.getDefault()).format(Date(ms))

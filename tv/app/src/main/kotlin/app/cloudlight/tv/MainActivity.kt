@@ -59,7 +59,11 @@ class MainActivity : ComponentActivity() {
         app = AppState(applicationContext, scope)
         streamer = Streamer(applicationContext, scope, app, settings, hub)
         CrashLog.onBackgroundFailure = { streamer.internalFailure(it) }
-        app.problem = CrashLog.take(this)
+        val streamingPath = CrashLog.takeStreamingMark(this)
+        app.problem = CrashLog.take(this)?.also { p ->
+            // The direct video path went down with the app: from now on Automatic avoids it.
+            if (p.native && streamingPath == "direct") settings.markDirectFailed()
+        }
         setContent {
             // The whole interface is laid out in a fixed 960 × 540 dp space and drawn at the
             // window's real pixel size, so on a 4K output every glyph and edge is 4K-sharp and

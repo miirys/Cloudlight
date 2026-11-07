@@ -45,6 +45,15 @@ object VideoOutput {
     @Volatile var rendered = 0L
 
     @Volatile var onFirstFrame: (() -> Unit)? = null
+
+    /**
+     * Use WebRTC's own decoder and renderer instead of the direct path. It costs a GPU copy
+     * but avoids the low-level decoder features that some TV chips mishandle.
+     */
+    @Volatile var compatible = false
+
+    /** Where frames go in compatible mode (the stream screen's renderer). */
+    @Volatile var renderer: org.webrtc.VideoSink? = null
 }
 
 /** Advertises what this device can decode in hardware, with parameters GeForce NOW accepts. */
@@ -72,6 +81,14 @@ class TvDecoderFactory : VideoDecoderFactory {
     override fun getSupportedCodecs(): Array<VideoCodecInfo> = supported
 
     override fun createDecoder(info: VideoCodecInfo): VideoDecoder? {
+        if (VideoOutput.compatible) {
+            val stock = runCatching { org.webrtc.HardwareVideoDecoderFactory(Rtc.egl.eglBaseContext).createDecoder(info) }
+                .onFailure { Log.w("Decoders", "stock decoder unavailable", it) }.getOrNull()
+            if (stock != null) {
+                VideoOutput.decoderName = stock.implementationName
+                return stock
+            }
+        }
         val mime = mimeOf(info.name) ?: return null
         val codec = find(mime) ?: return null
         return DirectDecoder(mime, codec.name)
@@ -107,6 +124,15 @@ class TvDecoderFactory : VideoDecoderFactory {
             if (Build.VERSION.SDK_INT >= 29) return info.isHardwareAccelerated && !info.isSoftwareOnly
             val n = info.name.lowercase()
             return !(n.startsWith("omx.google.") || n.startsWith("c2.android.") || n.startsWith("omx.ffmpeg.") || n.contains("sw"))
+        }
+
+        /**
+         * Decoders whose low-latency direct mode is unreliable: start those on WebRTC's own
+         * path. Matching is on the decoder's name, which names the chip family.
+         */
+        fun preferStock(): Boolean {
+            val names = listOf(MIME_HEVC, MIME_AVC, MIME_AV1).mapNotNull { find(it)?.name?.lowercase() }
+            return names.any { "realtek" in it || ".rtk" in it || "c2.rtk" in it }
         }
 
         /** Short, readable decoder description for the stats overlay. */
@@ -229,10 +255,11 @@ class DirectDecoder(private val mime: String, private val codecName: String) : V
                 format.setInteger(MediaFormat.KEY_LOW_LATENCY, 1)
             }
         }
-        // Vendor switches that stop decoders from holding frames back. Unknown keys are ignored.
-        format.setInteger("vendor.low-latency.enable", 1)
-        format.setInteger("vendor.qti-ext-dec-low-latency.enable", 1)
-        format.setInteger("vendor.rtc-ext-dec-low-latency.enable", 1)
+        // Vendor switches that stop decoders from holding frames back, only for the vendors
+        // whose decoders are known to handle them well.
+        val n = codecName.lowercase()
+        if ("qti" in n || "qcom" in n) format.setInteger("vendor.qti-ext-dec-low-latency.enable", 1)
+        if ("mtk" in n) format.setInteger("vendor.low-latency.enable", 1)
         c.configure(format, surface, null, 0)
         c.setVideoScalingMode(MediaCodec.VIDEO_SCALING_MODE_SCALE_TO_FIT)
         c.start()
