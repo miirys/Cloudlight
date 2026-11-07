@@ -4,6 +4,7 @@ import android.content.Context
 import android.media.AudioAttributes
 import android.os.SystemClock
 import android.util.Log
+import app.cloudlight.tv.CrashLog
 import app.cloudlight.tv.data.CloudSession
 import org.json.JSONObject
 import org.webrtc.AudioTrack
@@ -90,6 +91,8 @@ class StreamEngine(
         /** "H265", "H264", "AV1" or "AUTO". */
         val codec: String,
         val bitDepth: Int,
+        /** False to leave the sound line idle (after sound took the app down here). */
+        val audio: Boolean = true,
     )
 
     interface Listener {
@@ -139,7 +142,10 @@ class StreamEngine(
             VideoOutput.rendered++
             VideoOutput.width = frame.rotatedWidth
             VideoOutput.height = frame.rotatedHeight
-            if (compatFrames++ == 0L) VideoOutput.onFirstFrame?.invoke()
+            if (compatFrames++ == 0L) {
+                CrashLog.step("video")
+                VideoOutput.onFirstFrame?.invoke()
+            }
         } catch (t: Throwable) {
             Log.w(TAG, "render failed", t)
         }
@@ -194,6 +200,7 @@ class StreamEngine(
     private fun open() {
         try {
             listener.onProgress("Connecting to the rig")
+            CrashLog.step("factory")
             val factory = Rtc.factory(context)
             val servers = session.ice.map { spec ->
                 PeerConnection.IceServer.builder(spec.urls).apply {
@@ -214,8 +221,10 @@ class StreamEngine(
                 continualGatheringPolicy = PeerConnection.ContinualGatheringPolicy.GATHER_ONCE
                 keyType = PeerConnection.KeyType.ECDSA
             }
+            CrashLog.step("peer")
             pc = factory.createPeerConnection(rtc, observer) ?: throw IllegalStateException("no peer connection")
             val url = session.signalingUrl ?: throw IllegalStateException("The rig didn't say where to connect.")
+            CrashLog.step("signaling")
             signaling = Signaling(url, session.id, signalingEvents).also { it.connect() }
         } catch (t: Throwable) {
             fail("Couldn't set up the stream: ${t.message ?: "unknown error"}")
@@ -269,6 +278,7 @@ class StreamEngine(
                 },
             )
 
+            CrashLog.step("offer")
             await("offer") { obs -> pc.setRemoteDescription(obs, SessionDescription(SessionDescription.Type.OFFER, offer)) }
             remoteSet = true
             // Receive only: the rig's microphone line would otherwise start recording, which
@@ -276,7 +286,9 @@ class StreamEngine(
             for (t in pc.transceivers) {
                 runCatching {
                     val type = t.mediaType
-                    if (type == org.webrtc.MediaStreamTrack.MediaType.MEDIA_TYPE_AUDIO || type == org.webrtc.MediaStreamTrack.MediaType.MEDIA_TYPE_VIDEO) {
+                    if (type == org.webrtc.MediaStreamTrack.MediaType.MEDIA_TYPE_AUDIO && !config.audio) {
+                        t.direction = RtpTransceiver.RtpTransceiverDirection.INACTIVE
+                    } else if (type == org.webrtc.MediaStreamTrack.MediaType.MEDIA_TYPE_AUDIO || type == org.webrtc.MediaStreamTrack.MediaType.MEDIA_TYPE_VIDEO) {
                         t.direction = RtpTransceiver.RtpTransceiverDirection.RECV_ONLY
                     }
                 }
@@ -284,6 +296,7 @@ class StreamEngine(
             pendingCandidates.forEach { pc.addIceCandidate(it) }
             pendingCandidates.clear()
 
+            CrashLog.step("answer")
             var created: SessionDescription? = null
             await("answer") { obs ->
                 pc.createAnswer(
@@ -376,7 +389,10 @@ class StreamEngine(
         override fun onIceConnectionChange(state: PeerConnection.IceConnectionState?) = Unit
         override fun onConnectionChange(state: PeerConnection.PeerConnectionState?) = safe("connection change") {
             when (state) {
-                PeerConnection.PeerConnectionState.CONNECTED -> listener.onConnected()
+                PeerConnection.PeerConnectionState.CONNECTED -> {
+                    CrashLog.step("connected")
+                    listener.onConnected()
+                }
                 PeerConnection.PeerConnectionState.FAILED -> fail("The connection to the rig was lost.")
                 else -> Unit
             }

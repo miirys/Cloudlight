@@ -261,6 +261,14 @@ private fun StreamPage(settings: Settings, app: AppState) {
             VideoPath.COMPATIBLE -> "Works on more TVs, with a little more delay."
         },
     )
+    settings.fixes?.let { f ->
+        ActionSetting(
+            "Undo automatic fixes",
+            settings::clearFixes,
+            value = f,
+            hint = "Turned on after streams closed the app. Undo them to try the defaults again.",
+        )
+    }
     SwitchSetting("10-bit colour", settings.tenBit, settings::toggleTenBit, hint = "Smoother skies and shadows. Needs HEVC or AV1.")
     SettingsGroup("Game")
     SwitchSetting("NVIDIA Reflex", settings.lowLatency, settings::toggleLowLatency, hint = "Lower input lag in supported games at 120 fps.")

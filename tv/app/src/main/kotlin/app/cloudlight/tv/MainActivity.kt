@@ -59,10 +59,17 @@ class MainActivity : ComponentActivity() {
         app = AppState(applicationContext, scope)
         streamer = Streamer(applicationContext, scope, app, settings, hub)
         CrashLog.onBackgroundFailure = { streamer.internalFailure(it) }
-        val streamingPath = CrashLog.takeStreamingMark(this)
-        app.problem = CrashLog.take(this)?.also { p ->
-            // The direct video path went down with the app: from now on Automatic avoids it.
-            if (p.native && streamingPath == "direct") settings.markDirectFailed()
+        val mark = CrashLog.takeStreamingMark(this)
+        val found = CrashLog.take(this)
+            ?: if (mark != null && mark.second != "live") CrashLog.Problem(System.currentTimeMillis(), "The app closed during a stream", "", native = true) else null
+        app.problem = found?.let { p ->
+            if (mark == null || mark.second == "live") return@let p
+            // The app went down while a stream was starting: avoid the part that was starting.
+            val change = settings.recoverFrom(mark.first, mark.second)
+            p.copy(
+                summary = "It happened while ${CrashLog.stepName(mark.second)} (${p.summary})" +
+                    (change?.let { ". The next stream will use $it" } ?: ""),
+            ).also { CrashLog.saveNote(this, it.summary) }
         }
         setContent {
             // The whole interface is laid out in a fixed 960 × 540 dp space and drawn at the

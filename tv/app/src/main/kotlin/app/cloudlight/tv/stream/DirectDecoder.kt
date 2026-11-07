@@ -1,6 +1,7 @@
 package app.cloudlight.tv.stream
 
 import android.media.MediaCodec
+import app.cloudlight.tv.CrashLog
 import android.media.MediaCodecInfo
 import android.media.MediaCodecList
 import android.media.MediaFormat
@@ -81,12 +82,13 @@ class TvDecoderFactory : VideoDecoderFactory {
     override fun getSupportedCodecs(): Array<VideoCodecInfo> = supported
 
     override fun createDecoder(info: VideoCodecInfo): VideoDecoder? {
+        CrashLog.step("decoder-create")
         if (VideoOutput.compatible) {
             val stock = runCatching { org.webrtc.HardwareVideoDecoderFactory(Rtc.egl.eglBaseContext).createDecoder(info) }
                 .onFailure { Log.w("Decoders", "stock decoder unavailable", it) }.getOrNull()
             if (stock != null) {
                 VideoOutput.decoderName = stock.implementationName
-                return stock
+                return StepDecoder(stock)
             }
         }
         val mime = mimeOf(info.name) ?: return null
@@ -165,6 +167,7 @@ class DirectDecoder(private val mime: String, private val codecName: String) : V
 
     override fun initDecode(settings: VideoDecoder.Settings, callback: VideoDecoder.Callback): VideoCodecStatus {
         Log.i(TAG, "init $codecName ${settings.width}x${settings.height}")
+        CrashLog.step("decoder-init")
         this.callback = callback
         if (settings.width > 0 && settings.height > 0) {
             width = settings.width
@@ -186,6 +189,7 @@ class DirectDecoder(private val mime: String, private val codecName: String) : V
     }
 
     private fun decodeFrame(frame: EncodedImage): VideoCodecStatus {
+        CrashLog.step("decoding")
         val surface = VideoOutput.surface
         if (surface == null || !surface.isValid) {
             teardown()
@@ -304,6 +308,7 @@ class DirectDecoder(private val mime: String, private val codecName: String) : V
                     VideoOutput.rendered++
                     if (first) {
                         first = false
+                        CrashLog.step("video")
                         runCatching { VideoOutput.onFirstFrame?.invoke() }
                     }
                     val times = pending.remove(info.presentationTimeUs)
@@ -349,4 +354,23 @@ class DirectDecoder(private val mime: String, private val codecName: String) : V
         private const val INPUT_TIMEOUT_US = 30_000L
         private const val OUTPUT_TIMEOUT_US = 20_000L
     }
+}
+
+/** Wraps WebRTC's own decoder to record setup steps for crash recovery. */
+private class StepDecoder(private val inner: VideoDecoder) : VideoDecoder {
+    override fun initDecode(settings: VideoDecoder.Settings, callback: VideoDecoder.Callback): VideoCodecStatus {
+        CrashLog.step("decoder-init")
+        return inner.initDecode(settings, callback)
+    }
+
+    override fun release(): VideoCodecStatus = inner.release()
+
+    override fun decode(frame: EncodedImage, info: VideoDecoder.DecodeInfo): VideoCodecStatus {
+        CrashLog.step("decoding")
+        return inner.decode(frame, info)
+    }
+
+    override fun getImplementationName(): String = inner.implementationName
+
+    override fun createNative(webrtcEnvRef: Long): Long = inner.createNative(webrtcEnvRef)
 }

@@ -106,6 +106,48 @@ class Settings(context: Context) {
         prefs.edit().putBoolean("directFailed", true).apply()
     }
 
+    /** Set after a crash in the video decoder on the compatible path: stream in H.264. */
+    var safeCodec by mutableStateOf(prefs.getBoolean("safeCodec", false))
+        private set
+    /** Set after a crash while sound was starting: stream without sound. */
+    var noAudio by mutableStateOf(prefs.getBoolean("noAudio", false))
+        private set
+
+    /**
+     * After a crash during a stream, turns off the part that was starting, one step at a
+     * time. Returns what changed, in words, or null if there was nothing left to change.
+     */
+    fun recoverFrom(path: String, step: String): String? {
+        val video = step.startsWith("decoder") || step == "decoding" || step == "video"
+        val e = prefs.edit()
+        val change = when {
+            video && path == "direct" && videoPath != VideoPath.DIRECT -> { directFailed = true; e.putBoolean("directFailed", true); "Compatible video output" }
+            video && !safeCodec && codec == VideoCodec.AUTO -> { safeCodec = true; e.putBoolean("safeCodec", true); "the H.264 codec" }
+            !video && !noAudio -> { noAudio = true; e.putBoolean("noAudio", true); "streaming without sound" }
+            path == "direct" && videoPath != VideoPath.DIRECT && !directFailed -> { directFailed = true; e.putBoolean("directFailed", true); "Compatible video output" }
+            !safeCodec && codec == VideoCodec.AUTO -> { safeCodec = true; e.putBoolean("safeCodec", true); "the H.264 codec" }
+            !noAudio -> { noAudio = true; e.putBoolean("noAudio", true); "streaming without sound" }
+            else -> null
+        }
+        e.apply()
+        return change
+    }
+
+    /** What the automatic fixes changed, or null when none are on. */
+    val fixes: String?
+        get() = listOfNotNull(
+            if (directFailed && videoPath == VideoPath.AUTO) "Compatible video" else null,
+            if (safeCodec && codec == VideoCodec.AUTO) "H.264" else null,
+            if (noAudio) "No sound" else null,
+        ).joinToString(", ").ifEmpty { null }
+
+    fun clearFixes() {
+        directFailed = false
+        safeCodec = false
+        noAudio = false
+        prefs.edit().remove("directFailed").remove("safeCodec").remove("noAudio").apply()
+    }
+
     /** Name of the chosen server location, or empty for automatic. */
     var region by mutableStateOf(prefs.getString("region", "") ?: "")
         private set

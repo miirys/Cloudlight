@@ -12,6 +12,7 @@ import app.cloudlight.tv.CrashLog
 import app.cloudlight.tv.Diagnostics
 import app.cloudlight.tv.Settings
 import app.cloudlight.tv.VideoPath
+import app.cloudlight.tv.VideoCodec
 import app.cloudlight.tv.data.ActiveSession
 import app.cloudlight.tv.data.AppState
 import app.cloudlight.tv.data.CloudSession
@@ -283,8 +284,9 @@ class Streamer(
                 height = s.height ?: m.height,
                 fps = s.fps ?: m.fps,
                 maxKbps = settings.bitrateMbps * 1000,
-                codec = settings.codec.sdpName,
+                codec = if (settings.safeCodec && settings.codec == VideoCodec.AUTO) "H264" else settings.codec.sdpName,
                 bitDepth = if (settings.tenBit) 10 else 8,
+                audio = !settings.noAudio,
             ),
             listener,
         )
@@ -311,7 +313,9 @@ class Streamer(
         override fun onConnected() = ui { if (phase !is Phase.Live) phase = Phase.Connecting("Starting the video") }
         override fun onFirstFrame() = ui {
             if (phase !is Phase.Ended) {
+                CrashLog.step("live")
                 phase = Phase.Live
+                if (settings.noAudio && notice == null) notice = NO_SOUND
                 if (liveSince == 0L) liveSince = SystemClock.elapsedRealtime()
                 hub.captured = !menuOpen
                 input.enabled = !menuOpen
@@ -488,6 +492,10 @@ class Streamer(
         stats = StreamStats.Empty
         controllerMouse = false
         input.controllerMouse = false
+    }
+
+    private companion object {
+        const val NO_SOUND = "Sound is off after an earlier crash. Settings, Stream can turn it back on."
     }
 
     private fun stopEngine() {

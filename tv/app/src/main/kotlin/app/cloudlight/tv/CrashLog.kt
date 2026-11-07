@@ -26,8 +26,13 @@ object CrashLog {
     /** Called on the main thread when a background thread failed and was stopped. */
     @Volatile var onBackgroundFailure: ((Throwable) -> Unit)? = null
 
+    @Volatile private var appContext: Context? = null
+    @Volatile private var streamPath: String? = null
+    @Volatile private var lastStep: String? = null
+
     fun install(context: Context) {
         val app = context.applicationContext
+        appContext = app
         val previous = Thread.getDefaultUncaughtExceptionHandler()
         Thread.setDefaultUncaughtExceptionHandler { thread, error ->
             runCatching { write(app, error, thread.name) }
@@ -104,17 +109,52 @@ object CrashLog {
 
     /** Notes that a stream is starting on [path], so a crash can be traced back to it. */
     fun markStreaming(context: Context, path: String?) {
+        streamPath = path
+        lastStep = null
         runCatching {
             val f = File(context.filesDir, STREAMING)
-            if (path == null) f.delete() else f.writeText(path)
+            if (path == null) f.delete() else f.writeText("$path|start")
         }
     }
 
-    /** Which video path a stream was using when the app last went down, if one was. */
-    fun takeStreamingMark(context: Context): String? = runCatching {
+    /**
+     * Records the stream setup step about to run. If the app goes down, the next launch knows
+     * which part was at fault and can avoid it.
+     */
+    fun step(name: String) {
+        val path = streamPath ?: return
+        if (lastStep == name) return
+        lastStep = name
+        val ctx = appContext ?: return
+        runCatching { File(ctx.filesDir, STREAMING).writeText("$path|$name") }
+    }
+
+    /** The video path and setup step a stream was on when the app last went down, if any. */
+    fun takeStreamingMark(context: Context): Pair<String, String>? = runCatching {
         val f = File(context.filesDir, STREAMING)
-        if (!f.exists()) null else f.readText().trim().also { f.delete() }
+        if (!f.exists()) null else f.readText().trim().also { f.delete() }.split('|').let { it[0] to it.getOrElse(1) { "start" } }
     }.getOrNull()
+
+    /** Keeps the explained crash note for the About page. */
+    fun saveNote(context: Context, text: String) {
+        runCatching { File(context.filesDir, "last-problem-note.txt").writeText(text) }
+    }
+
+    fun note(context: Context): String? = runCatching {
+        File(context.filesDir, "last-problem-note.txt").takeIf { it.exists() }?.readText()
+    }.getOrNull()
+
+    /** Plain words for a setup step, for the crash note. */
+    fun stepName(step: String) = when (step) {
+        "start", "factory" -> "preparing the stream"
+        "peer", "signaling", "offer", "answer" -> "connecting to the rig"
+        "connected" -> "waiting for the first picture"
+        "audio" -> "starting the sound"
+        "decoder-create", "decoder-init", "decoding" -> "starting the video decoder"
+        "video" -> "showing the video"
+        "live" -> "playing"
+        else -> step
+    }
 
     /**
      * Android stores a native crash as a binary tombstone. Its readable strings are enough to

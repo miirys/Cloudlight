@@ -61,6 +61,7 @@ fun AboutPage(app: AppState) {
     val video = remember { decoderSpecs() }
     val network = remember { networkSpecs(context) }
     val problem = remember { runCatching { CrashLog.latest(context) }.getOrNull() }
+    val note = remember { CrashLog.note(context) }
     val account = listOfNotNull(
         app.profile?.let { Spec("Account", it.name, listOfNotNull(app.membership?.tier ?: it.tier, it.email).joinToString("  ·  ").ifEmpty { null }) },
         app.allowedModes?.maxWithOrNull(compareBy({ it.height }, { it.fps }))?.let {
@@ -104,6 +105,7 @@ fun AboutPage(app: AppState) {
                         listOfNotNull(
                             Spec("When", CrashLog.format(problem.whenMs)),
                             Spec("What", problem.summary.ifBlank { "Unknown" }, where),
+                            note?.let { Spec("During", it) },
                         ),
                     )
                 }
