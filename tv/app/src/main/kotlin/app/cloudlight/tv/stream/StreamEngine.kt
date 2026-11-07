@@ -223,17 +223,48 @@ class StreamEngine(
             }
             CrashLog.step("peer")
             pc = factory.createPeerConnection(rtc, observer) ?: throw IllegalStateException("no peer connection")
-            val url = session.signalingUrl ?: throw IllegalStateException("The rig didn't say where to connect.")
             CrashLog.step("signaling")
-            signaling = Signaling(url, session.id, signalingEvents).also { it.connect() }
+            signIn(reconnect = false)
         } catch (t: Throwable) {
             fail("Couldn't set up the stream: ${t.message ?: "unknown error"}")
         }
     }
 
+    @Volatile private var offerSeen = false
+    /** Whether the rig sent its offer, which tells a missing picture from a rig that never started. */
+    val offered: Boolean get() = offerSeen
+    private var signIns = 0
+
+    /**
+     * Signs in to the session's signaling server. If the rig stays silent, sign in again as a
+     * reconnecting client, the way GeForce NOW's own clients recover a pairing the rig missed.
+     */
+    private fun signIn(reconnect: Boolean) {
+        val url = session.signalingUrl ?: throw IllegalStateException("The rig didn't say where to connect.")
+        signaling?.close()
+        signaling = Signaling(url, session.id, "${config.width}x${config.height}", reconnect, signalingEvents).also { it.connect() }
+        val attempt = ++signIns
+        try {
+            worker.schedule({
+                guarded {
+                    if (!closed && !offerSeen && attempt == signIns && signIns < 3) {
+                        Log.w(TAG, "no offer after sign-in $attempt, signing in again")
+                        listener.onProgress("Waiting for the rig")
+                        signIn(reconnect = true)
+                    }
+                }
+            }, 9, TimeUnit.SECONDS)
+        } catch (_: RejectedExecutionException) {
+        }
+    }
+
     private val signalingEvents = object : Signaling.Events {
         override fun onOpen() = safe("open") { listener.onProgress("Waiting for the rig") }
-        override fun onOffer(sdp: String) = post { answer(sdp) }
+        override fun onOffer(sdp: String) {
+            if (offerSeen) return
+            offerSeen = true
+            post { answer(sdp) }
+        }
         override fun onRemoteCandidate(candidate: String, sdpMid: String?, sdpMLineIndex: Int) = post {
             val c = IceCandidate(sdpMid ?: sdpMLineIndex.toString(), sdpMLineIndex, candidate)
             if (remoteSet) pc?.addIceCandidate(c) else pendingCandidates += c

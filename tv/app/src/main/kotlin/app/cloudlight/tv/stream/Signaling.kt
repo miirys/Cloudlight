@@ -1,7 +1,9 @@
 package app.cloudlight.tv.stream
 
 import app.cloudlight.tv.data.Nvidia
+import okhttp3.ConnectionSpec
 import okhttp3.OkHttpClient
+import okhttp3.TlsVersion
 import okhttp3.Request
 import okhttp3.Response
 import okhttp3.WebSocket
@@ -10,7 +12,6 @@ import org.json.JSONObject
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
-import kotlin.random.Random
 
 /**
  * The WebSocket that sets up the stream: the rig sends its offer and network candidates, we
@@ -20,6 +21,10 @@ import kotlin.random.Random
 class Signaling(
     private val url: String,
     private val sessionId: String,
+    /** The stream size, which the rig is told when we sign in. */
+    private val resolution: String,
+    /** True when signing in again to the same session after a lost or silent connection. */
+    private val reconnect: Boolean,
     private val events: Events,
 ) {
     interface Events {
@@ -29,7 +34,10 @@ class Signaling(
         fun onClosed(reason: String)
     }
 
-    private val peerName = "peer-${Random.nextLong(1, 10_000_000_000L)}"
+    private val peerName = "peer-" + java.util.UUID.randomUUID().toString().replace("-", "").take(12)
+    /** Our id and the rig's, as the signaling server assigns them. */
+    @Volatile private var selfId = 0
+    @Volatile private var rigId = 1
     private var ack = 0
     private var socket: WebSocket? = null
     private var beat: ScheduledFuture<*>? = null
@@ -38,27 +46,29 @@ class Signaling(
     private fun nextAck() = synchronized(this) { ++ack }
 
     fun connect() {
-        val base = url.replace(Regex("^wss://"), "https://").replace(Regex("^ws://"), "http://").trimEnd('/')
         val req = Request.Builder()
-            .url("$base/sign_in?peer_id=$peerName&version=2")
+            .url(signInUrl())
             .header("Sec-WebSocket-Protocol", "x-nv-sessionid.$sessionId")
             .header("Origin", "https://play.geforcenow.com")
             .header("User-Agent", UA)
             .build()
         socket = client.newWebSocket(req, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) = guard {
+                // Signaling version 3: we sign in as the client of this session's pairing, and
+                // the rig only sends its offer once it has our peer information.
                 send(
                     JSONObject().put("ackid", nextAck()).put(
                         "peer_info",
                         JSONObject()
                             .put("browser", "Chrome")
-                            .put("browserVersion", "131")
+                            .put("browserVersion", "131.0.0.0")
                             .put("connected", true)
-                            .put("id", SELF)
+                            .put("id", selfId)
                             .put("name", peerName)
-                            .put("peerRole", 0)
-                            .put("resolution", "1920x1080")
-                            .put("version", 2),
+                            .put("peer_role", 1)
+                            .put("resolution", resolution)
+                            .put("signalingVersion", "3.0")
+                            .put("version", 3),
                     ),
                 )
                 beat = timer.scheduleWithFixedDelay({ guard { send(JSONObject().put("hb", 1)) } }, 5, 5, TimeUnit.SECONDS)
@@ -90,12 +100,21 @@ class Signaling(
 
     private fun handle(text: String) {
         val j = runCatching { JSONObject(text) }.getOrNull() ?: return
+        val info = j.optJSONObject("peer_info")
+        // The server answers our sign-in with our registration, which carries the id it gave us.
+        if (info != null && info.optString("name") == peerName && info.has("id")) selfId = info.optInt("id", selfId)
         if (j.has("ackid")) {
-            val fromSelf = j.optJSONObject("peer_info")?.optInt("id", -1) == SELF
+            val fromSelf = info != null && info.optInt("id", -1) == selfId
             if (!fromSelf) send(JSONObject().put("ack", j.optInt("ackid")))
         }
-        if (j.optInt("hb", 0) != 0) send(JSONObject().put("hb", 1))
-        val msg = j.optJSONObject("peer_msg")?.optString("msg")?.takeIf { it.isNotBlank() } ?: return
+        if (j.has("error") && !j.isNull("error")) android.util.Log.w("Signaling", "server error: ${j.opt("error")}")
+        if (j.has("hb")) {
+            send(JSONObject().put("hb", 1))
+            return
+        }
+        val envelope = j.optJSONObject("peer_msg") ?: return
+        if (envelope.has("from")) rigId = envelope.optInt("from", rigId)
+        val msg = envelope.optString("msg").takeIf { it.isNotBlank() } ?: return
         val p = runCatching { JSONObject(msg) }.getOrNull() ?: return
         when {
             p.optString("type") == "offer" && p.has("sdp") -> events.onOffer(p.getString("sdp"))
@@ -110,7 +129,7 @@ class Signaling(
     }
 
     private fun peer(msg: JSONObject) {
-        send(JSONObject().put("peer_msg", JSONObject().put("from", SELF).put("to", 1).put("msg", msg.toString())).put("ackid", nextAck()))
+        send(JSONObject().put("peer_msg", JSONObject().put("from", selfId).put("to", rigId).put("msg", msg.toString())).put("ackid", nextAck()))
     }
 
     fun sendAnswer(sdp: String, nvstSdp: String) = peer(JSONObject().put("type", "answer").put("sdp", sdp).put("nvstSdp", nvstSdp))
@@ -139,8 +158,16 @@ class Signaling(
         socket?.close(1000, "bye")
     }
 
+    /** The sign-in address: `…/nvst/sign_in?peer_id=…&version=3.0&peer_role=1&pairing_id=<session>`. */
+    private fun signInUrl(): String {
+        val path = url.substringBefore('#').substringBefore('?').substringAfter("://", url).trim('/')
+        val base = if (path.endsWith("/sign_in")) path else "$path/sign_in"
+        fun q(v: String) = java.net.URLEncoder.encode(v, "UTF-8")
+        return "https://$base?peer_id=${q(peerName)}&version=3.0&peer_role=1&pairing_id=${q(sessionId)}" +
+            if (reconnect) "&reconnect=1" else ""
+    }
+
     companion object {
-        private const val SELF = 2
         private const val UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/131.0.0.0 Safari/537.36"
         private val timer = Executors.newSingleThreadScheduledExecutor { r -> Thread(r, "signaling-hb").apply { isDaemon = true } }
 
@@ -148,6 +175,10 @@ class Signaling(
         private val client: OkHttpClient by lazy {
             Nvidia.http.newBuilder()
                 .readTimeout(0, TimeUnit.MILLISECONDS)
+                // The signaling protocol has its own heartbeat. TLS 1.2 avoids a read spin some
+                // TV builds of Android's TLS 1.3 stack fall into on long-lived sockets.
+                .pingInterval(0, TimeUnit.MILLISECONDS)
+                .connectionSpecs(listOf(ConnectionSpec.Builder(ConnectionSpec.MODERN_TLS).tlsVersions(TlsVersion.TLS_1_2).build()))
                 .build()
         }
     }

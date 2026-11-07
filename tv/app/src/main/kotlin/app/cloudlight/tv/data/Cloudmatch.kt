@@ -325,7 +325,13 @@ class Cloudmatch(private val token: suspend () -> String) {
         val s = j.optJSONObject("session") ?: throw SessionException("The session service didn't describe the session.")
         val conns = s.optJSONArray("connectionInfo") ?: JSONArray()
         val list = (0 until conns.length()).mapNotNull { conns.optJSONObject(it) }
-        val signal = list.firstOrNull { it.optInt("usage") == 14 }
+        // The WebRTC signaling endpoint: a wss or https entry first (RTSPS entries belong to the
+        // native transport), then the signaling usages 14 and 16.
+        fun usage(c: JSONObject) = c.optString("usage").toIntOrNull() ?: c.optInt("usage", -1)
+        val signal = list.firstOrNull { c ->
+            val r = c.optString("resourcePath")
+            (r.startsWith("wss://") || r.startsWith("https://")) && usage(c) in listOf(14, 16)
+        } ?: list.firstOrNull { usage(it) == 14 } ?: list.firstOrNull { usage(it) == 16 }
         val serverIp = signal?.let { ipOf(it) ?: it.optString("resourcePath").takeIf(String::isNotBlank)?.let(::hostOfUrl) }
             ?: firstString(s.optJSONObject("sessionControlInfo")?.opt("ip"))
         val monitor = s.optJSONArray("monitorSettings")?.optJSONObject(0)
@@ -399,6 +405,7 @@ class Cloudmatch(private val token: suspend () -> String) {
         resourcePath.startsWith("rtsps://") || resourcePath.startsWith("rtsp://") ->
             hostOfUrl(resourcePath)?.let { "wss://$it/nvst/" } ?: "wss://$ip:443/nvst/"
         resourcePath.startsWith("wss://") -> resourcePath
+        resourcePath.startsWith("https://") -> resourcePath.replaceFirst("https://", "wss://")
         resourcePath.startsWith("/") -> "wss://$ip:443$resourcePath"
         else -> "wss://$ip:443/nvst/"
     }

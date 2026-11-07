@@ -308,7 +308,11 @@ class Streamer(
         scope.launch {
             delay(30_000)
             if (engine === e && phase !is Phase.Live && phase !is Phase.Ended) {
-                end("The rig didn't send any video. Try again, or pick a different video codec in Settings.", error = true)
+                end(
+                    if (e.offered) "The rig didn't send any video. Try again, or pick a different video codec in Settings."
+                    else "The rig didn't start the stream. Try again in a moment.",
+                    error = true,
+                )
             }
         }
     }
