@@ -8,10 +8,10 @@ import androidx.compose.runtime.setValue
 
 /** Stream modes the Zidoo can decode. Both mandatory targets use HEVC. */
 enum class StreamMode(val label: String, val width: Int, val height: Int, val fps: Int) {
-    UHD60("4K · 60 fps", 3840, 2160, 60),
-    QHD120("1440p · 120 fps", 2560, 1440, 120),
-    FHD120("1080p · 120 fps", 1920, 1080, 120),
-    FHD60("1080p · 60 fps", 1920, 1080, 60),
+    UHD60("4K at 60 fps", 3840, 2160, 60),
+    QHD120("1440p at 120 fps", 2560, 1440, 120),
+    FHD120("1080p at 120 fps", 1920, 1080, 120),
+    FHD60("1080p at 60 fps", 1920, 1080, 60),
 }
 
 /** Saved user choices, readable from Compose. */

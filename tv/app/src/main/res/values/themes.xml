@@ -6,5 +6,5 @@
         <item name="android:windowContentOverlay">@null</item>
         <item name="android:windowAnimationStyle">@null</item>
     </style>
-    <color name="ink">#FF0E0E13</color>
+    <color name="ink">#FF09090B</color>
 </resources>

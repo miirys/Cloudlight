@@ -10,6 +10,12 @@ import android.view.MotionEvent
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
+import app.cloudlight.tv.data.AppState
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
 import app.cloudlight.tv.input.Btn
 import app.cloudlight.tv.input.NavAction
 import app.cloudlight.tv.input.PadHub
@@ -24,6 +30,8 @@ class MainActivity : ComponentActivity() {
     private lateinit var hub: PadHub
     private lateinit var usb: UsbPadDriver
     private lateinit var settings: Settings
+    private lateinit var app: AppState
+    private val scope = MainScope()
 
     /** Bluetooth (or kernel-recognised) pads that Android reads for us. */
     private class AndroidPad(val name: String) {
@@ -44,11 +52,29 @@ class MainActivity : ComponentActivity() {
             onState = { id, name, s -> hub.update(id, name, "2.4 GHz dongle", s) },
             onGone = { id -> hub.gone(id) },
         )
+        app = AppState(applicationContext, scope)
         setContent {
-            CloudlightTheme {
-                AppRoot(hub, settings, onExit = { finish() })
+            // The whole interface is laid out in a fixed 960 × 540 dp space and drawn at the
+            // window's real pixel size, so on a 4K output every glyph and edge is 4K-sharp and
+            // the layout looks identical at 1080p.
+            val px = resources.displayMetrics.widthPixels.coerceAtLeast(1)
+            CompositionLocalProvider(LocalDensity provides Density(px / 960f, 1f)) {
+                CloudlightTheme {
+                    AppRoot(hub, app, settings, onExit = { finish() })
+                }
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Pick up sessions started on another device while Cloudlight was in the background.
+        if (app.signedIn) app.refreshSessions()
+    }
+
+    override fun onDestroy() {
+        scope.cancel()
+        super.onDestroy()
     }
 
     override fun onStart() {

@@ -1,7 +1,7 @@
 package app.cloudlight.tv.ui.components
 
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -16,42 +16,47 @@ import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.foundation.text.BasicText
-import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.foundation.Image
 import androidx.compose.ui.unit.dp
 import app.cloudlight.tv.ui.motion.Motion
 import app.cloudlight.tv.ui.theme.LocalType
 import app.cloudlight.tv.ui.theme.Palette
 
 /**
- * The one focusable building block. Focus lifts the element on a spring, press sinks it,
- * and a mouse hovering over it moves focus there, so remote, controller and mouse all
- * drive the same highlight.
+ * The one focusable building block. Focus lifts the element on a spring and brightens its
+ * glass, press sinks it, and a hovering mouse moves focus to it, so remote, controller and
+ * mouse all drive the same highlight.
  */
 @Composable
 fun Pressable(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    shape: Shape = RoundedCornerShape(16.dp),
-    focusedScale: Float = 1.06f,
-    color: Color = Palette.surface,
-    focusedColor: Color = Palette.surfaceHigh,
+    shape: Shape = RoundedCornerShape(12.dp),
+    focusedScale: Float = 1.05f,
+    color: Color = Palette.glass,
+    focusedColor: Color = Palette.white,
+    border: Boolean = true,
     focusRequester: FocusRequester? = null,
     content: @Composable BoxScope.(focused: Boolean) -> Unit,
 ) {
@@ -65,39 +70,45 @@ fun Pressable(
     }
     val scale by animateFloatAsState(
         targetValue = when {
-            pressed -> focusedScale - 0.04f
+            pressed -> focusedScale - 0.035f
             focused -> focusedScale
             else -> 1f
         },
         animationSpec = if (pressed) Motion.press() else Motion.focus(),
         label = "scale",
     )
-    val lift by animateDpAsState(if (focused) 18.dp else 0.dp, Motion.focus(), label = "lift")
-    val ring by animateFloatAsState(if (focused) 1f else 0f, Motion.fade(), label = "ring")
     val fill by animateColorAsState(if (focused) focusedColor else color, Motion.fade(), label = "fill")
+    val ring by animateFloatAsState(if (focused) 0f else 1f, Motion.fade(), label = "ring")
     Box(
         modifier = modifier
             .graphicsLayer {
                 scaleX = scale
                 scaleY = scale
             }
-            .shadow(lift, shape, ambientColor = Palette.lavender, spotColor = Palette.lavender)
             .background(fill, shape)
-            .border(2.dp, Palette.lavender.copy(alpha = 0.85f * ring), shape)
+            .then(if (border) Modifier.border(0.75.dp, Palette.hairline.copy(alpha = Palette.hairline.alpha * ring), shape) else Modifier)
             .focusRequester(requester)
             .hoverable(source)
             .clickable(interactionSource = source, indication = null, onClick = onClick),
-        contentAlignment = Alignment.CenterStart,
+        contentAlignment = Alignment.Center,
     ) {
         content(focused)
     }
 }
 
+/** Foreground colour for content sitting on a [Pressable]: black on the white focus fill. */
 @Composable
-fun PillButton(
+fun onFocusColor(focused: Boolean, idle: Color = Palette.text): Color {
+    val c by animateColorAsState(if (focused) Palette.black else idle, Motion.fade(), label = "fg")
+    return c
+}
+
+@Composable
+fun GlassButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    icon: ImageVector? = null,
     primary: Boolean = false,
     focusRequester: FocusRequester? = null,
 ) {
@@ -105,21 +116,25 @@ fun PillButton(
         onClick = onClick,
         modifier = modifier,
         shape = RoundedCornerShape(50),
-        focusedScale = 1.08f,
-        color = if (primary) Palette.lavenderDeep else Palette.surface,
-        focusedColor = if (primary) Palette.lavender else Palette.text,
+        focusedScale = 1.07f,
+        color = if (primary) Palette.glassHeavy else Palette.glass,
         focusRequester = focusRequester,
     ) { focused ->
-        val fg by animateColorAsState(
-            if (focused) Palette.ink else Palette.text, Motion.fade(), label = "fg",
-        )
-        BasicText(
-            text,
-            Modifier.padding(horizontal = 28.dp, vertical = 14.dp),
-            style = LocalType.current.label.copy(color = fg),
-        )
+        val fg = onFocusColor(focused)
+        Row(Modifier.padding(horizontal = 18.dp, vertical = 9.dp), verticalAlignment = Alignment.CenterVertically) {
+            if (icon != null) {
+                Image(icon, null, Modifier.size(13.dp), colorFilter = ColorFilter.tint(fg))
+                Spacer(Modifier.width(7.dp))
+            }
+            BasicText(text, style = LocalType.current.label.copy(color = fg))
+        }
     }
 }
+
+/** A frosted panel. The blurred art behind it does the frosting; this adds tint and edge. */
+fun Modifier.glass(shape: Shape = RoundedCornerShape(16.dp), strong: Boolean = false) =
+    background(if (strong) Palette.glassStrong else Palette.glass, shape)
+        .border(0.75.dp, Palette.hairline, shape)
 
 /**
  * Keeps the focused item at a fixed place in a scrolling list (a "pivot"), and glides there
@@ -141,5 +156,3 @@ fun PivotScroll(leadingFraction: Float, content: @Composable () -> Unit) {
     }
     CompositionLocalProvider(LocalBringIntoViewSpec provides spec, content = content)
 }
-
-fun Modifier.screenPadding(horizontal: Dp = 64.dp) = padding(horizontal = horizontal)
