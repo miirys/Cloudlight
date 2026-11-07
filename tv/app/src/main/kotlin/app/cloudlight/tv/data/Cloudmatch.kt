@@ -66,8 +66,9 @@ data class LaunchRequest(
     /** Whether the game is in the user's library on its store; unowned games must say false. */
     val accountLinked: Boolean = true,
     /**
-     * Introduce ourselves as the Chrome web client rather than the PC app. The two are
-     * offered different rigs and limits, so when one refuses a quality the other may not.
+     * True: the desktop Chrome web client, which always gets a WebRTC rig but whose
+     * resolution matrix tops out below 4K. False: the Android TV app's identity, still asking
+     * for WebRTC, which is offered the TV resolution matrix including 4K.
      */
     val asBrowser: Boolean = true,
 )
@@ -90,7 +91,7 @@ class Cloudmatch(private val token: suspend () -> String) {
     @Volatile private var browser = true
 
     private fun headers(b: Request.Builder, t: String, origin: Boolean): Request.Builder {
-        b.header("User-Agent", if (browser) BROWSER_UA else UA)
+        b.header("User-Agent", if (browser) BROWSER_UA else TV_UA)
             .header("Authorization", "GFNJWT $t")
             .header("Content-Type", "application/json")
             .header("nv-browser-type", "CHROME")
@@ -100,7 +101,7 @@ class Cloudmatch(private val token: suspend () -> String) {
             .header("nv-client-version", VERSION)
             .header("nv-device-make", "UNKNOWN")
             .header("nv-device-model", "UNKNOWN")
-            .header("nv-device-os", "WINDOWS")
+            .header("nv-device-os", if (browser) "WINDOWS" else "ANDROID")
             .header("nv-device-type", "DESKTOP")
             .header("x-device-id", deviceId)
         if (origin) {
@@ -137,6 +138,7 @@ class Cloudmatch(private val token: suspend () -> String) {
 
     /** Takes over a session running on another device (or left running here) and waits for its seat. */
     suspend fun claim(active: ActiveSession, r: LaunchRequest): CloudSession = io {
+        browser = r.asBrowser
         val t = token()
         var host = active.serverHost ?: hostOf(active.streamingBase)
         // The listing names the region's load balancer; ask it for the rig itself first.
@@ -154,7 +156,7 @@ class Cloudmatch(private val token: suspend () -> String) {
         if (current?.status != 1) {
             val url = "$base/v2/session/${active.sessionId}?keyboardLayout=${r.keyboard}&languageCode=${r.language}"
             val req = headers(Request.Builder().url(url), t, origin = true)
-                .put(claimBody(active.appId).toString().toRequestBody(JSON))
+                .put(claimBody(active.appId, r).toString().toRequestBody(JSON))
                 .build()
             parse(send(req), base)
         }
@@ -187,8 +189,7 @@ class Cloudmatch(private val token: suspend () -> String) {
 
     private fun timezoneMs() = TimeZone.getDefault().getOffset(System.currentTimeMillis()).toLong()
 
-    private fun createBody(r: LaunchRequest): JSONObject {
-        val monitor = JSONObject()
+    private fun monitor(r: LaunchRequest): JSONObject = JSONObject()
             // The full desktop monitor descriptor, which makes the service offer its whole
             // resolution matrix (4K and 120 fps included) to the web client.
             .put("monitorId", 0)
@@ -203,7 +204,8 @@ class Cloudmatch(private val token: suspend () -> String) {
                 JSONObject().put("desiredContentMaxLuminance", 0).put("desiredContentMinLuminance", 0).put("desiredContentMaxFrameAverageLuminance", 0),
             )
             .put("dpi", 100)
-        val features = JSONObject()
+
+    private fun features(r: LaunchRequest): JSONObject = JSONObject()
             .put("reflex", r.lowLatencyMode && r.fps >= 120)
             .put("bitDepth", if (r.bitDepth >= 10) 10 else 0)
             .put("cloudGsync", false)
@@ -221,6 +223,10 @@ class Cloudmatch(private val token: suspend () -> String) {
             .put("hudStreamingMode", 0)
             .put("sdrColorSpace", 2)
             .put("hdrColorSpace", 0)
+
+    private fun createBody(r: LaunchRequest): JSONObject {
+        val monitor = monitor(r)
+        val features = features(r)
         val data = JSONObject()
             .put("appId", r.appId.toLong())
             .put("internalTitle", r.title ?: JSONObject.NULL)
@@ -232,7 +238,7 @@ class Cloudmatch(private val token: suspend () -> String) {
             .put("clientVersion", "30.0")
             .put("sdkVersion", "1.0")
             .put("streamerVersion", 1)
-            .put("clientPlatformName", if (r.asBrowser) "browser" else "windows")
+            .put("clientPlatformName", if (r.asBrowser) "browser" else "android")
             .put("clientRequestMonitorSettings", JSONArray().put(monitor))
             .put("useOps", true)
             .put("audioMode", 2)
@@ -258,19 +264,20 @@ class Cloudmatch(private val token: suspend () -> String) {
             .put("secureRTSPSupported", false)
             .put("partnerCustomData", "")
             .put("accountLinked", r.accountLinked)
-            .put("enablePersistingInGameSettings", true)
+            .put("enablePersistingInGameSettings", false)
             .put("userAge", 26)
             .put("requestedStreamingFeatures", features)
         return JSONObject().put("sessionRequestData", data)
     }
 
-    /** A resume must not renegotiate the stream; the server keeps what the session started with. */
-    private fun claimBody(appId: String): JSONObject {
-        val features = JSONObject()
-            .put("reflex", false).put("bitDepth", 0).put("cloudGsync", false).put("enabledL4S", false)
-            .put("profile", 0).put("fallbackToLogicalResolution", false).put("chromaFormat", 0)
-            .put("prefilterMode", 0).put("hudStreamingMode", 0)
+    /**
+     * Taking over a session asks for this device's stream shape, so a game started elsewhere
+     * comes back at the quality chosen here rather than the service's 1080p default.
+     */
+    private fun claimBody(appId: String, r: LaunchRequest): JSONObject {
+        val features = features(r)
         val data = JSONObject()
+            .put("clientRequestMonitorSettings", JSONArray().put(monitor(r)))
             .put("audioMode", 2)
             .put("remoteControllersBitmap", 0)
             .put("sdrHdrMode", 0)
@@ -279,7 +286,7 @@ class Cloudmatch(private val token: suspend () -> String) {
             .put("clientVersion", "30.0")
             .put("deviceHashId", UUID.randomUUID().toString())
             .put("internalTitle", JSONObject.NULL)
-            .put("clientPlatformName", if (browser) "browser" else "windows")
+            .put("clientPlatformName", if (browser) "browser" else "android")
             .put(
                 "metaData",
                 meta(
@@ -288,6 +295,8 @@ class Cloudmatch(private val token: suspend () -> String) {
                     "GSStreamerType" to "WebRTC",
                     "networkType" to "Unknown",
                     "ClientImeSupport" to "0",
+                    "clientPhysicalResolution" to JSONObject().put("horizontalPixels", r.width).put("verticalPixels", r.height).toString(),
+                    "surroundAudioInfo" to "2",
                 ),
             )
             .put("surroundAudioInfo", 0)
@@ -303,7 +312,7 @@ class Cloudmatch(private val token: suspend () -> String) {
             .put("clientDisplayHdrCapabilities", JSONObject.NULL)
             .put("accountLinked", true)
             .put("partnerCustomData", "")
-            .put("enablePersistingInGameSettings", true)
+            .put("enablePersistingInGameSettings", false)
             .put("secureRTSPSupported", false)
             .put("userAge", 26)
             .put("requestedStreamingFeatures", features)
@@ -424,7 +433,7 @@ class Cloudmatch(private val token: suspend () -> String) {
     companion object {
         private const val BROWSER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36"
         private const val VERSION = "2.0.88.129"
-        private const val UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 NVIDIACEFClient/HEAD/debb5919f6 GFN-PC/2.0.80.173"
+        private const val TV_UA = "GFN-PC/22.0 (Android-Generic-TV 14) PGC/3.8 (6.36.38319306) okhttp/4.12.0"
         private val JSON = "application/json".toMediaType()
 
         fun isZoneHost(host: String) = host.contains("cloudmatchbeta.nvidiagrid.net") || host.contains("cloudmatch.nvidiagrid.net")

@@ -35,7 +35,15 @@ import app.cloudlight.tv.ui.theme.Palette
  */
 @Composable
 fun Backdrop(url: String?, modifier: Modifier = Modifier, sharpArt: Boolean = true) {
-    Box(modifier.fillMaxSize().background(Palette.base)) {
+    // Everything here is drawn once into its own layer, so while the rows and panels in front
+    // animate, each frame costs one copy of that layer instead of redrawing two images and
+    // four full-screen gradients at the screen's full resolution.
+    Box(
+        modifier
+            .fillMaxSize()
+            .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
+            .background(Palette.base),
+    ) {
         AnimatedContent(
             targetState = url,
             transitionSpec = { fadeIn(Motion.springOf(0.9f, 1f)) togetherWith fadeOut(Motion.springOf(0.9f, 1f)) },
@@ -98,7 +106,7 @@ fun Backdrop(url: String?, modifier: Modifier = Modifier, sharpArt: Boolean = tr
 
 /**
  * Cheap, good-looking blur: the image is already tiny (384 × 216), so a few box-blur passes
- * approximate a Gaussian in a couple of milliseconds even on the Zidoo's CPU.
+ * approximate a Gaussian in a couple of milliseconds even on a modest TV CPU.
  */
 class BlurTransformation(private val radius: Int, private val passes: Int) : Transformation {
     override val cacheKey: String = "blur-$radius-$passes"

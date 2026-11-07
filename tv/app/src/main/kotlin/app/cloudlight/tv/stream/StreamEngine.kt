@@ -537,6 +537,22 @@ class StreamEngine(
         if (inputReady && delta != 0) sendReliable(encoder.wheel(delta))
     }
 
+    /** Types [text] as key presses, the way a US keyboard would. Characters it can't type are skipped. */
+    fun typeText(text: String) {
+        post {
+            for (c in text) {
+                val (key, shift) = Keymap.forChar(c) ?: continue
+                val mods = if (shift) InputEncoder.MOD_SHIFT else 0
+                if (shift) sendKey(true, Keymap.SHIFT, mods)
+                sendKey(true, key, mods)
+                SystemClock.sleep(6)
+                sendKey(false, key, mods)
+                if (shift) sendKey(false, Keymap.SHIFT, 0)
+                SystemClock.sleep(6)
+            }
+        }
+    }
+
     /** Taps a key combination: all down in order, then all up in reverse. */
     fun sendCombo(vararg keys: Keymap.Key) {
         post {

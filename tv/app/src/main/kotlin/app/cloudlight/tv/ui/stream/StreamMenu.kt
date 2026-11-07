@@ -125,8 +125,6 @@ fun StreamMenu(streamer: Streamer, settings: Settings, hub: PadHub) {
                     }
                     Spacer(Modifier.height(8.dp))
                     Row(Modifier.reveal(1), verticalAlignment = Alignment.CenterVertically) {
-                        Box(Modifier.size(7.dp).background(qualityColor(streamer.stats.quality), CircleShape))
-                        Spacer(Modifier.width(8.dp))
                         val s = streamer.stats
                         BasicText(
                             listOfNotNull(
@@ -197,6 +195,7 @@ fun StreamMenu(streamer: Streamer, settings: Settings, hub: PadHub) {
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 verticalArrangement = Arrangement.spacedBy(8.dp),
                             ) {
+                                KeyChip("Keyboard") { streamer.openKeyboard() }
                                 KeyChip("Esc") { streamer.sendCombo(Keymap.ESCAPE) }
                                 KeyChip("Enter") { streamer.sendCombo(Keymap.ENTER) }
                                 KeyChip("Tab") { streamer.sendCombo(Keymap.TAB) }
@@ -255,7 +254,6 @@ private fun SessionCard(streamer: Streamer, modifier: Modifier) {
         Line("Bitrate", s.bitrateMbps?.let { "%.1f Mbps".format(it) } ?: "–")
         Line("Latency", s.rttMs?.let { "%.0f ms".format(it) } ?: "–")
         Line("Packet loss", s.packetLossPct?.let { "%.2f %%".format(it) } ?: "–")
-        Line("Connection", s.quality.label)
         Line("Rig", session?.gpu ?: "–")
     }
 }

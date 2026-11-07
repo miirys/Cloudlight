@@ -4,6 +4,8 @@ import android.content.Context
 import android.os.SystemClock
 import android.view.InputDevice
 import android.view.MotionEvent
+import android.hardware.input.InputManager
+import android.view.ViewTreeObserver
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.View
@@ -46,6 +48,20 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
+import app.cloudlight.tv.stream.Keymap
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowBack
@@ -167,6 +183,15 @@ fun StreamScreen(streamer: Streamer, settings: Settings, hub: PadHub) {
         }
 
         AnimatedVisibility(
+            visible = streamer.keyboardOpen && !streamer.inPip,
+            enter = fadeIn(Motion.fade()) + slideInVertically(Motion.springOf(0.45f, 0.86f)) { it / 2 },
+            exit = fadeOut(Motion.fade()) + slideOutVertically(Motion.springOf(0.45f, 1f)) { it / 2 },
+            modifier = Modifier.align(Alignment.BottomCenter),
+        ) {
+            TypingBar(streamer)
+        }
+
+        AnimatedVisibility(
             visible = streamer.menuOpen && !streamer.inPip,
             enter = fadeIn(Motion.fade()),
             exit = fadeOut(Motion.fade()),
@@ -189,17 +214,36 @@ fun StreamScreen(streamer: Streamer, settings: Settings, hub: PadHub) {
 private fun PointerCapture(enabled: Boolean, streamer: Streamer) {
     val view = LocalView.current
     DisposableEffect(view, enabled) {
+        if (!enabled) return@DisposableEffect onDispose { }
         var buttons = 0
-        if (enabled && hasMouse()) {
-            view.setOnCapturedPointerListener { _, e ->
-                buttons = onCaptured(e, streamer, buttons)
-                true
-            }
-            view.requestPointerCapture()
+        view.setOnCapturedPointerListener { _, e ->
+            buttons = onCaptured(e, streamer, buttons)
+            true
         }
+        // Android drops the capture whenever the window loses focus (the on-screen keyboard,
+        // a system dialog, picture in picture) and ignores requests made before it has focus,
+        // so ask again whenever focus comes back or a mouse is plugged in.
+        val capture = Runnable {
+            if (view.hasWindowFocus() && !view.hasPointerCapture() && hasMouse()) view.requestPointerCapture()
+        }
+        val focus = ViewTreeObserver.OnWindowFocusChangeListener { has -> if (has) view.post(capture) }
+        view.viewTreeObserver.addOnWindowFocusChangeListener(focus)
+        val input = view.context.getSystemService(InputManager::class.java)
+        val devices = object : InputManager.InputDeviceListener {
+            override fun onInputDeviceAdded(id: Int) = capture.run()
+            override fun onInputDeviceChanged(id: Int) = capture.run()
+            override fun onInputDeviceRemoved(id: Int) = Unit
+        }
+        input?.registerInputDeviceListener(devices, view.handler)
+        view.post(capture)
         onDispose {
+            view.removeCallbacks(capture)
+            if (view.viewTreeObserver.isAlive) view.viewTreeObserver.removeOnWindowFocusChangeListener(focus)
+            input?.unregisterInputDeviceListener(devices)
             view.setOnCapturedPointerListener(null)
             if (view.hasPointerCapture()) view.releasePointerCapture()
+            // Let go of anything still held, so the game doesn't keep firing.
+            for ((bit, id) in MOUSE_BUTTONS) if (buttons and bit != 0) streamer.mouseButton(false, id)
         }
     }
 }
@@ -219,7 +263,7 @@ private fun onCaptured(e: MotionEvent, streamer: Streamer, old: Int): Int {
                 dx += e.getHistoricalX(h)
                 dy += e.getHistoricalY(h)
             }
-            streamer.mouseMove(dx.toInt(), dy.toInt())
+            streamer.mouseMove(dx, dy)
         }
         MotionEvent.ACTION_SCROLL -> {
             val v = e.getAxisValue(MotionEvent.AXIS_VSCROLL)
@@ -437,7 +481,6 @@ private fun CompactStats(s: StreamStats) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Box(Modifier.size(6.dp).background(qualityColor(s.quality), CircleShape))
         BasicText("${fmt(s.fps)} fps", style = num)
         BasicText("${fmt(s.rttMs)} ms", style = num)
         BasicText(fmt(s.bitrateMbps, 1, " Mbps"), style = num)
@@ -453,12 +496,6 @@ private fun DetailedStats(s: StreamStats, streamer: Streamer) {
         Modifier.width(250.dp).background(Color.Black.copy(alpha = 0.62f), RoundedCornerShape(14.dp)).padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(3.dp),
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.size(7.dp).background(qualityColor(s.quality), CircleShape))
-            Spacer(Modifier.width(8.dp))
-            BasicText("Connection: ${s.quality.label.lowercase()}", style = type.label)
-        }
-        Spacer(Modifier.height(6.dp))
         StatGroup("Video")
         Stat("Resolution", if (s.width > 0) "${s.width} × ${s.height}" else "–")
         Stat("Frame rate", "${fmt(s.fps)} fps")
@@ -517,4 +554,59 @@ fun elapsed(since: Long): String {
     val m = (secs % 3600) / 60
     val s = secs % 60
     return if (h > 0) "%d h %02d min".format(h, m) else "%d:%02d".format(m, s)
+}
+
+/**
+ * The on-screen keyboard's text box. What is typed is sent to the game as key presses as it
+ * changes, so it works in any text field: launchers, sign-in pages, chat.
+ */
+@Composable
+private fun TypingBar(streamer: Streamer) {
+    val type = LocalType.current
+    var value by remember { mutableStateOf(TextFieldValue("")) }
+    val focus = remember { FocusRequester() }
+    val keyboard = LocalSoftwareKeyboardController.current
+    LaunchedEffect(Unit) {
+        runCatching { focus.requestFocus() }
+        keyboard?.show()
+    }
+    BackHandler { streamer.closeKeyboard() }
+    Column(
+        Modifier.padding(bottom = 36.dp).widthIn(min = 420.dp, max = 640.dp)
+            .background(Color.Black.copy(alpha = 0.62f), RoundedCornerShape(18.dp))
+            .padding(horizontal = 20.dp, vertical = 14.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        BasicText("Typing into the game", style = type.overline)
+        BasicTextField(
+            value = value,
+            onValueChange = { next ->
+                val before = value.text
+                val after = next.text
+                // Send the difference: removed characters as Backspace, added ones as keys.
+                val common = before.commonPrefixWith(after).length
+                repeat(before.length - common) { streamer.sendCombo(Keymap.BACKSPACE) }
+                streamer.type(after.substring(common))
+                value = next
+            },
+            singleLine = true,
+            textStyle = type.body.copy(color = Color.White),
+            cursorBrush = SolidColor(Color.White),
+            keyboardOptions = KeyboardOptions(autoCorrectEnabled = false, imeAction = ImeAction.Send),
+            keyboardActions = KeyboardActions(onSend = {
+                streamer.sendCombo(Keymap.ENTER)
+                value = TextFieldValue("")
+            }),
+            modifier = Modifier.fillMaxWidth().focusRequester(focus).onPreviewKeyEvent { e ->
+                // Backspace on an empty box still reaches the game.
+                if (e.key == Key.Backspace && value.text.isEmpty()) {
+                    if (e.type == KeyEventType.KeyDown) streamer.sendCombo(Keymap.BACKSPACE)
+                    true
+                } else {
+                    false
+                }
+            },
+        )
+        BasicText("Send presses Enter in the game. Back closes the keyboard.", style = type.caption)
+    }
 }

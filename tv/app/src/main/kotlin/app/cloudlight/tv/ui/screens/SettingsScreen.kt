@@ -256,7 +256,7 @@ private fun StreamPage(settings: Settings, app: AppState) {
         settings.videoPath.ordinal,
         { settings.cycleVideoPath(it - settings.videoPath.ordinal) },
         hint = when (settings.videoPath) {
-            VideoPath.AUTO -> "Direct for the lowest delay, unless this TV needs Compatible."
+            VideoPath.AUTO -> "The standard decoder, which works on every TV."
             VideoPath.DIRECT -> "Lowest delay. Switch to Compatible if streams close the app."
             VideoPath.COMPATIBLE -> "Works on more TVs, with a little more delay."
         },
@@ -270,6 +270,12 @@ private fun StreamPage(settings: Settings, app: AppState) {
         )
     }
     SwitchSetting("10-bit colour", settings.tenBit, settings::toggleTenBit, hint = "Smoother skies and shadows. Needs HEVC or AV1.")
+    SwitchSetting(
+        "Highest refresh rate",
+        settings.maxRefresh,
+        settings::toggleMaxRefresh,
+        hint = "Runs the TV at its fastest mode, for smoother menus and 120 fps streams.",
+    )
     SettingsGroup("Game")
     SwitchSetting("NVIDIA Reflex", settings.lowLatency, settings::toggleLowLatency, hint = "Lower input lag in supported games at 120 fps.")
     ValueSetting(

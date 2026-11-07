@@ -18,8 +18,8 @@ import android.util.Log
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * Cloudlight's own USB controller driver. The Zidoo's kernel does not recognise 8BitDo's
- * 2.4 GHz dongle, so we claim the dongle ourselves and read its reports directly. Handles
+ * Our own USB controller driver. Some TV kernels don't recognise 2.4 GHz dongles such as
+ * 8BitDo's, so we claim the dongle ourselves and read its reports directly. Handles
  * Xbox 360 style (XInput), Xbox One style (GIP) and plain HID pads, and survives the dongle
  * re-enumerating when the controller sleeps, wakes or changes mode.
  */

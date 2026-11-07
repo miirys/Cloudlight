@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.util.Rational
+import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
 import android.view.InputDevice
@@ -15,6 +16,7 @@ import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import app.cloudlight.tv.data.AppState
@@ -85,11 +87,32 @@ class MainActivity : ComponentActivity() {
             // window's real pixel size, so on a 4K output every glyph and edge is 4K-sharp and
             // the layout looks identical at 1080p.
             val px = resources.displayMetrics.widthPixels.coerceAtLeast(1)
+            LaunchedEffect(settings.maxRefresh) { preferRefresh(settings.maxRefresh) }
             CompositionLocalProvider(LocalDensity provides Density(px / 960f, 1f)) {
                 CloudlightTheme {
                     AppRoot(hub, app, settings, streamer, onExit = { finish() })
                 }
             }
+        }
+    }
+
+    /**
+     * Many TVs sit at 60 Hz even when they can do more, which caps both the menus and the
+     * stream. Ask for the fastest mode at the current resolution (the system changes it back
+     * when the app leaves the screen). Turning the setting off hands the choice back.
+     */
+    private fun preferRefresh(fastest: Boolean) {
+        runCatching {
+            @Suppress("DEPRECATION")
+            val display = (if (Build.VERSION.SDK_INT >= 30) display else windowManager.defaultDisplay) ?: return
+            val now = display.mode
+            val target = if (!fastest) 0 else display.supportedModes
+                .filter { it.physicalWidth == now.physicalWidth && it.physicalHeight == now.physicalHeight }
+                .maxByOrNull { it.refreshRate }
+                ?.takeIf { it.refreshRate > now.refreshRate + 1f }
+                ?.modeId ?: return
+            if (window.attributes.preferredDisplayModeId == target) return
+            window.attributes = window.attributes.also { it.preferredDisplayModeId = target }
         }
     }
 

@@ -1,46 +1,41 @@
 # Cloudlight TV
 
-A cloud gaming client written from scratch for the Zidoo Z30 Pro (Android TV box). It shares
-no code with the desktop app or OpenNOW. The architecture is described in the
-[proposal](https://claude.ai/artifact/4eUZWiyaP1cEYMy83oazus).
+A GeForce NOW client for Android TV, written from scratch. It streams up to 4K at 120 fps,
+works with controllers, keyboards and mice, and picks up sessions started on other devices.
 
-## Modules
+## Installing
 
-| Module | What it is |
-| --- | --- |
-| `probe/` | Phase 0 hardware probe: decoders and display modes, a decode stress test at 1080p120 and 4K60, every input and USB device, live controller and mouse events, pointer capture, and a raw USB gamepad reader for dongles the kernel does not recognise. |
+Download the APK from the latest release and install it on the TV, for example with
+"Send files to TV" or `adb install`. Android TV 9 or newer is required.
 
 ## Building
 
-CI builds the APKs on every push that touches `tv/` (workflow "Cloudlight TV (Android)"),
-and uploads them as a run artifact.
+CI builds the APKs on every push that touches `tv/` (workflow "Cloudlight TV (Android)") and
+uploads them as a run artifact.
 
-Locally you need JDK 17, the Android SDK (platform 35) and ffmpeg:
+Locally you need JDK 17 and the Android SDK (platform 35):
 
 ```sh
-./probe/make-clips.sh            # decoder test clips, about 50 MB, not committed
-./gradlew :probe:assembleRelease
+./gradlew :app:assembleRelease
 ```
 
-## Using the probe
+Release builds are signed with the key in the `CLOUDLIGHT_KEYSTORE` file
+(`CLOUDLIGHT_KEYSTORE_PASSWORD`, optional `CLOUDLIGHT_KEY_ALIAS`, default `cloudlight`).
+Without it they fall back to the debug key. In CI the key comes from the
+`CLOUDLIGHT_KEYSTORE_BASE64` and `CLOUDLIGHT_KEYSTORE_PASSWORD` repository secrets.
 
-1. Install the APK on the Zidoo and open **Cloudlight Probe**.
-2. Plug in the 8BitDo 2.4 GHz dongle and a mouse, then press **Refresh report**.
-3. Press **Decode test** and wait about 30 seconds.
-4. Press **Try 1080p 120 Hz** and **Try 4K 60 Hz** and check the log says the display switched.
-5. Press **Mouse capture**, move the mouse, then press Esc or B.
-6. Press **Read USB pad**, accept the permission dialog, move the sticks, then press it again.
-7. On a PC on the same network, open the address shown at the top and copy the whole page.
+## Layout
 
-## App (`:app`)
+| Path | What it is |
+| --- | --- |
+| `app/` | The client: Compose interface, GeForce NOW sign-in and session APIs, WebRTC streaming. |
+| `buildSrc/` | A build-time patch to WebRTC's video texture path that avoids dropped frames at 120 fps. |
+| `probe/` | A hardware probe used during development: decoders, display modes and input devices. |
 
-The Cloudlight client itself. Phase 1 contains the shell: the design system, spring-based
-motion (`ui/motion/Motion.kt`), the focus system, and the controller layer.
+Inside the app:
 
-- `input/UsbPadDriver.kt` is Cloudlight's own USB controller driver. It claims Xbox 360
-  (XInput), Xbox One (GIP) and plain HID pads directly, because the Zidoo's kernel ignores
-  8BitDo's 2.4 GHz dongle.
-- `input/PadHub.kt` merges every controller (USB dongle, Bluetooth pads) into menu actions
-  with timer-driven, gently accelerating repeat.
-- Settings › Controller shows every controller live, which is the quickest way to check the
-  dongle on the box.
+- `stream/` holds the streaming engine: signaling, SDP, input encoding and stats.
+- `input/UsbPadDriver.kt` reads USB controllers directly (Xbox 360, Xbox One and plain HID
+  pads) for dongles the TV's kernel doesn't recognise.
+- `input/PadHub.kt` merges every controller into menu actions with gently accelerating repeat.
+- `ui/motion/Motion.kt` has the spring animations used everywhere.

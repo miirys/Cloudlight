@@ -54,8 +54,20 @@ jobs:
       - name: Generate decoder test clips
         run: ./probe/make-clips.sh
 
+      - name: Restore the signing key
+        # Optional: without these secrets the APK is signed with a throwaway debug key.
+        env:
+          KEYSTORE_BASE64: ${{ secrets.CLOUDLIGHT_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/cloudlight.jks"
+            echo "CLOUDLIGHT_KEYSTORE=$RUNNER_TEMP/cloudlight.jks" >> "$GITHUB_ENV"
+          fi
+
       - name: Build APKs
         # Retried once: dependency servers sometimes rate-limit shared runners.
+        env:
+          CLOUDLIGHT_KEYSTORE_PASSWORD: ${{ secrets.CLOUDLIGHT_KEYSTORE_PASSWORD }}
         run: |
           ./gradlew --no-daemon :app:assembleRelease :probe:assembleRelease || {
             sleep 60

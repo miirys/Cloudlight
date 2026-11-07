@@ -35,7 +35,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.cloudlight.tv.BuildConfig
 import app.cloudlight.tv.CrashLog
-import app.cloudlight.tv.Diagnostics
 import app.cloudlight.tv.R
 import app.cloudlight.tv.data.AppState
 import app.cloudlight.tv.stream.TvDecoderFactory
@@ -62,7 +61,6 @@ fun AboutPage(app: AppState) {
     val network = remember { networkSpecs(context) }
     val problem = remember { runCatching { CrashLog.latest(context) }.getOrNull() }
     val note = remember { CrashLog.note(context) }
-    val log = remember { CrashLog.crashLog(context)?.let(CrashLog::keyLines) }
     val account = listOfNotNull(
         app.profile?.let { Spec("Account", it.name, listOfNotNull(app.membership?.tier ?: it.tier, it.email).joinToString("  ·  ").ifEmpty { null }) },
         app.allowedModes?.maxWithOrNull(compareBy({ it.height }, { it.fps }))?.let {
@@ -71,7 +69,6 @@ fun AboutPage(app: AppState) {
         app.region?.let { Spec("Region", it) },
         Spec("Session service", app.streamingBase.removePrefix("https://").trimEnd('/')),
         Spec("Library", "${app.library.size} games"),
-        Diagnostics.lastRefusal?.let { Spec("Last refused", it) },
     )
 
     Column(Modifier.fillMaxSize().padding(top = 6.dp)) {
@@ -81,7 +78,7 @@ fun AboutPage(app: AppState) {
             Column {
                 BasicText("Cloudlight", style = type.display.copy(fontSize = type.title.fontSize * 1.25f))
                 BasicText(
-                    "Version ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE}), ${BuildConfig.BUILD_TYPE} build",
+                    "Version ${BuildConfig.VERSION_NAME}",
                     style = type.body,
                 )
             }
@@ -99,23 +96,14 @@ fun AboutPage(app: AppState) {
             Column(Modifier.weight(1f).reveal(4), verticalArrangement = Arrangement.spacedBy(18.dp)) {
                 SpecGroup("GeForce NOW", account)
                 if (problem != null) {
-                    val where = problem.detail.lineSequence().map { it.trim() }
-                        .firstOrNull { it.startsWith("at ") && "cloudlight" in it }?.removePrefix("at ")
                     SpecGroup(
                         "Last unexpected close",
                         listOfNotNull(
                             Spec("When", CrashLog.format(problem.whenMs)),
-                            Spec("What", problem.summary.ifBlank { "Unknown" }, where),
+                            Spec("What", problem.summary.ifBlank { "Unknown" }),
                             note?.let { Spec("During", it) },
                         ),
                     )
-                    if (!log.isNullOrEmpty()) {
-                        Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                            for (line in log.take(8)) {
-                                BasicText(line, style = type.caption, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                            }
-                        }
-                    }
                 }
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     GroupTitle("Credits")

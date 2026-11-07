@@ -1,3 +1,7 @@
+import app.cloudlight.build.WebRtcTextureDeliveryFactory
+import com.android.build.api.instrumentation.FramesComputationMode
+import com.android.build.api.instrumentation.InstrumentationScope
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -12,8 +16,23 @@ android {
         applicationId = "app.cloudlight.tv"
         minSdk = 28
         targetSdk = 34
-        versionCode = 12
-        versionName = "1.1.8"
+        versionCode = 13
+        versionName = "1.1.9"
+    }
+
+    // One fixed key lets every new version install over the last one without losing the
+    // sign-in. CI passes it in from repository secrets; without them the build falls back to
+    // the debug key, which changes from machine to machine.
+    val keystore = System.getenv("CLOUDLIGHT_KEYSTORE")?.let(::file)?.takeIf { it.exists() }
+    signingConfigs {
+        if (keystore != null) {
+            create("release") {
+                storeFile = keystore
+                storePassword = System.getenv("CLOUDLIGHT_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("CLOUDLIGHT_KEY_ALIAS") ?: "cloudlight"
+                keyPassword = System.getenv("CLOUDLIGHT_KEY_PASSWORD") ?: System.getenv("CLOUDLIGHT_KEYSTORE_PASSWORD")
+            }
+        }
     }
 
     buildTypes {
@@ -21,8 +40,7 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            // Sideloaded test builds; a real release key comes later.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
         }
     }
     compileOptions {
@@ -34,6 +52,19 @@ android {
         compose = true
         buildConfig = true
     }
+}
+
+// WebRTC's texture path resets the SurfaceTexture size and posts two messages for every
+// decoded frame, which drops frames at 120 fps. buildSrc patches it to skip unchanged
+// values and to run the decoder texture thread at display priority.
+androidComponents.onVariants { variant ->
+    variant.instrumentation.transformClassesWith(
+        WebRtcTextureDeliveryFactory::class.java,
+        InstrumentationScope.ALL,
+    ) {}
+    variant.instrumentation.setAsmFramesComputationMode(
+        FramesComputationMode.COMPUTE_FRAMES_FOR_INSTRUMENTED_METHODS,
+    )
 }
 
 dependencies {

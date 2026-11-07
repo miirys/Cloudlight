@@ -110,6 +110,17 @@ class Streamer(
             resume(running, g)
             return
         }
+        startFresh(g)
+    }
+
+    /** Whether the running session was asked for with the TV identity (see [LaunchRequest.asBrowser]). */
+    private var tvIdentityInUse = false
+
+    /** 4K is asked for with the TV identity first, unless it has already failed here. */
+    private fun useTvIdentity(height: Int) = height > 1440 && !settings.tvIdentityFailed
+
+    private fun startFresh(g: Game) {
+        lastResume = null
         val v = g.variants.firstOrNull { it.selected } ?: g.variants.firstOrNull()
         val appId = v?.id ?: g.id
         begin(g) { cm ->
@@ -170,13 +181,15 @@ class Streamer(
         for ((i, attempt) in ladder.withIndex()) {
             // The full quality is worth trying everywhere nearby; lower steps stay on the first.
             // Always as the desktop web client, so the rig streams over WebRTC.
-            val where = (if (i == 0) bases else bases.take(1)).map { it to true }
+            val places = if (i == 0) bases else bases.take(1)
+            val where = if (useTvIdentity(attempt.height)) places.flatMap { listOf(it to false, it to true) } else places.map { it to true }
             for ((j, entry) in where.withIndex()) {
                 val (place, asBrowser) = entry
                 val (name, base) = place
                 if (j > 0) phase = Phase.Starting("Trying ${name ?: "another server"}")
                 try {
                     val s = cm.create(base, attempt.copy(asBrowser = asBrowser))
+                    tvIdentityInUse = !asBrowser
                     notice = when {
                         i == 0 && name != null && chosen == null ->
                             "Playing from $name, because the nearest server couldn't start ${modeName(ask.height, ask.fps)}."
@@ -206,7 +219,8 @@ class Streamer(
         begin(g ?: app.gameFor(a)) { cm ->
             phase = Phase.Starting(if (a.status == 1) "Following your session" else "Taking over your session")
             val (w, h, fps) = target()
-            val s = cm.claim(a, request().copy(appId = a.appId, width = w, height = h, fps = fps))
+            tvIdentityInUse = false
+            val s = cm.claim(a, request().copy(appId = a.appId, width = w, height = h, fps = fps, asBrowser = !useTvIdentity(h)))
             session = s
             s
         }
@@ -371,6 +385,31 @@ class Streamer(
         }
     }
 
+    /** True while the on-screen keyboard types into the game. */
+    var keyboardOpen by mutableStateOf(false)
+        private set
+
+    fun openKeyboard() {
+        if (phase != Phase.Live) return
+        closeMenu()
+        keyboardOpen = true
+        input.enabled = false
+        hub.captured = false
+    }
+
+    fun closeKeyboard() {
+        if (!keyboardOpen) return
+        keyboardOpen = false
+        if (phase == Phase.Live && !menuOpen) {
+            hub.captured = true
+            input.enabled = true
+        }
+    }
+
+    fun type(text: String) {
+        if (text.isNotEmpty()) engine?.typeText(text)
+    }
+
     fun clearNotice() {
         notice = null
     }
@@ -409,10 +448,21 @@ class Streamer(
         if (!menuOpen) engine?.sendKey(down, key, modifiers)
     }
 
-    fun mouseMove(dx: Int, dy: Int) {
+    // Fractions of a count left over from earlier moves, so slow, careful aiming isn't lost
+    // to rounding.
+    private var restX = 0f
+    private var restY = 0f
+
+    fun mouseMove(dx: Float, dy: Float) {
         if (menuOpen) return
         val s = settings.mouseSpeed
-        engine?.sendMouseMove((dx * s).toInt(), (dy * s).toInt())
+        restX += dx * s
+        restY += dy * s
+        val x = restX.toInt()
+        val y = restY.toInt()
+        restX -= x
+        restY -= y
+        engine?.sendMouseMove(x, y)
     }
 
     fun mouseButton(down: Boolean, button: Int) {
@@ -483,6 +533,7 @@ class Streamer(
     }
 
     private fun end(message: String, error: Boolean, canRetry: Boolean = true) {
+        if (error && fallBackFromTvIdentity()) return
         stopEngine()
         menuOpen = false
         hub.captured = false
@@ -490,8 +541,32 @@ class Streamer(
         app.refreshSessions()
     }
 
+    /**
+     * A new 4K session asked for with the TV identity can land on a rig that only streams
+     * NVIDIA's native way and never starts WebRTC. Then end it and ask again as the web client,
+     * and remember not to try that here again.
+     */
+    private fun fallBackFromTvIdentity(): Boolean {
+        val e = engine ?: return false
+        val g = lastGame ?: return false
+        if (!tvIdentityInUse || e.offered || lastResume != null) return false
+        tvIdentityInUse = false
+        settings.markTvIdentityFailed()
+        val s = session
+        val cm = cloud
+        stopEngine()
+        phase = Phase.Starting("Trying another kind of rig")
+        scope.launch {
+            if (s != null && cm != null) runCatching { cm.stop(s) }
+            delay(1500)
+            startFresh(g)
+        }
+        return true
+    }
+
     private fun finish() {
         menuOpen = false
+        keyboardOpen = false
         hub.captured = false
         phase = null
         session = null

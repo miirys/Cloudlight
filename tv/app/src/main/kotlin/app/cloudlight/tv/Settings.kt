@@ -106,6 +106,18 @@ class Settings(context: Context) {
         prefs.edit().putBoolean("directFailed", true).apply()
     }
 
+    /**
+     * Set when a 4K request with the TV identity got a rig that never started a WebRTC
+     * stream; 4K is then asked for as the web client only.
+     */
+    var tvIdentityFailed by mutableStateOf(prefs.getBoolean("tvIdentityFailed", false))
+        private set
+
+    fun markTvIdentityFailed() {
+        tvIdentityFailed = true
+        prefs.edit().putBoolean("tvIdentityFailed", true).apply()
+    }
+
     /** Set after a crash in the video decoder on the compatible path: stream in H.264. */
     var safeCodec by mutableStateOf(prefs.getBoolean("safeCodec", false))
         private set
@@ -141,6 +153,7 @@ class Settings(context: Context) {
         get() = listOfNotNull(
             if (safeCodec && codec == VideoCodec.AUTO) "H.264" else null,
             if (noAudio) "No sound" else null,
+            if (tvIdentityFailed) "4K through the web client" else null,
         ).joinToString(", ").ifEmpty { null }
 
     fun clearFixes() {
@@ -148,7 +161,8 @@ class Settings(context: Context) {
         safeCodec = false
         noAudio = false
         if (prefs.getBoolean("tenBitFix", false)) tenBit = true
-        prefs.edit().remove("directFailed").remove("safeCodec").remove("noAudio").remove("tenBitFix")
+        tvIdentityFailed = false
+        prefs.edit().remove("directFailed").remove("safeCodec").remove("noAudio").remove("tenBitFix").remove("tvIdentityFailed")
             .putBoolean("tenBit", tenBit).apply()
     }
 
@@ -209,6 +223,15 @@ class Settings(context: Context) {
     fun toggleTenBit() {
         tenBit = !tenBit
         prefs.edit().putBoolean("tenBit", tenBit).apply()
+    }
+
+    /** Switch the TV to its fastest refresh rate at the current resolution while the app is open. */
+    var maxRefresh by mutableStateOf(prefs.getBoolean("maxRefresh", true))
+        private set
+
+    fun toggleMaxRefresh() {
+        maxRefresh = !maxRefresh
+        prefs.edit().putBoolean("maxRefresh", maxRefresh).apply()
     }
 
     fun toggleTimer() {

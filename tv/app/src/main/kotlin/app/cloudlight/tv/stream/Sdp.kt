@@ -127,6 +127,9 @@ object Sdp {
         return out.joinToString(eol(sdp))
     }
 
+    /** The lowest bitrate the server's rate control may settle on, idle screens included. */
+    const val MIN_KBPS = 20_000
+
     data class StreamParams(
         val width: Int,
         val height: Int,
@@ -143,11 +146,11 @@ object Sdp {
     /**
      * NVIDIA's companion description. It carries the ICE credentials again plus the encoder
      * and pacing settings the server applies. We ask for a fixed resolution (no dynamic
-     * downscaling), adaptive bitrate between 35 % and 100 % of the cap, and the high frame rate
-     * tuning when 90 fps or more is requested.
+     * downscaling), adaptive bitrate that never goes below 20 Mbps (or the cap, when the cap is
+     * lower), and the high frame rate tuning when 90 fps or more is requested.
      */
     fun nvst(p: StreamParams): String {
-        val minKbps = maxOf(5_000, p.maxKbps * 35 / 100)
+        val minKbps = minOf(p.maxKbps, maxOf(MIN_KBPS, p.maxKbps * 35 / 100))
         val startKbps = maxOf(minKbps, p.maxKbps * 70 / 100)
         val highFps = p.fps >= 90
         val fps120 = p.fps == 120
