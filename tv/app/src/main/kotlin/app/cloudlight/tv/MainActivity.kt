@@ -1,6 +1,10 @@
 package app.cloudlight.tv
 
+import android.app.PictureInPictureParams
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.content.res.Configuration
+import android.util.Rational
 import android.os.Bundle
 import android.os.SystemClock
 import android.view.InputDevice
@@ -59,6 +63,9 @@ class MainActivity : ComponentActivity() {
         app = AppState(applicationContext, scope)
         streamer = Streamer(applicationContext, scope, app, settings, hub)
         CrashLog.onBackgroundFailure = { streamer.internalFailure(it) }
+        // Earlier crashes came from the streaming engine failing to start, not from the parts
+        // the automatic fixes turned off, so give those back.
+        settings.clearFixesOnce("engine-start")
         val mark = CrashLog.takeStreamingMark(this)
         val found = CrashLog.take(this)
             ?: if (mark != null && mark.second != "live") CrashLog.Problem(System.currentTimeMillis(), "The app closed during a stream", "", native = true) else null
@@ -101,6 +108,21 @@ class MainActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         usb.start()
+    }
+
+    /** Pressing Home during a game keeps it playing in a small window, like a video app. */
+    override fun onUserLeaveHint() {
+        super.onUserLeaveHint()
+        if (!streamer.live || !packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)) return
+        runCatching {
+            enterPictureInPictureMode(PictureInPictureParams.Builder().setAspectRatio(Rational(16, 9)).build())
+        }
+    }
+
+    override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean, newConfig: Configuration) {
+        super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
+        streamer.inPip = isInPictureInPictureMode
+        if (isInPictureInPictureMode && streamer.menuOpen) streamer.closeMenu()
     }
 
     override fun onStop() {

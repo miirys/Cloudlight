@@ -130,7 +130,7 @@ class Settings(context: Context) {
             path == "direct" && canCompat && !directFailed -> { directFailed = true; e.putBoolean("directFailed", true); "Compatible video output" }
             !safeCodec && codec == VideoCodec.AUTO -> { safeCodec = true; e.putBoolean("safeCodec", true); "the H.264 codec" }
             !noAudio -> { noAudio = true; e.putBoolean("noAudio", true); "streaming without sound" }
-            tenBit -> { tenBit = false; e.putBoolean("tenBit", false); "8-bit colour" }
+            tenBit -> { tenBit = false; e.putBoolean("tenBit", false).putBoolean("tenBitFix", true); "8-bit colour" }
             else -> null
         }
         e.apply()
@@ -149,7 +149,16 @@ class Settings(context: Context) {
         directFailed = false
         safeCodec = false
         noAudio = false
-        prefs.edit().remove("directFailed").remove("safeCodec").remove("noAudio").apply()
+        if (prefs.getBoolean("tenBitFix", false)) tenBit = true
+        prefs.edit().remove("directFailed").remove("safeCodec").remove("noAudio").remove("tenBitFix")
+            .putBoolean("tenBit", tenBit).apply()
+    }
+
+    /** Clears the automatic fixes once for [tag], after an update removed the cause they guessed at. */
+    fun clearFixesOnce(tag: String) {
+        if (prefs.getString("fixesCleared", null) == tag) return
+        clearFixes()
+        prefs.edit().putString("fixesCleared", tag).apply()
     }
 
     /** Name of the chosen server location, or empty for automatic. */

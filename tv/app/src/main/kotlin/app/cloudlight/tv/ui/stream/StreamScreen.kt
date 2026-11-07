@@ -146,7 +146,7 @@ fun StreamScreen(streamer: Streamer, settings: Settings, hub: PadHub) {
             )
         }
 
-        PointerCapture(enabled = live && !streamer.menuOpen, streamer = streamer)
+        PointerCapture(enabled = live && !streamer.menuOpen && !streamer.inPip, streamer = streamer)
 
         AnimatedVisibility(
             visible = !live,
@@ -156,16 +156,18 @@ fun StreamScreen(streamer: Streamer, settings: Settings, hub: PadHub) {
             PreparingScreen(streamer)
         }
 
-        if (live && settings.stats != StatsMode.OFF && !streamer.menuOpen) {
+        if (live && settings.stats != StatsMode.OFF && !streamer.menuOpen && !streamer.inPip) {
             StatsOverlay(streamer.stats, settings.stats, settings.statsCorner, streamer)
         }
 
-        Notice(streamer.notice, onDone = streamer::clearNotice, modifier = Modifier.align(Alignment.TopCenter))
-
-        if (live) HoldHint(streamer, settings)
+        // The small picture-in-picture window shows only the game.
+        if (!streamer.inPip) {
+            Notice(streamer.notice, onDone = streamer::clearNotice, modifier = Modifier.align(Alignment.TopCenter))
+            if (live) HoldHint(streamer, settings)
+        }
 
         AnimatedVisibility(
-            visible = streamer.menuOpen,
+            visible = streamer.menuOpen && !streamer.inPip,
             enter = fadeIn(Motion.fade()),
             exit = fadeOut(Motion.fade()),
         ) {

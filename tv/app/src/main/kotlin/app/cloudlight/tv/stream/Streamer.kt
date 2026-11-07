@@ -74,6 +74,9 @@ class Streamer(
     val active: Boolean get() = phase != null
     val live: Boolean get() = phase == Phase.Live
 
+    /** True while the stream plays in a small picture-in-picture window. */
+    var inPip by mutableStateOf(false)
+
     private val main = Handler(Looper.getMainLooper())
     private var job: Job? = null
     @Volatile private var engine: StreamEngine? = null
