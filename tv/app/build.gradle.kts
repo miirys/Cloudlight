@@ -1,4 +1,4 @@
-import app.cloudlight.build.WebRtcTextureDeliveryFactory
+import app.cloudlight.buildlogic.WebRtcTextureDeliveryFactory
 import com.android.build.api.instrumentation.FramesComputationMode
 import com.android.build.api.instrumentation.InstrumentationScope
 
