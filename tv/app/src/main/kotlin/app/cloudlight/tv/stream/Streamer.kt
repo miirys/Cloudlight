@@ -8,6 +8,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import app.cloudlight.tv.Diagnostics
 import app.cloudlight.tv.Settings
 import app.cloudlight.tv.data.ActiveSession
 import app.cloudlight.tv.data.AppState
@@ -119,6 +120,8 @@ class Streamer(
      */
     private fun target(): Triple<Int, Int, Int> {
         val m = settings.mode
+        // Ultimate includes every mode; never second-guess it from the entitlement list.
+        if (app.membership?.tier.equals("Ultimate", ignoreCase = true)) return Triple(m.width, m.height, m.fps)
         val allowed = app.allowedModes ?: return Triple(m.width, m.height, m.fps)
         if (allowed.any { it.height >= m.height && it.fps >= m.fps }) return Triple(m.width, m.height, m.fps)
         val best = allowed.filter { it.height <= m.height && it.fps <= m.fps }.maxWithOrNull(compareBy({ it.height }, { it.fps }))
@@ -130,10 +133,23 @@ class Streamer(
     }
 
     /**
-     * Asks for a rig. If the service turns the stream shape down (it does for some games and
-     * regions even when the membership includes it), steps down one level at a time.
+     * Asks for a rig. When the nearest location turns the stream shape down (it happens when
+     * its high-end rigs are busy or missing, whatever the membership), the next-closest
+     * locations are asked for the same quality first. Only if none of them can is the quality
+     * stepped down, one level at a time.
      */
     private suspend fun start(cm: Cloudmatch, ask: LaunchRequest): CloudSession {
+        val chosen = settings.region.takeIf { it.isNotEmpty() }?.let { n -> app.regions.firstOrNull { it.name == n } }
+        val nearest = app.regions.firstOrNull { it.pingMs != null }?.pingMs
+        val bases: List<Pair<String?, String>> = if (chosen != null) {
+            listOf(chosen.name to chosen.url)
+        } else {
+            val near = app.regions
+                .filter { r -> r.pingMs != null && nearest != null && r.pingMs <= nearest * 2 + 25 }
+                .take(3)
+                .map { it.name to it.url }
+            (listOf<Pair<String?, String>>(null to app.streamingBase) + near).distinctBy { it.second.trimEnd('/') }
+        }
         val ladder = buildList {
             add(ask)
             if (ask.bitDepth == 10) add(ask.copy(bitDepth = 8))
@@ -143,21 +159,33 @@ class Streamer(
         }
         var last: SessionException? = null
         for ((i, attempt) in ladder.withIndex()) {
-            try {
-                val s = cm.create(app.streamingBase, attempt)
-                if (i > 0) {
-                    notice = if (attempt.height == ask.height && attempt.fps == ask.fps) {
-                        "Playing in 8-bit colour; this game wouldn't start in 10-bit."
-                    } else {
-                        "Playing at ${modeName(attempt.height, attempt.fps)}; this game wouldn't start at ${modeName(ask.height, ask.fps)}."
+            // The full quality is worth trying everywhere nearby; lower steps stay on the first.
+            // At full quality, each place is also asked as the web client, which is offered
+            // different rigs and limits than the PC app.
+            val where = (if (i == 0) bases else bases.take(1)).flatMap { p -> if (i == 0) listOf(p to false, p to true) else listOf(p to false) }
+            for ((j, entry) in where.withIndex()) {
+                val (place, asBrowser) = entry
+                val (name, base) = place
+                if (j > 0 && !asBrowser) phase = Phase.Starting("Trying ${name ?: "another server"}")
+                try {
+                    val s = cm.create(base, attempt.copy(asBrowser = asBrowser))
+                    notice = when {
+                        i == 0 && name != null && chosen == null ->
+                            "Playing from $name, because the nearest server couldn't start ${modeName(ask.height, ask.fps)}."
+                        i == 0 -> notice
+                        attempt.height == ask.height && attempt.fps == ask.fps -> "Playing in 8-bit colour; this game wouldn't start in 10-bit."
+                        else -> "Playing at ${modeName(attempt.height, attempt.fps)}; no server nearby could start ${modeName(ask.height, ask.fps)} for this game."
                     }
+                    return s
+                } catch (e: SessionException) {
+                    android.util.Log.w("Streamer", "create refused at ${attempt.width}x${attempt.height}@${attempt.fps} via ${name ?: "default"}${if (asBrowser) " as browser" else ""}: ${e.message}")
+                    Diagnostics.lastRefusal =
+                        "${modeName(attempt.height, attempt.fps)}${if (asBrowser) " as web client" else ""}: ${e.description ?: e.message}"
+                    if (!e.retryable) throw e
+                    last = e
                 }
-                return s
-            } catch (e: SessionException) {
-                if (!e.retryable) throw e
-                last = e
-                ladder.getOrNull(i + 1)?.let { phase = Phase.Starting("Trying ${modeName(it.height, it.fps)}") }
             }
+            ladder.getOrNull(i + 1)?.let { phase = Phase.Starting("Trying ${modeName(it.height, it.fps)}") }
         }
         throw last ?: SessionException("GeForce NOW couldn't start the game.")
     }

@@ -49,6 +49,9 @@ class AppState(context: Context, private val scope: CoroutineScope) {
     /** The membership's tier and the stream modes it includes, once known. */
     var membership by mutableStateOf<Nvidia.Membership?>(null)
         private set
+    /** Server locations, nearest first. */
+    var regions by mutableStateOf<List<Nvidia.Region>>(emptyList())
+        private set
     /** Why the app last closed unexpectedly, shown once at startup. */
     var problem by mutableStateOf<app.cloudlight.tv.CrashLog.Problem?>(null)
 
@@ -142,6 +145,11 @@ class AppState(context: Context, private val scope: CoroutineScope) {
                 }
                 val storesJob = scope.launch { runCatching { Stores.update(Nvidia.storeLabels(token)) } }
                 scope.launch { loadMembership(token, vpc) }
+                scope.launch {
+                    runCatching { Nvidia.regions(streamingBase, token) }
+                        .onSuccess { regions = it }
+                        .onFailure { android.util.Log.w("AppState", "region list failed", it) }
+                }
                 val storeJob = scope.launch {
                     runCatching {
                         val p = Nvidia.panels(token, vpc, "MARQUEE", "MAIN")

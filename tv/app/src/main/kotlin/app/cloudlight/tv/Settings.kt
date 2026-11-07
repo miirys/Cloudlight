@@ -83,6 +83,14 @@ class Settings(context: Context) {
         private set
     var sessionTimer by mutableStateOf(prefs.getBoolean("timer", true))
         private set
+    /** Name of the chosen server location, or empty for automatic. */
+    var region by mutableStateOf(prefs.getString("region", "") ?: "")
+        private set
+
+    fun chooseRegion(name: String) {
+        region = name
+        prefs.edit().putString("region", name).apply()
+    }
 
     fun cycleMode(step: Int) {
         mode = cycle(mode, step)

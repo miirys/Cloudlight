@@ -223,6 +223,17 @@ private fun StreamPage(settings: Settings, app: AppState) {
         { settings.cycleMode(it - settings.mode.ordinal) },
         hint = modeHint,
     )
+    val regions = app.regions
+    if (regions.isNotEmpty()) {
+        val ri = regions.indexOfFirst { it.name == settings.region } + 1
+        ValueSetting(
+            "Server location",
+            listOf("Automatic") + regions.map { r -> r.pingMs?.let { "${r.name}, $it ms" } ?: r.name },
+            ri,
+            { settings.chooseRegion(if (it == 0) "" else regions[it - 1].name) },
+            hint = if (ri == 0) "Uses the nearest server, and tries the next closest ones if it can't start your resolution." else "Always streams from this location.",
+        )
+    }
     val bi = Settings.BITRATES.indexOf(settings.bitrateMbps).coerceAtLeast(0)
     ValueSetting(
         "Maximum bitrate",

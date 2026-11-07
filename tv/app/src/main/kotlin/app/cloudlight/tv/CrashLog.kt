@@ -100,3 +100,8 @@ object CrashLog {
 
     fun format(ms: Long): String = SimpleDateFormat("d MMM, HH:mm", Locale.getDefault()).format(Date(ms))
 }
+
+/** The most recent quality the session service turned down, and why, for the About page. */
+object Diagnostics {
+    @Volatile var lastRefusal: String? = null
+}

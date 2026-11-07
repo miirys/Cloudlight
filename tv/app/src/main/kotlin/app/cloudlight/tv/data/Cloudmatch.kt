@@ -65,6 +65,11 @@ data class LaunchRequest(
     val title: String? = null,
     /** Whether the game is in the user's library on its store; unowned games must say false. */
     val accountLinked: Boolean = true,
+    /**
+     * Introduce ourselves as the Chrome web client rather than the PC app. The two are
+     * offered different rigs and limits, so when one refuses a quality the other may not.
+     */
+    val asBrowser: Boolean = false,
 )
 
 /**
@@ -77,14 +82,17 @@ class Cloudmatch(private val token: suspend () -> String) {
     private val clientId = UUID.randomUUID().toString()
     private val deviceId = UUID.randomUUID().toString()
 
+    /** Which client this session presented itself as; follow-up calls must match. */
+    @Volatile private var browser = false
+
     private fun headers(b: Request.Builder, t: String, origin: Boolean): Request.Builder {
-        b.header("User-Agent", UA)
+        b.header("User-Agent", if (browser) BROWSER_UA else UA)
             .header("Authorization", "GFNJWT $t")
             .header("Content-Type", "application/json")
             .header("nv-browser-type", "CHROME")
             .header("nv-client-id", clientId)
-            .header("nv-client-streamer", "NVIDIA-CLASSIC")
-            .header("nv-client-type", "NATIVE")
+            .header("nv-client-streamer", if (browser) "WEBRTC" else "NVIDIA-CLASSIC")
+            .header("nv-client-type", if (browser) "BROWSER" else "NATIVE")
             .header("nv-client-version", VERSION)
             .header("nv-device-make", "UNKNOWN")
             .header("nv-device-model", "UNKNOWN")
@@ -99,6 +107,7 @@ class Cloudmatch(private val token: suspend () -> String) {
 
     suspend fun create(streamingBase: String, r: LaunchRequest): CloudSession = io {
         if (r.appId.toLongOrNull() == null) throw SessionException("This game can't be launched from here yet.")
+        browser = r.asBrowser
         val base = streamingBase.trimEnd('/')
         val url = "$base/v2/session?keyboardLayout=${r.keyboard}&languageCode=${r.language}"
         val req = headers(Request.Builder().url(url), token(), origin = true)
@@ -214,7 +223,7 @@ class Cloudmatch(private val token: suspend () -> String) {
             .put("clientVersion", "30.0")
             .put("sdkVersion", "1.0")
             .put("streamerVersion", 1)
-            .put("clientPlatformName", "windows")
+            .put("clientPlatformName", if (r.asBrowser) "browser" else "windows")
             .put("clientRequestMonitorSettings", JSONArray().put(monitor))
             .put("useOps", true)
             .put("audioMode", 2)
@@ -397,6 +406,7 @@ class Cloudmatch(private val token: suspend () -> String) {
     private suspend fun <T> io(block: suspend () -> T): T = withContext(Dispatchers.IO) { block() }
 
     companion object {
+        private const val BROWSER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
         private const val VERSION = "2.0.80.173"
         private const val UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 NVIDIACEFClient/HEAD/debb5919f6 GFN-PC/2.0.80.173"
         private val JSON = "application/json".toMediaType()

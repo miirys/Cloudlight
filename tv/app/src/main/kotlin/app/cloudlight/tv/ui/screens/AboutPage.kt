@@ -35,6 +35,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.cloudlight.tv.BuildConfig
 import app.cloudlight.tv.CrashLog
+import app.cloudlight.tv.Diagnostics
 import app.cloudlight.tv.R
 import app.cloudlight.tv.data.AppState
 import app.cloudlight.tv.stream.TvDecoderFactory
@@ -68,6 +69,7 @@ fun AboutPage(app: AppState) {
         app.region?.let { Spec("Region", it) },
         Spec("Session service", app.streamingBase.removePrefix("https://").trimEnd('/')),
         Spec("Library", "${app.library.size} games"),
+        Diagnostics.lastRefusal?.let { Spec("Last refused", it) },
     )
 
     Column(Modifier.fillMaxSize().padding(top = 6.dp)) {

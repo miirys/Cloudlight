@@ -2,6 +2,9 @@ package app.cloudlight.tv.data
 
 import android.util.Base64
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import okhttp3.FormBody
 import okhttp3.MediaType.Companion.toMediaType
@@ -254,6 +257,41 @@ object Nvidia {
         j.optJSONObject("requestStatus")?.optString("serverId")?.takeIf { it.isNotBlank() }
             ?: throw ApiException("The server did not say which region you are in.")
     }
+
+    /** A server location the account can stream from, with how far away it is. */
+    data class Region(val name: String, val url: String, val pingMs: Int? = null)
+
+    /** Every server location the session service lists, nearest first once measured. */
+    suspend fun regions(streamingBase: String, token: String): List<Region> = io {
+        val j = call(lcars(Request.Builder().url(streamingBase + "v2/serverInfo"), token).build())
+        val meta = j.optJSONArray("metaData") ?: JSONArray()
+        val list = (0 until meta.length()).mapNotNull { meta.optJSONObject(it) }
+            .mapNotNull { e ->
+                val key = e.optString("key")
+                val value = e.optString("value")
+                if (!value.startsWith("https://") || key.isBlank() || key.startsWith("gfn-")) null
+                else Region(key, if (value.endsWith("/")) value else "$value/")
+            }
+            .distinctBy { it.url }
+        coroutineScope {
+            list.map { r -> async { r.copy(pingMs = ping(r.url)) } }.awaitAll()
+        }.sortedWith(compareBy<Region> { it.pingMs ?: Int.MAX_VALUE }.thenBy { it.name })
+    }
+
+    /** Round trip of a TCP connection to the region's front door: a good stand-in for distance. */
+    private fun ping(url: String): Int? = runCatching {
+        val host = url.toHttpUrl().host
+        val addr = java.net.InetAddress.getByName(host)
+        var best = Int.MAX_VALUE
+        repeat(2) {
+            java.net.Socket().use { sock ->
+                val t0 = System.nanoTime()
+                sock.connect(java.net.InetSocketAddress(addr, 443), 1500)
+                best = minOf(best, ((System.nanoTime() - t0) / 1_000_000).toInt())
+            }
+        }
+        best
+    }.getOrNull()
 
     suspend fun library(token: String, vpcId: String): List<Game> = apps(
         token, vpcId,
