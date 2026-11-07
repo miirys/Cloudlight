@@ -117,7 +117,10 @@ class Streamer(
     private var tvIdentityInUse = false
 
     /** 4K is asked for with the TV identity first, unless it has already failed here. */
-    private fun useTvIdentity(height: Int) = height > 1440 && !settings.tvIdentityFailed
+    // Asking as the Android TV client still got 1440p rigs: NVIDIA keeps 4K for its native
+    // streaming protocol, not WebRTC. Kept switched off until that protocol is supported.
+    @Suppress("UNUSED_PARAMETER")
+    private fun useTvIdentity(height: Int) = false
 
     private fun startFresh(g: Game) {
         lastResume = null

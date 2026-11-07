@@ -1,6 +1,6 @@
 # Cloudlight TV
 
-A GeForce NOW client for Android TV, written from scratch. It streams up to 4K at 120 fps,
+A GeForce NOW client for Android TV, written from scratch. It streams up to 1440p at 120 fps,
 works with controllers, keyboards and mice, and picks up sessions started on other devices.
 
 ## Installing
@@ -19,10 +19,12 @@ Locally you need JDK 17 and the Android SDK (platform 35):
 ./gradlew :app:assembleRelease
 ```
 
-Release builds are signed with the key in the `CLOUDLIGHT_KEYSTORE` file
-(`CLOUDLIGHT_KEYSTORE_PASSWORD`, optional `CLOUDLIGHT_KEY_ALIAS`, default `cloudlight`).
-Without it they fall back to the debug key. In CI the key comes from the
-`CLOUDLIGHT_KEYSTORE_BASE64` and `CLOUDLIGHT_KEYSTORE_PASSWORD` repository secrets.
+Release builds are signed with `app/release.jks`, which is committed on purpose so every
+build can update the last one. Set `CLOUDLIGHT_KEYSTORE` and `CLOUDLIGHT_KEYSTORE_PASSWORD`
+(optionally `CLOUDLIGHT_KEY_ALIAS` and `CLOUDLIGHT_KEY_PASSWORD`) to sign with another key.
+
+A push whose commit message contains `[release]` also publishes the APK as a GitHub release,
+using `RELEASE_NOTES.md` as the notes.
 
 ## Layout
 

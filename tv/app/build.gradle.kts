@@ -16,22 +16,20 @@ android {
         applicationId = "app.cloudlight.tv"
         minSdk = 28
         targetSdk = 34
-        versionCode = 13
-        versionName = "1.1.9"
+        versionCode = 14
+        versionName = "1.1.10"
     }
 
     // One fixed key lets every new version install over the last one without losing the
-    // sign-in. CI passes it in from repository secrets; without them the build falls back to
-    // the debug key, which changes from machine to machine.
+    // sign-in. The key is committed on purpose so anyone can build a compatible update;
+    // CLOUDLIGHT_KEYSTORE (and its password variables) override it.
     val keystore = System.getenv("CLOUDLIGHT_KEYSTORE")?.let(::file)?.takeIf { it.exists() }
     signingConfigs {
-        if (keystore != null) {
-            create("release") {
-                storeFile = keystore
-                storePassword = System.getenv("CLOUDLIGHT_KEYSTORE_PASSWORD")
-                keyAlias = System.getenv("CLOUDLIGHT_KEY_ALIAS") ?: "cloudlight"
-                keyPassword = System.getenv("CLOUDLIGHT_KEY_PASSWORD") ?: System.getenv("CLOUDLIGHT_KEYSTORE_PASSWORD")
-            }
+        create("release") {
+            storeFile = keystore ?: file("release.jks")
+            storePassword = System.getenv("CLOUDLIGHT_KEYSTORE_PASSWORD") ?: "OowhMUwJ6Ejag2wkXmePS6jU"
+            keyAlias = System.getenv("CLOUDLIGHT_KEY_ALIAS") ?: "cloudlight"
+            keyPassword = System.getenv("CLOUDLIGHT_KEY_PASSWORD") ?: storePassword
         }
     }
 
@@ -40,7 +38,7 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {

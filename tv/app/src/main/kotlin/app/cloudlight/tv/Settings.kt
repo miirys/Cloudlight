@@ -8,9 +8,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 
 /** Resolution and frame rate to ask GeForce NOW for. */
+// GeForce NOW's WebRTC streams stop at 1440p; 4K needs NVIDIA's native protocol.
 enum class StreamMode(val label: String, val width: Int, val height: Int, val fps: Int) {
-    UHD120("4K at 120 fps", 3840, 2160, 120),
-    UHD60("4K at 60 fps", 3840, 2160, 60),
     QHD120("1440p at 120 fps", 2560, 1440, 120),
     QHD60("1440p at 60 fps", 2560, 1440, 60),
     FHD120("1080p at 120 fps", 1920, 1080, 120),
@@ -66,7 +65,7 @@ class Settings(context: Context) {
         return all[(current.ordinal + step).mod(all.size)]
     }
 
-    var mode by mutableStateOf(load("mode", StreamMode.UHD60))
+    var mode by mutableStateOf(load("mode", StreamMode.QHD120))
         private set
     var bitrateMbps by mutableIntStateOf(prefs.getInt("bitrate", 75))
         private set
@@ -153,7 +152,6 @@ class Settings(context: Context) {
         get() = listOfNotNull(
             if (safeCodec && codec == VideoCodec.AUTO) "H.264" else null,
             if (noAudio) "No sound" else null,
-            if (tvIdentityFailed) "4K through the web client" else null,
         ).joinToString(", ").ifEmpty { null }
 
     fun clearFixes() {

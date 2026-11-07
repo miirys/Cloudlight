@@ -63,7 +63,7 @@ fun AboutPage(app: AppState) {
     val note = remember { CrashLog.note(context) }
     val account = listOfNotNull(
         app.profile?.let { Spec("Account", it.name, listOfNotNull(app.membership?.tier ?: it.tier, it.email).joinToString("  ·  ").ifEmpty { null }) },
-        app.allowedModes?.maxWithOrNull(compareBy({ it.height }, { it.fps }))?.let {
+        app.allowedModes?.filter { it.height <= 1440 }?.maxWithOrNull(compareBy({ it.height }, { it.fps }))?.let {
             Spec("Best stream", "${if (it.height >= 2160) "4K" else "${it.height}p"} at ${it.fps} fps", "${it.width} × ${it.height}")
         },
         app.region?.let { Spec("Region", it) },

@@ -206,13 +206,13 @@ private fun StreamPage(settings: Settings, app: AppState) {
     val m = settings.mode
     val allowed = app.allowedModes
     val tier = app.membership?.tier?.let { "Your $it membership" } ?: "Your membership"
-    val best = allowed?.maxWithOrNull(compareBy({ it.height }, { it.fps }))
+    // Only modes this app can stream count; a 4K entitlement still streams at 1440p here.
+    val best = allowed?.filter { it.height <= 1440 }?.maxWithOrNull(compareBy({ it.height }, { it.fps }))
     val fits = allowed == null || allowed.any { it.height >= m.height && it.fps >= m.fps }
     val modeHint = when {
-        allowed == null -> "Set your TV to 120 Hz to stream at 120 fps."
         !fits && best != null -> "$tier goes up to ${modeLabel(best.height, best.fps)}, so games start there instead."
-        best != null -> "$tier goes up to ${modeLabel(best.height, best.fps)}." + if (m.fps > 60) " Set your TV to 120 Hz for 120 fps." else ""
-        else -> null
+        best != null && (best.height < 1440 || best.fps < 120) -> "$tier goes up to ${modeLabel(best.height, best.fps)}."
+        else -> "120 fps needs a TV that can run at 120 Hz."
     }
     ValueSetting(
         "Resolution",
