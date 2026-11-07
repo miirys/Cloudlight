@@ -62,6 +62,7 @@ fun AboutPage(app: AppState) {
     val network = remember { networkSpecs(context) }
     val problem = remember { runCatching { CrashLog.latest(context) }.getOrNull() }
     val note = remember { CrashLog.note(context) }
+    val log = remember { CrashLog.crashLog(context)?.let(CrashLog::keyLines) }
     val account = listOfNotNull(
         app.profile?.let { Spec("Account", it.name, listOfNotNull(app.membership?.tier ?: it.tier, it.email).joinToString("  ·  ").ifEmpty { null }) },
         app.allowedModes?.maxWithOrNull(compareBy({ it.height }, { it.fps }))?.let {
@@ -108,6 +109,13 @@ fun AboutPage(app: AppState) {
                             note?.let { Spec("During", it) },
                         ),
                     )
+                    if (!log.isNullOrEmpty()) {
+                        Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                            for (line in log.take(8)) {
+                                BasicText(line, style = type.caption, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                            }
+                        }
+                    }
                 }
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     GroupTitle("Credits")

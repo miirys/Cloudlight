@@ -144,6 +144,55 @@ object CrashLog {
         File(context.filesDir, "last-problem-note.txt").takeIf { it.exists() }?.readText()
     }.getOrNull()
 
+    private const val LOG = "last-crash-log.txt"
+
+    /**
+     * Copies this app's recent system log lines that explain a crash: fatal messages, failed
+     * checks, the crashing signal and its backtrace, and our own stream warnings. Android keeps
+     * an app's log for a while after it goes down, and lets the app read its own lines.
+     */
+    fun captureLog(context: Context) {
+        val lines = ArrayList<String>()
+        for (buffers in listOf(listOf("main", "system"), listOf("crash"))) runCatching {
+            val cmd = listOf("logcat", "-d", "-v", "brief", "-t", "3000") + buffers.flatMap { listOf("-b", it) }
+            val p = ProcessBuilder(cmd).redirectErrorStream(true).start()
+            p.inputStream.bufferedReader().useLines { seq -> seq.filter(::telling).forEach { lines += it.take(300) } }
+            p.waitFor(3, java.util.concurrent.TimeUnit.SECONDS)
+            p.destroy()
+        }
+        if (lines.isEmpty()) return
+        runCatching { File(context.filesDir, LOG).writeText(lines.distinct().takeLast(160).joinToString("\n")) }
+    }
+
+    private val tellingTags = listOf(
+        "/DEBUG", "/libc", "/rtc", "/webrtc", "/Rtc", "/DirectDecoder", "/Decoders", "/CrashLog",
+        "/AndroidRuntime", "/MediaCodec", "/ACodec", "/CCodec", "/OMXClient", "/SurfaceView", "/BufferQueue",
+    )
+
+    private fun telling(l: String): Boolean =
+        l.startsWith("F/") || "Fatal" in l || "Check failed" in l || "Abort message" in l ||
+            ((l.startsWith("E/") || l.startsWith("W/")) && tellingTags.any { l.startsWith(it, 1) }) ||
+            (l.startsWith("I/DEBUG") || l.startsWith("I/crash_dump") || l.startsWith("F/DEBUG"))
+
+    /** The saved log lines, or null. */
+    fun crashLog(context: Context): List<String>? = runCatching {
+        File(context.filesDir, LOG).takeIf { it.exists() }?.readLines()
+    }.getOrNull()
+
+    /**
+     * The few lines that name the cause: the failed check or abort message, the signal, and
+     * the top frames of the crashing thread.
+     */
+    fun keyLines(log: List<String>): List<String> {
+        fun body(l: String) = l.substringAfter("): ", l).trim()
+        val cause = log.filter { "Check failed" in it || "Abort message" in it || "Fatal error in" in it }.map(::body)
+        val signal = log.filter { "Fatal signal" in it || "signal " in body(it) && "code " in body(it) }.map(::body)
+        val frames = log.map(::body).filter { Regex("""^#0[0-5] pc """).containsMatchIn(it) }
+            .map { f -> f.substringAfter(" pc ").substringAfter(' ').trim().substringBefore(" (BuildId").let { it.substringAfterLast('/').ifEmpty { it } } }
+        val ours = log.filter { it.startsWith("E/") || it.startsWith("W/") }.map(::body).takeLast(3)
+        return (cause.take(2) + signal.take(1) + frames.take(6) + ours).distinct().map { it.take(160) }.ifEmpty { log.takeLast(4).map(::body) }
+    }
+
     /** Plain words for a setup step, for the crash note. */
     fun stepName(step: String) = when (step) {
         "start", "factory" -> "preparing the stream"

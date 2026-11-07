@@ -137,6 +137,16 @@ class TvDecoderFactory : VideoDecoderFactory {
             return names.any { "realtek" in it || ".rtk" in it || "c2.rtk" in it }
         }
 
+        /**
+         * Amlogic boxes decode onto a hardware video layer under the interface. Their decoders
+         * want the real picture size, the key-frame flag on key frames, and the vendor
+         * low-latency switch, or they hold several frames back.
+         */
+        val amlogic: Boolean by lazy {
+            Build.HARDWARE.contains("amlogic", ignoreCase = true) ||
+                listOf(MIME_HEVC, MIME_AVC).any { find(it)?.name?.contains("amlogic", ignoreCase = true) == true }
+        }
+
         /** Short, readable decoder description for the stats overlay. */
         fun describe(mime: String): String? = find(mime)?.name
     }
@@ -196,17 +206,23 @@ class DirectDecoder(private val mime: String, private val codecName: String) : V
             needKeyframe = true
             return VideoCodecStatus.NO_OUTPUT
         }
-        if (codec == null || configuredGeneration != VideoOutput.generation) {
-            teardown()
-            if (!configure(surface)) return VideoCodecStatus.ERROR
-            needKeyframe = true
-        }
         if (frame.encodedWidth > 0 && frame.encodedHeight > 0) {
             width = frame.encodedWidth
             height = frame.encodedHeight
         }
+        val key = frame.frameType == EncodedImage.FrameType.VideoFrameKey
+        if (codec == null || configuredGeneration != VideoOutput.generation) {
+            teardown()
+            needKeyframe = true
+            // Start the decoder on a key frame, so it is set up for the stream's real size.
+            if (!key) {
+                runCatching { VideoOutput.keyframeRequester?.invoke() }
+                return VideoCodecStatus.NO_OUTPUT
+            }
+            if (!configure(surface)) return VideoCodecStatus.ERROR
+        }
         if (needKeyframe) {
-            if (frame.frameType != EncodedImage.FrameType.VideoFrameKey) {
+            if (!key) {
                 runCatching { VideoOutput.keyframeRequester?.invoke() }
                 return VideoCodecStatus.NO_OUTPUT
             }
@@ -237,7 +253,7 @@ class DirectDecoder(private val mime: String, private val codecName: String) : V
             lastPts = pts
             pending[pts] = longArrayOf(System.nanoTime(), frame.captureTimeNs)
             if (pending.size > 64) pending.keys.sorted().take(pending.size - 32).forEach { pending.remove(it) }
-            c.queueInputBuffer(index, 0, size, pts, 0)
+            c.queueInputBuffer(index, 0, size, pts, if (key) MediaCodec.BUFFER_FLAG_KEY_FRAME else 0)
             VideoCodecStatus.OK
         } catch (t: Throwable) {
             Log.w(TAG, "decode failed", t)
@@ -249,22 +265,32 @@ class DirectDecoder(private val mime: String, private val codecName: String) : V
 
     private fun configure(surface: Surface): Boolean = try {
         val c = MediaCodec.createByCodecName(codecName)
-        val format = MediaFormat.createVideoFormat(mime, width, height)
-        format.setInteger(MediaFormat.KEY_MAX_WIDTH, maxOf(width, 3840))
-        format.setInteger(MediaFormat.KEY_MAX_HEIGHT, maxOf(height, 2160))
-        format.setInteger(MediaFormat.KEY_PRIORITY, 0)
-        if (Build.VERSION.SDK_INT >= 30) {
-            val caps = c.codecInfo.getCapabilitiesForType(mime)
-            if (caps.isFeatureSupported(MediaCodecInfo.CodecCapabilities.FEATURE_LowLatency)) {
-                format.setInteger(MediaFormat.KEY_LOW_LATENCY, 1)
+        val caps = runCatching { c.codecInfo.getCapabilitiesForType(mime) }.getOrNull()
+        fun format(fast: Boolean) = MediaFormat.createVideoFormat(mime, width, height).apply {
+            if (caps?.isFeatureSupported(MediaCodecInfo.CodecCapabilities.FEATURE_AdaptivePlayback) == true) {
+                setInteger(MediaFormat.KEY_MAX_WIDTH, maxOf(width, 3840))
+                setInteger(MediaFormat.KEY_MAX_HEIGHT, maxOf(height, 2160))
             }
+            setInteger(MediaFormat.KEY_PRIORITY, 0)
+            if (Build.VERSION.SDK_INT >= 30 && caps?.isFeatureSupported(MediaCodecInfo.CodecCapabilities.FEATURE_LowLatency) == true) {
+                setInteger(MediaFormat.KEY_LOW_LATENCY, 1)
+            }
+            // Vendor switches that stop decoders from holding frames back, only for the vendors
+            // whose decoders are known to handle them well.
+            val n = codecName.lowercase()
+            if ("qti" in n || "qcom" in n) setInteger("vendor.qti-ext-dec-low-latency.enable", 1)
+            if ("mtk" in n || "amlogic" in n) setInteger("vendor.low-latency.enable", 1)
+            // Decode as fast as frames arrive rather than at a playback pace.
+            if (fast) setInteger(MediaFormat.KEY_OPERATING_RATE, Short.MAX_VALUE.toInt())
         }
-        // Vendor switches that stop decoders from holding frames back, only for the vendors
-        // whose decoders are known to handle them well.
-        val n = codecName.lowercase()
-        if ("qti" in n || "qcom" in n) format.setInteger("vendor.qti-ext-dec-low-latency.enable", 1)
-        if ("mtk" in n) format.setInteger("vendor.low-latency.enable", 1)
-        c.configure(format, surface, null, 0)
+        try {
+            c.configure(format(fast = true), surface, null, 0)
+        } catch (t: Throwable) {
+            // Some decoders reject the operating-rate hint; try once without it.
+            Log.w(TAG, "configure with operating rate failed", t)
+            c.reset()
+            c.configure(format(fast = false), surface, null, 0)
+        }
         c.setVideoScalingMode(MediaCodec.VIDEO_SCALING_MODE_SCALE_TO_FIT)
         c.start()
         codec = c

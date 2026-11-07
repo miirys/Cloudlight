@@ -255,7 +255,9 @@ class Streamer(
         compatibleVideo = when (settings.videoPath) {
             VideoPath.COMPATIBLE -> true
             VideoPath.DIRECT -> false
-            VideoPath.AUTO -> settings.directFailed || TvDecoderFactory.preferStock()
+            // Amlogic decoders draw straight onto the hardware video layer, as the box's own player
+            // does; copying frames through the GPU is slow there and gains nothing.
+            VideoPath.AUTO -> !TvDecoderFactory.amlogic && (settings.directFailed || TvDecoderFactory.preferStock())
         }
         val cm = Cloudmatch(app::serviceToken).also { cloud = it }
         job = scope.launch {

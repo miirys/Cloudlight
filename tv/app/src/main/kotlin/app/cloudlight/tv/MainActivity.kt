@@ -62,6 +62,8 @@ class MainActivity : ComponentActivity() {
         val mark = CrashLog.takeStreamingMark(this)
         val found = CrashLog.take(this)
             ?: if (mark != null && mark.second != "live") CrashLog.Problem(System.currentTimeMillis(), "The app closed during a stream", "", native = true) else null
+        // Keep the system's own account of the crash while it is still in the log.
+        if (mark != null || found?.native == true) CrashLog.captureLog(this)
         app.problem = found?.let { p ->
             if (mark == null || mark.second == "live") return@let p
             // The app went down while a stream was starting: avoid the part that was starting.
