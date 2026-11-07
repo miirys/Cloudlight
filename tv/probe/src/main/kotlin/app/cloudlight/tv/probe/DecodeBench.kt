@@ -24,8 +24,6 @@ class DecodeBench(private val context: Context, private val log: (String) -> Uni
     val clips = listOf(
         Clip("hevc_1080p120.mp4", "HEVC 1080p120 @ 100 Mbps", 120),
         Clip("hevc_2160p60.mp4", "HEVC 2160p60 @ 135 Mbps", 60),
-        Clip("av1_1080p120.mp4", "AV1 1080p120 @ 100 Mbps", 120),
-        Clip("av1_2160p60.mp4", "AV1 2160p60 @ 100 Mbps", 60),
     )
 
     private class Sample(val data: ByteArray, val keyframe: Boolean)
@@ -47,15 +45,29 @@ class DecodeBench(private val context: Context, private val log: (String) -> Uni
         val mime = format.getString(MediaFormat.KEY_MIME)!!
         val decoder = pickDecoder(format) ?: return "${clip.label}: no decoder for $mime at this size"
         val loops = 3
-        val flat = decode(decoder, format, samples, loops, surface, paceFps = 0)
-        val paced = decode(decoder, format, samples, loops, surface, paceFps = clip.fps)
+        val flat = decode(decoder, format, samples, loops, surface, paceFps = 0, vendorLowLatency = true, render = false)
         val sb = StringBuilder()
         sb.append("${clip.label} on $decoder: flat-out ${"%.1f".format(flat.fps)} fps")
         sb.append(if (flat.fps >= clip.fps * 1.1) " (enough)" else " (TOO SLOW for ${clip.fps})")
         sb.append(", low-latency mode ${if (flat.lowLatency) "on" else "unavailable"}\n")
-        sb.append("    at ${clip.fps} fps: decode latency avg ${ms(paced.avgUs)}, p95 ${ms(paced.p95Us)}, max ${ms(paced.maxUs)}; ")
-        sb.append("frames held by decoder ${paced.heldFrames}; late frames ${paced.late} of ${paced.frames}")
-        return sb.toString()
+        // Separate decoder buffering from display back-pressure: the same paced feed with the
+        // standard switch only, with the Amlogic vendor switch, and without showing frames.
+        val variants = listOf(
+            Triple("standard low-latency key, shown on screen", false, true),
+            Triple("plus Amlogic vendor low-latency, shown on screen", true, true),
+            Triple("plus Amlogic vendor low-latency, decode only", true, false),
+        )
+        for ((label, vendor, render) in variants) {
+            val r = try {
+                decode(decoder, format, samples, loops, surface, paceFps = clip.fps, vendorLowLatency = vendor, render = render)
+            } catch (t: Throwable) {
+                sb.append("    $label: failed (${t.javaClass.simpleName}: ${t.message})\n")
+                continue
+            }
+            sb.append("    $label: latency avg ${ms(r.avgUs)}, p95 ${ms(r.p95Us)}, max ${ms(r.maxUs)}; ")
+            sb.append("frames held ${r.heldFrames}; late ${r.late} of ${r.frames}\n")
+        }
+        return sb.toString().trimEnd()
     }
 
     private fun ms(us: Long) = "%.1f ms".format(us / 1000.0)
@@ -118,6 +130,7 @@ class DecodeBench(private val context: Context, private val log: (String) -> Uni
 
     private fun decode(
         name: String, source: MediaFormat, samples: List<Sample>, loops: Int, surface: Surface?, paceFps: Int,
+        vendorLowLatency: Boolean, render: Boolean,
     ): Result {
         val codec = MediaCodec.createByCodecName(name)
         val mime = source.getString(MediaFormat.KEY_MIME)!!
@@ -129,14 +142,18 @@ class DecodeBench(private val context: Context, private val log: (String) -> Uni
         }
         format.setInteger(MediaFormat.KEY_PRIORITY, 0)
         if (lowLatency) format.setInteger("low-latency", 1)
+        if (vendorLowLatency) {
+            // Amlogic's OMX decoders keep a deep output queue unless this vendor switch is set.
+            format.setInteger("vendor.low-latency.enable", 1)
+        }
         if (paceFps == 0) format.setInteger(MediaFormat.KEY_OPERATING_RATE, Short.MAX_VALUE.toInt())
         try {
-            codec.configure(format, surface, null, 0)
+            codec.configure(format, if (render) surface else null, null, 0)
         } catch (t: Throwable) {
             // Some decoders reject the operating-rate hint; try once without it.
             codec.reset()
             format.removeKey(MediaFormat.KEY_OPERATING_RATE)
-            codec.configure(format, surface, null, 0)
+            codec.configure(format, if (render) surface else null, null, 0)
         }
         codec.start()
 
@@ -178,7 +195,7 @@ class DecodeBench(private val context: Context, private val log: (String) -> Uni
                         latencies += lat
                         if (paceFps > 0 && lat > 1_000_000L / paceFps) late++
                     }
-                    codec.releaseOutputBuffer(o, surface != null && paceFps > 0)
+                    codec.releaseOutputBuffer(o, render && surface != null)
                     out++
                 }
             }

@@ -15,9 +15,5 @@ ff -f lavfi -i "$src1" -frames:v 120 -pix_fmt yuv420p -c:v libx265 -preset ultra
 ff -f lavfi -i "$src4" -frames:v 60 -pix_fmt yuv420p -c:v libx265 -preset ultrafast -tune zerolatency \
   -b:v 150M -maxrate 150M -bufsize 5M -x265-params "bframes=0:keyint=1000:repeat-headers=1" -tag:v hvc1 \
   "$out/hevc_2160p60.mp4"
-# SVT-AV1 caps CBR at 100 Mbps.
-ff -f lavfi -i "$src1" -frames:v 120 -pix_fmt yuv420p -c:v libsvtav1 -preset 12 -b:v 100M \
-  -svtav1-params "pred-struct=1:keyint=1000:rc=2" "$out/av1_1080p120.mp4"
-ff -f lavfi -i "$src4" -frames:v 60 -pix_fmt yuv420p -c:v libsvtav1 -preset 12 -b:v 100M \
-  -svtav1-params "pred-struct=1:keyint=1000:rc=2" "$out/av1_2160p60.mp4"
+# AV1 was dropped after the first probe run: the Z30 Pro decodes 100 Mbps AV1 at only 6-12 fps.
 ls -la "$out"
