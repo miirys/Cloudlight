@@ -54,8 +54,16 @@ jobs:
       - name: Generate decoder test clips
         run: ./probe/make-clips.sh
 
-      - name: Build probe APK
-        run: ./gradlew --no-daemon :probe:assembleRelease
+      - name: Build APKs
+        run: ./gradlew --no-daemon :app:assembleRelease :probe:assembleRelease
+
+      - name: Upload Cloudlight APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloudlight-tv-apk
+          path: tv/app/build/outputs/apk/release/*.apk
+          if-no-files-found: error
+          retention-days: 30
 
       - name: Upload probe APK
         uses: actions/upload-artifact@v4

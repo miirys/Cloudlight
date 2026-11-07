@@ -1,0 +1,184 @@
+package app.cloudlight.tv
+
+import android.content.Intent
+import android.os.Bundle
+import android.os.SystemClock
+import android.view.InputDevice
+import android.view.KeyCharacterMap
+import android.view.KeyEvent
+import android.view.MotionEvent
+import android.view.WindowManager
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import app.cloudlight.tv.input.Btn
+import app.cloudlight.tv.input.NavAction
+import app.cloudlight.tv.input.PadHub
+import app.cloudlight.tv.input.PadState
+import app.cloudlight.tv.input.UsbPadDriver
+import app.cloudlight.tv.ui.screens.AppRoot
+import app.cloudlight.tv.ui.theme.CloudlightTheme
+import kotlin.math.abs
+
+class MainActivity : ComponentActivity() {
+
+    private lateinit var hub: PadHub
+    private lateinit var usb: UsbPadDriver
+    private lateinit var settings: Settings
+
+    /** Bluetooth (or kernel-recognised) pads that Android reads for us. */
+    private class AndroidPad(val name: String) {
+        var keys = 0
+        var hat = 0
+        var state = PadState.Idle
+    }
+
+    private val androidPads = HashMap<Int, AndroidPad>()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        settings = Settings(this)
+        hub = PadHub(::perform)
+        usb = UsbPadDriver(
+            this,
+            onState = { id, name, s -> hub.update(id, name, "2.4 GHz dongle", s) },
+            onGone = { id -> hub.gone(id) },
+        )
+        setContent {
+            CloudlightTheme {
+                AppRoot(hub, settings, onExit = { finish() })
+            }
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        usb.start()
+    }
+
+    override fun onStop() {
+        usb.stop()
+        super.onStop()
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        // Launched again because a controller dongle was plugged in.
+        usb.scan()
+    }
+
+    /** Turns a controller action into what the menus understand: focus keys, select, back. */
+    private fun perform(a: NavAction) {
+        when (a) {
+            NavAction.UP -> tap(KeyEvent.KEYCODE_DPAD_UP)
+            NavAction.DOWN -> tap(KeyEvent.KEYCODE_DPAD_DOWN)
+            NavAction.LEFT -> tap(KeyEvent.KEYCODE_DPAD_LEFT)
+            NavAction.RIGHT -> tap(KeyEvent.KEYCODE_DPAD_RIGHT)
+            NavAction.CONFIRM_DOWN -> inject(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_CENTER)
+            NavAction.CONFIRM_UP -> inject(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_CENTER)
+            NavAction.BACK -> onBackPressedDispatcher.onBackPressed()
+            else -> Unit // Tabs and menu are read from PadHub.actions by the screens.
+        }
+    }
+
+    private var confirmDownAt = 0L
+
+    private fun tap(code: Int) {
+        inject(KeyEvent.ACTION_DOWN, code)
+        inject(KeyEvent.ACTION_UP, code)
+    }
+
+    private fun inject(action: Int, code: Int) {
+        val now = SystemClock.uptimeMillis()
+        val down = if (code == KeyEvent.KEYCODE_DPAD_CENTER) {
+            if (action == KeyEvent.ACTION_DOWN) confirmDownAt = now
+            confirmDownAt
+        } else {
+            now
+        }
+        // Synthetic events come from the virtual keyboard, so dispatchKeyEvent lets them through.
+        super.dispatchKeyEvent(
+            KeyEvent(down, now, action, code, 0, 0, KeyCharacterMap.VIRTUAL_KEYBOARD, 0, 0, InputDevice.SOURCE_DPAD),
+        )
+    }
+
+    private fun isPad(dev: InputDevice?): Boolean {
+        if (dev == null || dev.isVirtual) return false
+        val s = dev.sources
+        return s and InputDevice.SOURCE_GAMEPAD == InputDevice.SOURCE_GAMEPAD ||
+            s and InputDevice.SOURCE_JOYSTICK == InputDevice.SOURCE_JOYSTICK
+    }
+
+    private fun padFor(dev: InputDevice) = androidPads.getOrPut(dev.id) { AndroidPad(dev.name) }
+
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        val dev = event.device
+        if (isPad(dev)) {
+            val bit = keyBit(event.keyCode)
+            if (bit != 0) {
+                if (event.repeatCount == 0) {
+                    val p = padFor(dev!!)
+                    p.keys = if (event.action == KeyEvent.ACTION_DOWN) p.keys or bit else p.keys and bit.inv()
+                    push(dev.id, p)
+                }
+                return true
+            }
+        }
+        return super.dispatchKeyEvent(event)
+    }
+
+    override fun dispatchGenericMotionEvent(event: MotionEvent): Boolean {
+        val dev = event.device
+        if (isPad(dev) && event.isFromSource(InputDevice.SOURCE_JOYSTICK) && event.action == MotionEvent.ACTION_MOVE) {
+            val p = padFor(dev!!)
+            fun axis(a: Int): Float {
+                val v = event.getAxisValue(a)
+                val flat = dev.getMotionRange(a, event.source)?.flat ?: 0f
+                return if (abs(v) <= flat) 0f else v
+            }
+            val hx = event.getAxisValue(MotionEvent.AXIS_HAT_X)
+            val hy = event.getAxisValue(MotionEvent.AXIS_HAT_Y)
+            var hat = 0
+            if (hx < -0.5f) hat = hat or Btn.LEFT
+            if (hx > 0.5f) hat = hat or Btn.RIGHT
+            if (hy < -0.5f) hat = hat or Btn.UP
+            if (hy > 0.5f) hat = hat or Btn.DOWN
+            p.hat = hat
+            p.state = p.state.copy(
+                lx = axis(MotionEvent.AXIS_X),
+                ly = axis(MotionEvent.AXIS_Y),
+                rx = axis(MotionEvent.AXIS_Z),
+                ry = axis(MotionEvent.AXIS_RZ),
+                lt = maxOf(axis(MotionEvent.AXIS_LTRIGGER), axis(MotionEvent.AXIS_BRAKE)),
+                rt = maxOf(axis(MotionEvent.AXIS_RTRIGGER), axis(MotionEvent.AXIS_GAS)),
+            )
+            push(dev.id, p)
+            return true
+        }
+        return super.dispatchGenericMotionEvent(event)
+    }
+
+    private fun push(id: Int, p: AndroidPad) {
+        p.state = p.state.copy(buttons = p.keys or p.hat)
+        hub.update("android:$id", p.name, "Bluetooth / Android", p.state)
+    }
+
+    private fun keyBit(code: Int) = when (code) {
+        KeyEvent.KEYCODE_BUTTON_A, KeyEvent.KEYCODE_DPAD_CENTER -> Btn.A
+        KeyEvent.KEYCODE_BUTTON_B, KeyEvent.KEYCODE_BACK -> Btn.B
+        KeyEvent.KEYCODE_BUTTON_X -> Btn.X
+        KeyEvent.KEYCODE_BUTTON_Y -> Btn.Y
+        KeyEvent.KEYCODE_BUTTON_L1 -> Btn.LB
+        KeyEvent.KEYCODE_BUTTON_R1 -> Btn.RB
+        KeyEvent.KEYCODE_BUTTON_SELECT -> Btn.VIEW
+        KeyEvent.KEYCODE_BUTTON_START -> Btn.MENU
+        KeyEvent.KEYCODE_BUTTON_MODE -> Btn.GUIDE
+        KeyEvent.KEYCODE_BUTTON_THUMBL -> Btn.LS
+        KeyEvent.KEYCODE_BUTTON_THUMBR -> Btn.RS
+        KeyEvent.KEYCODE_DPAD_UP -> Btn.UP
+        KeyEvent.KEYCODE_DPAD_DOWN -> Btn.DOWN
+        KeyEvent.KEYCODE_DPAD_LEFT -> Btn.LEFT
+        KeyEvent.KEYCODE_DPAD_RIGHT -> Btn.RIGHT
+        else -> 0
+    }
+}

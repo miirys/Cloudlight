@@ -13,4 +13,4 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "cloudlight-tv"
-include(":probe")
+include(":probe", ":app")

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Asking Android to open Cloudlight for these devices also grants lasting USB permission
+     once "Always open" is ticked, so the dongle works without a prompt every start. -->
+<resources>
+    <usb-device vendor-id="11720" />   <!-- 8BitDo (0x2DC8) -->
+    <usb-device vendor-id="1118" />    <!-- Microsoft (0x045E) -->
+    <usb-device class="255" subclass="93" protocol="1" />  <!-- any Xbox 360 style pad -->
+    <usb-device class="255" subclass="71" protocol="208" /> <!-- any Xbox One style pad -->
+</resources>

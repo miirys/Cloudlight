@@ -31,3 +31,16 @@ Locally you need JDK 17, the Android SDK (platform 35) and ffmpeg:
 5. Press **Mouse capture**, move the mouse, then press Esc or B.
 6. Press **Read USB pad**, accept the permission dialog, move the sticks, then press it again.
 7. On a PC on the same network, open the address shown at the top and copy the whole page.
+
+## App (`:app`)
+
+The Cloudlight client itself. Phase 1 contains the shell: the design system, spring-based
+motion (`ui/motion/Motion.kt`), the focus system, and the controller layer.
+
+- `input/UsbPadDriver.kt` is Cloudlight's own USB controller driver. It claims Xbox 360
+  (XInput), Xbox One (GIP) and plain HID pads directly, because the Zidoo's kernel ignores
+  8BitDo's 2.4 GHz dongle.
+- `input/PadHub.kt` merges every controller (USB dongle, Bluetooth pads) into menu actions
+  with timer-driven, gently accelerating repeat.
+- Settings › Controller shows every controller live, which is the quickest way to check the
+  dongle on the box.
