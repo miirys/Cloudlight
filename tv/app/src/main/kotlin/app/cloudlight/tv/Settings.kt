@@ -1,7 +1,6 @@
 package app.cloudlight.tv
 
 import android.content.Context
-import app.cloudlight.tv.stream.TvDecoderFactory
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -120,14 +119,14 @@ class Settings(context: Context) {
      */
     fun recoverFrom(path: String, step: String): String? {
         val video = step.startsWith("decoder") || step == "decoding" || step == "video"
-        // The compatible path is never used on Amlogic, so it is no remedy there.
-        val canCompat = videoPath == VideoPath.AUTO && !TvDecoderFactory.amlogic
+        // A crash on the direct path: go back to the standard (compatible) path.
+        val canCompat = path == "direct" && videoPath == VideoPath.DIRECT
         val e = prefs.edit()
         val change = when {
-            video && path == "direct" && canCompat && !directFailed -> { directFailed = true; e.putBoolean("directFailed", true); "Compatible video output" }
+            video && canCompat -> { videoPath = VideoPath.AUTO; e.putString("videoPath", VideoPath.AUTO.name); "the standard video output" }
             video && !safeCodec && codec == VideoCodec.AUTO -> { safeCodec = true; e.putBoolean("safeCodec", true); "the H.264 codec" }
             !video && !noAudio -> { noAudio = true; e.putBoolean("noAudio", true); "streaming without sound" }
-            path == "direct" && canCompat && !directFailed -> { directFailed = true; e.putBoolean("directFailed", true); "Compatible video output" }
+            canCompat -> { videoPath = VideoPath.AUTO; e.putString("videoPath", VideoPath.AUTO.name); "the standard video output" }
             !safeCodec && codec == VideoCodec.AUTO -> { safeCodec = true; e.putBoolean("safeCodec", true); "the H.264 codec" }
             !noAudio -> { noAudio = true; e.putBoolean("noAudio", true); "streaming without sound" }
             tenBit -> { tenBit = false; e.putBoolean("tenBit", false).putBoolean("tenBitFix", true); "8-bit colour" }
@@ -140,7 +139,6 @@ class Settings(context: Context) {
     /** What the automatic fixes changed, or null when none are on. */
     val fixes: String?
         get() = listOfNotNull(
-            if (directFailed && videoPath == VideoPath.AUTO && !TvDecoderFactory.amlogic) "Compatible video" else null,
             if (safeCodec && codec == VideoCodec.AUTO) "H.264" else null,
             if (noAudio) "No sound" else null,
         ).joinToString(", ").ifEmpty { null }

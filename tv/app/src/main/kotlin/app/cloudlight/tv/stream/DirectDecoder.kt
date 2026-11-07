@@ -79,16 +79,34 @@ class TvDecoderFactory : VideoDecoderFactory {
         out.toTypedArray()
     }
 
-    override fun getSupportedCodecs(): Array<VideoCodecInfo> = supported
+    /** WebRTC's own factories, sharing the renderer's GL context, as OpenNOW uses them. */
+    private val stockHardware by lazy { org.webrtc.HardwareVideoDecoderFactory(Rtc.egl.eglBaseContext) }
+    private val stockDefault by lazy { org.webrtc.DefaultVideoDecoderFactory(Rtc.egl.eglBaseContext) }
+
+    /**
+     * On the standard path, WebRTC's own codec list: its usual codecs plus the hardware HEVC
+     * and AV1 decoders, with the parameters WebRTC itself generates for them.
+     */
+    private val stockCodecs: Array<VideoCodecInfo> by lazy {
+        val advanced = setOf("H265", "AV1")
+        val base = runCatching { stockDefault.supportedCodecs.filter { it.name.uppercase() !in advanced } }.getOrDefault(emptyList())
+        val hw = runCatching { stockHardware.supportedCodecs.filter { it.name.uppercase() in advanced } }.getOrDefault(emptyList())
+        (base + hw).distinctBy { "${it.name.uppercase()}:${it.params.toSortedMap()}" }.toTypedArray()
+    }
+
+    override fun getSupportedCodecs(): Array<VideoCodecInfo> =
+        if (VideoOutput.compatible) stockCodecs.takeIf { it.isNotEmpty() } ?: supported else supported
 
     override fun createDecoder(info: VideoCodecInfo): VideoDecoder? {
         CrashLog.step("decoder-create")
         if (VideoOutput.compatible) {
-            val stock = runCatching { org.webrtc.HardwareVideoDecoderFactory(Rtc.egl.eglBaseContext).createDecoder(info) }
+            val hw = runCatching { stockHardware.createDecoder(info) }
                 .onFailure { Log.w("Decoders", "stock decoder unavailable", it) }.getOrNull()
+            // H.264 may fall back to software; HEVC and AV1 only ever use hardware.
+            val stock = hw ?: if (info.name.equals("H264", true)) runCatching { stockDefault.createDecoder(info) }.getOrNull() else null
             if (stock != null) {
                 VideoOutput.decoderName = stock.implementationName
-                return StepDecoder(stock)
+                return stock
             }
         }
         val mime = mimeOf(info.name) ?: return null
@@ -380,23 +398,4 @@ class DirectDecoder(private val mime: String, private val codecName: String) : V
         private const val INPUT_TIMEOUT_US = 30_000L
         private const val OUTPUT_TIMEOUT_US = 20_000L
     }
-}
-
-/** Wraps WebRTC's own decoder to record setup steps for crash recovery. */
-private class StepDecoder(private val inner: VideoDecoder) : VideoDecoder {
-    override fun initDecode(settings: VideoDecoder.Settings, callback: VideoDecoder.Callback): VideoCodecStatus {
-        CrashLog.step("decoder-init")
-        return inner.initDecode(settings, callback)
-    }
-
-    override fun release(): VideoCodecStatus = inner.release()
-
-    override fun decode(frame: EncodedImage, info: VideoDecoder.DecodeInfo): VideoCodecStatus {
-        CrashLog.step("decoding")
-        return inner.decode(frame, info)
-    }
-
-    override fun getImplementationName(): String = inner.implementationName
-
-    override fun createNative(webrtcEnvRef: Long): Long = inner.createNative(webrtcEnvRef)
 }

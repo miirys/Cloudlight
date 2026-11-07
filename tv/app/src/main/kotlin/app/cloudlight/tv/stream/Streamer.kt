@@ -257,9 +257,9 @@ class Streamer(
         compatibleVideo = when (settings.videoPath) {
             VideoPath.COMPATIBLE -> true
             VideoPath.DIRECT -> false
-            // Amlogic decoders draw straight onto the hardware video layer, as the box's own player
-            // does; copying frames through the GPU is slow there and gains nothing.
-            VideoPath.AUTO -> !TvDecoderFactory.amlogic && (settings.directFailed || TvDecoderFactory.preferStock())
+            // WebRTC's own decoder and renderer: the path OpenNOW streams with on these boxes.
+            // The direct path stays available as an explicit choice.
+            VideoPath.AUTO -> true
         }
         val cm = Cloudmatch(app::serviceToken).also { cloud = it }
         job = scope.launch {

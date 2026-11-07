@@ -36,14 +36,13 @@ object Rtc {
     /** Shared GL context for the compatible video path's decoder and renderer. */
     val egl: org.webrtc.EglBase by lazy { org.webrtc.EglBase.create() }
 
-    private const val TRIALS = "WebRTC-Video-H26xPacketBuffer/Enabled/WebRTC-ZeroPlayoutDelay/min_pacing:0ms,max_decode_queue_size:8/"
-
     @Synchronized
     fun factory(context: Context): PeerConnectionFactory {
         factory?.let { return it }
         val app = context.applicationContext
+        // No field trials: WebRTC's defaults, exactly as OpenNOW runs it on these boxes.
         PeerConnectionFactory.initialize(
-            PeerConnectionFactory.InitializationOptions.builder(app).setFieldTrials(TRIALS).createInitializationOptions(),
+            PeerConnectionFactory.InitializationOptions.builder(app).setEnableInternalTracer(false).createInitializationOptions(),
         )
         val audio = JavaAudioDeviceModule.builder(app)
             .setUseStereoOutput(true)
@@ -65,6 +64,7 @@ object Rtc {
             )
             .createAudioDeviceModule()
         return PeerConnectionFactory.builder()
+            .setOptions(PeerConnectionFactory.Options())
             .setAudioDeviceModule(audio)
             .setVideoDecoderFactory(TvDecoderFactory())
             .setVideoEncoderFactory(SoftwareVideoEncoderFactory())

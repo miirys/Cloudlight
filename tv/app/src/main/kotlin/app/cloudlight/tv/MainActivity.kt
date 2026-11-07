@@ -65,7 +65,7 @@ class MainActivity : ComponentActivity() {
         CrashLog.onBackgroundFailure = { streamer.internalFailure(it) }
         // Earlier crashes came from the streaming engine failing to start, not from the parts
         // the automatic fixes turned off, so give those back.
-        settings.clearFixesOnce("engine-start")
+        settings.clearFixesOnce("standard-video")
         val mark = CrashLog.takeStreamingMark(this)
         val found = CrashLog.take(this)
             ?: if (mark != null && mark.second != "live") CrashLog.Problem(System.currentTimeMillis(), "The app closed during a stream", "", native = true) else null
