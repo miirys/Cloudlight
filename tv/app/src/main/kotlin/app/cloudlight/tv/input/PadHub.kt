@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.abs
 
 /** What a controller press means in the menus. */
@@ -20,7 +21,7 @@ enum class NavAction { UP, DOWN, LEFT, RIGHT, CONFIRM_DOWN, CONFIRM_UP, BACK, ME
 class PadHub(private val dispatch: (NavAction) -> Unit) {
 
     private val main = Handler(Looper.getMainLooper())
-    private val sources = HashMap<String, Source>()
+    private val sources = ConcurrentHashMap<String, Source>()
 
     private val _pads = MutableStateFlow<List<PadInfo>>(emptyList())
     val pads: StateFlow<List<PadInfo>> = _pads
@@ -29,8 +30,30 @@ class PadHub(private val dispatch: (NavAction) -> Unit) {
     /** Actions that are not plain focus moves (tabs, menu), for screens that listen for them. */
     val actions: SharedFlow<NavAction> = _actions
 
-    /** True while a stream is running: the pad then goes to the game, not the menus. */
+    /**
+     * True while a stream is running: the pad then goes to the game, not the menus. When it
+     * turns false again, the menus start from the pads' current state, so a button still held
+     * from the game never counts as a fresh press.
+     */
     @Volatile var captured = false
+        set(value) {
+            if (field == value) return
+            field = value
+            if (!value) {
+                main.post {
+                    for (src in sources.values) latest[src.id]?.let { src.state = it }
+                    publish()
+                }
+            }
+        }
+
+    /**
+     * Receives every report on the thread it arrived on, without waiting for the main
+     * thread. The stream uses it to forward controllers with the least delay.
+     */
+    @Volatile var raw: ((id: String, state: PadState?) -> Unit)? = null
+
+    private val latest = ConcurrentHashMap<String, PadState>()
 
     private inner class Source(val id: String, var name: String, val route: String) {
         var state = PadState.Idle
@@ -52,10 +75,19 @@ class PadHub(private val dispatch: (NavAction) -> Unit) {
 
     /** Called from any thread with a new snapshot for one controller. */
     fun update(id: String, name: String, route: String, state: PadState) {
+        latest[id] = state
+        raw?.invoke(id, state)
+        // While streaming, the menus don't need every report; one in eight keeps the
+        // controller page's live view and the report rate honest without busying the UI.
+        if (captured && sources.containsKey(id) && (++skip and 7) != 0) return
         main.post { apply(id, name, route, state) }
     }
 
+    @Volatile private var skip = 0
+
     fun gone(id: String) {
+        latest.remove(id)
+        raw?.invoke(id, null)
         main.post {
             sources.remove(id)?.let { main.removeCallbacks(it.repeat) }
             publish()
@@ -66,7 +98,7 @@ class PadHub(private val dispatch: (NavAction) -> Unit) {
         val src = sources.getOrPut(id) { Source(id, name, route) }
         val prev = src.state
         src.state = s
-        src.count++
+        src.count += if (captured) 8 else 1
         val now = SystemClock.uptimeMillis()
         if (now - src.windowStart >= 1000) {
             src.rate = (src.count * 1000 / (now - src.windowStart)).toInt()

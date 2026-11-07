@@ -36,13 +36,20 @@ class AppState(context: Context, private val scope: CoroutineScope) {
         private set
     var loading by mutableStateOf(false)
         private set
+    /** The full catalog, fetched the first time Search needs it. */
+    var catalog by mutableStateOf<List<Game>>(emptyList())
+        private set
+    var catalogLoading by mutableStateOf(false)
+        private set
     var error by mutableStateOf<String?>(null)
         private set
 
     val signedIn: Boolean get() = profile != null
 
     private var tokens: Nvidia.Tokens? = null
-    private var streamingBase: String = prefs.getString("base", null) ?: "https://prod.cloudmatchbeta.nvidiagrid.net/"
+    /** The provider's session service, from sign-in. */
+    var streamingBase: String = prefs.getString("base", null) ?: "https://prod.cloudmatchbeta.nvidiagrid.net/"
+        private set
     private var loginJob: Job? = null
 
     init {
@@ -108,6 +115,7 @@ class AppState(context: Context, private val scope: CoroutineScope) {
         tokens = null
         profile = null
         library = emptyList()
+        catalog = emptyList()
         sessions = emptyList()
     }
 
@@ -118,7 +126,7 @@ class AppState(context: Context, private val scope: CoroutineScope) {
             error = null
             try {
                 val token = serviceToken()
-                val vpc = Nvidia.vpcId(streamingBase, token)
+                val vpc = Nvidia.vpcId(streamingBase, token).also { this@AppState.vpc = it }
                 val sessionsJob = scope.launch {
                     sessions = runCatching { Nvidia.activeSessions(streamingBase, token, deviceId) }.getOrDefault(emptyList())
                 }
@@ -132,7 +140,7 @@ class AppState(context: Context, private val scope: CoroutineScope) {
                     error = e.message
                 }
             } catch (t: Throwable) {
-                error = "Cloudlight could not reach GeForce NOW. Check the network connection."
+                error = "GeForce NOW can't be reached. Check the network connection."
             } finally {
                 loading = false
             }
@@ -146,10 +154,31 @@ class AppState(context: Context, private val scope: CoroutineScope) {
         }
     }
 
-    fun gameFor(session: ActiveSession): Game? =
-        library.firstOrNull { g -> g.variants.any { it.id == session.appId } || g.id == session.appId }
+    private var vpc: String? = null
 
-    private suspend fun serviceToken(): String {
+    fun loadCatalog() {
+        if (catalog.isNotEmpty() || catalogLoading || !signedIn) return
+        scope.launch {
+            catalogLoading = true
+            try {
+                val token = serviceToken()
+                val v = vpc ?: Nvidia.vpcId(streamingBase, token).also { vpc = it }
+                catalog = Nvidia.catalog(token, v)
+            } catch (_: Throwable) {
+                // Search still covers the library; the catalog is retried next time.
+            } finally {
+                catalogLoading = false
+            }
+        }
+    }
+
+    fun gameFor(session: ActiveSession): Game? {
+        fun match(g: Game) = g.variants.any { it.id == session.appId } || g.id == session.appId
+        return library.firstOrNull(::match) ?: catalog.firstOrNull(::match)
+    }
+
+    /** A valid token for GeForce NOW's services, refreshed when it is close to expiring. */
+    suspend fun serviceToken(): String {
         var t = tokens ?: throw ApiException("Not signed in.", 401)
         if (System.currentTimeMillis() > t.expiresAtMs - 10 * 60_000L) {
             val r = t.refresh ?: throw ApiException("Your sign-in has expired.", 401)

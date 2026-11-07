@@ -25,6 +25,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.runtime.Composable
@@ -40,33 +41,45 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import app.cloudlight.tv.Settings
+import app.cloudlight.tv.data.ActiveSession
 import app.cloudlight.tv.data.AppState
 import app.cloudlight.tv.data.Game
 import app.cloudlight.tv.ui.components.Backdrop
 import app.cloudlight.tv.ui.components.GameArt
+import app.cloudlight.tv.ui.components.GameLogo
 import app.cloudlight.tv.ui.components.GlassButton
 import app.cloudlight.tv.ui.components.QrCode
 import app.cloudlight.tv.ui.components.glass
 import app.cloudlight.tv.ui.motion.Motion
+import app.cloudlight.tv.ui.motion.reveal
 import app.cloudlight.tv.ui.theme.LocalType
 import app.cloudlight.tv.ui.theme.Palette
 import kotlinx.coroutines.delay
 
 @Composable
-fun GameDetailScreen(app: AppState, game: Game, onClose: () -> Unit) {
+fun GameDetailScreen(
+    app: AppState,
+    settings: Settings,
+    game: Game,
+    onClose: () -> Unit,
+    onPlay: (Game) -> Unit,
+    onQuitSession: (ActiveSession) -> Unit,
+) {
     val type = LocalType.current
     val play = remember { FocusRequester() }
-    var notice by remember { mutableStateOf(false) }
+    var confirmEnd by remember { mutableStateOf(false) }
     val session = app.sessions.firstOrNull { app.gameFor(it) == game }
+    val owned = app.library.any { it.id == game.id }
     BackHandler(onBack = onClose)
     LaunchedEffect(game.id) {
         delay(60)
         runCatching { play.requestFocus() }
     }
-    LaunchedEffect(notice) {
-        if (notice) {
-            delay(4200)
-            notice = false
+    LaunchedEffect(confirmEnd) {
+        if (confirmEnd) {
+            delay(4000)
+            confirmEnd = false
         }
     }
     Box(Modifier.fillMaxSize()) {
@@ -74,41 +87,74 @@ fun GameDetailScreen(app: AppState, game: Game, onClose: () -> Unit) {
         Column(
             Modifier
                 .align(Alignment.BottomStart)
-                .padding(start = 64.dp, bottom = 64.dp)
-                .widthIn(max = 460.dp),
+                .padding(start = 64.dp, bottom = 56.dp)
+                .widthIn(max = 500.dp),
         ) {
-            if (game.logo != null) {
-                GameArt(game.logo, game.title, Modifier.heightIn(max = 96.dp).widthIn(max = 340.dp), contentScale = ContentScale.Fit)
-            } else {
-                BasicText(game.title, style = type.display, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            BasicText(
+                when {
+                    session != null -> "RUNNING IN THE CLOUD"
+                    owned -> "IN YOUR LIBRARY"
+                    else -> "IN THE GEFORCE NOW CATALOG"
+                },
+                Modifier.reveal(0),
+                style = type.overline,
+            )
+            Spacer(Modifier.height(10.dp))
+            Box(Modifier.reveal(0).height(96.dp).widthIn(max = 360.dp), contentAlignment = Alignment.BottomStart) {
+                GameLogo(game.logo, game.title, Modifier.height(96.dp).widthIn(max = 360.dp))
             }
             Spacer(Modifier.height(14.dp))
-            BasicText(metaLine(game), style = type.body, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            BasicText(metaLine(game), Modifier.reveal(1), style = type.body, maxLines = 2, overflow = TextOverflow.Ellipsis)
             if (session != null) {
                 Spacer(Modifier.height(10.dp))
-                BasicText("Running in the cloud: ${session.phase.lowercase()}.", style = type.bodyStrong)
+                val detail = listOfNotNull(
+                    session.phase,
+                    session.resolution?.let { r -> session.fps?.let { "$r at $it fps" } ?: r },
+                    session.gpu,
+                ).joinToString("  ·  ")
+                BasicText(detail, Modifier.reveal(1), style = type.bodyStrong)
             }
             Spacer(Modifier.height(22.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                GlassButton(if (session != null) "Resume" else "Play", { notice = true }, icon = Icons.Rounded.PlayArrow, primary = true, focusRequester = play)
+            Row(Modifier.reveal(2), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                GlassButton(if (session != null) "Resume" else "Play", { onPlay(game) }, icon = Icons.Rounded.PlayArrow, primary = true, focusRequester = play)
+                if (session != null) {
+                    GlassButton(
+                        if (confirmEnd) "Press again to end" else "End session",
+                        {
+                            if (confirmEnd) {
+                                confirmEnd = false
+                                onQuitSession(session)
+                            } else {
+                                confirmEnd = true
+                            }
+                        },
+                        icon = Icons.Rounded.Close,
+                    )
+                }
                 GlassButton("Back", onClose, icon = Icons.Rounded.ArrowBack)
             }
-            val stores = game.variants.map { Game.storeName(it.store) }.distinct()
-            if (stores.isNotEmpty()) {
-                Spacer(Modifier.height(18.dp))
-                BasicText("Available through ${stores.joinToString(", ")}", style = type.caption)
+            Spacer(Modifier.height(22.dp))
+            Row(Modifier.reveal(3), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                val stores = game.variants.map { Game.storeName(it.store) }.distinct()
+                if (stores.isNotEmpty()) InfoChip("Through ${stores.joinToString(", ")}")
+                InfoChip("${settings.mode.label}  ·  ${settings.bitrateMbps} Mbps  ·  ${settings.codec.label}")
+            }
+            if (!owned) {
+                Spacer(Modifier.height(10.dp))
+                BasicText(
+                    "Not in your library yet. Own it on one of these stores and connect the store in GeForce NOW to play.",
+                    Modifier.reveal(4),
+                    style = type.caption,
+                )
             }
         }
-        AnimatedVisibility(
-            visible = notice,
-            modifier = Modifier.align(Alignment.TopCenter).padding(top = 32.dp),
-            enter = fadeIn(Motion.page()) + slideInVertically(Motion.pageOffset) { -it },
-            exit = fadeOut(Motion.fade()) + slideOutVertically(Motion.pageOffset) { -it },
-        ) {
-            Box(Modifier.glass(RoundedCornerShape(50), strong = true).background(Palette.black.copy(alpha = 0.35f), RoundedCornerShape(50)).padding(horizontal = 20.dp, vertical = 11.dp)) {
-                BasicText("Streaming arrives in the next Cloudlight build.", style = type.bodyStrong)
-            }
-        }
+    }
+}
+
+@Composable
+private fun InfoChip(text: String) {
+    Box(Modifier.glass(RoundedCornerShape(50)).padding(horizontal = 12.dp, vertical = 6.dp)) {
+        BasicText(text, style = LocalType.current.caption)
     }
 }
 
@@ -121,10 +167,11 @@ fun SignInScreen(app: AppState) {
     Box(Modifier.fillMaxSize().padding(horizontal = 64.dp), contentAlignment = Alignment.Center) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.width(380.dp)) {
-                BasicText("Sign in to GeForce NOW", style = type.display)
+                BasicText("Sign in to GeForce NOW", Modifier.reveal(0), style = type.display)
                 Spacer(Modifier.height(14.dp))
                 BasicText(
                     "Scan the code with your phone and approve the sign-in there. Your library and any sessions running on your other devices will appear here.",
+                    Modifier.reveal(1),
                     style = type.body,
                 )
                 Spacer(Modifier.height(22.dp))
@@ -153,7 +200,7 @@ fun SignInScreen(app: AppState) {
             }
             Spacer(Modifier.width(64.dp))
             Box(
-                Modifier.size(230.dp).glass(RoundedCornerShape(24.dp), strong = true).padding(18.dp),
+                Modifier.reveal(2).size(230.dp).glass(RoundedCornerShape(24.dp), strong = true).padding(18.dp),
                 contentAlignment = Alignment.Center,
             ) {
                 val s = app.signIn

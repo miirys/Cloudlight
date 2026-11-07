@@ -53,6 +53,8 @@ import app.cloudlight.tv.data.ActiveSession
 import app.cloudlight.tv.data.AppState
 import app.cloudlight.tv.data.Game
 import app.cloudlight.tv.ui.components.GameArt
+import app.cloudlight.tv.ui.components.GameLogo
+import app.cloudlight.tv.ui.motion.reveal
 import app.cloudlight.tv.ui.components.GlassButton
 import app.cloudlight.tv.ui.components.PivotScroll
 import app.cloudlight.tv.ui.components.Pressable
@@ -64,7 +66,13 @@ import kotlinx.coroutines.delay
 private val ScreenStart = 40.dp
 
 @Composable
-fun HomeScreen(app: AppState, onFocusGame: (Game?) -> Unit, onOpen: (Game) -> Unit) {
+fun HomeScreen(
+    app: AppState,
+    onFocusGame: (Game?) -> Unit,
+    onOpen: (Game) -> Unit,
+    onPlay: (Game) -> Unit,
+    onResume: (ActiveSession) -> Unit,
+) {
     val type = LocalType.current
     val library = app.library
     val recent = remember(library) { library.filter { it.lastPlayedMs > 0 }.sortedByDescending { it.lastPlayedMs }.take(12) }
@@ -98,33 +106,38 @@ fun HomeScreen(app: AppState, onFocusGame: (Game?) -> Unit, onOpen: (Game) -> Un
             contentPadding = PaddingValues(bottom = 120.dp),
             verticalArrangement = Arrangement.spacedBy(22.dp),
         ) {
-            item(key = "hero") { Hero(hero, sessions.firstOrNull { s -> hero != null && app.gameFor(s) == hero }, onOpen) }
+            item(key = "hero") { Hero(hero, sessions.firstOrNull { s -> hero != null && app.gameFor(s) == hero }, onOpen, onPlay) }
+            var row = 3
             if (sessions.isNotEmpty()) {
+                val r = row++
                 item(key = "continue") {
-                    Shelf("Continue") {
+                    Shelf("Continue", "Running in the cloud", Modifier.reveal(r)) {
                         items(sessions, key = { it.sessionId }) { s ->
                             val g = app.gameFor(s)
-                            SessionCard(s, g, onFocus = { g?.let(focusGame) }, onClick = { g?.let(onOpen) })
+                            SessionCard(s, g, onFocus = { g?.let(focusGame) }, onClick = { onResume(s) })
                         }
                     }
                 }
             }
             if (recent.isNotEmpty()) {
+                val r = row++
                 item(key = "recent") {
-                    Shelf("Recently played") {
+                    Shelf("Recently played", modifier = Modifier.reveal(r)) {
                         items(recent, key = { it.id }) { g -> WideTile(g, onFocus = { focusGame(g) }, onClick = { onOpen(g) }) }
                     }
                 }
             }
             if (favorites.isNotEmpty()) {
+                val r = row++
                 item(key = "favorites") {
-                    Shelf("Favorites") {
+                    Shelf("Favorites", modifier = Modifier.reveal(r)) {
                         items(favorites, key = { it.id }) { g -> PosterTile(g, 96.dp, onFocus = { focusGame(g) }, onClick = { onOpen(g) }) }
                     }
                 }
             }
+            val r = row
             item(key = "library") {
-                Shelf("Your library", "${library.size} games") {
+                Shelf("Your library", "${library.size} games", Modifier.reveal(r)) {
                     items(library.take(40), key = { it.id }) { g -> PosterTile(g, 96.dp, onFocus = { focusGame(g) }, onClick = { onOpen(g) }) }
                 }
             }
@@ -133,7 +146,7 @@ fun HomeScreen(app: AppState, onFocusGame: (Game?) -> Unit, onOpen: (Game) -> Un
 }
 
 @Composable
-private fun Hero(game: Game?, session: ActiveSession?, onOpen: (Game) -> Unit) {
+private fun Hero(game: Game?, session: ActiveSession?, onOpen: (Game) -> Unit, onPlay: (Game) -> Unit) {
     val type = LocalType.current
     Box(Modifier.fillMaxWidth().height(318.dp).padding(start = ScreenStart, top = 64.dp)) {
         AnimatedContent(
@@ -152,23 +165,18 @@ private fun Hero(game: Game?, session: ActiveSession?, onOpen: (Game) -> Unit) {
                         g.lastPlayedMs > 0 -> "RECENTLY PLAYED"
                         else -> "IN YOUR LIBRARY"
                     },
+                    Modifier.reveal(0),
                     style = type.overline,
                 )
                 Spacer(Modifier.height(10.dp))
-                if (g.logo != null) {
-                    GameArt(
-                        g.logo, g.title,
-                        Modifier.heightIn(max = 78.dp).widthIn(max = 300.dp),
-                        contentScale = ContentScale.Fit,
-                    )
-                } else {
-                    BasicText(g.title, style = type.display, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                Box(Modifier.reveal(0).height(78.dp).widthIn(max = 300.dp), contentAlignment = Alignment.BottomStart) {
+                    GameLogo(g.logo, g.title, Modifier.height(78.dp).widthIn(max = 300.dp))
                 }
                 Spacer(Modifier.height(12.dp))
-                BasicText(metaLine(g), style = type.body, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                BasicText(metaLine(g), Modifier.reveal(1), style = type.body, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Spacer(Modifier.height(18.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    GlassButton(if (session != null) "Resume" else "Play", { onOpen(g) }, icon = Icons.Rounded.PlayArrow, primary = true)
+                Row(Modifier.reveal(2), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    GlassButton(if (session != null) "Resume" else "Play", { onPlay(g) }, icon = Icons.Rounded.PlayArrow, primary = true)
                     GlassButton("Details", { onOpen(g) }, icon = Icons.Rounded.Info)
                 }
             }
@@ -183,9 +191,9 @@ fun metaLine(g: Game): String = listOfNotNull(
 ).joinToString("  ·  ")
 
 @Composable
-private fun Shelf(title: String, detail: String? = null, content: androidx.compose.foundation.lazy.LazyListScope.() -> Unit) {
+private fun Shelf(title: String, detail: String? = null, modifier: Modifier = Modifier, content: androidx.compose.foundation.lazy.LazyListScope.() -> Unit) {
     val type = LocalType.current
-    Column {
+    Column(modifier) {
         Row(Modifier.padding(start = ScreenStart, bottom = 2.dp), verticalAlignment = Alignment.Bottom) {
             BasicText(title, style = type.headline)
             if (detail != null) {
@@ -302,7 +310,7 @@ fun LibraryScreen(app: AppState, onFocusGame: (Game?) -> Unit, onOpen: (Game) ->
         return
     }
     Column(Modifier.fillMaxSize()) {
-        Row(Modifier.padding(start = ScreenStart, top = 34.dp, bottom = 4.dp), verticalAlignment = Alignment.Bottom) {
+        Row(Modifier.reveal(0).padding(start = ScreenStart, top = 34.dp, bottom = 4.dp), verticalAlignment = Alignment.Bottom) {
             BasicText("Library", style = type.title)
             Spacer(Modifier.width(10.dp))
             BasicText("${games.size} games, A to Z", style = type.caption, modifier = Modifier.padding(bottom = 3.dp))
@@ -315,8 +323,9 @@ fun LibraryScreen(app: AppState, onFocusGame: (Game?) -> Unit, onOpen: (Game) ->
                 horizontalArrangement = Arrangement.spacedBy(14.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                items(games, key = { it.id }) { g ->
-                    Box(Modifier.fillMaxWidth()) {
+                items(games.size, key = { games[it].id }) { i ->
+                    val g = games[i]
+                    Box(Modifier.fillMaxWidth().reveal(1 + i / 7 + i % 7 / 3)) {
                         ArtTileFill(g, onFocus = { focused = g }, onClick = { onOpen(g) })
                     }
                 }
@@ -327,7 +336,7 @@ fun LibraryScreen(app: AppState, onFocusGame: (Game?) -> Unit, onOpen: (Game) ->
 
 /** Poster tile that fills its grid cell. */
 @Composable
-private fun ArtTileFill(g: Game, onFocus: () -> Unit, onClick: () -> Unit) {
+internal fun ArtTileFill(g: Game, onFocus: () -> Unit, onClick: () -> Unit) {
     val type = LocalType.current
     var focused by remember { mutableStateOf(false) }
     val reveal by animateFloatAsState(if (focused) 1f else 0f, Motion.fade(), label = "reveal")

@@ -86,7 +86,7 @@ object Nvidia {
             .add("client_id", AUTH_CLIENT_ID)
             .add("scope", SCOPES)
             .add("device_id", deviceId)
-            .add("display_name", "Cloudlight")
+            .add("display_name", "Android TV")
             .add("idp_id", provider.idpId)
             .build()
         val req = Request.Builder().url(DEVICE_AUTHORIZE).post(form)
@@ -200,20 +200,27 @@ object Nvidia {
             ?: throw ApiException("The server did not say which region you are in.")
     }
 
-    suspend fun library(token: String, vpcId: String): List<Game> = io {
+    suspend fun library(token: String, vpcId: String): List<Game> = apps(
+        token, vpcId,
+        filters = JSONObject().put("variants", JSONObject().put("gfn", JSONObject().put("library", JSONObject().put("status", JSONObject().put("notEquals", "NOT_OWNED"))))),
+        sort = "variants.gfn.library.lastPlayedDate:DESC,computedValues.libraryAddedDate:DESC,sortName:ASC",
+        pages = 12,
+    )
+
+    /** Every game GeForce NOW streams in this region, A to Z. */
+    suspend fun catalog(token: String, vpcId: String): List<Game> = apps(token, vpcId, JSONObject(), "sortName:ASC", pages = 40)
+
+    private suspend fun apps(token: String, vpcId: String, filters: JSONObject, sort: String, pages: Int): List<Game> = io {
         val games = ArrayList<Game>()
         var cursor = ""
-        repeat(12) {
+        repeat(pages) {
             val vars = JSONObject()
                 .put("vpcId", vpcId)
                 .put("locale", "en_US")
-                .put("sortString", "variants.gfn.library.lastPlayedDate:DESC,computedValues.libraryAddedDate:DESC,sortName:ASC")
+                .put("sortString", sort)
                 .put("fetchCount", 100)
                 .put("cursor", cursor)
-                .put(
-                    "filters",
-                    JSONObject().put("variants", JSONObject().put("gfn", JSONObject().put("library", JSONObject().put("status", JSONObject().put("notEquals", "NOT_OWNED"))))),
-                )
+                .put("filters", filters)
             val body = JSONObject().put("query", LIBRARY_QUERY).put("variables", vars).toString()
             val req = lcars(Request.Builder().url(GRAPHQL).post(body.toRequestBody(JSON)), token)
                 .header("Content-Type", "application/json")

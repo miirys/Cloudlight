@@ -52,13 +52,13 @@ data class Game(
                 hero = image(images, 3840, "MARQUEE_HERO_IMAGE", "HERO_IMAGE", "KEY_ART", "FEATURE_IMAGE", "SCREENSHOTS"),
                 boxArt = image(images, 720, "GAME_BOX_ART", "KEY_IMAGE"),
                 banner = image(images, 1280, "TV_BANNER", "KEY_ART", "HERO_IMAGE", "FEATURE_IMAGE"),
-                logo = image(images, 1200, "GAME_LOGO"),
+                logo = image(images, 1200, "GAME_LOGO", format = "png"),
                 variants = variants,
             )
         }
 
         /** NVIDIA's image CDN resizes on request; ask for exactly what a 4K screen needs. */
-        private fun image(images: JSONObject, width: Int, vararg keys: String): String? {
+        private fun image(images: JSONObject, width: Int, vararg keys: String, format: String = "jpg"): String? {
             for (k in keys) {
                 val v = images.opt(k)
                 val url = when (v) {
@@ -67,7 +67,7 @@ data class Game(
                     else -> null
                 }?.trim()
                 if (!url.isNullOrEmpty() && url != "null") {
-                    return if (url.contains("img.nvidiagrid.net")) "$url;f=jpg;w=$width" else url
+                    return if (url.contains("img.nvidiagrid.net")) "$url;f=$format;w=$width" else url
                 }
             }
             return null
@@ -101,6 +101,9 @@ data class ActiveSession(
     val resolution: String?,
     val fps: Int?,
     val streamingBase: String,
+    /** The rig or regional host that owns the session; claims go there. */
+    val serverHost: String?,
+    val gpu: String?,
 ) {
     val phase: String
         get() = when (status) {
@@ -121,6 +124,14 @@ data class ActiveSession(
             val w = monitor?.optInt("widthInPixels") ?: 0
             val h = monitor?.optInt("heightInPixels") ?: 0
             val queue = j.optJSONObject("seatSetupInfo")?.optInt("queuePosition", 0)?.takeIf { it > 0 }
+            fun first(v: Any?): String? = when (v) {
+                is String -> v.takeIf { it.isNotBlank() }
+                is JSONArray -> v.optString(0).takeIf { it.isNotBlank() }
+                else -> null
+            }
+            val conns = j.optJSONArray("connectionInfo") ?: JSONArray()
+            val signal = (0 until conns.length()).mapNotNull { conns.optJSONObject(it) }.firstOrNull { it.optInt("usage") == 14 }
+            val host = first(signal?.opt("ip")) ?: first(j.optJSONObject("sessionControlInfo")?.opt("ip"))
             return ActiveSession(
                 sessionId = id,
                 appId = req.opt("appId")?.toString().orEmpty(),
@@ -129,6 +140,8 @@ data class ActiveSession(
                 resolution = if (w > 0 && h > 0) "${w}×$h" else null,
                 fps = monitor?.optInt("framesPerSecond")?.takeIf { it > 0 },
                 streamingBase = base,
+                serverHost = host,
+                gpu = j.optString("gpuType").takeIf { it.isNotBlank() && it != "null" },
             )
         }
     }

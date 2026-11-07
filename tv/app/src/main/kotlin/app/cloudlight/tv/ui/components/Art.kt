@@ -65,3 +65,33 @@ fun QrCode(text: String, modifier: Modifier = Modifier) {
     }
     Image(bitmap, contentDescription = "QR code", modifier = modifier, filterQuality = FilterQuality.None, contentScale = ContentScale.Fit)
 }
+
+/**
+ * A game's title logo, transparent over whatever is behind it. While it loads, or if the
+ * store has none, the title is set in type instead, never on a box.
+ */
+@Composable
+fun GameLogo(
+    url: String?,
+    title: String,
+    modifier: Modifier = Modifier,
+    style: androidx.compose.ui.text.TextStyle = LocalType.current.display,
+    alignment: Alignment = Alignment.CenterStart,
+) {
+    val text = @Composable {
+        BasicText(title, style = style, maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+    }
+    if (url == null) {
+        text()
+        return
+    }
+    SubcomposeAsyncImage(
+        model = ImageRequest.Builder(LocalContext.current).data(url).crossfade(260).build(),
+        contentDescription = title,
+        contentScale = ContentScale.Fit,
+        alignment = alignment,
+        modifier = modifier,
+        loading = { Box(Modifier.fillMaxSize()) },
+        error = { text() },
+    )
+}

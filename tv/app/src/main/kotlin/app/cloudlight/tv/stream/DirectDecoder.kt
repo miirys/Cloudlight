@@ -1,0 +1,305 @@
+package app.cloudlight.tv.stream
+
+import android.media.MediaCodec
+import android.media.MediaCodecInfo
+import android.media.MediaCodecList
+import android.media.MediaFormat
+import android.os.Build
+import android.os.Process
+import android.util.Log
+import android.view.Surface
+import org.webrtc.EncodedImage
+import org.webrtc.JavaI420Buffer
+import org.webrtc.VideoCodecInfo
+import org.webrtc.VideoCodecStatus
+import org.webrtc.VideoDecoder
+import org.webrtc.VideoDecoderFactory
+import org.webrtc.VideoFrame
+import java.util.concurrent.ConcurrentHashMap
+
+/**
+ * Where decoded video goes. The stream screen hands us its surface; the decoder renders
+ * straight into it, so a frame goes from the network to the panel without a copy or an extra
+ * GPU pass, at the stream's full resolution.
+ */
+object VideoOutput {
+    @Volatile var surface: Surface? = null
+        set(value) {
+            field = value
+            generation++
+        }
+
+    /** Bumped whenever the surface changes, so the decoder knows to start over. */
+    @Volatile var generation = 0
+        private set
+
+    /** Asks the server for a fresh key frame (set by the running engine). */
+    @Volatile var keyframeRequester: (() -> Unit)? = null
+
+    /** Size and codec of what is on screen, for the stats overlay. */
+    @Volatile var width = 0
+    @Volatile var height = 0
+    @Volatile var decoderName: String? = null
+
+    /** Frames handed to the panel since the stream began. */
+    @Volatile var rendered = 0L
+
+    @Volatile var onFirstFrame: (() -> Unit)? = null
+}
+
+/** Advertises what this device can decode in hardware, with parameters GeForce NOW accepts. */
+class TvDecoderFactory : VideoDecoderFactory {
+
+    private val supported: Array<VideoCodecInfo> by lazy {
+        val out = ArrayList<VideoCodecInfo>()
+        if (find(MIME_HEVC) != null) {
+            // Main profile, main tier, level 5.1: enough for 4K at 60 and 1440p at 120.
+            out += VideoCodecInfo("H265", mapOf("profile-id" to "1", "tier-flag" to "0", "level-id" to "153"), emptyList())
+        }
+        if (find(MIME_AV1) != null) out += VideoCodecInfo("AV1", mapOf("profile" to "0"), emptyList())
+        if (find(MIME_AVC) != null) {
+            for (profile in listOf("640c1f", "42e01f")) {
+                out += VideoCodecInfo(
+                    "H264",
+                    mapOf("profile-level-id" to profile, "level-asymmetry-allowed" to "1", "packetization-mode" to "1"),
+                    emptyList(),
+                )
+            }
+        }
+        out.toTypedArray()
+    }
+
+    override fun getSupportedCodecs(): Array<VideoCodecInfo> = supported
+
+    override fun createDecoder(info: VideoCodecInfo): VideoDecoder? {
+        val mime = mimeOf(info.name) ?: return null
+        val codec = find(mime) ?: return null
+        return DirectDecoder(mime, codec.name)
+    }
+
+    companion object {
+        const val MIME_AVC = "video/avc"
+        const val MIME_HEVC = "video/hevc"
+        const val MIME_AV1 = "video/av01"
+
+        fun mimeOf(name: String) = when (name.uppercase()) {
+            "H264" -> MIME_AVC
+            "H265", "HEVC" -> MIME_HEVC
+            "AV1" -> MIME_AV1
+            else -> null
+        }
+
+        private val cache = ConcurrentHashMap<String, Found>()
+
+        private class Found(val info: MediaCodecInfo?)
+
+        /** The best hardware decoder for [mime], skipping software and secure-only ones. */
+        fun find(mime: String): MediaCodecInfo? = cache.getOrPut(mime) {
+            val all = runCatching { MediaCodecList(MediaCodecList.REGULAR_CODECS).codecInfos }.getOrDefault(emptyArray())
+            val candidates = all.filter { info ->
+                !info.isEncoder && info.supportedTypes.any { it.equals(mime, ignoreCase = true) } &&
+                    !info.name.endsWith(".secure") && isHardware(info)
+            }
+            Found(candidates.firstOrNull())
+        }.info
+
+        private fun isHardware(info: MediaCodecInfo): Boolean {
+            if (Build.VERSION.SDK_INT >= 29) return info.isHardwareAccelerated && !info.isSoftwareOnly
+            val n = info.name.lowercase()
+            return !(n.startsWith("omx.google.") || n.startsWith("c2.android.") || n.startsWith("omx.ffmpeg.") || n.contains("sw"))
+        }
+
+        /** Short, readable decoder description for the stats overlay. */
+        fun describe(mime: String): String? = find(mime)?.name
+    }
+}
+
+/**
+ * A WebRTC video decoder backed by MediaCodec in low-latency mode, rendering directly to
+ * [VideoOutput.surface]. WebRTC still gets a (tiny) frame per decoded picture so its timing
+ * and statistics keep working.
+ */
+class DirectDecoder(private val mime: String, private val codecName: String) : VideoDecoder {
+
+    private var callback: VideoDecoder.Callback? = null
+    private var codec: MediaCodec? = null
+    private var configuredGeneration = -1
+    private var needKeyframe = true
+    private var width = 1920
+    private var height = 1080
+    @Volatile private var running = false
+    private var output: Thread? = null
+
+    /** presentation time (µs) -> when decoding started (ns) and the frame's capture time (ns). */
+    private val pending = ConcurrentHashMap<Long, LongArray>()
+    private var lastPts = 0L
+
+    // WebRTC wants a frame object back; one tiny shared buffer serves every frame.
+    private val stub: JavaI420Buffer = JavaI420Buffer.allocate(2, 2)
+
+    override fun initDecode(settings: VideoDecoder.Settings, callback: VideoDecoder.Callback): VideoCodecStatus {
+        this.callback = callback
+        if (settings.width > 0 && settings.height > 0) {
+            width = settings.width
+            height = settings.height
+        }
+        return VideoCodecStatus.OK
+    }
+
+    override fun getImplementationName(): String = codecName
+
+    override fun decode(frame: EncodedImage, info: VideoDecoder.DecodeInfo): VideoCodecStatus {
+        val surface = VideoOutput.surface
+        if (surface == null || !surface.isValid) {
+            teardown()
+            needKeyframe = true
+            return VideoCodecStatus.NO_OUTPUT
+        }
+        if (codec == null || configuredGeneration != VideoOutput.generation) {
+            teardown()
+            if (!configure(surface)) return VideoCodecStatus.ERROR
+            needKeyframe = true
+        }
+        if (frame.encodedWidth > 0 && frame.encodedHeight > 0) {
+            width = frame.encodedWidth
+            height = frame.encodedHeight
+        }
+        if (needKeyframe) {
+            if (frame.frameType != EncodedImage.FrameType.VideoFrameKey) {
+                VideoOutput.keyframeRequester?.invoke()
+                return VideoCodecStatus.NO_OUTPUT
+            }
+            needKeyframe = false
+        }
+        val c = codec ?: return VideoCodecStatus.ERROR
+        return try {
+            val index = c.dequeueInputBuffer(INPUT_TIMEOUT_US)
+            if (index < 0) {
+                // The decoder is backed up; skip and ask for a clean restart point.
+                needKeyframe = true
+                VideoOutput.keyframeRequester?.invoke()
+                return VideoCodecStatus.NO_OUTPUT
+            }
+            val buf = c.getInputBuffer(index) ?: return VideoCodecStatus.ERROR
+            val data = frame.buffer
+            val size = data.remaining()
+            if (size > buf.capacity()) {
+                c.queueInputBuffer(index, 0, 0, 0, 0)
+                needKeyframe = true
+                return VideoCodecStatus.ERROR
+            }
+            buf.clear()
+            buf.put(data)
+            // Presentation times must be unique and rising; the capture time nearly always is.
+            var pts = frame.captureTimeNs / 1000
+            if (pts <= lastPts) pts = lastPts + 1
+            lastPts = pts
+            pending[pts] = longArrayOf(System.nanoTime(), frame.captureTimeNs)
+            if (pending.size > 64) pending.keys.sorted().take(pending.size - 32).forEach { pending.remove(it) }
+            c.queueInputBuffer(index, 0, size, pts, 0)
+            VideoCodecStatus.OK
+        } catch (t: Throwable) {
+            Log.w(TAG, "decode failed", t)
+            teardown()
+            needKeyframe = true
+            VideoCodecStatus.ERROR
+        }
+    }
+
+    private fun configure(surface: Surface): Boolean = try {
+        val c = MediaCodec.createByCodecName(codecName)
+        val format = MediaFormat.createVideoFormat(mime, width, height)
+        format.setInteger(MediaFormat.KEY_MAX_WIDTH, maxOf(width, 3840))
+        format.setInteger(MediaFormat.KEY_MAX_HEIGHT, maxOf(height, 2160))
+        format.setInteger(MediaFormat.KEY_PRIORITY, 0)
+        if (Build.VERSION.SDK_INT >= 30) {
+            val caps = c.codecInfo.getCapabilitiesForType(mime)
+            if (caps.isFeatureSupported(MediaCodecInfo.CodecCapabilities.FEATURE_LowLatency)) {
+                format.setInteger(MediaFormat.KEY_LOW_LATENCY, 1)
+            }
+        }
+        // Vendor switches that stop decoders from holding frames back. Unknown keys are ignored.
+        format.setInteger("vendor.low-latency.enable", 1)
+        format.setInteger("vendor.qti-ext-dec-low-latency.enable", 1)
+        format.setInteger("vendor.rtc-ext-dec-low-latency.enable", 1)
+        c.configure(format, surface, null, 0)
+        c.setVideoScalingMode(MediaCodec.VIDEO_SCALING_MODE_SCALE_TO_FIT)
+        c.start()
+        codec = c
+        configuredGeneration = VideoOutput.generation
+        VideoOutput.decoderName = codecName
+        running = true
+        output = Thread({ drain(c) }, "video-out").apply {
+            priority = Thread.MAX_PRIORITY
+            start()
+        }
+        true
+    } catch (t: Throwable) {
+        Log.e(TAG, "could not start $codecName", t)
+        codec = null
+        false
+    }
+
+    private fun drain(c: MediaCodec) {
+        Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_DISPLAY)
+        val info = MediaCodec.BufferInfo()
+        var first = true
+        while (running && codec === c) {
+            val index = try {
+                c.dequeueOutputBuffer(info, OUTPUT_TIMEOUT_US)
+            } catch (t: Throwable) {
+                break
+            }
+            when {
+                index >= 0 -> {
+                    // Show it now: frames are never held back for pacing.
+                    runCatching { c.releaseOutputBuffer(index, true) }
+                    VideoOutput.rendered++
+                    if (first) {
+                        first = false
+                        VideoOutput.onFirstFrame?.invoke()
+                    }
+                    val times = pending.remove(info.presentationTimeUs)
+                    val decodeMs = times?.let { ((System.nanoTime() - it[0]) / 1_000_000).toInt() }
+                    val captureNs = times?.get(1) ?: (info.presentationTimeUs * 1000)
+                    stub.retain()
+                    val f = VideoFrame(stub, 0, captureNs)
+                    runCatching { callback?.onDecodedFrame(f, decodeMs, null) }
+                    f.release()
+                }
+                index == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> runCatching {
+                    val fmt = c.outputFormat
+                    val w = if (fmt.containsKey("crop-right")) fmt.getInteger("crop-right") - fmt.getInteger("crop-left") + 1 else fmt.getInteger(MediaFormat.KEY_WIDTH)
+                    val h = if (fmt.containsKey("crop-bottom")) fmt.getInteger("crop-bottom") - fmt.getInteger("crop-top") + 1 else fmt.getInteger(MediaFormat.KEY_HEIGHT)
+                    VideoOutput.width = w
+                    VideoOutput.height = h
+                }
+            }
+        }
+    }
+
+    private fun teardown() {
+        running = false
+        val c = codec ?: return
+        codec = null
+        output?.let { t ->
+            runCatching { t.join(200) }
+        }
+        output = null
+        runCatching { c.stop() }
+        runCatching { c.release() }
+        pending.clear()
+    }
+
+    override fun release(): VideoCodecStatus {
+        teardown()
+        callback = null
+        return VideoCodecStatus.OK
+    }
+
+    companion object {
+        private const val TAG = "DirectDecoder"
+        private const val INPUT_TIMEOUT_US = 30_000L
+        private const val OUTPUT_TIMEOUT_US = 20_000L
+    }
+}

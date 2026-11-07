@@ -21,6 +21,8 @@ import app.cloudlight.tv.input.NavAction
 import app.cloudlight.tv.input.PadHub
 import app.cloudlight.tv.input.PadState
 import app.cloudlight.tv.input.UsbPadDriver
+import app.cloudlight.tv.stream.Keymap
+import app.cloudlight.tv.stream.Streamer
 import app.cloudlight.tv.ui.screens.AppRoot
 import app.cloudlight.tv.ui.theme.CloudlightTheme
 import kotlin.math.abs
@@ -31,6 +33,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var usb: UsbPadDriver
     private lateinit var settings: Settings
     private lateinit var app: AppState
+    private lateinit var streamer: Streamer
     private val scope = MainScope()
 
     /** Bluetooth (or kernel-recognised) pads that Android reads for us. */
@@ -49,10 +52,11 @@ class MainActivity : ComponentActivity() {
         hub = PadHub(::perform)
         usb = UsbPadDriver(
             this,
-            onState = { id, name, s -> hub.update(id, name, "2.4 GHz dongle", s) },
+            onState = { id, name, s -> hub.update(id, name, "USB", s) },
             onGone = { id -> hub.gone(id) },
         )
         app = AppState(applicationContext, scope)
+        streamer = Streamer(applicationContext, scope, app, settings, hub)
         setContent {
             // The whole interface is laid out in a fixed 960 × 540 dp space and drawn at the
             // window's real pixel size, so on a 4K output every glyph and edge is 4K-sharp and
@@ -60,7 +64,7 @@ class MainActivity : ComponentActivity() {
             val px = resources.displayMetrics.widthPixels.coerceAtLeast(1)
             CompositionLocalProvider(LocalDensity provides Density(px / 960f, 1f)) {
                 CloudlightTheme {
-                    AppRoot(hub, app, settings, onExit = { finish() })
+                    AppRoot(hub, app, settings, streamer, onExit = { finish() })
                 }
             }
         }
@@ -68,11 +72,12 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        // Pick up sessions started on another device while Cloudlight was in the background.
+        // Pick up sessions started on another device while the app was in the background.
         if (app.signedIn) app.refreshSessions()
     }
 
     override fun onDestroy() {
+        streamer.leave()
         scope.cancel()
         super.onDestroy()
     }
@@ -83,6 +88,12 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onStop() {
+        // Going to the home screen leaves the game running in the cloud, ready to resume.
+        when (streamer.phase) {
+            null -> Unit
+            is Streamer.Phase.Ended -> streamer.dismiss()
+            else -> streamer.leave()
+        }
         usb.stop()
         super.onStop()
     }
@@ -150,7 +161,37 @@ class MainActivity : ComponentActivity() {
                 return true
             }
         }
+        if (streamer.phase == Streamer.Phase.Live && !streamer.menuOpen && toGame(event)) return true
         return super.dispatchKeyEvent(event)
+    }
+
+    /**
+     * While a game plays, a keyboard types into it and a TV remote's arrows and OK act as
+     * the arrow keys and Enter. Back on a remote, and Ctrl+G on a keyboard, open the menu.
+     */
+    private fun toGame(event: KeyEvent): Boolean {
+        val dev = event.device ?: return false
+        if (dev.isVirtual) return false
+        val down = event.action == KeyEvent.ACTION_DOWN
+        val code = event.keyCode
+        when (code) {
+            KeyEvent.KEYCODE_BACK, KeyEvent.KEYCODE_HOME, KeyEvent.KEYCODE_VOLUME_UP, KeyEvent.KEYCODE_VOLUME_DOWN,
+            KeyEvent.KEYCODE_VOLUME_MUTE, KeyEvent.KEYCODE_POWER, KeyEvent.KEYCODE_SETTINGS,
+            -> return false
+        }
+        val keyboard = dev.keyboardType == InputDevice.KEYBOARD_TYPE_ALPHABETIC
+        if (keyboard && event.isCtrlPressed && code == KeyEvent.KEYCODE_G) {
+            if (down && event.repeatCount == 0) streamer.openMenu()
+            return true
+        }
+        val key = when {
+            keyboard -> Keymap.of(code)
+            code == KeyEvent.KEYCODE_DPAD_CENTER -> Keymap.ENTER
+            else -> Keymap.of(code)
+        } ?: return keyboard
+        if (event.action == KeyEvent.ACTION_MULTIPLE) return true
+        streamer.key(down, key, if (keyboard) Keymap.modifiers(event) else 0)
+        return true
     }
 
     override fun dispatchGenericMotionEvent(event: MotionEvent): Boolean {
@@ -186,7 +227,7 @@ class MainActivity : ComponentActivity() {
 
     private fun push(id: Int, p: AndroidPad) {
         p.state = p.state.copy(buttons = p.keys or p.hat)
-        hub.update("android:$id", p.name, "Bluetooth / Android", p.state)
+        hub.update("android:$id", p.name, "Bluetooth", p.state)
     }
 
     private fun keyBit(code: Int) = when (code) {
