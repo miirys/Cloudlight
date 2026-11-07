@@ -55,7 +55,12 @@ jobs:
         run: ./probe/make-clips.sh
 
       - name: Build APKs
-        run: ./gradlew --no-daemon :app:assembleRelease :probe:assembleRelease
+        # Retried once: dependency servers sometimes rate-limit shared runners.
+        run: |
+          ./gradlew --no-daemon :app:assembleRelease :probe:assembleRelease || {
+            sleep 60
+            ./gradlew --no-daemon :app:assembleRelease :probe:assembleRelease
+          }
 
       - name: Upload Cloudlight APK
         uses: actions/upload-artifact@v4
