@@ -230,10 +230,11 @@ class StreamEngine(
         }
     }
 
+    private val peerName = Signaling.newPeerName()
     @Volatile private var offerSeen = false
     /** Whether the rig sent its offer, which tells a missing picture from a rig that never started. */
     val offered: Boolean get() = offerSeen
-    private var signIns = 0
+    @Volatile private var signIns = 0
 
     /**
      * Signs in to the session's signaling server. If the rig stays silent, sign in again as a
@@ -242,23 +243,38 @@ class StreamEngine(
     private fun signIn(reconnect: Boolean) {
         val url = session.signalingUrl ?: throw IllegalStateException("The rig didn't say where to connect.")
         signaling?.close()
-        signaling = Signaling(url, session.id, "${config.width}x${config.height}", reconnect, signalingEvents).also { it.connect() }
         val attempt = ++signIns
+        signaling = Signaling(url, session.id, "${config.width}x${config.height}", reconnect, peerName, signalingEvents(attempt)).also { it.connect() }
         try {
             worker.schedule({
                 guarded {
-                    if (!closed && !offerSeen && attempt == signIns && signIns < 3) {
-                        Log.w(TAG, "no offer after sign-in $attempt, signing in again")
-                        listener.onProgress("Waiting for the rig")
-                        signIn(reconnect = true)
-                    }
+                    if (!closed && !offerSeen && attempt == signIns) retrySignIn("no offer after 12 s")
                 }
-            }, 9, TimeUnit.SECONDS)
+            }, 12, TimeUnit.SECONDS)
         } catch (_: RejectedExecutionException) {
         }
     }
 
-    private val signalingEvents = object : Signaling.Events {
+    /**
+     * Signs in again after the signaling socket dropped or the rig stayed silent, as GeForce
+     * NOW's clients do: a closed signaling socket doesn't mean the session ended.
+     */
+    private fun retrySignIn(reason: String) {
+        if (closed || inputReady) return
+        if (signIns >= MAX_SIGN_INS) {
+            fail(if (offerSeen) "The rig closed the connection ($reason)." else "The rig didn't start the stream ($reason).")
+            return
+        }
+        Log.w(TAG, "signing in again: $reason")
+        listener.onProgress("Reconnecting to the rig")
+        val delayMs = 1000L shl (signIns - 1).coerceIn(0, 3)
+        try {
+            worker.schedule({ guarded { if (!closed && !inputReady) signIn(reconnect = true) } }, delayMs, TimeUnit.MILLISECONDS)
+        } catch (_: RejectedExecutionException) {
+        }
+    }
+
+    private fun signalingEvents(attempt: Int) = object : Signaling.Events {
         override fun onOpen() = safe("open") { listener.onProgress("Waiting for the rig") }
         override fun onOffer(sdp: String) {
             if (offerSeen) return
@@ -270,7 +286,11 @@ class StreamEngine(
             if (remoteSet) pc?.addIceCandidate(c) else pendingCandidates += c
         }
         override fun onClosed(reason: String) = safe("signaling close") {
-            if (!closed && !inputReady) fail("The rig closed the connection ($reason).")
+            // Only the current sign-in counts; an older socket closing is expected.
+            if (attempt != signIns || closed || inputReady) return@safe
+            // Before the offer, sign in again. After it, the media connection carries on without
+            // signaling, and the no-video check catches a stream that never comes up.
+            if (!remoteSet) post { retrySignIn(reason) } else Log.w(TAG, "signaling closed after the offer: $reason")
         }
     }
 
@@ -611,5 +631,6 @@ class StreamEngine(
 
     companion object {
         private const val TAG = "StreamEngine"
+        private const val MAX_SIGN_INS = 4
     }
 }

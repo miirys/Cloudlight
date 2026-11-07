@@ -169,13 +169,12 @@ class Streamer(
         var last: SessionException? = null
         for ((i, attempt) in ladder.withIndex()) {
             // The full quality is worth trying everywhere nearby; lower steps stay on the first.
-            // At full quality, each place is also asked as the web client, which is offered
-            // different rigs and limits than the PC app.
-            val where = (if (i == 0) bases else bases.take(1)).flatMap { p -> if (i == 0) listOf(p to false, p to true) else listOf(p to false) }
+            // Always as the desktop web client, so the rig streams over WebRTC.
+            val where = (if (i == 0) bases else bases.take(1)).map { it to true }
             for ((j, entry) in where.withIndex()) {
                 val (place, asBrowser) = entry
                 val (name, base) = place
-                if (j > 0 && !asBrowser) phase = Phase.Starting("Trying ${name ?: "another server"}")
+                if (j > 0) phase = Phase.Starting("Trying ${name ?: "another server"}")
                 try {
                     val s = cm.create(base, attempt.copy(asBrowser = asBrowser))
                     notice = when {

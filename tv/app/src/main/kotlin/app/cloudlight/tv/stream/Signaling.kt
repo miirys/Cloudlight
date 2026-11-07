@@ -25,6 +25,8 @@ class Signaling(
     private val resolution: String,
     /** True when signing in again to the same session after a lost or silent connection. */
     private val reconnect: Boolean,
+    /** Kept for every sign-in of one stream: the server only accepts a reconnect under the same name. */
+    private val peerName: String,
     private val events: Events,
 ) {
     interface Events {
@@ -34,7 +36,6 @@ class Signaling(
         fun onClosed(reason: String)
     }
 
-    private val peerName = "peer-" + java.util.UUID.randomUUID().toString().replace("-", "").take(12)
     /** Our id and the rig's, as the signaling server assigns them. */
     @Volatile private var selfId = 0
     @Volatile private var rigId = 1
@@ -84,7 +85,8 @@ class Signaling(
 
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) = guard {
                 android.util.Log.w("Signaling", "failed (${response?.code})", t)
-                finish(t.message ?: "connection failed")
+                val code = response?.code?.let { " http=$it" }.orEmpty()
+                finish("${t.javaClass.simpleName}${t.message?.let { ": $it" }.orEmpty()}$code")
             }
         })
     }
@@ -168,6 +170,8 @@ class Signaling(
     }
 
     companion object {
+        fun newPeerName() = "peer-" + java.util.UUID.randomUUID().toString().replace("-", "").take(12)
+
         private const val UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/131.0.0.0 Safari/537.36"
         private val timer = Executors.newSingleThreadScheduledExecutor { r -> Thread(r, "signaling-hb").apply { isDaemon = true } }
 

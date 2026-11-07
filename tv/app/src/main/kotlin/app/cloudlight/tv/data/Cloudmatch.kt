@@ -69,7 +69,7 @@ data class LaunchRequest(
      * Introduce ourselves as the Chrome web client rather than the PC app. The two are
      * offered different rigs and limits, so when one refuses a quality the other may not.
      */
-    val asBrowser: Boolean = false,
+    val asBrowser: Boolean = true,
 )
 
 /**
@@ -82,8 +82,12 @@ class Cloudmatch(private val token: suspend () -> String) {
     private val clientId = UUID.randomUUID().toString()
     private val deviceId = UUID.randomUUID().toString()
 
-    /** Which client this session presented itself as; follow-up calls must match. */
-    @Volatile private var browser = false
+    /**
+     * Which client this session presented itself as; follow-up calls must match. The desktop
+     * web client is the default: native PC headers together with a WebRTC streamer request can
+     * get an RTSP-only rig, which never answers WebRTC signaling.
+     */
+    @Volatile private var browser = true
 
     private fun headers(b: Request.Builder, t: String, origin: Boolean): Request.Builder {
         b.header("User-Agent", if (browser) BROWSER_UA else UA)
@@ -185,6 +189,11 @@ class Cloudmatch(private val token: suspend () -> String) {
 
     private fun createBody(r: LaunchRequest): JSONObject {
         val monitor = JSONObject()
+            // The full desktop monitor descriptor, which makes the service offer its whole
+            // resolution matrix (4K and 120 fps included) to the web client.
+            .put("monitorId", 0)
+            .put("positionX", 0)
+            .put("positionY", 0)
             .put("widthInPixels", r.width)
             .put("heightInPixels", r.height)
             .put("framesPerSecond", r.fps)
@@ -270,7 +279,7 @@ class Cloudmatch(private val token: suspend () -> String) {
             .put("clientVersion", "30.0")
             .put("deviceHashId", UUID.randomUUID().toString())
             .put("internalTitle", JSONObject.NULL)
-            .put("clientPlatformName", "windows")
+            .put("clientPlatformName", if (browser) "browser" else "windows")
             .put(
                 "metaData",
                 meta(
@@ -413,8 +422,8 @@ class Cloudmatch(private val token: suspend () -> String) {
     private suspend fun <T> io(block: suspend () -> T): T = withContext(Dispatchers.IO) { block() }
 
     companion object {
-        private const val BROWSER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
-        private const val VERSION = "2.0.80.173"
+        private const val BROWSER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36"
+        private const val VERSION = "2.0.88.129"
         private const val UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 NVIDIACEFClient/HEAD/debb5919f6 GFN-PC/2.0.80.173"
         private val JSON = "application/json".toMediaType()
 
