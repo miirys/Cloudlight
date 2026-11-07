@@ -52,10 +52,12 @@ class DecodeBench(private val context: Context, private val log: (String) -> Uni
         sb.append(", low-latency mode ${if (flat.lowLatency) "on" else "unavailable"}\n")
         // Separate decoder buffering from display back-pressure: the same paced feed with the
         // standard switch only, with the Amlogic vendor switch, and without showing frames.
+        // Every variant decodes into the screen surface (zero copy); copying 4K frames out to
+        // app memory is far slower on Amlogic and is not what the client will do.
         val variants = listOf(
             Triple("standard low-latency key, shown on screen", false, true),
             Triple("plus Amlogic vendor low-latency, shown on screen", true, true),
-            Triple("plus Amlogic vendor low-latency, decode only", true, false),
+            Triple("plus Amlogic vendor low-latency, decoded to the screen surface but not shown", true, false),
         )
         for ((label, vendor, render) in variants) {
             val r = try {
@@ -148,12 +150,12 @@ class DecodeBench(private val context: Context, private val log: (String) -> Uni
         }
         if (paceFps == 0) format.setInteger(MediaFormat.KEY_OPERATING_RATE, Short.MAX_VALUE.toInt())
         try {
-            codec.configure(format, if (render) surface else null, null, 0)
+            codec.configure(format, surface, null, 0)
         } catch (t: Throwable) {
             // Some decoders reject the operating-rate hint; try once without it.
             codec.reset()
             format.removeKey(MediaFormat.KEY_OPERATING_RATE)
-            codec.configure(format, if (render) surface else null, null, 0)
+            codec.configure(format, surface, null, 0)
         }
         codec.start()
 
