@@ -39,7 +39,18 @@ data class CloudSession(
     val ready: Boolean get() = status == 2 || status == 3
 }
 
-class SessionException(message: String, val statusCode: Int = 0, val http: Int = 0) : Exception(message)
+class SessionException(
+    message: String,
+    val statusCode: Int = 0,
+    val http: Int = 0,
+    /** The service's own wording, e.g. INTERNAL_ERROR; useful for deciding whether to retry. */
+    val description: String? = null,
+) : Exception(message) {
+    /** A server-side failure that a smaller, simpler stream request often avoids. */
+    val retryable: Boolean
+        get() = statusCode == 3 || statusCode == 4 || statusCode == 5 || statusCode == 8 || http >= 500 ||
+            description?.contains("INTERNAL", ignoreCase = true) == true
+}
 
 /** Asks for the stream the user picked; [kbps] caps the video bitrate. */
 data class LaunchRequest(
@@ -51,6 +62,9 @@ data class LaunchRequest(
     val lowLatencyMode: Boolean,
     val language: String = "en_US",
     val keyboard: String = "en-US",
+    val title: String? = null,
+    /** Whether the game is in the user's library on its store; unowned games must say false. */
+    val accountLinked: Boolean = true,
 )
 
 /**
@@ -191,12 +205,12 @@ class Cloudmatch(private val token: suspend () -> String) {
             .put("hdrColorSpace", 0)
         val data = JSONObject()
             .put("appId", r.appId.toLong())
-            .put("internalTitle", JSONObject.NULL)
+            .put("internalTitle", r.title ?: JSONObject.NULL)
             .put("availableSupportedControllers", JSONArray())
             .put("networkTestSessionId", JSONObject.NULL)
             .put("parentSessionId", JSONObject.NULL)
             .put("clientIdentification", "GFN-PC")
-            .put("deviceHashId", UUID.randomUUID().toString())
+            .put("deviceHashId", deviceId)
             .put("clientVersion", "30.0")
             .put("sdkVersion", "1.0")
             .put("streamerVersion", 1)
@@ -225,7 +239,7 @@ class Cloudmatch(private val token: suspend () -> String) {
             .put("appLaunchMode", 1)
             .put("secureRTSPSupported", false)
             .put("partnerCustomData", "")
-            .put("accountLinked", true)
+            .put("accountLinked", r.accountLinked)
             .put("enablePersistingInGameSettings", true)
             .put("userAge", 26)
             .put("requestedStreamingFeatures", features)
@@ -287,7 +301,12 @@ class Cloudmatch(private val token: suspend () -> String) {
             val status = j?.optJSONObject("requestStatus")
             val code = status?.optInt("statusCode", 0) ?: 0
             if (!r.isSuccessful || (status != null && code != 1)) {
-                throw SessionException(message(code, status?.optString("statusDescription"), r.code), code, r.code)
+                val desc = status?.optString("statusDescription")?.takeIf { it.isNotBlank() && it != "null" }
+                val unified = status?.opt("unifiedErrorCode")?.let { u ->
+                    (u as? Number)?.toLong()?.let { java.lang.Long.toHexString(it).uppercase() } ?: u.toString()
+                }
+                android.util.Log.w("Session", "${req.method} ${req.url.encodedPath} -> HTTP ${r.code}, status $code, $desc, unified $unified")
+                throw SessionException(message(code, desc, r.code, unified), code, r.code, desc)
             }
             return j ?: throw SessionException("The session service sent an unreadable answer.", 0, r.code)
         }
@@ -394,7 +413,7 @@ class Cloudmatch(private val token: suspend () -> String) {
         }
 
         /** Plain-language reasons for the session service's status codes. */
-        fun message(code: Int, description: String?, http: Int): String = when (code) {
+        fun message(code: Int, description: String?, http: Int, unified: String? = null): String = when (code) {
             2 -> "GeForce NOW refused the request."
             7, 11, 50 -> "Another game is already running on your account. Resume it or end it first."
             10 -> "Too many requests in a row. Wait a moment and try again."
@@ -419,10 +438,13 @@ class Cloudmatch(private val token: suspend () -> String) {
             69 -> "You left the queue."
             else -> when {
                 http == 401 || http == 403 -> "Your sign-in has expired. Sign in again to continue."
-                http >= 500 -> "GeForce NOW had a problem starting the session. Try again."
-                !description.isNullOrBlank() && description != "null" ->
-                    "GeForce NOW couldn't start the session (${description.lowercase().replace('_', ' ')})."
-                else -> "GeForce NOW couldn't start the session."
+                else -> {
+                    // Keep the raw code visible: it's what NVIDIA support and forums go by.
+                    val ref = unified?.takeIf { it.isNotBlank() && it != "0" }
+                        ?: description?.substringAfterLast('_')?.takeIf { it.length >= 6 && it.all { c -> c.isLetterOrDigit() } }
+                        ?: if (code > 0) "status $code" else if (http > 0) "HTTP $http" else null
+                    "GeForce NOW couldn't start the game." + (ref?.let { " Error $it." } ?: "")
+                }
             }
         }
     }

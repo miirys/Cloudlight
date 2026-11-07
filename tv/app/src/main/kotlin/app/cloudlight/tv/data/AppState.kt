@@ -36,11 +36,14 @@ class AppState(context: Context, private val scope: CoroutineScope) {
         private set
     var loading by mutableStateOf(false)
         private set
-    /** The full catalog, fetched the first time Search needs it. */
-    var catalog by mutableStateOf<List<Game>>(emptyList())
+    /** GeForce NOW's featured games, for the rotating banner on Home. */
+    var featured by mutableStateOf<List<Game>>(emptyList())
         private set
-    var catalogLoading by mutableStateOf(false)
+    /** Storefront rails such as new releases and popular games. */
+    var shelves by mutableStateOf<List<Nvidia.Shelf>>(emptyList())
         private set
+    /** Games seen in search results, so sessions and links can be matched to them later. */
+    private val seen = LinkedHashMap<String, Game>()
     var error by mutableStateOf<String?>(null)
         private set
 
@@ -115,7 +118,8 @@ class AppState(context: Context, private val scope: CoroutineScope) {
         tokens = null
         profile = null
         library = emptyList()
-        catalog = emptyList()
+        featured = emptyList()
+        shelves = emptyList()
         sessions = emptyList()
     }
 
@@ -130,8 +134,18 @@ class AppState(context: Context, private val scope: CoroutineScope) {
                 val sessionsJob = scope.launch {
                     sessions = runCatching { Nvidia.activeSessions(streamingBase, token, deviceId) }.getOrDefault(emptyList())
                 }
+                val storesJob = scope.launch { runCatching { Stores.update(Nvidia.storeLabels(token)) } }
+                val storeJob = scope.launch {
+                    runCatching {
+                        val p = Nvidia.panels(token, vpc, "MARQUEE", "MAIN")
+                        featured = p["MARQUEE"].orEmpty().flatMap { it.games }.distinctBy { it.id }.take(8)
+                        shelves = p["MAIN"].orEmpty().filter { it.title.isNotBlank() }.take(8)
+                    }
+                }
+                storesJob.join()
                 library = Nvidia.library(token, vpc)
                 sessionsJob.join()
+                storeJob.join()
             } catch (e: ApiException) {
                 if (e.code == 401 || e.code == 403) {
                     signOut()
@@ -156,26 +170,26 @@ class AppState(context: Context, private val scope: CoroutineScope) {
 
     private var vpc: String? = null
 
-    fun loadCatalog() {
-        if (catalog.isNotEmpty() || catalogLoading || !signedIn) return
-        scope.launch {
-            catalogLoading = true
-            try {
-                val token = serviceToken()
-                val v = vpc ?: Nvidia.vpcId(streamingBase, token).also { vpc = it }
-                catalog = Nvidia.catalog(token, v)
-            } catch (_: Throwable) {
-                // Search still covers the library; the catalog is retried next time.
-            } finally {
-                catalogLoading = false
-            }
-        }
+    /** Searches everything GeForce NOW streams in this region. Owned copies win over catalog ones. */
+    suspend fun search(query: String): List<Game> {
+        val token = serviceToken()
+        val v = vpc ?: Nvidia.vpcId(streamingBase, token).also { vpc = it }
+        val found = Nvidia.search(token, v, query)
+        val owned = library.associateBy { it.id }
+        synchronized(seen) { for (g in found) seen[g.id] = g }
+        return found.map { owned[it.id] ?: it }
     }
 
     fun gameFor(session: ActiveSession): Game? {
         fun match(g: Game) = g.variants.any { it.id == session.appId } || g.id == session.appId
-        return library.firstOrNull(::match) ?: catalog.firstOrNull(::match)
+        return library.firstOrNull(::match)
+            ?: featured.firstOrNull(::match)
+            ?: shelves.firstNotNullOfOrNull { s -> s.games.firstOrNull(::match) }
+            ?: synchronized(seen) { seen.values.firstOrNull(::match) }
     }
+
+    /** Region the account streams from, for the About page. */
+    val region: String? get() = vpc
 
     /** A valid token for GeForce NOW's services, refreshed when it is close to expiring. */
     suspend fun serviceToken(): String {

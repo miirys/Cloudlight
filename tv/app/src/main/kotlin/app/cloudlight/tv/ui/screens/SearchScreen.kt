@@ -59,41 +59,56 @@ private val Keys = "abcdefghijklmnopqrstuvwxyz1234567890".map { it.toString() }
 private fun norm(s: String) = s.lowercase().filter { it.isLetterOrDigit() }
 
 /**
- * Finds games in the library and the whole GeForce NOW catalog. A controller types on the
- * built-in keyboard; a real keyboard types straight in.
+ * Searches everything GeForce NOW streams. Library matches show at once while the server
+ * search runs; a controller types on the built-in keyboard, a real keyboard types straight in.
  */
 @Composable
 fun SearchScreen(app: AppState, onFocusGame: (Game?) -> Unit, onOpen: (Game) -> Unit) {
     val type = LocalType.current
     var query by rememberSaveable { mutableStateOf("") }
     var focused by remember { mutableStateOf<Game?>(null) }
-    LaunchedEffect(Unit) { app.loadCatalog() }
+    var results by remember { mutableStateOf<List<Game>>(emptyList()) }
+    var searching by remember { mutableStateOf(false) }
+    var failed by remember { mutableStateOf(false) }
     LaunchedEffect(focused) {
         delay(160)
         if (focused != null) onFocusGame(focused)
     }
-
-    val results = remember(query, app.library, app.catalog) {
+    LaunchedEffect(query, app.library) {
         val q = norm(query)
+        failed = false
         if (q.isEmpty()) {
-            app.library.filter { it.lastPlayedMs > 0 }.sortedByDescending { it.lastPlayedMs }.take(20)
-        } else {
-            val owned = app.library.map { it.id }.toSet()
-            val all = app.library + app.catalog.filter { it.id !in owned }
-            all.asSequence()
-                .map { g -> g to norm(g.title) }
-                .filter { (_, t) -> t.contains(q) }
-                .sortedWith(compareBy({ !it.second.startsWith(q) }, { it.first.id !in owned }, { it.second.length }))
-                .map { it.first }
-                .take(60)
-                .toList()
+            searching = false
+            results = app.library.filter { it.lastPlayedMs > 0 }.sortedByDescending { it.lastPlayedMs }.take(20)
+            return@LaunchedEffect
+        }
+        val local = app.library.asSequence()
+            .map { g -> g to norm(g.title) }
+            .filter { (_, t) -> t.contains(q) }
+            .sortedWith(compareBy({ !it.second.startsWith(q) }, { it.second.length }))
+            .map { it.first }
+            .toList()
+        results = local
+        // Wait for a pause in typing before asking the server.
+        delay(280)
+        searching = true
+        try {
+            val remote = app.search(query.trim())
+            val ids = local.map { it.id }.toSet()
+            results = local + remote.filter { it.id !in ids }
+        } catch (c: kotlinx.coroutines.CancellationException) {
+            throw c
+        } catch (_: Throwable) {
+            failed = true
+        } finally {
+            searching = false
         }
     }
 
     Row(
         Modifier
             .fillMaxSize()
-            .padding(start = 40.dp, end = 36.dp, top = 34.dp)
+            .padding(start = 40.dp, end = 36.dp, top = TopBarHeight + 12.dp)
             .onPreviewKeyEvent { e ->
                 if (e.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                 val n = e.nativeKeyEvent
@@ -112,8 +127,7 @@ fun SearchScreen(app: AppState, onFocusGame: (Game?) -> Unit, onOpen: (Game) -> 
             },
     ) {
         Column(Modifier.width(276.dp)) {
-            BasicText("Search", Modifier.reveal(0), style = type.title)
-            Spacer(Modifier.height(14.dp))
+            Spacer(Modifier.height(8.dp))
             QueryField(query, Modifier.reveal(1))
             Spacer(Modifier.height(12.dp))
             Column(Modifier.reveal(2).focusGroup(), verticalArrangement = Arrangement.spacedBy(5.dp)) {
@@ -133,10 +147,11 @@ fun SearchScreen(app: AppState, onFocusGame: (Game?) -> Unit, onOpen: (Game) -> 
         Column(Modifier.weight(1f)) {
             AnimatedContent(
                 targetState = when {
-                    query.isBlank() -> if (results.isEmpty()) "Type a title to search every game on GeForce NOW." else "Recently played"
-                    results.isEmpty() && app.catalogLoading -> "Searching the catalog…"
-                    results.isEmpty() -> "No games match “${query.trim()}”."
-                    else -> "${results.size}${if (results.size == 60) "+" else ""} ${if (results.size == 1) "game" else "games"}"
+                    query.isBlank() -> if (results.isEmpty()) "Search every game on GeForce NOW" else "Recently played"
+                    results.isEmpty() && searching -> "Searching…"
+                    results.isEmpty() && failed -> "Search isn't reachable right now"
+                    results.isEmpty() -> "Nothing found for “${query.trim()}”"
+                    else -> "${results.size} ${if (results.size == 1) "result" else "results"}"
                 },
                 transitionSpec = { fadeIn(Motion.fade()) togetherWith fadeOut(Motion.fade()) },
                 modifier = Modifier.reveal(1).padding(top = 8.dp, bottom = 6.dp),

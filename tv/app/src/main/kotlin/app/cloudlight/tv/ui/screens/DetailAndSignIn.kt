@@ -135,7 +135,7 @@ fun GameDetailScreen(
             }
             Spacer(Modifier.height(22.dp))
             Row(Modifier.reveal(3), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                val stores = game.variants.map { Game.storeName(it.store) }.distinct()
+                val stores = game.stores
                 if (stores.isNotEmpty()) InfoChip("Through ${stores.joinToString(", ")}")
                 InfoChip("${settings.mode.label}  ·  ${settings.bitrateMbps} Mbps  ·  ${settings.codec.label}")
             }
@@ -170,7 +170,7 @@ fun SignInScreen(app: AppState) {
                 BasicText("Sign in to GeForce NOW", Modifier.reveal(0), style = type.display)
                 Spacer(Modifier.height(14.dp))
                 BasicText(
-                    "Scan the code with your phone and approve the sign-in there. Your library and any sessions running on your other devices will appear here.",
+                    "Scan the code with your phone and approve the sign-in there.",
                     Modifier.reveal(1),
                     style = type.body,
                 )

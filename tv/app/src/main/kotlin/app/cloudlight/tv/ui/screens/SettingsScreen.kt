@@ -1,15 +1,17 @@
 package app.cloudlight.tv.ui.screens
 
-import android.os.Build
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,8 +31,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.ExitToApp
-import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material.icons.rounded.AccountCircle
+import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.rounded.Star
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -41,214 +46,213 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.foundation.focusGroup
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-import app.cloudlight.tv.BuildConfig
 import app.cloudlight.tv.GameLanguage
 import app.cloudlight.tv.Settings
 import app.cloudlight.tv.StatsCorner
 import app.cloudlight.tv.StatsMode
 import app.cloudlight.tv.StreamMode
 import app.cloudlight.tv.VideoCodec
-import app.cloudlight.tv.stream.TvDecoderFactory
-import app.cloudlight.tv.ui.components.ChoiceRow
-import app.cloudlight.tv.ui.components.PivotScroll
-import app.cloudlight.tv.ui.components.ToggleRow
-import app.cloudlight.tv.ui.motion.RevealPage
-import app.cloudlight.tv.ui.motion.reveal
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.scaleOut
 import app.cloudlight.tv.data.AppState
 import app.cloudlight.tv.input.Btn
 import app.cloudlight.tv.input.PadHub
 import app.cloudlight.tv.input.PadInfo
-import app.cloudlight.tv.ui.components.GlassButton
+import app.cloudlight.tv.ui.components.ActionSetting
+import app.cloudlight.tv.ui.components.GameArt
+import app.cloudlight.tv.ui.components.PivotScroll
 import app.cloudlight.tv.ui.components.Pressable
-import app.cloudlight.tv.ui.components.glass
+import app.cloudlight.tv.ui.components.SettingsFocus
+import app.cloudlight.tv.ui.components.SettingsGroup
+import app.cloudlight.tv.ui.components.SettingsList
+import app.cloudlight.tv.ui.components.SwitchSetting
+import app.cloudlight.tv.ui.components.ValueSetting
 import app.cloudlight.tv.ui.components.onFocusColor
 import app.cloudlight.tv.ui.motion.Motion
+import app.cloudlight.tv.ui.motion.RevealPage
+import app.cloudlight.tv.ui.motion.reveal
 import app.cloudlight.tv.ui.theme.LocalType
 import app.cloudlight.tv.ui.theme.Palette
 
-private enum class Page(val label: String) {
-    STREAM("Stream quality"), PLAYING("While playing"), CONTROLLER("Controllers"), DISPLAY("Display"), ACCOUNT("Account"), ABOUT("About")
+private enum class Page(val label: String, val icon: ImageVector) {
+    STREAM("Stream", Icons.Rounded.PlayArrow),
+    GAME("In game", Icons.Rounded.Settings),
+    CONTROLLERS("Controllers", Icons.Rounded.Star),
+    ACCOUNT("Account", Icons.Rounded.AccountCircle),
+    ABOUT("About", Icons.Rounded.Info),
 }
+
+private val PageItemHeight = 34.dp
+private val PageItemGap = 4.dp
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun SettingsScreen(hub: PadHub, app: AppState, settings: Settings) {
-    val type = LocalType.current
     var page by remember { mutableStateOf(Page.STREAM) }
     val pageFocus = remember { Page.entries.associateWith { FocusRequester() } }
-    val pillY by animateDpAsState(38.dp * page.ordinal, Motion.focus(), label = "pill")
-    Row(Modifier.fillMaxSize().padding(start = 40.dp, end = 48.dp, top = 34.dp, bottom = 34.dp)) {
-        Column(Modifier.width(200.dp)) {
-            BasicText("Settings", Modifier.reveal(0).padding(start = 12.dp, bottom = 16.dp), style = type.title)
-            Box(
-                Modifier
-                    .reveal(1)
-                    // Coming back from a panel always lands on the open page, so it never
-                    // switches pages by accident.
-                    .focusProperties { enter = { pageFocus.getValue(page) } }
-                    .focusGroup(),
-            ) {
-                Box(Modifier.offset(y = pillY).fillMaxWidth().height(34.dp).background(Palette.glassStrong, RoundedCornerShape(10.dp)))
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    for (p in Page.entries) {
-                        val selected = p == page
-                        Pressable(
-                            onClick = { page = p },
-                            modifier = Modifier.fillMaxWidth().height(34.dp),
-                            shape = RoundedCornerShape(10.dp),
-                            focusedScale = 1.03f,
-                            color = Color.Transparent,
-                            border = false,
-                            focusRequester = pageFocus.getValue(p),
-                        ) { focused ->
-                            LaunchedEffect(focused) { if (focused) page = p }
-                            val fg = onFocusColor(focused, if (selected) Palette.text else Palette.textSecondary)
-                            BasicText(p.label, Modifier.fillMaxWidth().padding(horizontal = 12.dp), style = type.label.copy(color = fg))
+    val pillY by animateDpAsState((PageItemHeight + PageItemGap) * page.ordinal, Motion.focus(), label = "pill")
+    Row(Modifier.fillMaxSize().padding(start = 40.dp, end = 40.dp, top = TopBarHeight + 18.dp)) {
+        Box(
+            Modifier
+                .width(176.dp)
+                .reveal(0)
+                // Coming back from the list always lands on the open page.
+                .focusProperties { enter = { pageFocus.getValue(page) } }
+                .focusGroup(),
+        ) {
+            Box(Modifier.offset(y = pillY).fillMaxWidth().height(PageItemHeight).background(Palette.glassStrong, RoundedCornerShape(50)))
+            Column(verticalArrangement = Arrangement.spacedBy(PageItemGap)) {
+                for (p in Page.entries) {
+                    Pressable(
+                        onClick = { page = p },
+                        modifier = Modifier.fillMaxWidth().height(PageItemHeight),
+                        shape = RoundedCornerShape(50),
+                        focusedScale = 1.03f,
+                        color = Color.Transparent,
+                        border = false,
+                        focusRequester = pageFocus.getValue(p),
+                    ) { focused ->
+                        LaunchedEffect(focused) { if (focused) page = p }
+                        val fg = onFocusColor(focused, if (p == page) Palette.text else Palette.textSecondary)
+                        Row(Modifier.fillMaxSize().padding(start = 14.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Image(p.icon, null, Modifier.size(14.dp), colorFilter = ColorFilter.tint(fg))
+                            Spacer(Modifier.width(10.dp))
+                            BasicText(p.label, style = LocalType.current.label.copy(color = fg))
                         }
                     }
                 }
             }
         }
-        Spacer(Modifier.width(28.dp))
+        Spacer(Modifier.width(36.dp))
         AnimatedContent(
             targetState = page,
             modifier = Modifier.fillMaxSize(),
             transitionSpec = {
-                // Rows of the new page cascade in (reveal); the old page just steps aside.
-                fadeIn(tween(160, delayMillis = 60)).togetherWith(fadeOut(tween(120)) + scaleOut(tween(200), targetScale = 0.98f))
+                fadeIn(tween(160, delayMillis = 60)).togetherWith(fadeOut(tween(110)) + scaleOut(tween(180), targetScale = 0.985f))
             },
             label = "page",
         ) { p ->
             RevealPage(key = p) {
-                PivotScroll(leadingFraction = 0.32f) {
-                    Column(
-                        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(top = 46.dp, bottom = 40.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        when (p) {
-                            Page.STREAM -> StreamPage(settings)
-                            Page.PLAYING -> PlayingPage(settings)
-                            Page.CONTROLLER -> ControllerPage(hub)
-                            Page.DISPLAY -> DisplayPage()
-                            Page.ACCOUNT -> AccountPage(app)
-                            Page.ABOUT -> AboutPage()
-                        }
-                    }
+                when (p) {
+                    Page.STREAM -> ListPage { StreamPage(settings) }
+                    Page.GAME -> ListPage { GamePage(settings) }
+                    Page.CONTROLLERS -> ControllerPage(hub)
+                    Page.ACCOUNT -> ListPage { AccountPage(app) }
+                    Page.ABOUT -> AboutPage(app)
                 }
             }
         }
     }
 }
 
+/** A scrolling settings list with the focused row's hint underneath. */
 @Composable
-private fun Intro(text: String, index: Int = 0) {
-    BasicText(text, Modifier.reveal(index).padding(start = 2.dp, bottom = 8.dp), style = LocalType.current.body)
+private fun ListPage(content: @Composable () -> Unit) {
+    val focus = remember { SettingsFocus() }
+    Column(Modifier.fillMaxSize()) {
+        Box(Modifier.weight(1f).fillMaxWidth()) {
+            PivotScroll(leadingFraction = 0.3f) {
+                Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 24.dp)) {
+                    SettingsList(focus, Modifier.reveal(1)) { content() }
+                }
+            }
+        }
+        // One line of help for the focused row, in the same place every time.
+        AnimatedContent(
+            targetState = if (focus.active) focus.hint else null,
+            transitionSpec = { fadeIn(Motion.fade()) togetherWith fadeOut(Motion.fade()) },
+            modifier = Modifier.fillMaxWidth().height(48.dp).padding(start = 16.dp, top = 6.dp),
+            label = "hint",
+        ) { h ->
+            if (h != null) BasicText(h, style = LocalType.current.body)
+        }
+    }
 }
+
+private fun gbPerHour(mbps: Int) = mbps * 3600 / 8 / 1000.0
 
 @Composable
 private fun StreamPage(settings: Settings) {
-    Intro("These apply to the next game you start. Press A on a setting to see its choices.")
-    ChoiceRow(
-        "Resolution and frame rate",
+    SettingsGroup("Picture")
+    ValueSetting(
+        "Resolution",
         StreamMode.entries.map { it.label },
         settings.mode.ordinal,
         { settings.cycleMode(it - settings.mode.ordinal) },
-        Modifier.reveal(1),
-        hint = "For 120 fps, set your TV and streaming device to a 120 Hz output first. 4K at 120 fps needs an Ultimate membership.",
+        hint = "Set your TV to 120 Hz to stream at 120 fps. 4K at 120 fps needs Ultimate.",
     )
     val bi = Settings.BITRATES.indexOf(settings.bitrateMbps).coerceAtLeast(0)
-    ChoiceRow(
+    ValueSetting(
         "Maximum bitrate",
         Settings.BITRATES.map { "$it Mbps" },
         bi,
         { settings.stepBitrate(it - bi) },
-        Modifier.reveal(2),
-        hint = "Higher is sharper but needs a faster connection. About 70 % of your measured speed works well.",
+        hint = "Up to %.0f GB an hour. Lower it if the picture stutters.".format(gbPerHour(settings.bitrateMbps)),
     )
-    ChoiceRow(
+    ValueSetting(
         "Video codec",
         VideoCodec.entries.map { it.label },
         settings.codec.ordinal,
         { settings.cycleCodec(it - settings.codec.ordinal) },
-        Modifier.reveal(3),
-        hint = "Automatic picks the most efficient codec this device decodes in hardware.",
+        hint = "Automatic picks the best one your TV can decode.",
     )
-    ToggleRow(
-        "10-bit colour",
-        settings.tenBit,
-        settings::toggleTenBit,
-        Modifier.reveal(4),
-        hint = "Smoother gradients and less banding. Uses HEVC or AV1.",
-    )
-    ToggleRow(
-        "Low-latency mode",
-        settings.lowLatency,
-        settings::toggleLowLatency,
-        Modifier.reveal(5),
-        hint = "Turns on NVIDIA Reflex in supported games when streaming at 120 fps.",
-    )
-    ChoiceRow(
+    SwitchSetting("10-bit colour", settings.tenBit, settings::toggleTenBit, hint = "Smoother skies and shadows. Needs HEVC or AV1.")
+    SettingsGroup("Game")
+    SwitchSetting("NVIDIA Reflex", settings.lowLatency, settings::toggleLowLatency, hint = "Lower input lag in supported games at 120 fps.")
+    ValueSetting(
         "Game language",
         GameLanguage.entries.map { it.label },
         settings.language.ordinal,
         { settings.cycleLanguage(it - settings.language.ordinal) },
-        Modifier.reveal(6),
-        hint = "The language games launch in, where they offer it.",
+        hint = "Used by games that offer more than one language.",
     )
 }
 
 @Composable
-private fun PlayingPage(settings: Settings) {
-    Intro("Everything here can also be changed during a game from the stream menu.")
-    ChoiceRow(
-        "Performance overlay",
+private fun GamePage(settings: Settings) {
+    SettingsGroup("Overlay")
+    ValueSetting(
+        "Performance stats",
         StatsMode.entries.map { it.label },
         settings.stats.ordinal,
         { settings.setStatsMode(StatsMode.entries[it]) },
-        Modifier.reveal(1),
-        hint = "Compact shows frame rate, latency and bitrate. Detailed adds decoding, network and session details.",
+        hint = "Also in the stream menu while you play.",
     )
-    ChoiceRow(
-        "Overlay position",
+    ValueSetting(
+        "Stats position",
         StatsCorner.entries.map { it.label },
         settings.statsCorner.ordinal,
         { settings.cycleCorner(it - settings.statsCorner.ordinal) },
-        Modifier.reveal(2),
     )
+    SwitchSetting("Session timer", settings.sessionTimer, settings::toggleTimer, hint = "Shows how long you've played in the stream menu.")
+    SettingsGroup("Controls")
     val hi = Settings.HOLD_TIMES.indexOf(settings.holdToOpenMs).coerceAtLeast(0)
-    ChoiceRow(
-        "Hold Start to open the menu",
-        Settings.HOLD_TIMES.map { if (it < 1000) "%.2f s".format(it / 1000f).replace(".00", "") else "%.1f s".format(it / 1000f) },
+    ValueSetting(
+        "Hold Start for menu",
+        Settings.HOLD_TIMES.map { ms -> (ms / 1000.0).let { v -> if (v == Math.floor(v)) "${v.toInt()} s" else "$v s" } },
         hi,
         { settings.stepHold(it - hi) },
-        Modifier.reveal(3),
-        hint = "A quick press of Start still goes to the game. The Guide button and the remote's Back key open the menu too.",
-    )
-    ChoiceRow(
-        "Game volume",
-        (0..10).map { "${it * 10} %" },
-        settings.volume / 10,
-        { settings.stepVolume(it - settings.volume / 10) },
-        Modifier.reveal(4),
+        hint = "A quick press still goes to the game. Guide opens the menu too.",
     )
     val mi = Settings.MOUSE_SPEEDS.indexOfFirst { it >= settings.mouseSpeed - 0.01f }.coerceAtLeast(0)
-    ChoiceRow(
+    ValueSetting(
         "Mouse speed",
         Settings.MOUSE_SPEEDS.map { "${(it * 100).toInt()} %" },
         mi,
         { settings.stepMouseSpeed(it - mi) },
-        Modifier.reveal(5),
-        hint = "A USB or Bluetooth mouse is locked to the game while it plays.",
+    )
+    SettingsGroup("Sound")
+    ValueSetting(
+        "Game volume",
+        (0..10).map { "${it * 10} %" },
+        settings.volume / 10,
+        { settings.stepVolume(it - settings.volume / 10) },
     )
 }
 
@@ -256,29 +260,39 @@ private fun PlayingPage(settings: Settings) {
 private fun ControllerPage(hub: PadHub) {
     val pads by hub.pads.collectAsState()
     val type = LocalType.current
-    Intro("Every connected controller, live. Press buttons to see them light up. Up to four play at once.")
-    if (pads.isEmpty()) {
-        Box(Modifier.reveal(1).fillMaxWidth().glass(RoundedCornerShape(12.dp)).padding(16.dp)) {
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 30.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        if (pads.isEmpty()) {
+            Column(Modifier.reveal(1).padding(top = 18.dp, start = 4.dp)) {
+                BasicText("No controllers connected", style = type.title)
+                Spacer(Modifier.height(8.dp))
+                BasicText("Pair one in your TV's Bluetooth settings, or plug in a USB controller or its receiver.", style = type.body)
+            }
+        } else {
             BasicText(
-                "No controller yet. Pair one over Bluetooth in Android's settings, or plug in a USB controller or its wireless " +
-                    "receiver and press a button. If Android asks whether the app may use the device, tick Always and choose OK.",
-                style = type.body,
+                if (pads.size == 1) "1 controller" else "${pads.size} controllers",
+                Modifier.reveal(1).padding(start = 4.dp, top = 18.dp),
+                style = type.caption.copy(color = Palette.textTertiary),
             )
         }
+        pads.forEachIndexed { i, p -> Box(Modifier.reveal(2 + i)) { PadView(i + 1, p) } }
     }
-    pads.forEachIndexed { i, p -> Box(Modifier.reveal(1 + i)) { PadCard(p) } }
 }
 
+/** A live picture of one controller: sticks, triggers and buttons light up as you press them. */
 @Composable
-private fun PadCard(p: PadInfo) {
+private fun PadView(player: Int, p: PadInfo) {
     val type = LocalType.current
-    Column(Modifier.fillMaxWidth().glass(RoundedCornerShape(14.dp)).padding(16.dp)) {
+    Column(Modifier.fillMaxWidth().padding(horizontal = 4.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            BasicText(p.name, Modifier.weight(1f), style = type.headline)
-            BasicText("${p.route}  ·  ${p.reportsPerSecond} reports/s", style = type.caption)
+            Box(Modifier.size(22.dp).background(Palette.white, CircleShape), contentAlignment = Alignment.Center) {
+                BasicText("$player", style = type.label.copy(color = Palette.black))
+            }
+            Spacer(Modifier.width(10.dp))
+            BasicText(p.name, Modifier.weight(1f), style = type.headline, maxLines = 1)
+            BasicText(p.route, style = type.caption)
         }
-        Spacer(Modifier.height(12.dp))
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+        Spacer(Modifier.height(14.dp))
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(18.dp)) {
             Stick("L", p.state.lx, p.state.ly, p.state.has(Btn.LS))
             Stick("R", p.state.rx, p.state.ry, p.state.has(Btn.RS))
             Trigger("LT", p.state.lt)
@@ -292,7 +306,33 @@ private fun PadCard(p: PadInfo) {
                 }
             }
         }
+        Spacer(Modifier.height(14.dp))
+        Box(Modifier.fillMaxWidth().height(0.75.dp).background(Palette.hairline))
     }
+}
+
+@Composable
+private fun AccountPage(app: AppState) {
+    val p = app.profile
+    val type = LocalType.current
+    if (p == null) {
+        SettingsGroup("Not signed in")
+        BasicText("Sign in from Home.", Modifier.padding(start = 16.dp), style = type.body)
+        return
+    }
+    Row(Modifier.padding(start = 16.dp, top = 16.dp, bottom = 14.dp), verticalAlignment = Alignment.CenterVertically) {
+        Box(Modifier.size(48.dp).clip(CircleShape).background(Palette.glassStrong), contentAlignment = Alignment.Center) {
+            if (p.avatar != null) GameArt(p.avatar, "", Modifier.fillMaxSize())
+            else BasicText(p.name.take(1).uppercase(), style = type.title)
+        }
+        Spacer(Modifier.width(14.dp))
+        Column {
+            BasicText(p.name, style = type.title)
+            BasicText(listOfNotNull(p.email, p.tier).joinToString("  ·  "), style = type.body)
+        }
+    }
+    ActionSetting("Refresh library", app::refresh, value = "${app.library.size} games", hint = "Picks up games you added in another app.")
+    ActionSetting("Sign out", app::signOut, hint = "You can sign back in with your phone.")
 }
 
 @Composable
@@ -347,69 +387,3 @@ private fun Trigger(label: String, v: Float) {
     }
 }
 
-@Composable
-private fun DisplayPage() {
-    val display = LocalView.current.display
-    val type = LocalType.current
-    val current = display?.mode
-    val best = display?.supportedModes?.maxWithOrNull(compareBy({ it.refreshRate }, { it.physicalHeight }))
-    Intro("Android apps play at the output mode your device is set to, so pick the resolution and refresh rate in its display settings.")
-    Column(Modifier.reveal(1).fillMaxWidth().glass(RoundedCornerShape(12.dp)).padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        BasicText(
-            "Output now: " + (current?.let { "${it.physicalWidth} × ${it.physicalHeight} at ${"%.0f".format(it.refreshRate)} Hz" } ?: "unknown"),
-            style = type.headline,
-        )
-        if (best != null && current != null && best.refreshRate > current.refreshRate + 1) {
-            BasicText(
-                "Your display also offers ${best.physicalWidth} × ${best.physicalHeight} at ${"%.0f".format(best.refreshRate)} Hz. Switch to it before streaming at that frame rate.",
-                style = type.body,
-            )
-        }
-        BasicText("The interface is drawn at the full output resolution, so a 4K output gets a 4K interface.", style = type.caption)
-    }
-    val decoders = listOf("HEVC" to TvDecoderFactory.MIME_HEVC, "AV1" to TvDecoderFactory.MIME_AV1, "H.264" to TvDecoderFactory.MIME_AVC)
-        .filter { TvDecoderFactory.find(it.second) != null }
-        .map { it.first }
-    Column(Modifier.reveal(2).fillMaxWidth().glass(RoundedCornerShape(12.dp)).padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        BasicText("Hardware video decoding", style = type.headline)
-        BasicText(
-            if (decoders.isEmpty()) "No hardware video decoder was found, so streaming may not work on this device."
-            else "This device decodes ${decoders.joinToString(", ")} in hardware. Video goes straight from the decoder to the screen in low-latency mode.",
-            style = type.body,
-        )
-    }
-}
-
-@Composable
-private fun AccountPage(app: AppState) {
-    val type = LocalType.current
-    val p = app.profile
-    if (p == null) {
-        Intro("You are not signed in. Go to Home to sign in with your phone.")
-        return
-    }
-    Intro("Signed in to GeForce NOW.")
-    Column(Modifier.reveal(1).fillMaxWidth().glass(RoundedCornerShape(12.dp)).padding(16.dp)) {
-        BasicText(p.name, style = type.headline)
-        if (p.email != null) BasicText(p.email, style = type.body)
-        Spacer(Modifier.height(4.dp))
-        BasicText("${app.library.size} games in your library", style = type.caption)
-    }
-    Spacer(Modifier.height(6.dp))
-    Row(Modifier.reveal(2), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        GlassButton("Refresh library", app::refresh, icon = Icons.Rounded.Refresh)
-        GlassButton("Sign out", app::signOut, icon = Icons.Rounded.ExitToApp)
-    }
-}
-
-@Composable
-private fun AboutPage() {
-    val type = LocalType.current
-    Intro("Cloudlight ${BuildConfig.VERSION_NAME}, a GeForce NOW client for Android TV.")
-    Column(Modifier.reveal(1).fillMaxWidth().glass(RoundedCornerShape(12.dp)).padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        BasicText("Android ${Build.VERSION.RELEASE} on ${Build.MANUFACTURER} ${Build.MODEL}", style = type.bodyStrong)
-        BasicText("Streaming uses WebRTC, the same technology as GeForce NOW in a browser.", style = type.caption)
-        BasicText("Cloudlight is not affiliated with NVIDIA. GeForce NOW is a trademark of NVIDIA Corporation.", style = type.caption)
-        BasicText("Inter typeface by Rasmus Andersson, SIL Open Font License 1.1.", style = type.caption)
-    }
-}

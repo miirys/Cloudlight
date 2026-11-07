@@ -4,7 +4,16 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.time.Instant
 
-data class Variant(val id: String, val store: String, val lastPlayedMs: Long, val selected: Boolean)
+data class Variant(
+    val id: String,
+    /** The store's code, e.g. STEAM or HOYOPLAY. */
+    val store: String,
+    val lastPlayedMs: Long,
+    val selected: Boolean,
+    /** In the user's library on that store (bought, synced or added by hand). */
+    val owned: Boolean = false,
+    val storeUrl: String? = null,
+)
 
 data class Game(
     val id: String,
@@ -23,7 +32,10 @@ data class Game(
     val variants: List<Variant>,
 ) {
     val lastPlayedMs: Long get() = variants.maxOfOrNull { it.lastPlayedMs } ?: 0L
-    val store: String? get() = (variants.firstOrNull { it.selected } ?: variants.firstOrNull())?.store?.let(::storeName)
+    val store: String? get() = (variants.firstOrNull { it.selected } ?: variants.firstOrNull())?.let { Stores.label(it, publisher) }
+
+    /** Every store this game can be played from, by name. */
+    val stores: List<String> get() = variants.map { Stores.label(it, publisher) }.distinct()
 
     companion object {
         fun parse(j: JSONObject): Game? {
@@ -40,6 +52,8 @@ data class Game(
                     store = v.optString("appStore"),
                     lastPlayedMs = lib?.optString("lastPlayedDate")?.let(::parseTime) ?: 0L,
                     selected = lib?.optBoolean("selected") == true,
+                    owned = lib?.optString("status") in setOf("MANUAL", "PLATFORM_SYNC", "IN_LIBRARY"),
+                    storeUrl = v.optString("storeUrl").takeIf { it.startsWith("http") },
                 )
             }
             val genres = j.optJSONArray("genres")?.let { a -> (0 until a.length()).map { a.optString(it) }.filter { it.isNotBlank() } }.orEmpty()
@@ -77,18 +91,7 @@ data class Game(
 
         private fun prettyGenre(s: String) = s.lowercase().split('_', ' ').joinToString(" ") { w -> w.replaceFirstChar { it.uppercase() } }
 
-        fun storeName(code: String) = when (code.uppercase()) {
-            "STEAM" -> "Steam"
-            "EPIC" -> "Epic Games Store"
-            "EPIC_GAMES_STORE" -> "Epic Games Store"
-            "UPLAY", "UBISOFT", "UBISOFT_CONNECT" -> "Ubisoft Connect"
-            "ORIGIN", "EA_APP" -> "EA app"
-            "BATTLENET", "BATTLE_NET" -> "Battle.net"
-            "XBOX", "MICROSOFT" -> "Xbox"
-            "GOG" -> "GOG"
-            "NONE", "" -> "GeForce NOW"
-            else -> code.lowercase().replaceFirstChar { it.uppercase() }
-        }
+        fun storeName(code: String) = Stores.label(code)
     }
 }
 
@@ -144,5 +147,117 @@ data class ActiveSession(
                 gpu = j.optString("gpuType").takeIf { it.isNotBlank() && it != "null" },
             )
         }
+    }
+}
+
+/**
+ * Store names as GeForce NOW labels them. The service's own list is loaded at sign-in; the
+ * built-in names cover the common stores until then, and launchers the service calls NONE or
+ * UNKNOWN are named from their store page or publisher.
+ */
+object Stores {
+    @Volatile private var labels: Map<String, String> = emptyMap()
+
+    fun update(map: Map<String, String>) {
+        if (map.isNotEmpty()) labels = map.mapKeys { it.key.uppercase() }
+    }
+
+    private val builtIn = mapOf(
+        "STEAM" to "Steam",
+        "EPIC" to "Epic Games Store",
+        "EPIC_GAMES_STORE" to "Epic Games Store",
+        "EGS" to "Epic Games Store",
+        "UPLAY" to "Ubisoft Connect",
+        "UBISOFT" to "Ubisoft Connect",
+        "UBISOFT_CONNECT" to "Ubisoft Connect",
+        "ORIGIN" to "EA app",
+        "EA_APP" to "EA app",
+        "EA" to "EA app",
+        "BATTLENET" to "Battle.net",
+        "BATTLE_NET" to "Battle.net",
+        "XBOX" to "Xbox",
+        "MICROSOFT" to "Xbox",
+        "MICROSOFT_STORE" to "Microsoft Store",
+        "GOG" to "GOG",
+        "HOYOPLAY" to "HoYoPlay",
+        "HOYOVERSE" to "HoYoPlay",
+        "MIHOYO" to "HoYoPlay",
+        "KURO" to "Kuro Games",
+        "KUROGAMES" to "Kuro Games",
+        "WUTHERING_WAVES" to "Kuro Games",
+        "ROCKSTAR" to "Rockstar Games Launcher",
+        "ROCKSTAR_GAMES_LAUNCHER" to "Rockstar Games Launcher",
+        "WARGAMING" to "Wargaming Game Center",
+        "WGC" to "Wargaming Game Center",
+        "GAIJIN" to "Gaijin",
+        "BETHESDA" to "Bethesda.net",
+        "ARC" to "Arc",
+        "ITCH" to "itch.io",
+        "NEXON" to "Nexon",
+        "NCSOFT" to "NC Launcher",
+        "PLAYSTATION" to "PlayStation PC",
+        "GAMEPASS" to "PC Game Pass",
+        "PC_GAME_PASS" to "PC Game Pass",
+        "GRYPHLINK" to "Gryphline",
+        "GRYPHLINE" to "Gryphline",
+        "INFOLD" to "Infold Games",
+        "LEVEL_INFINITE" to "Level Infinite",
+        "GARENA" to "Garena",
+        "KAKAO" to "Kakao Games",
+        "STOVE" to "STOVE",
+        "SMILEGATE" to "STOVE",
+        "PEARL_ABYSS" to "Pearl Abyss",
+        "DIGITAL_EXTREMES" to "Digital Extremes",
+        "RIOT" to "Riot Client",
+        "RIOT_GAMES" to "Riot Client",
+        "MYTONA" to "Mytona",
+        "TENCENT" to "Tencent",
+        "NETEASE" to "NetEase",
+        "GFN" to "GeForce NOW",
+        "FREE" to "Free to play",
+    )
+
+    private val hosts = listOf(
+        "steampowered.com" to "Steam",
+        "epicgames.com" to "Epic Games Store",
+        "ubisoft.com" to "Ubisoft Connect",
+        "ea.com" to "EA app",
+        "battle.net" to "Battle.net",
+        "blizzard.com" to "Battle.net",
+        "xbox.com" to "Xbox",
+        "microsoft.com" to "Microsoft Store",
+        "gog.com" to "GOG",
+        "hoyoverse.com" to "HoYoPlay",
+        "hoyoplay" to "HoYoPlay",
+        "mihoyo.com" to "HoYoPlay",
+        "kurogames" to "Kuro Games",
+        "wutheringwaves" to "Kuro Games",
+        "rockstargames.com" to "Rockstar Games Launcher",
+        "wargaming.net" to "Wargaming Game Center",
+        "gaijin.net" to "Gaijin",
+        "gryphline.com" to "Gryphline",
+        "infoldgames.com" to "Infold Games",
+        "levelinfinite.com" to "Level Infinite",
+        "nexon.com" to "Nexon",
+        "riotgames.com" to "Riot Client",
+        "playstation.com" to "PlayStation PC",
+    )
+
+    fun label(code: String): String {
+        val c = code.trim().uppercase()
+        labels[c]?.let { return it }
+        builtIn[c]?.let { return it }
+        if (c.isEmpty() || c == "NONE" || c == "UNKNOWN" || c == "OTHER") return "Publisher launcher"
+        return c.lowercase().split('_', ' ').joinToString(" ") { w -> w.replaceFirstChar { it.uppercase() } }
+    }
+
+    fun label(v: Variant, publisher: String? = null): String {
+        val c = v.store.trim().uppercase()
+        val unnamed = c.isEmpty() || c == "NONE" || c == "UNKNOWN" || c == "OTHER"
+        if (!unnamed) return label(c)
+        val url = v.storeUrl?.lowercase()
+        if (url != null) hosts.firstOrNull { url.contains(it.first) }?.let { return it.second }
+        // The game ships with its own launcher; the publisher is the most useful name for it.
+        return publisher?.takeIf { it.isNotBlank() }?.let { "$it launcher" } ?: "Own launcher"
     }
 }

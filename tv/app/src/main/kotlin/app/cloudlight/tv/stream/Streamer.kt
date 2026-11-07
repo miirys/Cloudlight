@@ -100,10 +100,21 @@ class Streamer(
             resume(running, g)
             return
         }
-        val appId = (g.variants.firstOrNull { it.selected } ?: g.variants.firstOrNull())?.id ?: g.id
+        val v = g.variants.firstOrNull { it.selected } ?: g.variants.firstOrNull()
+        val appId = v?.id ?: g.id
         begin(g) { cm ->
             phase = Phase.Starting("Requesting a rig")
-            var s = cm.create(app.streamingBase, request().copy(appId = appId))
+            val ask = request().copy(appId = appId, title = g.title, accountLinked = v?.owned ?: true)
+            var s = try {
+                cm.create(app.streamingBase, ask)
+            } catch (e: SessionException) {
+                // A server-side refusal of the stream shape (most often a resolution or colour
+                // depth the rig or membership can't do) usually goes through at 1080p 60.
+                if (!e.retryable || (ask.width <= 1920 && ask.fps <= 60 && ask.bitDepth == 8)) throw e
+                phase = Phase.Starting("Trying again at 1080p")
+                cm.create(app.streamingBase, ask.copy(width = 1920, height = 1080, fps = 60, bitDepth = 8))
+                    .also { notice = "Started at 1080p and 60 fps. GeForce NOW didn't accept ${ask.height}p at ${ask.fps} fps." }
+            }
             session = s
             s = waitForSeat(cm, s)
             s

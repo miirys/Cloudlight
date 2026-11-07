@@ -258,7 +258,7 @@ private fun PreparingScreen(streamer: Streamer) {
                                 label = "queue",
                             ) { n -> BasicText("$n", style = type.display.copy(fontSize = 64.sp, lineHeight = 66.sp, fontFeatureSettings = "tnum")) }
                             Spacer(Modifier.height(8.dp))
-                            BasicText("You're in the queue for a rig. Keep this screen open; the game starts on its own when it's your turn.", style = type.body)
+                            BasicText("The game starts by itself when it's your turn.", style = type.body)
                         }
                         is Streamer.Phase.Ended -> Column {
                             BasicText(if (p.error) "Something went wrong" else "Session ended", style = type.title)

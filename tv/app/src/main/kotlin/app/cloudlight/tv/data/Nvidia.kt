@@ -163,7 +163,7 @@ object Nvidia {
         expiresAtMs = System.currentTimeMillis() + j.optLong("expires_in", 3600) * 1000,
     )
 
-    data class Profile(val userId: String, val name: String, val email: String?, val avatar: String?)
+    data class Profile(val userId: String, val name: String, val email: String?, val avatar: String?, val tier: String? = null)
 
     fun profileFromJwt(token: String): Profile? = runCatching {
         val part = token.split('.')[1]
@@ -174,8 +174,18 @@ object Nvidia {
             name = j.optString("preferred_username").ifEmpty { email?.substringBefore('@') ?: "Player" },
             email = email,
             avatar = j.optString("picture").ifEmpty { null },
+            tier = j.optString("gfn_tier").ifEmpty { null }?.let(::tierName),
         )
     }.getOrNull()
+
+    /** Membership names as NVIDIA markets them. */
+    fun tierName(raw: String) = when (raw.uppercase()) {
+        "FREE" -> "Free"
+        "PRIORITY", "PERFORMANCE" -> "Performance"
+        "ULTIMATE" -> "Ultimate"
+        "FOUNDERS" -> "Founders"
+        else -> raw.lowercase().replaceFirstChar { it.uppercase() }
+    }
 
     // ---------- Catalog ----------
 
@@ -208,9 +218,74 @@ object Nvidia {
     )
 
     /** Every game GeForce NOW streams in this region, A to Z. */
-    suspend fun catalog(token: String, vpcId: String): List<Game> = apps(token, vpcId, JSONObject(), "sortName:ASC", pages = 40)
+    suspend fun catalog(token: String, vpcId: String): List<Game> = apps(token, vpcId, JSONObject(), "sortName:ASC", pages = 40, count = 50)
 
-    private suspend fun apps(token: String, vpcId: String, filters: JSONObject, sort: String, pages: Int): List<Game> = io {
+    private fun graphql(token: String, query: String, vars: JSONObject): JSONObject {
+        val body = JSONObject().put("query", query).put("variables", vars).toString()
+        val req = lcars(Request.Builder().url(GRAPHQL).post(body.toRequestBody(JSON)), token)
+            .header("Content-Type", "application/json")
+            .header("Origin", "https://play.geforcenow.com")
+            .header("Referer", "https://play.geforcenow.com/")
+            .header("nv-browser-type", "CHROME")
+            .build()
+        val j = call(req)
+        j.optJSONArray("errors")?.let { e ->
+            if (e.length() > 0 && j.optJSONObject("data") == null) {
+                throw ApiException(e.getJSONObject(0).optString("message", "GeForce NOW sent an error."))
+            }
+        }
+        return j.optJSONObject("data") ?: throw ApiException("GeForce NOW sent an empty answer.")
+    }
+
+    /** Store codes to the names GeForce NOW shows for them. */
+    suspend fun storeLabels(token: String): Map<String, String> = io {
+        val arr = graphql(token, STORES_QUERY, JSONObject().put("locale", "en_US")).optJSONArray("appStoreDefinitions") ?: JSONArray()
+        (0 until arr.length()).mapNotNull { arr.optJSONObject(it) }
+            .mapNotNull { o -> o.optString("store").takeIf { it.isNotBlank() }?.let { it to o.optString("label") } }
+            .filter { it.second.isNotBlank() && it.second != "null" }
+            .toMap()
+    }
+
+    /** GeForce NOW's own search over everything it streams in this region. */
+    suspend fun search(token: String, vpcId: String, query: String, count: Int = 60): List<Game> = io {
+        val vars = JSONObject()
+            .put("vpcId", vpcId)
+            .put("locale", "en_US")
+            .put("sortString", "itemMetadata.relevance:DESC,sortName:ASC")
+            .put("fetchCount", count)
+            .put("cursor", "")
+            .put("searchString", query)
+            .put("filters", JSONObject())
+        val items = graphql(token, SEARCH_QUERY, vars).optJSONObject("apps")?.optJSONArray("items") ?: JSONArray()
+        (0 until items.length()).mapNotNull { items.optJSONObject(it)?.let(Game::parse) }
+    }
+
+    /** A named rail of games from GeForce NOW's storefront. */
+    data class Shelf(val id: String, val title: String, val games: List<Game>)
+
+    /**
+     * Storefront panels: MARQUEE is the rotating featured banner, MAIN holds the
+     * recommendation rails (new, popular, picked for you and so on).
+     */
+    suspend fun panels(token: String, vpcId: String, vararg names: String): Map<String, List<Shelf>> = io {
+        val vars = JSONObject().put("vpcId", vpcId).put("locale", "en_US").put("panelNames", JSONArray(names.toList()))
+        val panels = graphql(token, PANELS_QUERY, vars).optJSONArray("panels") ?: JSONArray()
+        val out = LinkedHashMap<String, List<Shelf>>()
+        for (p in 0 until panels.length()) {
+            val panel = panels.optJSONObject(p) ?: continue
+            val sections = panel.optJSONArray("sections") ?: JSONArray()
+            out[panel.optString("name")] = (0 until sections.length()).mapNotNull { si ->
+                val sec = sections.optJSONObject(si) ?: return@mapNotNull null
+                val items = sec.optJSONArray("items") ?: JSONArray()
+                val games = (0 until items.length()).mapNotNull { items.optJSONObject(it)?.optJSONObject("app")?.let(Game::parse) }
+                    .distinctBy { it.id }
+                if (games.isEmpty()) null else Shelf(sec.optString("id"), sec.optString("title").takeIf { it != "null" }.orEmpty(), games)
+            }
+        }
+        out
+    }
+
+    private suspend fun apps(token: String, vpcId: String, filters: JSONObject, sort: String, pages: Int, count: Int = 100): List<Game> = io {
         val games = ArrayList<Game>()
         var cursor = ""
         repeat(pages) {
@@ -218,21 +293,10 @@ object Nvidia {
                 .put("vpcId", vpcId)
                 .put("locale", "en_US")
                 .put("sortString", sort)
-                .put("fetchCount", 100)
+                .put("fetchCount", count)
                 .put("cursor", cursor)
                 .put("filters", filters)
-            val body = JSONObject().put("query", LIBRARY_QUERY).put("variables", vars).toString()
-            val req = lcars(Request.Builder().url(GRAPHQL).post(body.toRequestBody(JSON)), token)
-                .header("Content-Type", "application/json")
-                .header("Origin", "https://play.geforcenow.com")
-                .header("Referer", "https://play.geforcenow.com/")
-                .header("nv-browser-type", "CHROME")
-                .build()
-            val j = call(req)
-            j.optJSONArray("errors")?.let { e ->
-                if (e.length() > 0) throw ApiException(e.getJSONObject(0).optString("message", "The library could not be loaded."))
-            }
-            val apps = j.getJSONObject("data").getJSONObject("apps")
+            val apps = graphql(token, LIBRARY_QUERY, vars).getJSONObject("apps")
             val items = apps.optJSONArray("items") ?: JSONArray()
             for (i in 0 until items.length()) Game.parse(items.getJSONObject(i))?.let(games::add)
             val page = apps.optJSONObject("pageInfo")
@@ -280,21 +344,46 @@ object Nvidia {
 
     private suspend fun <T> io(block: suspend () -> T): T = withContext(Dispatchers.IO) { block() }
 
+    private const val APP_FIELDS = """
+      id title developerName publisherName genres
+      library { favorited }
+      images { KEY_ART KEY_IMAGE GAME_BOX_ART TV_BANNER HERO_IMAGE MARQUEE_HERO_IMAGE FEATURE_IMAGE GAME_LOGO SCREENSHOTS }
+      variants {
+        id appStore storeUrl
+        gfn { status library { status selected lastPlayedDate } }
+      }"""
+
     private val LIBRARY_QUERY = """query GetLibraryApps(
   ${'$'}vpcId: String!, ${'$'}locale: String!, ${'$'}sortString: String!,
   ${'$'}fetchCount: Int!, ${'$'}cursor: String!, ${'$'}filters: AppFilterFields!
 ) {
   apps(vpcId: ${'$'}vpcId, language: ${'$'}locale, orderBy: ${'$'}sortString, first: ${'$'}fetchCount, after: ${'$'}cursor, filters: ${'$'}filters) {
     numberReturned pageInfo { hasNextPage endCursor totalCount }
-    items {
-      id title developerName publisherName genres
-      library { favorited }
-      images { KEY_ART KEY_IMAGE GAME_BOX_ART TV_BANNER HERO_IMAGE MARQUEE_HERO_IMAGE FEATURE_IMAGE GAME_LOGO SCREENSHOTS }
-      variants {
-        id appStore
-        gfn { status library { status selected lastPlayedDate } }
-      }
+    items { $APP_FIELDS }
+  }
+}"""
+
+    private val SEARCH_QUERY = """query SearchApps(
+  ${'$'}vpcId: String!, ${'$'}locale: String!, ${'$'}sortString: String!,
+  ${'$'}fetchCount: Int!, ${'$'}cursor: String!, ${'$'}searchString: String!, ${'$'}filters: AppFilterFields!
+) {
+  apps(vpcId: ${'$'}vpcId, language: ${'$'}locale, orderBy: ${'$'}sortString, first: ${'$'}fetchCount, after: ${'$'}cursor, searchQuery: ${'$'}searchString, filters: ${'$'}filters) {
+    numberReturned pageInfo { hasNextPage endCursor totalCount }
+    items { $APP_FIELDS }
+  }
+}"""
+
+    private val PANELS_QUERY = """query GetPanels(${'$'}vpcId: String!, ${'$'}locale: String!, ${'$'}panelNames: [String]!) {
+  panels(vpcId: ${'$'}vpcId, language: ${'$'}locale, names: ${'$'}panelNames) {
+    name
+    sections {
+      id title
+      items { __typename ... on GameItem { app { $APP_FIELDS } } }
     }
   }
+}"""
+
+    private val STORES_QUERY = """query GetStores(${'$'}locale: String!) {
+  appStoreDefinitions(language: ${'$'}locale) { store label }
 }"""
 }

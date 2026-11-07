@@ -53,6 +53,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInParent
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import app.cloudlight.tv.Settings
 import app.cloudlight.tv.data.AppState
@@ -78,11 +85,8 @@ enum class Section(val label: String, val icon: ImageVector) {
     SETTINGS("Settings", Icons.Rounded.Settings),
 }
 
-/** Width of the collapsed side rail; content always starts after it. */
-val RailWidth = 64.dp
-
-private val RailItemHeight = 36.dp
-private val RailItemGap = 6.dp
+/** Height of the top bar; pages leave this much room above their content. */
+val TopBarHeight = 58.dp
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -142,8 +146,8 @@ fun AppRoot(hub: PadHub, app: AppState, settings: Settings, streamer: Streamer, 
                         scaleY = s
                     },
             ) {
-                // Content first, so the rail draws over it when it opens.
-                Box(Modifier.fillMaxSize().padding(start = RailWidth)) {
+                // Content first, so the bar draws over Home's banner.
+                Box(Modifier.fillMaxSize()) {
                     AnimatedContent(
                         targetState = if (!app.signedIn && section != Section.SETTINGS) null else section,
                         transitionSpec = {
@@ -171,7 +175,7 @@ fun AppRoot(hub: PadHub, app: AppState, settings: Settings, streamer: Streamer, 
                         }
                     }
                 }
-                Rail(section, railFocus, app, onSelect = ::go)
+                if (app.signedIn) TopBar(section, railFocus, app, onSelect = ::go)
             }
 
             AnimatedVisibility(
@@ -198,9 +202,13 @@ fun AppRoot(hub: PadHub, app: AppState, settings: Settings, streamer: Streamer, 
         }
     }
 
-    LaunchedEffect(Unit) {
+    val focusManager = LocalFocusManager.current
+    LaunchedEffect(app.signedIn) {
         delay(150)
+        // Start on Home's banner, the way a console lands on its featured game.
         runCatching { railFocus.getValue(Section.HOME).requestFocus() }
+        delay(60)
+        runCatching { focusManager.moveFocus(FocusDirection.Down) }
     }
     // Coming back from a stream: put focus somewhere sensible again.
     LaunchedEffect(streaming) {
@@ -215,87 +223,98 @@ fun AppRoot(hub: PadHub, app: AppState, settings: Settings, streamer: Streamer, 
     }
 }
 
+/**
+ * Console-style top bar: the clock on the left, the sections in the middle on a pill that
+ * glides between them, and the account on the right. LB and RB switch sections from anywhere.
+ */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-private fun Rail(section: Section, focus: Map<Section, FocusRequester>, app: AppState, onSelect: (Section) -> Unit) {
-    var open by remember { mutableStateOf(false) }
-    val width by animateDpAsState(if (open) 196.dp else RailWidth, Motion.page(), label = "rail")
-    val labels by animateFloatAsState(if (open) 1f else 0f, Motion.fade(), label = "labels")
-    // The selection pill glides between items instead of jumping.
-    val pillY by animateDpAsState((RailItemHeight + RailItemGap) * section.ordinal, Motion.focus(), label = "pill")
+private fun TopBar(section: Section, focus: Map<Section, FocusRequester>, app: AppState, onSelect: (Section) -> Unit) {
     val type = LocalType.current
-    Column(
+    var focused by remember { mutableStateOf(false) }
+    val glow by animateFloatAsState(if (focused) 1f else 0f, Motion.fade(), label = "bar")
+    val widths = remember { mutableStateMapOf<Section, Int>() }
+    val offsets = remember { mutableStateMapOf<Section, Int>() }
+    val density = LocalDensity.current
+    val pillX by animateDpAsState(with(density) { (offsets[section] ?: 0).toDp() }, Motion.focus(), label = "pillX")
+    val pillW by animateDpAsState(with(density) { (widths[section] ?: 0).toDp() }, Motion.focus(), label = "pillW")
+    Box(
         Modifier
-            .width(width)
-            .fillMaxHeight()
-            .background(
-                Brush.horizontalGradient(
-                    0f to Color.Black.copy(alpha = 0.55f + 0.3f * labels),
-                    1f to Color.Black.copy(alpha = 0.0f + 0.55f * labels),
-                ),
-            )
-            // Entering the rail always lands on the current section, never a random item.
-            .focusProperties { enter = { focus.getValue(section) } }
-            .onFocusChanged { open = it.hasFocus }
-            .focusGroup()
-            .padding(vertical = 26.dp, horizontal = 12.dp),
+            .fillMaxWidth()
+            .height(TopBarHeight)
+            .background(Brush.verticalGradient(0f to Color.Black.copy(alpha = 0.55f), 1f to Color.Transparent))
+            .padding(horizontal = 40.dp),
     ) {
-        Spacer(Modifier.weight(1f))
-        Box {
-            Box(
-                Modifier
-                    .offset(y = pillY)
-                    .fillMaxWidth()
-                    .height(RailItemHeight)
-                    .background(Palette.glassStrong, RoundedCornerShape(50)),
-            )
-            Column {
+        Clock(Modifier.align(Alignment.CenterStart))
+        Box(
+            Modifier
+                .align(Alignment.Center)
+                .background(Palette.black.copy(alpha = 0.18f + 0.14f * glow), RoundedCornerShape(50))
+                .padding(4.dp)
+                .focusProperties { enter = { focus.getValue(section) } }
+                .onFocusChanged { focused = it.hasFocus }
+                .focusGroup(),
+        ) {
+            if (pillW > 0.dp) {
+                Box(Modifier.offset(x = pillX).width(pillW).height(30.dp).background(Palette.glassHeavy, RoundedCornerShape(50)))
+            }
+            Row {
                 for (s in Section.entries) {
-                    RailItem(s.label, s.icon, selected = s == section, labels = labels, focusRequester = focus.getValue(s), onClick = { onSelect(s) })
-                    Spacer(Modifier.height(RailItemGap))
+                    Box(
+                        Modifier.onGloballyPositioned {
+                            widths[s] = it.size.width
+                            offsets[s] = it.positionInParent().x.toInt()
+                        },
+                    ) {
+                        TabItem(s.label, s.icon, selected = s == section, focusRequester = focus.getValue(s), onClick = { onSelect(s) })
+                    }
                 }
             }
         }
-        Spacer(Modifier.weight(1f))
         val p = app.profile
-        Row(Modifier.padding(start = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                Modifier.size(32.dp).clip(CircleShape).background(Palette.glassStrong),
-                contentAlignment = Alignment.Center,
-            ) {
-                if (p?.avatar != null) {
-                    GameArt(p.avatar, "", Modifier.fillMaxSize())
-                } else {
-                    BasicText((p?.name ?: "?").take(1).uppercase(), style = type.label)
-                }
-            }
+        Row(Modifier.align(Alignment.CenterEnd), verticalAlignment = Alignment.CenterVertically) {
+            BasicText(p?.name ?: "", style = type.label.copy(color = Palette.textSecondary), maxLines = 1)
             Spacer(Modifier.width(10.dp))
-            Column(Modifier.graphicsLayer { alpha = labels }) {
-                BasicText(p?.name ?: "Not signed in", style = type.label, softWrap = false)
-                BasicText(if (p != null) "GeForce NOW" else "Sign in from Home", style = type.caption, softWrap = false)
+            Box(Modifier.size(28.dp).clip(CircleShape).background(Palette.glassStrong), contentAlignment = Alignment.Center) {
+                if (p?.avatar != null) GameArt(p.avatar, "", Modifier.fillMaxSize())
+                else BasicText((p?.name ?: "?").take(1).uppercase(), style = type.label)
             }
         }
     }
 }
 
 @Composable
-private fun RailItem(label: String, icon: ImageVector, selected: Boolean, labels: Float, focusRequester: FocusRequester, onClick: () -> Unit) {
+private fun TabItem(label: String, icon: ImageVector, selected: Boolean, focusRequester: FocusRequester, onClick: () -> Unit) {
     Pressable(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth().height(RailItemHeight),
+        modifier = Modifier.height(30.dp),
         shape = RoundedCornerShape(50),
-        focusedScale = 1.04f,
+        focusedScale = 1.06f,
         color = Color.Transparent,
         border = false,
         focusRequester = focusRequester,
     ) { focused ->
         val fg = onFocusColor(focused, if (selected) Palette.text else Palette.textSecondary)
-        Row(Modifier.fillMaxSize().padding(start = 11.dp), verticalAlignment = Alignment.CenterVertically) {
-            Image(icon, label, Modifier.size(17.dp), colorFilter = ColorFilter.tint(fg))
-            Spacer(Modifier.width(14.dp))
-            BasicText(label, Modifier.graphicsLayer { alpha = labels }, style = LocalType.current.label.copy(color = fg), softWrap = false)
+        Row(Modifier.padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Image(icon, null, Modifier.size(13.dp), colorFilter = ColorFilter.tint(fg))
+            Spacer(Modifier.width(7.dp))
+            BasicText(label, style = LocalType.current.label.copy(color = fg), softWrap = false)
         }
     }
+}
+
+@Composable
+private fun Clock(modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    var now by remember { mutableStateOf(System.currentTimeMillis()) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            now = System.currentTimeMillis()
+            delay(60_000L - now % 60_000L)
+        }
+    }
+    val text = remember(now) { android.text.format.DateFormat.getTimeFormat(context).format(java.util.Date(now)) }
+    BasicText(text, modifier, style = LocalType.current.headline)
 }
 
 @Composable

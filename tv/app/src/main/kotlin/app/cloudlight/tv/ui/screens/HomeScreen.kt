@@ -1,6 +1,21 @@
 package app.cloudlight.tv.ui.screens
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Size
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -64,7 +79,16 @@ import app.cloudlight.tv.ui.theme.Palette
 import kotlinx.coroutines.delay
 
 private val ScreenStart = 40.dp
+private const val SlideMs = 7000L
 
+/** One page of the banner: a game and why it's there. */
+private data class Slide(val game: Game, val tag: String, val session: ActiveSession? = null)
+
+/**
+ * Console-style home: a banner that cycles through featured games, then rails of games.
+ * Moving onto a rail hands the banner (and background) to whatever is focused; coming back up
+ * resumes the rotation where it left off.
+ */
 @Composable
 fun HomeScreen(
     app: AppState,
@@ -73,20 +97,42 @@ fun HomeScreen(
     onPlay: (Game) -> Unit,
     onResume: (ActiveSession) -> Unit,
 ) {
-    val type = LocalType.current
     val library = app.library
-    val recent = remember(library) { library.filter { it.lastPlayedMs > 0 }.sortedByDescending { it.lastPlayedMs }.take(12) }
-    val favorites = remember(library) { library.filter { it.favorite }.take(20) }
     val sessions = app.sessions
-    var featured by remember { mutableStateOf<Game?>(null) }
-    val hero = featured ?: sessions.firstNotNullOfOrNull(app::gameFor) ?: recent.firstOrNull() ?: library.firstOrNull()
-
-    // Debounced so scrolling quickly along a row does not strobe the background.
-    LaunchedEffect(hero) {
-        delay(160)
-        onFocusGame(hero)
+    val recent = remember(library) { library.filter { it.lastPlayedMs > 0 }.sortedByDescending { it.lastPlayedMs }.take(12) }
+    val slides = remember(sessions, app.featured, recent) {
+        val out = ArrayList<Slide>()
+        for (s in sessions) app.gameFor(s)?.let { out += Slide(it, "Running in the cloud", s) }
+        for (g in app.featured) if (out.none { it.game.id == g.id }) out += Slide(g, "Featured")
+        if (out.size < 3) for (g in recent.take(5)) if (out.none { it.game.id == g.id }) out += Slide(g, "Jump back in")
+        out.take(8)
     }
-    // Sessions started on another device show up here while Home is open.
+    var slide by remember { mutableIntStateOf(0) }
+    var direction by remember { mutableIntStateOf(1) }
+    var focusedTile by remember { mutableStateOf<Game?>(null) }
+    val current = slides.getOrNull(slide.coerceIn(0, (slides.size - 1).coerceAtLeast(0)))
+    val shown = focusedTile ?: current?.game
+    val progress = remember { Animatable(0f) }
+
+    fun step(d: Int) {
+        if (slides.size < 2) return
+        direction = d
+        slide = (slide + d).mod(slides.size)
+    }
+
+    // The banner turns over on its own while you're on it, never while you're on a rail.
+    LaunchedEffect(slide, focusedTile == null, slides.size) {
+        progress.snapTo(0f)
+        if (focusedTile != null || slides.size < 2) return@LaunchedEffect
+        progress.animateTo(1f, tween(SlideMs.toInt(), easing = LinearEasing))
+        step(1)
+    }
+    // Debounced so moving quickly along a rail doesn't strobe the background.
+    LaunchedEffect(shown) {
+        delay(140)
+        onFocusGame(shown)
+    }
+    // Sessions started on another device show up while Home is open.
     LaunchedEffect(Unit) {
         while (true) {
             delay(20_000)
@@ -94,90 +140,143 @@ fun HomeScreen(
         }
     }
 
-    if (library.isEmpty()) {
+    if (slides.isEmpty() && library.isEmpty()) {
         EmptyState(app)
         return
     }
 
-    val focusGame: (Game) -> Unit = { featured = it }
-    PivotScroll(leadingFraction = 0.56f) {
+    val onTile: (Game) -> Unit = { focusedTile = it }
+    PivotScroll(leadingFraction = 0.5f) {
         LazyColumn(
             Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 120.dp),
-            verticalArrangement = Arrangement.spacedBy(22.dp),
+            contentPadding = PaddingValues(bottom = 110.dp),
+            verticalArrangement = Arrangement.spacedBy(18.dp),
         ) {
-            item(key = "hero") { Hero(hero, sessions.firstOrNull { s -> hero != null && app.gameFor(s) == hero }, onOpen, onPlay) }
+            item(key = "hero") {
+                Hero(
+                    shown = shown,
+                    slide = if (focusedTile == null) current else null,
+                    direction = direction,
+                    count = slides.size,
+                    index = slide,
+                    progress = { progress.value },
+                    onFocused = { focusedTile = null },
+                    onStep = ::step,
+                    onPlay = { g -> current?.session?.takeIf { focusedTile == null }?.let(onResume) ?: onPlay(g) },
+                    onOpen = onOpen,
+                )
+            }
             var row = 3
-            if (sessions.isNotEmpty()) {
+            val jump = sessions.mapNotNull { s -> app.gameFor(s)?.let { s to it } }
+            if (jump.isNotEmpty() || recent.isNotEmpty()) {
                 val r = row++
                 item(key = "continue") {
-                    Shelf("Continue", "Running in the cloud", Modifier.reveal(r)) {
-                        items(sessions, key = { it.sessionId }) { s ->
-                            val g = app.gameFor(s)
-                            SessionCard(s, g, onFocus = { g?.let(focusGame) }, onClick = { onResume(s) })
+                    Rail("Continue playing", Modifier.reveal(r)) {
+                        items(jump, key = { "s" + it.first.sessionId }) { (s, g) ->
+                            SessionCard(s, g, onFocus = { onTile(g) }, onClick = { onResume(s) })
+                        }
+                        items(recent.filter { g -> jump.none { it.second.id == g.id } }, key = { "r" + it.id }) { g ->
+                            WideTile(g, onFocus = { onTile(g) }, onClick = { onOpen(g) })
                         }
                     }
                 }
             }
-            if (recent.isNotEmpty()) {
+            if (library.isNotEmpty()) {
                 val r = row++
-                item(key = "recent") {
-                    Shelf("Recently played", modifier = Modifier.reveal(r)) {
-                        items(recent, key = { it.id }) { g -> WideTile(g, onFocus = { focusGame(g) }, onClick = { onOpen(g) }) }
+                item(key = "library") {
+                    Rail("Your library", Modifier.reveal(r)) {
+                        items(library.take(40), key = { "l" + it.id }) { g -> PosterTile(g, 92.dp, onFocus = { onTile(g) }, onClick = { onOpen(g) }) }
                     }
                 }
             }
-            if (favorites.isNotEmpty()) {
+            for (shelf in app.shelves) {
                 val r = row++
-                item(key = "favorites") {
-                    Shelf("Favorites", modifier = Modifier.reveal(r)) {
-                        items(favorites, key = { it.id }) { g -> PosterTile(g, 96.dp, onFocus = { focusGame(g) }, onClick = { onOpen(g) }) }
+                item(key = "shelf:" + shelf.id) {
+                    Rail(shelf.title, Modifier.reveal(r)) {
+                        items(shelf.games.take(30), key = { shelf.id + it.id }) { g -> PosterTile(g, 92.dp, onFocus = { onTile(g) }, onClick = { onOpen(g) }) }
                     }
-                }
-            }
-            val r = row
-            item(key = "library") {
-                Shelf("Your library", "${library.size} games", Modifier.reveal(r)) {
-                    items(library.take(40), key = { it.id }) { g -> PosterTile(g, 96.dp, onFocus = { focusGame(g) }, onClick = { onOpen(g) }) }
                 }
             }
         }
     }
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
-private fun Hero(game: Game?, session: ActiveSession?, onOpen: (Game) -> Unit, onPlay: (Game) -> Unit) {
+private fun Hero(
+    shown: Game?,
+    slide: Slide?,
+    direction: Int,
+    count: Int,
+    index: Int,
+    progress: () -> Float,
+    onFocused: () -> Unit,
+    onStep: (Int) -> Unit,
+    onPlay: (Game) -> Unit,
+    onOpen: (Game) -> Unit,
+) {
     val type = LocalType.current
-    Box(Modifier.fillMaxWidth().height(318.dp).padding(start = ScreenStart, top = 64.dp)) {
+    var focusedButton by remember { mutableIntStateOf(-1) }
+    Box(Modifier.fillMaxWidth().height(330.dp).padding(start = ScreenStart, end = ScreenStart, top = TopBarHeight + 46.dp)) {
         AnimatedContent(
-            targetState = game,
+            targetState = shown,
             contentKey = { it?.id },
             transitionSpec = {
-                (fadeIn(Motion.page()) + slideInVertically(Motion.pageOffset) { it / 24 }) togetherWith fadeOut(Motion.fade())
+                val d = if (slide != null) direction else 0
+                (fadeIn(Motion.page()) + slideInHorizontally(Motion.pageOffset) { it / 14 * d })
+                    .togetherWith(fadeOut(Motion.fade()) + slideOutHorizontally(Motion.pageOffset) { -it / 20 * d })
             },
             label = "hero",
         ) { g ->
             if (g == null) return@AnimatedContent
-            Column(Modifier.widthIn(max = 420.dp)) {
-                BasicText(
-                    when {
-                        session != null -> "RUNNING IN THE CLOUD"
-                        g.lastPlayedMs > 0 -> "RECENTLY PLAYED"
-                        else -> "IN YOUR LIBRARY"
-                    },
-                    Modifier.reveal(0),
-                    style = type.overline,
-                )
+            Column(Modifier.widthIn(max = 440.dp)) {
+                BasicText((slide?.tag ?: g.store ?: "").uppercase(), Modifier.reveal(0), style = type.overline)
                 Spacer(Modifier.height(10.dp))
-                Box(Modifier.reveal(0).height(78.dp).widthIn(max = 300.dp), contentAlignment = Alignment.BottomStart) {
-                    GameLogo(g.logo, g.title, Modifier.height(78.dp).widthIn(max = 300.dp))
+                Box(Modifier.reveal(0).height(84.dp).widthIn(max = 320.dp), contentAlignment = Alignment.BottomStart) {
+                    GameLogo(g.logo, g.title, Modifier.height(84.dp).widthIn(max = 320.dp), alignment = Alignment.BottomStart)
                 }
                 Spacer(Modifier.height(12.dp))
                 BasicText(metaLine(g), Modifier.reveal(1), style = type.body, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Spacer(Modifier.height(18.dp))
-                Row(Modifier.reveal(2), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    GlassButton(if (session != null) "Resume" else "Play", { onPlay(g) }, icon = Icons.Rounded.PlayArrow, primary = true)
-                    GlassButton("Details", { onOpen(g) }, icon = Icons.Rounded.Info)
+            }
+        }
+        // Buttons stay put while the slides change under them, so focus never jumps.
+        Row(
+            Modifier
+                .align(Alignment.BottomStart)
+                .padding(bottom = 18.dp)
+                .reveal(2)
+                .onFocusChanged { if (it.hasFocus) onFocused() }
+                .onPreviewKeyEvent { e ->
+                    if (e.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+                    when {
+                        e.key == Key.DirectionLeft && focusedButton == 0 && count > 1 -> { onStep(-1); true }
+                        e.key == Key.DirectionRight && focusedButton == 1 && count > 1 -> { onStep(1); true }
+                        else -> false
+                    }
+                },
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(Modifier.onFocusChanged { if (it.isFocused) focusedButton = 0 }) {
+                GlassButton(if (slide?.session != null) "Resume" else "Play", { shown?.let(onPlay) }, icon = Icons.Rounded.PlayArrow, primary = true)
+            }
+            Box(Modifier.onFocusChanged { if (it.isFocused) focusedButton = 1 }) {
+                GlassButton("Details", { shown?.let(onOpen) }, icon = Icons.Rounded.Info)
+            }
+        }
+        if (count > 1) {
+            val visible by animateFloatAsState(if (slide != null) 1f else 0f, Motion.fade(), label = "dots")
+            Row(
+                Modifier.align(Alignment.BottomEnd).padding(bottom = 30.dp).graphicsLayer { alpha = visible },
+                horizontalArrangement = Arrangement.spacedBy(5.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                for (i in 0 until count) {
+                    val active = i == index
+                    val w by animateDpAsState(if (active) 22.dp else 5.dp, Motion.focus(), label = "dot")
+                    Box(Modifier.width(w).height(5.dp).clip(RoundedCornerShape(50)).background(Palette.white.copy(alpha = 0.28f))) {
+                        if (active) Box(Modifier.fillMaxSize().drawBehind { drawRect(Palette.white, size = Size(size.width * progress().coerceIn(0f, 1f), size.height)) })
+                    }
                 }
             }
         }
@@ -191,16 +290,10 @@ fun metaLine(g: Game): String = listOfNotNull(
 ).joinToString("  ·  ")
 
 @Composable
-private fun Shelf(title: String, detail: String? = null, modifier: Modifier = Modifier, content: androidx.compose.foundation.lazy.LazyListScope.() -> Unit) {
+private fun Rail(title: String, modifier: Modifier = Modifier, content: androidx.compose.foundation.lazy.LazyListScope.() -> Unit) {
     val type = LocalType.current
     Column(modifier) {
-        Row(Modifier.padding(start = ScreenStart, bottom = 2.dp), verticalAlignment = Alignment.Bottom) {
-            BasicText(title, style = type.headline)
-            if (detail != null) {
-                Spacer(Modifier.width(8.dp))
-                BasicText(detail, style = type.caption)
-            }
-        }
+        BasicText(title, Modifier.padding(start = ScreenStart, bottom = 2.dp), style = type.headline)
         PivotScroll(leadingFraction = 0.045f) {
             LazyRow(
                 contentPadding = PaddingValues(horizontal = ScreenStart, vertical = 12.dp),
@@ -258,12 +351,12 @@ fun PosterTile(g: Game, width: Dp, onFocus: () -> Unit, onClick: () -> Unit) =
 
 @Composable
 private fun WideTile(g: Game, onFocus: () -> Unit, onClick: () -> Unit) =
-    ArtTile(g, g.banner ?: g.hero, g.title, 176.dp, 16f / 9f, onFocus, onClick, caption = g.store)
+    ArtTile(g, g.banner ?: g.hero, g.title, 184.dp, 16f / 9f, onFocus, onClick, caption = g.store)
 
 @Composable
 private fun SessionCard(s: ActiveSession, g: Game?, onFocus: () -> Unit, onClick: () -> Unit) {
-    val detail = listOfNotNull(s.phase, s.resolution?.let { r -> s.fps?.let { "$r at $it fps" } ?: r }).joinToString("  ·  ")
-    ArtTile(g, g?.banner ?: g?.hero, g?.title ?: "Cloud session", 240.dp, 16f / 9f, onFocus, onClick, caption = detail, alwaysShowTitle = true)
+    val detail = listOfNotNull(s.phase, s.resolution?.let { r -> s.fps?.let { "$r, $it fps" } ?: r }).joinToString("  ·  ")
+    ArtTile(g, g?.banner ?: g?.hero, g?.title ?: "Cloud session", 184.dp, 16f / 9f, onFocus, onClick, caption = detail, alwaysShowTitle = true)
 }
 
 @Composable
@@ -273,9 +366,7 @@ private fun EmptyState(app: AppState) {
         Column(Modifier.widthIn(max = 380.dp)) {
             when {
                 app.loading -> {
-                    BasicText("Loading your library", style = type.title)
-                    Spacer(Modifier.height(8.dp))
-                    BasicText("Fetching your games and any sessions running on other devices.", style = type.body)
+                    BasicText("Loading your games", style = type.title)
                 }
                 app.error != null -> {
                     BasicText("Something went wrong", style = type.title)
@@ -287,7 +378,7 @@ private fun EmptyState(app: AppState) {
                 else -> {
                     BasicText("Your library is empty", style = type.title)
                     Spacer(Modifier.height(8.dp))
-                    BasicText("Add games on play.geforcenow.com or in the GeForce NOW app, then refresh.", style = type.body)
+                    BasicText("Find games in Search, or add them in the GeForce NOW app, then refresh.", style = type.body)
                     Spacer(Modifier.height(18.dp))
                     GlassButton("Refresh", app::refresh, icon = Icons.Rounded.Refresh, primary = true)
                 }
@@ -310,10 +401,10 @@ fun LibraryScreen(app: AppState, onFocusGame: (Game?) -> Unit, onOpen: (Game) ->
         return
     }
     Column(Modifier.fillMaxSize()) {
-        Row(Modifier.reveal(0).padding(start = ScreenStart, top = 34.dp, bottom = 4.dp), verticalAlignment = Alignment.Bottom) {
-            BasicText("Library", style = type.title)
-            Spacer(Modifier.width(10.dp))
-            BasicText("${games.size} games, A to Z", style = type.caption, modifier = Modifier.padding(bottom = 3.dp))
+        Row(Modifier.reveal(0).padding(start = ScreenStart, top = TopBarHeight + 12.dp, bottom = 4.dp), verticalAlignment = Alignment.Bottom) {
+            BasicText("${games.size} games", style = type.headline)
+            Spacer(Modifier.width(8.dp))
+            BasicText("A to Z", style = type.caption, modifier = Modifier.padding(bottom = 1.dp))
         }
         PivotScroll(leadingFraction = 0.28f) {
             LazyVerticalGrid(

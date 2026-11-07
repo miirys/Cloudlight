@@ -1,6 +1,10 @@
 package app.cloudlight.tv.ui.stream
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusGroup
@@ -51,14 +55,16 @@ import app.cloudlight.tv.input.NavAction
 import app.cloudlight.tv.input.PadHub
 import app.cloudlight.tv.stream.Keymap
 import app.cloudlight.tv.stream.Streamer
-import app.cloudlight.tv.ui.components.ActionRow
-import app.cloudlight.tv.ui.components.ChoiceRow
+import app.cloudlight.tv.ui.components.ActionSetting
+import app.cloudlight.tv.ui.components.SettingsFocus
+import app.cloudlight.tv.ui.components.SettingsGroup
+import app.cloudlight.tv.ui.components.SettingsList
+import app.cloudlight.tv.ui.components.SwitchSetting
+import app.cloudlight.tv.ui.components.ValueSetting
 import app.cloudlight.tv.ui.components.GameLogo
 import app.cloudlight.tv.ui.components.GlassButton
 import app.cloudlight.tv.ui.components.PivotScroll
 import app.cloudlight.tv.ui.components.Pressable
-import app.cloudlight.tv.ui.components.SectionLabel
-import app.cloudlight.tv.ui.components.ToggleRow
 import app.cloudlight.tv.ui.components.onFocusColor
 import app.cloudlight.tv.ui.motion.Motion
 import app.cloudlight.tv.ui.motion.RevealPage
@@ -124,7 +130,7 @@ fun StreamMenu(streamer: Streamer, settings: Settings, hub: PadHub) {
                         val s = streamer.stats
                         BasicText(
                             listOfNotNull(
-                                "Playing for ${elapsed(streamer.liveSince)}",
+                                if (settings.sessionTimer) "Playing for ${elapsed(streamer.liveSince)}" else null,
                                 s.rttMs?.let { "%.0f ms".format(it) },
                                 s.fps?.let { "%.0f fps".format(it) },
                             ).joinToString("  ·  "),
@@ -132,6 +138,8 @@ fun StreamMenu(streamer: Streamer, settings: Settings, hub: PadHub) {
                         )
                     }
                     Spacer(Modifier.height(14.dp))
+                    val menuFocus = remember { SettingsFocus() }
+                    val endFocus = remember { SettingsFocus() }
                     PivotScroll(leadingFraction = 0.35f) {
                         Column(
                             Modifier.fillMaxWidth().weight(1f).verticalScroll(rememberScrollState()).focusGroup().padding(bottom = 20.dp),
@@ -142,63 +150,50 @@ fun StreamMenu(streamer: Streamer, settings: Settings, hub: PadHub) {
                                 GlassButton("Leave running", streamer::leave, icon = Icons.Rounded.ExitToApp)
                             }
 
-                            SectionLabel("Stream", Modifier.reveal(3))
-                            ChoiceRow(
-                                "Performance overlay",
-                                StatsMode.entries.map { it.label },
-                                settings.stats.ordinal,
-                                { settings.setStatsMode(StatsMode.entries[it]) },
-                                Modifier.reveal(4),
-                                hint = "Frame rate, latency and bitrate, or the full breakdown.",
-                            )
-                            ChoiceRow(
-                                "Overlay position",
-                                StatsCorner.entries.map { it.label },
-                                settings.statsCorner.ordinal,
-                                { settings.cycleCorner(it - settings.statsCorner.ordinal) },
-                                Modifier.reveal(5),
-                            )
-                            ActionRow(
-                                "Refresh the picture",
-                                streamer::refreshPicture,
-                                Modifier.reveal(6),
-                                hint = "Asks the rig for a clean frame if the image looks broken.",
-                                icon = Icons.Rounded.Refresh,
-                            )
+                            SettingsList(menuFocus, Modifier.reveal(3)) {
+                                SettingsGroup("Stream")
+                                ValueSetting(
+                                    "Performance stats",
+                                    StatsMode.entries.map { it.label },
+                                    settings.stats.ordinal,
+                                    { settings.setStatsMode(StatsMode.entries[it]) },
+                                )
+                                ValueSetting(
+                                    "Stats position",
+                                    StatsCorner.entries.map { it.label },
+                                    settings.statsCorner.ordinal,
+                                    { settings.cycleCorner(it - settings.statsCorner.ordinal) },
+                                )
+                                ActionSetting("Refresh picture", streamer::refreshPicture, hint = "Fixes a smeared or broken image.")
 
-                            SectionLabel("Sound", Modifier.reveal(7))
-                            ChoiceRow(
-                                "Game volume",
-                                (0..10).map { "${it * 10} %" },
-                                settings.volume / 10,
-                                { streamer.stepVolume(it - settings.volume / 10) },
-                                Modifier.reveal(8),
-                            )
-                            ToggleRow("Mute", streamer.muted, streamer::toggleMute, Modifier.reveal(9))
+                                SettingsGroup("Sound")
+                                ValueSetting(
+                                    "Volume",
+                                    (0..10).map { "${it * 10} %" },
+                                    settings.volume / 10,
+                                    { streamer.stepVolume(it - settings.volume / 10) },
+                                )
+                                SwitchSetting("Mute", streamer.muted, streamer::toggleMute)
 
-                            SectionLabel("Controls", Modifier.reveal(10))
-                            ToggleRow(
-                                "Use the controller as a mouse",
-                                streamer.controllerMouse,
-                                streamer::toggleControllerMouse,
-                                Modifier.reveal(11),
-                                hint = "Left stick moves the pointer, A clicks, B right-clicks, right stick scrolls.",
-                            )
-                            ChoiceRow(
-                                "Mouse speed",
-                                Settings.MOUSE_SPEEDS.map { "${(it * 100).toInt()} %" },
-                                Settings.MOUSE_SPEEDS.indexOfFirst { it >= settings.mouseSpeed - 0.01f }.coerceAtLeast(0),
-                                { i ->
-                                    val cur = Settings.MOUSE_SPEEDS.indexOfFirst { it >= settings.mouseSpeed - 0.01f }.coerceAtLeast(0)
-                                    streamer.stepMouseSpeed(i - cur)
-                                },
-                                Modifier.reveal(12),
-                                hint = "For a real mouse and for the controller mouse.",
-                            )
+                                SettingsGroup("Controls")
+                                SwitchSetting(
+                                    "Controller as mouse",
+                                    streamer.controllerMouse,
+                                    streamer::toggleControllerMouse,
+                                    hint = "Left stick moves, A clicks, B right-clicks, right stick scrolls.",
+                                )
+                                val mi = Settings.MOUSE_SPEEDS.indexOfFirst { it >= settings.mouseSpeed - 0.01f }.coerceAtLeast(0)
+                                ValueSetting(
+                                    "Mouse speed",
+                                    Settings.MOUSE_SPEEDS.map { "${(it * 100).toInt()} %" },
+                                    mi,
+                                    { streamer.stepMouseSpeed(it - mi) },
+                                )
+                            }
 
-                            SectionLabel("Keyboard", Modifier.reveal(13))
+                            SettingsGroup("Keys")
                             FlowRow(
-                                Modifier.reveal(14).fillMaxWidth(),
+                                Modifier.reveal(4).fillMaxWidth().padding(horizontal = 12.dp),
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 verticalArrangement = Arrangement.spacedBy(8.dp),
                             ) {
@@ -211,23 +206,23 @@ fun StreamMenu(streamer: Streamer, settings: Settings, hub: PadHub) {
                                 KeyChip("F11") { streamer.sendCombo(Keymap.F11) }
                             }
 
-                            SectionLabel("Session", Modifier.reveal(15))
-                            ActionRow(
-                                "Leave the game running",
-                                streamer::leave,
-                                Modifier.reveal(16),
-                                hint = "Back to Home. The game stays on the rig for a few minutes, ready to resume.",
-                                icon = Icons.Rounded.ExitToApp,
-                            )
-                            ActionRow(
-                                if (confirmEnd) "Press again to end the session" else "End session",
-                                { if (confirmEnd) streamer.quit() else confirmEnd = true },
-                                Modifier.reveal(17),
-                                hint = "Closes the game on the rig. Progress the game hasn't saved is lost.",
-                                icon = Icons.Rounded.Close,
-                            )
+                            SettingsList(endFocus, Modifier.reveal(5).padding(top = 10.dp)) {
+                                SettingsGroup("Session")
+                                ActionSetting(
+                                    if (confirmEnd) "Press again to end" else "End session",
+                                    { if (confirmEnd) streamer.quit() else confirmEnd = true },
+                                    hint = "Closes the game. Anything it hasn't saved is lost.",
+                                )
+                            }
                         }
                     }
+                    val hint = (if (menuFocus.active) menuFocus.hint else null) ?: (if (endFocus.active) endFocus.hint else null)
+                    AnimatedContent(
+                        targetState = hint,
+                        transitionSpec = { fadeIn(Motion.fade()) togetherWith fadeOut(Motion.fade()) },
+                        modifier = Modifier.fillMaxWidth().height(28.dp).padding(start = 16.dp, top = 6.dp),
+                        label = "hint",
+                    ) { h -> if (h != null) BasicText(h, style = type.caption) }
                 }
                 Spacer(Modifier.weight(1f))
                 SessionCard(streamer, Modifier.reveal(3).graphicsLayer { alpha = slide.value.coerceIn(0f, 1f) })
