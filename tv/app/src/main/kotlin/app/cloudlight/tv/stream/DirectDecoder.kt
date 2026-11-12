@@ -106,8 +106,9 @@ class TvDecoderFactory : VideoDecoderFactory {
             val stock = hw ?: if (info.name.equals("H264", true)) runCatching { stockDefault.createDecoder(info) }.getOrNull() else null
             if (stock != null) {
                 VideoOutput.decoderName = stock.implementationName
-                // Only the hardware decoder takes the hints; the software fallback is native.
-                return if (stock === hw) TunedDecoder(stock) else stock
+                // Hand WebRTC its own decoder object, untouched. Wrapping it in a class of ours
+                // crashed natively on the first box this ran on as the video started.
+                return stock
             }
         }
         val mime = mimeOf(info.name) ?: return null
@@ -169,36 +170,6 @@ class TvDecoderFactory : VideoDecoderFactory {
         /** Short, readable decoder description for the stats overlay. */
         fun describe(mime: String): String? = find(mime)?.name
     }
-}
-
-/**
- * WebRTC's own hardware decoder, started with the stream's frame rate declared (see
- * [VideoHooks.videoFormat]). A decoder that refuses to start that way is started again the
- * plain way, and the hints stay off for the rest of the run.
- */
-private class TunedDecoder(private val inner: VideoDecoder) : VideoDecoder {
-    override fun createNative(webrtcEnvRef: Long): Long = inner.createNative(webrtcEnvRef)
-
-    override fun initDecode(settings: VideoDecoder.Settings, callback: VideoDecoder.Callback): VideoCodecStatus {
-        VideoHooks.reset()
-        val first = inner.initDecode(settings, callback)
-        if (first == VideoCodecStatus.OK || !VideoHooks.tuneDecoder) return first
-        Log.w("Decoders", "decoder refused the frame rate hints ($first); starting it without them")
-        VideoHooks.tuneDecoder = false
-        runCatching { inner.release() }
-        VideoHooks.reset()
-        return inner.initDecode(settings, callback)
-    }
-
-    override fun decode(frame: EncodedImage, info: VideoDecoder.DecodeInfo): VideoCodecStatus = inner.decode(frame, info)
-
-    override fun release(): VideoCodecStatus {
-        val status = inner.release()
-        VideoHooks.reset()
-        return status
-    }
-
-    override fun getImplementationName(): String = inner.implementationName
 }
 
 /**

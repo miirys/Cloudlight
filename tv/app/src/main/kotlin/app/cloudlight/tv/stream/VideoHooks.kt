@@ -41,8 +41,9 @@ object VideoHooks {
     @Volatile private var fps = 0
 
     /**
-     * Whether to declare the frame rate and realtime priority to the decoder. Turned off for
-     * the rest of the run if a decoder refuses to start with them.
+     * Whether to declare the frame rate and realtime priority to the decoder. Set from
+     * Settings.decoderHints when a stream starts; crash recovery turns that off if the app
+     * goes down while the decoder is starting.
      */
     @Volatile var tuneDecoder = true
 

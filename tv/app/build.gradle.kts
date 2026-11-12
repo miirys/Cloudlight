@@ -16,8 +16,8 @@ android {
         applicationId = "app.cloudlight.tv"
         minSdk = 28
         targetSdk = 34
-        versionCode = 15
-        versionName = "1.2.0"
+        versionCode = 16
+        versionName = "1.2.1"
     }
 
     // One fixed key lets every new version install over the last one without losing the

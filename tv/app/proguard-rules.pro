@@ -13,3 +13,4 @@
 -dontwarn org.jni_zero.**
 # WebRTC's decoder is patched at build time (buildSrc) to call these by name.
 -keep class app.cloudlight.tv.stream.VideoHooks { *; }
+-keep class app.cloudlight.tv.stream.PacedDrawer { *; }
