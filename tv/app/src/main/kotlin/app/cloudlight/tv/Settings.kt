@@ -101,6 +101,10 @@ class Settings(context: Context) {
     var directFailed by mutableStateOf(prefs.getBoolean("directFailed", false))
         private set
 
+    /** Tell the decoder the stream's frame rate. Crash recovery turns it off first. */
+    var decoderHints by mutableStateOf(prefs.getBoolean("decoderHints", true))
+        private set
+
     var framePacing by mutableStateOf(load("framePacing", FramePacing.SMOOTH))
         private set
 
@@ -148,6 +152,8 @@ class Settings(context: Context) {
         val canCompat = path == "direct" && videoPath == VideoPath.DIRECT
         val e = prefs.edit()
         val change = when {
+            // The newest and least proven part goes first.
+            video && path != "direct" && decoderHints -> { decoderHints = false; e.putBoolean("decoderHints", false); "the decoder's default speed settings" }
             video && canCompat -> { videoPath = VideoPath.AUTO; e.putString("videoPath", VideoPath.AUTO.name); "the standard video output" }
             video && !safeCodec && codec == VideoCodec.AUTO -> { safeCodec = true; e.putBoolean("safeCodec", true); "the H.264 codec" }
             !video && !noAudio -> { noAudio = true; e.putBoolean("noAudio", true); "streaming without sound" }

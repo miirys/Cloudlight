@@ -327,6 +327,7 @@ class Streamer(
         // reports nothing, so tell it now about every one that is already connected.
         for ((id, state) in hub.snapshot()) input.report(id, state)
         VideoHooks.swapInterval = settings.framePacing.swapInterval
+        VideoHooks.tuneDecoder = settings.decoderHints
         streamFps = s.fps ?: m.fps
         input.holdMs = settings.holdToOpenMs.toLong()
         input.mouseSpeed = settings.mouseSpeed
