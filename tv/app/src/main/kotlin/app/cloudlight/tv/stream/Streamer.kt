@@ -60,10 +60,10 @@ class Streamer(
     var menuOpen by mutableStateOf(false)
         private set
     var notice by mutableStateOf<String?>(null)
+        private set
 
     /** The running stream's frame rate, 0 when nothing is streaming. Picks the TV's mode. */
     var streamFps by mutableIntStateOf(0)
-        private set
         private set
     var liveSince by mutableLongStateOf(0L)
         private set
