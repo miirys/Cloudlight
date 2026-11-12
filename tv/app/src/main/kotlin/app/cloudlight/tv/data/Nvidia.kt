@@ -24,16 +24,22 @@ object Nvidia {
     private const val SERVICE_URLS = "https://pcs.geforcenow.com/v1/serviceUrls"
     private const val DEVICE_AUTHORIZE = "https://login.nvidia.com/device/authorize"
     private const val TOKEN = "https://login.nvidia.com/token"
+    private const val CLIENT_TOKEN = "https://login.nvidia.com/client_token"
     private const val GRAPHQL = "https://games.geforce.com/graphql"
     private const val DEFAULT_STREAMING = "https://prod.cloudmatchbeta.nvidiagrid.net/"
 
     private const val AUTH_CLIENT_ID = "q61ddeJrVt7O90Nl-P-N7I36yctih4Ml6FyXLrb6j-U"
+    /** The client id GeForce NOW's browser sign-in uses; some accounts only renew under it. */
+    private const val BROWSER_CLIENT_ID = "ZU7sPN-miLujMD95LfOQ453IB0AtjM8sMyvgJ9wCXEQ"
     private const val SCOPES = "openid consent email tk_client age"
     private const val LCARS_CLIENT_ID = "ec7e38d4-03af-4b58-b131-cfb0495903ab"
     private const val CLIENT_VERSION = "2.0.87.131"
     private const val BROWSER_UA = "Mozilla/5.0 (X11; Linux x86_64; Steam Deck) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
     private const val GFN_UA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 NVIDIACEFClient/HEAD/7b92719716 GFN-PC/2.0.87.131"
     private const val BIFROST_UA = "GFN-PC/30.0 (Linux) BifrostClientSDK/4.9 (38495286)"
+    /** What GeForce NOW's own Android app presents when it renews a sign-in. */
+    private const val APP_UA = "GFN-PC/22.0 (Android 14) PGC/3.8 (6.36.38319306) okhttp/4.12.0"
+    private const val APP_ORIGIN = "https://nvfile"
 
     val http: OkHttpClient = OkHttpClient.Builder()
         .connectTimeout(10, TimeUnit.SECONDS)
@@ -63,7 +69,28 @@ object Nvidia {
         data class Done(val tokens: Tokens) : Poll
     }
 
-    data class Tokens(val access: String, val refresh: String?, val id: String?, val expiresAtMs: Long)
+    /**
+     * A sign-in. [access] and [id] last about a day; [client] is the long-lived token that
+     * renews them without asking the person to sign in again, and [refresh] is the standard
+     * renewal token, which device sign-ins don't always get.
+     */
+    data class Tokens(
+        val access: String,
+        val refresh: String?,
+        val id: String?,
+        val expiresAtMs: Long,
+        val client: String? = null,
+        val clientExpiresAtMs: Long = 0,
+    ) {
+        val canRenew: Boolean get() = !client.isNullOrBlank() || !refresh.isNullOrBlank()
+
+        /** The token GeForce NOW's services take: the ID token while it is valid, else the access token. */
+        fun service(now: Long = System.currentTimeMillis()): String =
+            id?.takeIf { (jwtExpiryMs(it) ?: Long.MAX_VALUE) > now + 30_000L } ?: access
+
+        /** When the tokens stop working: the stated lifetime, or the service token's own expiry if sooner. */
+        val staleAtMs: Long get() = minOf(expiresAtMs, id?.let(::jwtExpiryMs) ?: Long.MAX_VALUE)
+    }
 
     suspend fun defaultProvider(): Provider = io {
         val body = call(Request.Builder().url(SERVICE_URLS).header("Accept", "application/json").header("User-Agent", GFN_UA).build())
@@ -144,14 +171,82 @@ object Nvidia {
         }
     }
 
-    suspend fun refresh(refreshToken: String): Tokens = io {
-        val form = FormBody.Builder()
-            .add("grant_type", "refresh_token")
-            .add("refresh_token", refreshToken)
-            .add("client_id", AUTH_CLIENT_ID)
+    /**
+     * Fetches the long-lived client token for a fresh sign-in. It is what lets the app stay
+     * signed in for months: the access token alone runs out within a day.
+     */
+    suspend fun withClientToken(t: Tokens): Tokens = io {
+        val req = Request.Builder().url(CLIENT_TOKEN)
+            .header("Authorization", "Bearer ${t.access}")
+            .header("Origin", APP_ORIGIN)
+            .header("Accept", "application/json, text/plain, */*")
+            .header("User-Agent", APP_UA)
             .build()
-        tokens(call(tokenRequest(form)), refreshToken)
+        val j = call(req)
+        val token = j.optString("client_token").ifEmpty { throw ApiException("The sign-in service sent no client token.") }
+        t.copy(client = token, clientExpiresAtMs = System.currentTimeMillis() + j.optLong("expires_in", 86_400) * 1000)
     }
+
+    /**
+     * Renews a sign-in, first with the client token and then with the refresh token, under
+     * each client id the sign-in may belong to. Throws the last refusal when nothing works;
+     * a refusal carries the HTTP code, a network failure does not.
+     */
+    suspend fun renew(t: Tokens, userId: String?): Tokens = io {
+        var last: Throwable? = null
+        val ids = listOf(AUTH_CLIENT_ID, BROWSER_CLIENT_ID)
+        val client = t.client
+        if (!client.isNullOrBlank() && userId != null) {
+            for (id in ids) {
+                val form = FormBody.Builder()
+                    .add("grant_type", "urn:ietf:params:oauth:grant-type:client_token")
+                    .add("client_token", client)
+                    .add("client_id", id)
+                    .add("sub", userId)
+                    .build()
+                try {
+                    return@io merged(t, call(appTokenRequest(form)))
+                } catch (e: ApiException) {
+                    last = e
+                    // Only a refusal is worth trying under the other id.
+                    if (e.code == 0) throw e
+                }
+            }
+        }
+        val refresh = t.refresh
+        if (!refresh.isNullOrBlank()) {
+            for (id in ids) {
+                val form = FormBody.Builder()
+                    .add("grant_type", "refresh_token")
+                    .add("refresh_token", refresh)
+                    .add("client_id", id)
+                    .build()
+                try {
+                    return@io merged(t, call(appTokenRequest(form)))
+                } catch (e: ApiException) {
+                    last = e
+                    if (e.code == 0) throw e
+                }
+            }
+        }
+        throw last ?: ApiException("Your sign-in has expired.", 401)
+    }
+
+    private fun appTokenRequest(form: FormBody) = Request.Builder().url(TOKEN).post(form)
+        .header("Origin", APP_ORIGIN)
+        .header("Accept", "application/json, text/plain, */*")
+        .header("User-Agent", APP_UA)
+        .build()
+
+    /** New tokens from a renewal, keeping whatever the answer left out. */
+    private fun merged(old: Tokens, j: JSONObject) = Tokens(
+        access = j.getString("access_token"),
+        refresh = j.optString("refresh_token").ifEmpty { old.refresh },
+        id = j.optString("id_token").ifEmpty { old.id },
+        expiresAtMs = System.currentTimeMillis() + j.optLong("expires_in", 86_400) * 1000,
+        client = j.optString("client_token").ifEmpty { old.client },
+        clientExpiresAtMs = old.clientExpiresAtMs,
+    )
 
     private fun tokenRequest(form: FormBody) = Request.Builder().url(TOKEN).post(form)
         .header("Accept", "application/json, text/plain, */*")
@@ -164,14 +259,21 @@ object Nvidia {
         access = j.getString("access_token"),
         refresh = j.optString("refresh_token").ifEmpty { previousRefresh },
         id = j.optString("id_token").ifEmpty { null },
-        expiresAtMs = System.currentTimeMillis() + j.optLong("expires_in", 3600) * 1000,
+        expiresAtMs = System.currentTimeMillis() + j.optLong("expires_in", 86_400) * 1000,
+        client = j.optString("client_token").ifEmpty { null },
     )
+
+    private fun jwtPayload(token: String): JSONObject? = runCatching {
+        JSONObject(String(Base64.decode(token.split('.')[1], Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP)))
+    }.getOrNull()
+
+    /** When a signed token says it expires, or null when it doesn't say. */
+    fun jwtExpiryMs(token: String): Long? = jwtPayload(token)?.optLong("exp", 0)?.takeIf { it > 0 }?.times(1000)
 
     data class Profile(val userId: String, val name: String, val email: String?, val avatar: String?, val tier: String? = null)
 
     fun profileFromJwt(token: String): Profile? = runCatching {
-        val part = token.split('.')[1]
-        val j = JSONObject(String(Base64.decode(part, Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP)))
+        val j = jwtPayload(token)!!
         val email = j.optString("email").ifEmpty { null }
         Profile(
             userId = j.getString("sub"),

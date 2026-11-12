@@ -55,6 +55,9 @@ class PadHub(private val dispatch: (NavAction) -> Unit) {
 
     private val latest = ConcurrentHashMap<String, PadState>()
 
+    /** Every connected controller's current state, for a stream that is just starting. */
+    fun snapshot(): Map<String, PadState> = HashMap(latest)
+
     private inner class Source(val id: String, var name: String, val route: String) {
         var state = PadState.Idle
         var dir: NavAction? = null

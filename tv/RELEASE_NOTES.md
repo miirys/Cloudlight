@@ -2,12 +2,17 @@ Cloudlight is a GeForce NOW client for Android TV.
 
 **Streaming**
 - Up to 1440p at 120 fps over WebRTC, with HEVC, AV1 and H.264
-- A 20 Mbps bitrate floor and a decoding fix that avoids dropped frames at 120 fps
+- A 20 Mbps bitrate floor, and a video path that waits for the screen instead of dropping frames, so a 120 fps stream shows 120
+- A frame pacing choice in Settings: smooth, or lowest delay
 - Resume sessions started on other devices, at the quality you chose
 - Picture in picture when you press Home during a game
 
+**Account**
+- Stays signed in between launches; the sign-in renews itself in the background
+
 **Controls**
 - Controllers over Bluetooth or USB, including 2.4 GHz dongles the TV doesn't recognise
+- A controller works in the menus and in the game straight away, without touching the remote first
 - Mouse and keyboard pass straight through to the game
 - An on-screen keyboard for typing into games and sign-in pages (stream menu, then Keys)
 

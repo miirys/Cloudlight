@@ -31,7 +31,7 @@ using `RELEASE_NOTES.md` as the notes.
 | Path | What it is |
 | --- | --- |
 | `app/` | The client: Compose interface, GeForce NOW sign-in and session APIs, WebRTC streaming. |
-| `buildSrc/` | A build-time patch to WebRTC's video texture path that avoids dropped frames at 120 fps. |
+| `buildSrc/` | A build-time patch to WebRTC's hardware decoder: it waits for the renderer instead of dropping frames at 120 fps, and tells the decoder the stream's frame rate. Calls into `stream/VideoHooks.kt`. |
 | `probe/` | A hardware probe used during development: decoders, display modes and input devices. |
 
 Inside the app:

@@ -189,6 +189,7 @@ class StreamEngine(
     }
 
     fun start() {
+        VideoHooks.begin(config.fps)
         VideoOutput.rendered = 0
         VideoOutput.width = 0
         VideoOutput.height = 0

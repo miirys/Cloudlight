@@ -11,3 +11,5 @@
 # the moment the streaming engine starts.
 -keep class org.jni_zero.** { *; }
 -dontwarn org.jni_zero.**
+# WebRTC's decoder is patched at build time (buildSrc) to call these by name.
+-keep class app.cloudlight.tv.stream.VideoHooks { *; }

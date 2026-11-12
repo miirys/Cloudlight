@@ -120,7 +120,8 @@ private fun NoControllers() {
         BasicText("No controllers connected", Modifier.reveal(1), style = type.title)
         Spacer(Modifier.height(6.dp))
         BasicText(
-            "Pair one in your TV's Bluetooth settings, or plug in a USB controller or its receiver.",
+            "Pair one in your TV's Bluetooth settings, or plug in a USB controller or its receiver. " +
+                "If the TV asks whether Cloudlight may use a USB device, tick \"Always\" so it never asks again.",
             Modifier.reveal(2).widthIn(max = 420.dp),
             style = type.body.copy(textAlign = androidx.compose.ui.text.style.TextAlign.Center),
         )

@@ -31,6 +31,12 @@ enum class VideoPath(val label: String) {
     COMPATIBLE("Compatible"),
 }
 
+/** How decoded pictures are handed to the screen. */
+enum class FramePacing(val label: String, val swapInterval: Int) {
+    SMOOTH("Smooth", 1),
+    FASTEST("Lowest delay", 0),
+}
+
 enum class StatsMode(val label: String) { OFF("Off"), COMPACT("Compact"), DETAILED("Detailed") }
 
 enum class StatsCorner(val label: String) { TOP_LEFT("Top left"), TOP_RIGHT("Top right"), BOTTOM_LEFT("Bottom left"), BOTTOM_RIGHT("Bottom right") }
@@ -94,6 +100,14 @@ class Settings(context: Context) {
     /** Set when the direct path took the app down on this device; Automatic then avoids it. */
     var directFailed by mutableStateOf(prefs.getBoolean("directFailed", false))
         private set
+
+    var framePacing by mutableStateOf(load("framePacing", FramePacing.SMOOTH))
+        private set
+
+    fun cycleFramePacing(step: Int) {
+        framePacing = cycle(framePacing, step)
+        prefs.edit().putString("framePacing", framePacing.name).apply()
+    }
 
     fun cycleVideoPath(step: Int) {
         videoPath = cycle(videoPath, step)
