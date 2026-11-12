@@ -10,17 +10,29 @@ import org.objectweb.asm.Opcodes;
  * setters on every output. Upstream resets SurfaceTexture's buffer size and posts two
  * handler messages even when neither value changed. Cache requested (not asynchronously
  * applied) values, preserving the first update, transitions and upstream validation.
- * Keep this pinned-API patch separate from codec tuning and the audio teardown guard.
+ *
+ * The decoder also hands out one texture at a time and throws a decoded picture away when the
+ * previous one has not been drawn yet, which at 120 fps happens to about one frame in four.
+ * Three calls into the app's VideoHooks fix that: the decoder waits a moment for the previous
+ * picture instead of dropping the new one, reports when a picture is handed on, and builds
+ * its MediaFormat through the app so the frame rate can be declared.
  */
 public final class WebRtcTextureDelivery extends ClassVisitor implements Opcodes {
     public static final String TEXTURE_HELPER = "org/webrtc/SurfaceTextureHelper";
     public static final String EGL_THREAD = "org/webrtc/EglThread";
     public static final String DECODER = "org/webrtc/AndroidVideoDecoder";
+    /** The app class the patched decoder calls into; keep its three methods in step. */
+    public static final String HOOKS = "app/cloudlight/tv/stream/VideoHooks";
+    private static final String DELIVER_DESC = "(ILandroid/media/MediaCodec$BufferInfo;ILjava/lang/Integer;)V";
+    private static final String FORMAT_DESC = "(Ljava/lang/String;II)Landroid/media/MediaFormat;";
     private final String owner;
     private int sizeMethods;
     private int rotationMethods;
     private int threadConstructors;
     private int helperInitializations;
+    private int textureGates;
+    private int textureHandovers;
+    private int formatCalls;
 
     public WebRtcTextureDelivery(ClassVisitor next, String owner) {
         super(ASM9, next);
@@ -40,6 +52,17 @@ public final class WebRtcTextureDelivery extends ClassVisitor implements Opcodes
         }
         MethodVisitor next = super.visitMethod(access, name, desc, signature, exceptions);
         return new MethodVisitor(ASM9, next) {
+            @Override
+            public void visitCode() {
+                super.visitCode();
+                // Before any lock is taken: wait briefly for the previous picture to be handed
+                // on, so this one is drawn instead of dropped.
+                if (owner.equals(DECODER) && name.equals("deliverTextureFrame") && desc.equals(DELIVER_DESC)) {
+                    textureGates++;
+                    super.visitMethodInsn(INVOKESTATIC, HOOKS, "beforeTexture", "()V", false);
+                }
+            }
+
             @Override
             public void visitFieldInsn(int opcode, String target, String field, String descriptor) {
                 super.visitFieldInsn(opcode, target, field, descriptor);
@@ -65,6 +88,21 @@ public final class WebRtcTextureDelivery extends ClassVisitor implements Opcodes
             @Override
             public void visitMethodInsn(int opcode, String target, String method, String descriptor,
                     boolean isInterface) {
+                if (owner.equals(DECODER) && name.equals("initDecodeInternal") && opcode == INVOKESTATIC
+                        && target.equals("android/media/MediaFormat") && method.equals("createVideoFormat")
+                        && descriptor.equals(FORMAT_DESC)) {
+                    formatCalls++;
+                    super.visitMethodInsn(INVOKESTATIC, HOOKS, "videoFormat", FORMAT_DESC, false);
+                    return;
+                }
+                if (owner.equals(DECODER) && name.equals("onFrame") && desc.equals("(Lorg/webrtc/VideoFrame;)V")
+                        && opcode == INVOKEINTERFACE && target.equals("org/webrtc/VideoDecoder$Callback")
+                        && method.equals("onDecodedFrame")) {
+                    // The texture's bookkeeping is cleared by now; the call's arguments stay
+                    // on the stack untouched.
+                    textureHandovers++;
+                    super.visitMethodInsn(INVOKESTATIC, HOOKS, "textureDelivered", "()V", false);
+                }
                 if (owner.equals(DECODER) && name.equals("deliverTextureFrame")
                         && opcode == INVOKEVIRTUAL && target.equals(TEXTURE_HELPER)) {
                     if (method.equals("setTextureSize") && descriptor.equals("(II)V")) {
@@ -118,6 +156,10 @@ public final class WebRtcTextureDelivery extends ClassVisitor implements Opcodes
                     + owner + " size=" + sizeMethods + " rotation=" + rotationMethods
                     + " threadConstructors=" + threadConstructors
                     + " helperInitializations=" + helperInitializations);
+        }
+        if (owner.equals(DECODER) && (textureGates != 1 || textureHandovers != 1 || formatCalls != 1)) {
+            throw new IllegalStateException("WebRTC decoder changed; review the frame hand-over hooks:"
+                    + " gates=" + textureGates + " handovers=" + textureHandovers + " formats=" + formatCalls);
         }
         if (owner.equals(TEXTURE_HELPER)) {
             // Only AndroidVideoDecoder uses these entry points. Preserve upstream setters

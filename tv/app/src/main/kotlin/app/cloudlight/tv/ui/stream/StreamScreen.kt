@@ -98,6 +98,7 @@ import app.cloudlight.tv.stream.StreamStats
 import app.cloudlight.tv.stream.Streamer
 import app.cloudlight.tv.stream.VideoOutput
 import app.cloudlight.tv.stream.Rtc
+import app.cloudlight.tv.stream.PacedDrawer
 import app.cloudlight.tv.ui.components.Backdrop
 import app.cloudlight.tv.ui.components.GameLogo
 import app.cloudlight.tv.ui.components.GlassButton
@@ -142,7 +143,7 @@ fun StreamScreen(streamer: Streamer, settings: Settings, hub: PadHub) {
                     org.webrtc.SurfaceViewRenderer(ctx).apply {
                         isFocusable = false
                         isFocusableInTouchMode = false
-                        init(Rtc.egl.eglBaseContext, null)
+                        init(Rtc.egl.eglBaseContext, null, org.webrtc.EglBase.CONFIG_PLAIN, PacedDrawer())
                         setScalingType(org.webrtc.RendererCommon.ScalingType.SCALE_ASPECT_FIT)
                         setEnableHardwareScaler(false)
                         VideoOutput.renderer = this
@@ -499,10 +500,13 @@ private fun DetailedStats(s: StreamStats, streamer: Streamer) {
         StatGroup("Video")
         Stat("Resolution", if (s.width > 0) "${s.width} × ${s.height}" else "–")
         Stat("Frame rate", "${fmt(s.fps)} fps")
+        Stat("Sent by the rig", "${fmt(s.receivedFps)} fps")
+        Stat("Screen", LocalView.current.display?.refreshRate?.let { "%.0f Hz".format(it) } ?: "–")
         Stat("Codec", s.codec ?: "–")
         Stat("Decoder", s.decoder?.substringAfterLast('.')?.take(26) ?: "–")
         Stat("Decode time", fmt(s.decodeMs, 1, " ms"))
         Stat("Frames dropped", "${s.framesDropped}")
+        Stat("Frames skipped", "${s.framesSkipped}")
         Stat("Freezes", "${s.freezes}")
         Spacer(Modifier.height(4.dp))
         StatGroup("Network")

@@ -1,10 +1,13 @@
 package app.cloudlight.tv.stream
 
 import android.content.Context
+import android.hardware.display.DisplayManager
+import android.view.Display
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -26,6 +29,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 /**
  * Runs a game from the moment Play is pressed until the session ends: asks for a rig, waits
@@ -56,6 +60,10 @@ class Streamer(
     var menuOpen by mutableStateOf(false)
         private set
     var notice by mutableStateOf<String?>(null)
+        private set
+
+    /** The running stream's frame rate, 0 when nothing is streaming. Picks the TV's mode. */
+    var streamFps by mutableIntStateOf(0)
         private set
     var liveSince by mutableLongStateOf(0L)
         private set
@@ -278,7 +286,7 @@ class Streamer(
             // The direct path stays available as an explicit choice.
             VideoPath.AUTO -> true
         }
-        val cm = Cloudmatch(app::serviceToken).also { cloud = it }
+        val cm = Cloudmatch({ app.serviceToken() }).also { cloud = it }
         job = scope.launch {
             try {
                 val s = obtain(cm)
@@ -315,6 +323,11 @@ class Streamer(
         VideoOutput.compatible = compatibleVideo
         CrashLog.markStreaming(context, if (compatibleVideo) "compatible" else "direct")
         input.engine = e
+        // The game only hears about a controller when it reports, and a controller at rest
+        // reports nothing, so tell it now about every one that is already connected.
+        for ((id, state) in hub.snapshot()) input.report(id, state)
+        VideoHooks.swapInterval = settings.framePacing.swapInterval
+        streamFps = s.fps ?: m.fps
         input.holdMs = settings.holdToOpenMs.toLong()
         input.mouseSpeed = settings.mouseSpeed
         e.volume = settings.volume / 100.0
@@ -341,6 +354,7 @@ class Streamer(
                 CrashLog.step("live")
                 phase = Phase.Live
                 if (settings.noAudio && notice == null) notice = NO_SOUND
+                if (notice == null) notice = slowScreenNotice()
                 if (liveSince == 0L) liveSince = SystemClock.elapsedRealtime()
                 hub.captured = !menuOpen
                 input.enabled = !menuOpen
@@ -503,7 +517,7 @@ class Streamer(
     /** Ends a session running elsewhere without opening it. */
     fun quit(a: ActiveSession) {
         scope.launch {
-            Cloudmatch(app::serviceToken).stop(a)
+            Cloudmatch({ app.serviceToken() }).stop(a)
             delay(800)
             app.refreshSessions()
         }
@@ -567,7 +581,16 @@ class Streamer(
         return true
     }
 
+    /** Says so when the TV is refreshing slower than the stream, which caps what is shown. */
+    private fun slowScreenNotice(): String? = runCatching {
+        val hz = context.getSystemService(DisplayManager::class.java)?.getDisplay(Display.DEFAULT_DISPLAY)?.refreshRate ?: return null
+        if (streamFps <= 0 || hz >= streamFps - 1f) return null
+        "The TV is running at ${hz.roundToInt()} Hz, so this $streamFps fps stream shows at ${hz.roundToInt()}. " +
+            "Set the TV's output to $streamFps Hz to see every frame."
+    }.getOrNull()
+
     private fun finish() {
+        streamFps = 0
         menuOpen = false
         keyboardOpen = false
         hub.captured = false

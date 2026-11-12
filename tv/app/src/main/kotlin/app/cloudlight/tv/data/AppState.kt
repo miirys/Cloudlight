@@ -9,6 +9,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.util.UUID
 
 /** Everything the screens show, as Compose state, plus the actions that change it. */
@@ -66,7 +68,14 @@ class AppState(context: Context, private val scope: CoroutineScope) {
     init {
         val access = prefs.getString("access", null)
         if (access != null) {
-            tokens = Nvidia.Tokens(access, prefs.getString("refresh", null), prefs.getString("id", null), prefs.getLong("expires", 0))
+            tokens = Nvidia.Tokens(
+                access,
+                prefs.getString("refresh", null),
+                prefs.getString("id", null),
+                prefs.getLong("expires", 0),
+                prefs.getString("client", null),
+                prefs.getLong("clientExpires", 0),
+            )
             profile = Nvidia.profileFromJwt(prefs.getString("id", null) ?: access)
             refresh()
         }
@@ -103,6 +112,10 @@ class AppState(context: Context, private val scope: CoroutineScope) {
                         }
                         is Nvidia.Poll.Done -> {
                             store(r.tokens)
+                            // The long-lived token that keeps this sign-in alive across restarts.
+                            // Without it the sign-in ends when the first tokens run out.
+                            runCatching { store(Nvidia.withClientToken(r.tokens)) }
+                                .onFailure { android.util.Log.w("AppState", "no client token at sign-in", it) }
                             signIn = SignIn.Idle
                             refresh()
                             return@launch
@@ -122,7 +135,8 @@ class AppState(context: Context, private val scope: CoroutineScope) {
 
     fun signOut() {
         loginJob?.cancel()
-        prefs.edit().remove("access").remove("refresh").remove("id").remove("expires").apply()
+        prefs.edit().remove("access").remove("refresh").remove("id").remove("expires")
+            .remove("client").remove("clientExpires").apply()
         tokens = null
         profile = null
         library = emptyList()
@@ -138,29 +152,14 @@ class AppState(context: Context, private val scope: CoroutineScope) {
             loading = true
             error = null
             try {
-                val token = serviceToken()
-                val vpc = Nvidia.vpcId(streamingBase, token).also { this@AppState.vpc = it }
-                val sessionsJob = scope.launch {
-                    sessions = runCatching { Nvidia.activeSessions(streamingBase, token, deviceId) }.getOrDefault(emptyList())
+                try {
+                    load(serviceToken())
+                } catch (e: ApiException) {
+                    if (e.code != 401 && e.code != 403) throw e
+                    // A service turned the token down before its time. Renew it and try once
+                    // more; only a refused renewal means the sign-in is really over.
+                    load(serviceToken(force = true))
                 }
-                val storesJob = scope.launch { runCatching { Stores.update(Nvidia.storeLabels(token)) } }
-                scope.launch { loadMembership(token, vpc) }
-                scope.launch {
-                    runCatching { Nvidia.regions(streamingBase, token) }
-                        .onSuccess { regions = it }
-                        .onFailure { android.util.Log.w("AppState", "region list failed", it) }
-                }
-                val storeJob = scope.launch {
-                    runCatching {
-                        val p = Nvidia.panels(token, vpc, "MARQUEE", "MAIN")
-                        featured = p["MARQUEE"].orEmpty().flatMap { it.games }.distinctBy { it.id }.take(8)
-                        shelves = p["MAIN"].orEmpty().filter { it.title.isNotBlank() }.take(8)
-                    }
-                }
-                storesJob.join()
-                library = Nvidia.library(token, vpc)
-                sessionsJob.join()
-                storeJob.join()
             } catch (e: ApiException) {
                 if (e.code == 401 || e.code == 403) {
                     signOut()
@@ -174,6 +173,31 @@ class AppState(context: Context, private val scope: CoroutineScope) {
                 loading = false
             }
         }
+    }
+
+    private suspend fun load(token: String) {
+        val vpc = Nvidia.vpcId(streamingBase, token).also { this@AppState.vpc = it }
+        val sessionsJob = scope.launch {
+            sessions = runCatching { Nvidia.activeSessions(streamingBase, token, deviceId) }.getOrDefault(emptyList())
+        }
+        val storesJob = scope.launch { runCatching { Stores.update(Nvidia.storeLabels(token)) } }
+        scope.launch { loadMembership(token, vpc) }
+        scope.launch {
+            runCatching { Nvidia.regions(streamingBase, token) }
+                .onSuccess { regions = it }
+                .onFailure { android.util.Log.w("AppState", "region list failed", it) }
+        }
+        val storeJob = scope.launch {
+            runCatching {
+                val p = Nvidia.panels(token, vpc, "MARQUEE", "MAIN")
+                featured = p["MARQUEE"].orEmpty().flatMap { it.games }.distinctBy { it.id }.take(8)
+                shelves = p["MAIN"].orEmpty().filter { it.title.isNotBlank() }.take(8)
+            }
+        }
+        storesJob.join()
+        library = Nvidia.library(token, vpc)
+        sessionsJob.join()
+        storeJob.join()
     }
 
     private suspend fun loadMembership(token: String, vpc: String?) {
@@ -218,30 +242,70 @@ class AppState(context: Context, private val scope: CoroutineScope) {
     /** Region the account streams from, for the About page. */
     val region: String? get() = vpc
 
-    /** A valid token for GeForce NOW's services, refreshed when it is close to expiring. */
-    suspend fun serviceToken(): String {
+    private val renewing = Mutex()
+    private var clientCheckedAtMs = 0L
+
+    /**
+     * A valid token for GeForce NOW's services. The saved tokens last about a day; when they
+     * are close to running out (or [force] says a service refused them) they are renewed with
+     * the long-lived client token, so the sign-in survives restarts and long breaks.
+     *
+     * Throws a 401 only when the sign-in is really over: NVIDIA refused the renewal, or there
+     * is nothing to renew with. A network failure never signs anyone out.
+     */
+    suspend fun serviceToken(force: Boolean = false): String = renewing.withLock {
         var t = tokens ?: throw ApiException("Not signed in.", 401)
-        if (System.currentTimeMillis() > t.expiresAtMs - 10 * 60_000L) {
-            val r = t.refresh ?: throw ApiException("Your sign-in has expired.", 401)
-            t = try {
-                Nvidia.refresh(r)
-            } catch (e: ApiException) {
-                // A refused refresh token means the sign-in is over, not a network blip.
-                throw if (e.code in 400..403) ApiException("Your sign-in has expired.", 401) else e
-            }
-            store(t)
+        val now = System.currentTimeMillis()
+        // Keep the client token fresh while the access token still works: once at every start
+        // and a few times a day after that. Sign-ins saved by earlier versions get their first
+        // one here. The fresher it is, the longer the app can sit unused and stay signed in.
+        val recheck = if (t.client.isNullOrBlank()) 5 * 60_000L else 6 * 3600_000L
+        if (now < t.expiresAtMs - 60_000L && now - clientCheckedAtMs > recheck) {
+            clientCheckedAtMs = now
+            runCatching { Nvidia.withClientToken(t) }
+                .onSuccess { t = it; store(it) }
+                .onFailure { android.util.Log.w("AppState", "client token unavailable", it) }
         }
-        return t.id ?: t.access
+        val expired = now >= t.staleAtMs
+        if (force || now > t.staleAtMs - 10 * 60_000L) {
+            if (!t.canRenew) {
+                if (expired || force) throw ApiException("Your sign-in has expired.", 401)
+                return@withLock t.service(now)
+            }
+            try {
+                t = Nvidia.renew(t, profile?.userId)
+                store(t)
+                // Start the client token's clock again from this renewal.
+                clientCheckedAtMs = now
+                runCatching { Nvidia.withClientToken(t) }.onSuccess { t = it; store(it) }
+            } catch (e: ApiException) {
+                android.util.Log.w("AppState", "sign-in renewal refused (${e.code}): ${e.message}")
+                val refused = e.code in 400..403
+                when {
+                    // NVIDIA said no: the sign-in is over.
+                    refused && (expired || force) -> throw ApiException("Your sign-in has expired.", 401)
+                    // Not expired yet: keep using what we have and try again next time.
+                    !expired && !force -> Unit
+                    else -> throw e
+                }
+            } catch (e: java.io.IOException) {
+                // Offline or NVIDIA unreachable: the saved tokens may still work.
+                if (expired || force) throw e
+            }
+        }
+        t.service()
     }
 
     private fun store(t: Nvidia.Tokens) {
         tokens = t
-        profile = Nvidia.profileFromJwt(t.id ?: t.access)
+        profile = Nvidia.profileFromJwt(t.id ?: t.access) ?: profile
         prefs.edit()
             .putString("access", t.access)
             .putString("refresh", t.refresh)
             .putString("id", t.id)
             .putLong("expires", t.expiresAtMs)
+            .putString("client", t.client)
+            .putLong("clientExpires", t.clientExpiresAtMs)
             .putString("base", streamingBase)
             .apply()
     }

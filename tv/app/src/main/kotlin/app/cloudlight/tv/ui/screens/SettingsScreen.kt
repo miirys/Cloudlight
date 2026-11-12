@@ -61,6 +61,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import app.cloudlight.tv.FramePacing
 import app.cloudlight.tv.GameLanguage
 import app.cloudlight.tv.Settings
 import app.cloudlight.tv.StatsCorner
@@ -259,6 +260,16 @@ private fun StreamPage(settings: Settings, app: AppState) {
             VideoPath.AUTO -> "The standard decoder, which works on every TV."
             VideoPath.DIRECT -> "Lowest delay. Switch to Compatible if streams close the app."
             VideoPath.COMPATIBLE -> "Works on more TVs, with a little more delay."
+        },
+    )
+    ValueSetting(
+        "Frame pacing",
+        FramePacing.entries.map { it.label },
+        settings.framePacing.ordinal,
+        { settings.cycleFramePacing(it - settings.framePacing.ordinal) },
+        hint = when (settings.framePacing) {
+            FramePacing.SMOOTH -> "Every frame gets its own screen refresh. The smoothest motion."
+            FramePacing.FASTEST -> "Always shows the newest frame. A little less delay, a little less even."
         },
     )
     settings.fixes?.let { f ->

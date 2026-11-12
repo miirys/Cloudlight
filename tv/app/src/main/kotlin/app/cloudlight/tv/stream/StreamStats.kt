@@ -6,6 +6,10 @@ import org.webrtc.RTCStatsReport
 /** One second of stream health, ready to show. Null fields are not known yet. */
 data class StreamStats(
     val fps: Double? = null,
+    /** Frames arriving from the rig each second, before decoding. */
+    val receivedFps: Double? = null,
+    /** Decoded frames given up on because the screen was still busy with the one before. */
+    val framesSkipped: Long = 0,
     val bitrateMbps: Double? = null,
     val rttMs: Double? = null,
     val packetLossPct: Double? = null,
@@ -40,6 +44,7 @@ class StatsReader {
     private var lastAtUs = 0.0
     private var lastBytes = 0.0
     private var lastFramesDecoded = 0.0
+    private var lastFramesReceived = 0.0
     private var lastDecodeTime = 0.0
     private var lastPacketsReceived = 0.0
     private var lastPacketsLost = 0.0
@@ -69,6 +74,7 @@ class StatsReader {
         val bytes = num(video, "bytesReceived") ?: 0.0
         val decoded = num(video, "framesDecoded") ?: 0.0
         val decodeTime = num(video, "totalDecodeTime") ?: 0.0
+        val framesIn = num(video, "framesReceived") ?: 0.0
         val received = num(video, "packetsReceived") ?: 0.0
         val lost = num(video, "packetsLost") ?: 0.0
         val jb = num(video, "jitterBufferDelay") ?: 0.0
@@ -85,6 +91,7 @@ class StatsReader {
 
         val bitrate = rate(bytes, lastBytes)?.let { it * 8 / 1e6 }
         val decodedFps = rate(decoded, lastFramesDecoded)
+        val receivedFps = if (framesIn > 0) rate(framesIn, lastFramesReceived) else null
         val decodeMs = if (decoded > lastFramesDecoded) (decodeTime - lastDecodeTime) / (decoded - lastFramesDecoded) * 1000 else null
         val jbMs = if (jbCount > lastJbCount) (jb - lastJbDelay) / (jbCount - lastJbCount) * 1000 else null
         val pktLoss = loss(received, lost, lastPacketsReceived, lastPacketsLost)
@@ -92,6 +99,7 @@ class StatsReader {
 
         lastBytes = bytes
         lastFramesDecoded = decoded
+        lastFramesReceived = framesIn
         lastDecodeTime = decodeTime
         lastPacketsReceived = received
         lastPacketsLost = lost
@@ -122,6 +130,8 @@ class StatsReader {
 
         return StreamStats(
             fps = fps,
+            receivedFps = receivedFps,
+            framesSkipped = VideoHooks.skipped,
             bitrateMbps = bitrate,
             rttMs = rtt,
             packetLossPct = pktLoss,

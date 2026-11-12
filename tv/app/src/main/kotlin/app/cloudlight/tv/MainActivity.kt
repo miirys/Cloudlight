@@ -87,7 +87,7 @@ class MainActivity : ComponentActivity() {
             // window's real pixel size, so on a 4K output every glyph and edge is 4K-sharp and
             // the layout looks identical at 1080p.
             val px = resources.displayMetrics.widthPixels.coerceAtLeast(1)
-            LaunchedEffect(settings.maxRefresh) { preferRefresh(settings.maxRefresh) }
+            LaunchedEffect(settings.maxRefresh, streamer.streamFps) { preferRefresh(settings.maxRefresh, streamer.streamFps) }
             CompositionLocalProvider(LocalDensity provides Density(px / 960f, 1f)) {
                 CloudlightTheme {
                     AppRoot(hub, app, settings, streamer, onExit = { finish() })
@@ -99,21 +99,51 @@ class MainActivity : ComponentActivity() {
     /**
      * Many TVs sit at 60 Hz even when they can do more, which caps both the menus and the
      * stream. Ask for the fastest mode at the current resolution (the system changes it back
-     * when the app leaves the screen). Turning the setting off hands the choice back.
+     * when the app leaves the screen). During a stream, ask for the slowest mode that still
+     * shows every frame evenly: the stream's own rate or a whole multiple of it, so a 120 fps
+     * stream gets 120 Hz rather than 144. Turning the setting off hands the choice back.
      */
-    private fun preferRefresh(fastest: Boolean) {
+    private fun preferRefresh(fastest: Boolean, streamFps: Int) {
         runCatching {
             @Suppress("DEPRECATION")
             val display = (if (Build.VERSION.SDK_INT >= 30) display else windowManager.defaultDisplay) ?: return
             val now = display.mode
-            val target = if (!fastest) 0 else display.supportedModes
+            val modes = display.supportedModes
                 .filter { it.physicalWidth == now.physicalWidth && it.physicalHeight == now.physicalHeight }
-                .maxByOrNull { it.refreshRate }
-                ?.takeIf { it.refreshRate > now.refreshRate + 1f }
-                ?.modeId ?: return
+            fun even(hz: Float): Boolean {
+                val ratio = hz / streamFps
+                return ratio > 0.98f && abs(ratio - Math.round(ratio)) < 0.02f
+            }
+            val target = when {
+                !fastest -> 0
+                streamFps > 0 && even(now.refreshRate) -> now.modeId
+                streamFps > 0 && modes.any { even(it.refreshRate) } ->
+                    modes.filter { even(it.refreshRate) }.minByOrNull { it.refreshRate }!!.modeId
+                else -> modes.maxByOrNull { it.refreshRate }
+                    ?.takeIf { it.refreshRate > now.refreshRate + 1f }
+                    ?.modeId ?: return
+            }
             if (window.attributes.preferredDisplayModeId == target) return
             window.attributes = window.attributes.also { it.preferredDisplayModeId = target }
         }
+    }
+
+    /**
+     * Controller presses reach the menus as key events we make ourselves, and those can't
+     * do what a real remote key does: take the window out of touch mode (where nothing shows
+     * focus) or give it its first focus. So do that by hand before the press goes in.
+     * Without it a controller did nothing until the remote had been used once.
+     */
+    private fun wakeFocus() {
+        runCatching {
+            val decor = window.decorView
+            if (decor.isInTouchMode || currentFocus == null) decor.requestFocusFromTouch()
+        }
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus && hub.pads.value.isNotEmpty()) wakeFocus()
     }
 
     override fun onResume() {
@@ -194,6 +224,7 @@ class MainActivity : ComponentActivity() {
         } else {
             now
         }
+        if (action == KeyEvent.ACTION_DOWN) wakeFocus()
         // Synthetic events come from the virtual keyboard, so dispatchKeyEvent lets them through.
         super.dispatchKeyEvent(
             KeyEvent(down, now, action, code, 0, 0, KeyCharacterMap.VIRTUAL_KEYBOARD, 0, 0, InputDevice.SOURCE_DPAD),
