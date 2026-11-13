@@ -42,6 +42,9 @@ object VideoOutput {
     @Volatile var height = 0
     @Volatile var decoderName: String? = null
 
+    /** The stream's frame rate, told to the decoder. */
+    @Volatile var fps = 0
+
     /** Frames handed to the panel since the stream began. */
     @Volatile var rendered = 0L
 
@@ -195,21 +198,28 @@ class DirectDecoder(private val mime: String, private val codecName: String) : V
     // WebRTC wants a frame object back; one tiny shared buffer serves every frame.
     private val stub: JavaI420Buffer = JavaI420Buffer.allocate(2, 2)
 
-    override fun initDecode(settings: VideoDecoder.Settings, callback: VideoDecoder.Callback): VideoCodecStatus {
-        Log.i(TAG, "init $codecName ${settings.width}x${settings.height}")
+    // Every parameter WebRTC's native side passes can be null (it always passes a null
+    // DecodeInfo), and a Kotlin non-null parameter throws on entry, before any try block. An
+    // exception thrown inside a native call aborts the process: that was the "crash as the
+    // video starts" on this path, on every codec. So these stay nullable.
+    override fun initDecode(settings: VideoDecoder.Settings?, callback: VideoDecoder.Callback?): VideoCodecStatus = try {
+        Log.i(TAG, "init $codecName ${settings?.width}x${settings?.height}")
         CrashLog.step("decoder-init")
         this.callback = callback
-        if (settings.width > 0 && settings.height > 0) {
+        if (settings != null && settings.width > 0 && settings.height > 0) {
             width = settings.width
             height = settings.height
         }
-        return VideoCodecStatus.OK
+        VideoCodecStatus.OK
+    } catch (t: Throwable) {
+        Log.w(TAG, "init crashed", t)
+        VideoCodecStatus.ERROR
     }
 
     override fun getImplementationName(): String = codecName
 
-    override fun decode(frame: EncodedImage, info: VideoDecoder.DecodeInfo): VideoCodecStatus = try {
-        decodeFrame(frame)
+    override fun decode(frame: EncodedImage?, info: VideoDecoder.DecodeInfo?): VideoCodecStatus = try {
+        if (frame == null) VideoCodecStatus.NO_OUTPUT else decodeFrame(frame)
     } catch (t: Throwable) {
         // This runs inside a native call; an exception escaping here aborts the process.
         Log.w(TAG, "decode crashed", t)
@@ -292,6 +302,7 @@ class DirectDecoder(private val mime: String, private val codecName: String) : V
                 setInteger(MediaFormat.KEY_MAX_HEIGHT, maxOf(height, 2160))
             }
             setInteger(MediaFormat.KEY_PRIORITY, 0)
+            if (fast && VideoOutput.fps >= 60) setInteger(MediaFormat.KEY_FRAME_RATE, VideoOutput.fps)
             if (Build.VERSION.SDK_INT >= 30 && caps?.isFeatureSupported(MediaCodecInfo.CodecCapabilities.FEATURE_LowLatency) == true) {
                 setInteger(MediaFormat.KEY_LOW_LATENCY, 1)
             }

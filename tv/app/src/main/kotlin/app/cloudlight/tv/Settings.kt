@@ -33,8 +33,8 @@ enum class VideoPath(val label: String) {
 
 /** How decoded pictures are handed to the screen. */
 enum class FramePacing(val label: String, val swapInterval: Int) {
-    SMOOTH("Smooth", 1),
-    FASTEST("Lowest delay", 0),
+    SMOOTH("Wait for the screen", 1),
+    FASTEST("Fastest", 0),
 }
 
 enum class StatsMode(val label: String) { OFF("Off"), COMPACT("Compact"), DETAILED("Detailed") }
@@ -105,7 +105,7 @@ class Settings(context: Context) {
     var decoderHints by mutableStateOf(prefs.getBoolean("decoderHints", true))
         private set
 
-    var framePacing by mutableStateOf(load("framePacing", FramePacing.SMOOTH))
+    var framePacing by mutableStateOf(load("framePacing", FramePacing.FASTEST))
         private set
 
     fun cycleFramePacing(step: Int) {
@@ -149,15 +149,15 @@ class Settings(context: Context) {
     fun recoverFrom(path: String, step: String): String? {
         val video = step.startsWith("decoder") || step == "decoding" || step == "video"
         // A crash on the direct path: go back to the standard (compatible) path.
-        val canCompat = path == "direct" && videoPath == VideoPath.DIRECT
+        val canCompat = path == "direct" && (videoPath == VideoPath.DIRECT || (videoPath == VideoPath.AUTO && !directFailed))
         val e = prefs.edit()
         val change = when {
             // The newest and least proven part goes first.
             video && path != "direct" && decoderHints -> { decoderHints = false; e.putBoolean("decoderHints", false); "the decoder's default speed settings" }
-            video && canCompat -> { videoPath = VideoPath.AUTO; e.putString("videoPath", VideoPath.AUTO.name); "the standard video output" }
+            video && canCompat -> { directFailed = true; videoPath = VideoPath.AUTO; e.putBoolean("directFailed", true).putString("videoPath", VideoPath.AUTO.name); "the standard video output" }
             video && !safeCodec && codec == VideoCodec.AUTO -> { safeCodec = true; e.putBoolean("safeCodec", true); "the H.264 codec" }
             !video && !noAudio -> { noAudio = true; e.putBoolean("noAudio", true); "streaming without sound" }
-            canCompat -> { videoPath = VideoPath.AUTO; e.putString("videoPath", VideoPath.AUTO.name); "the standard video output" }
+            canCompat -> { directFailed = true; videoPath = VideoPath.AUTO; e.putBoolean("directFailed", true).putString("videoPath", VideoPath.AUTO.name); "the standard video output" }
             !safeCodec && codec == VideoCodec.AUTO -> { safeCodec = true; e.putBoolean("safeCodec", true); "the H.264 codec" }
             !noAudio -> { noAudio = true; e.putBoolean("noAudio", true); "streaming without sound" }
             tenBit -> { tenBit = false; e.putBoolean("tenBit", false).putBoolean("tenBitFix", true); "8-bit colour" }

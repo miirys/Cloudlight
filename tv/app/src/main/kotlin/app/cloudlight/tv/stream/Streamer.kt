@@ -282,9 +282,11 @@ class Streamer(
         compatibleVideo = when (settings.videoPath) {
             VideoPath.COMPATIBLE -> true
             VideoPath.DIRECT -> false
-            // WebRTC's own decoder and renderer: the path OpenNOW streams with on these boxes.
-            // The direct path stays available as an explicit choice.
-            VideoPath.AUTO -> true
+            // Amlogic boxes decode straight onto their hardware video layer, with no copy
+            // through the graphics chip: the only path there that keeps up with 120 fps.
+            // Everything else, and any box where that path has failed, uses WebRTC's own
+            // decoder and renderer.
+            VideoPath.AUTO -> !(TvDecoderFactory.amlogic && !settings.directFailed)
         }
         val cm = Cloudmatch({ app.serviceToken() }).also { cloud = it }
         job = scope.launch {
@@ -328,12 +330,22 @@ class Streamer(
         for ((id, state) in hub.snapshot()) input.report(id, state)
         VideoHooks.swapInterval = settings.framePacing.swapInterval
         VideoHooks.tuneDecoder = settings.decoderHints
+        VideoOutput.fps = streamFps
         streamFps = s.fps ?: m.fps
         input.holdMs = settings.holdToOpenMs.toLong()
         input.mouseSpeed = settings.mouseSpeed
         e.volume = settings.volume / 100.0
         e.muted = muted
         e.start()
+        // The direct output is new on this kind of box. If the rig is sending but no picture
+        // comes out of it, go back to the standard output rather than leave a black screen.
+        if (!compatibleVideo && settings.videoPath == VideoPath.AUTO) scope.launch {
+            delay(15_000)
+            if (engine === e && e.offered && phase !is Phase.Live && phase !is Phase.Ended) {
+                settings.markDirectFailed()
+                end("The direct video output showed no picture, so the standard one is switched on. Try again.", error = true)
+            }
+        }
         // If no picture arrives, say so instead of spinning forever.
         scope.launch {
             delay(30_000)

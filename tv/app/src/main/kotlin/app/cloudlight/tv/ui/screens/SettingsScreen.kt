@@ -257,7 +257,7 @@ private fun StreamPage(settings: Settings, app: AppState) {
         settings.videoPath.ordinal,
         { settings.cycleVideoPath(it - settings.videoPath.ordinal) },
         hint = when (settings.videoPath) {
-            VideoPath.AUTO -> "The standard decoder, which works on every TV."
+            VideoPath.AUTO -> "Picks the fastest output this box handles, and falls back if it fails."
             VideoPath.DIRECT -> "Lowest delay. Switch to Compatible if streams close the app."
             VideoPath.COMPATIBLE -> "Works on more TVs, with a little more delay."
         },
@@ -268,8 +268,8 @@ private fun StreamPage(settings: Settings, app: AppState) {
         settings.framePacing.ordinal,
         { settings.cycleFramePacing(it - settings.framePacing.ordinal) },
         hint = when (settings.framePacing) {
-            FramePacing.SMOOTH -> "Every frame gets its own screen refresh. The smoothest motion."
-            FramePacing.FASTEST -> "Always shows the newest frame. A little less delay, a little less even."
+            FramePacing.SMOOTH -> "Waits for the screen on every frame. Can cap 120 fps streams near 90."
+            FramePacing.FASTEST -> "Never waits for the screen, so every frame is decoded. Best for 120 fps."
         },
     )
     settings.fixes?.let { f ->
