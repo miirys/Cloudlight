@@ -2,8 +2,9 @@ Cloudlight is a GeForce NOW client for Android TV.
 
 **Streaming**
 - Up to 1440p at 120 fps over WebRTC, with HEVC, AV1 and H.264
-- A 20 Mbps bitrate floor, and a video path that waits for the screen instead of dropping frames, so a 120 fps stream shows 120
-- A frame pacing choice in Settings: smooth, or lowest delay
+- Experimental 4K at 60 fps (Settings, Stream): streams over NVIDIA's native protocol, the only kind of session GeForce NOW gives 4K to, and goes back to the normal stream by itself if it can't start
+- On Amlogic boxes the decoder draws straight onto the TV's video layer, with no copy through the graphics chip, so a 120 fps stream is not held back by the screen
+- A 20 Mbps bitrate floor, and a frame pacing choice in Settings for the standard video output
 - Resume sessions started on other devices, at the quality you chose
 - Picture in picture when you press Home during a game
 

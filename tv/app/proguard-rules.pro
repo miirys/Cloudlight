@@ -14,3 +14,7 @@
 # WebRTC's decoder is patched at build time (buildSrc) to call these by name.
 -keep class app.cloudlight.tv.stream.VideoHooks { *; }
 -keep class app.cloudlight.tv.stream.PacedDrawer { *; }
+# The 4K engine (libopennow_nvst) finds its Java side by name: the bridge's native methods by
+# their full class name, and the transport's onNative... callbacks by method name.
+-keep class com.opencloudgaming.opennow.NvstBridge { *; }
+-keep class app.cloudlight.tv.stream.NativeTransport { *; }

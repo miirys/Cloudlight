@@ -1,7 +1,8 @@
 # Cloudlight TV
 
-A GeForce NOW client for Android TV, written from scratch. It streams up to 1440p at 120 fps,
-works with controllers, keyboards and mice, and picks up sessions started on other devices.
+A GeForce NOW client for Android TV, written from scratch. It streams up to 1440p at 120 fps
+(and, experimentally, 4K at 60 fps), works with controllers, keyboards and mice, and picks up
+sessions started on other devices.
 
 ## Installing
 
@@ -19,6 +20,14 @@ Locally you need JDK 17 and the Android SDK (platform 35):
 ./gradlew :app:assembleRelease
 ```
 
+The 4K mode needs the native streaming library, which Gradle does not build. Build it first
+(Rust with the `aarch64-linux-android` and `armv7-linux-androideabi` targets, the Android NDK
+and CMake), or the app is built without it and the 4K switch falls back to the normal stream:
+
+```sh
+python3 scripts/build_nvst.py "$ANDROID_SDK_ROOT/ndk/27.2.12479018" app/src/main/jniLibs
+```
+
 Release builds are signed with `app/release.jks`, which is committed on purpose so every
 build can update the last one. Set `CLOUDLIGHT_KEYSTORE` and `CLOUDLIGHT_KEYSTORE_PASSWORD`
 (optionally `CLOUDLIGHT_KEY_ALIAS` and `CLOUDLIGHT_KEY_PASSWORD`) to sign with another key.
@@ -32,6 +41,7 @@ using `RELEASE_NOTES.md` as the notes.
 | --- | --- |
 | `app/` | The client: Compose interface, GeForce NOW sign-in and session APIs, WebRTC streaming. |
 | `buildSrc/` | A build-time patch to WebRTC's hardware decoder: it waits for the renderer instead of dropping frames at 120 fps, and tells the decoder the stream's frame rate. Calls into `stream/VideoHooks.kt`. |
+| `nvst/` | NVIDIA's native streaming protocol (NVST) as a Rust library, taken from OpenNOW (MIT). The 4K mode runs on it; `stream/NativeTransport.kt` is its Kotlin side. See `nvst/UPSTREAM.md`. |
 | `probe/` | A hardware probe used during development: decoders, display modes and input devices. |
 
 Inside the app:

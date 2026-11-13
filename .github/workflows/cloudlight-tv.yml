@@ -54,6 +54,33 @@ jobs:
       - name: Generate decoder test clips
         run: ./probe/make-clips.sh
 
+      # The 4K mode streams over NVIDIA's native protocol, which lives in a Rust library
+      # (tv/nvst). It is built here for both ARM ABIs and packaged like any other .so.
+      - name: Install the NDK and CMake
+        run: sdkmanager --install "ndk;27.2.12479018" "cmake;3.22.1" > /dev/null
+
+      - name: Add the Android Rust targets
+        run: |
+          rustup toolchain install stable --profile minimal --no-self-update
+          rustup default stable
+          rustup target add aarch64-linux-android armv7-linux-androideabi
+
+      - name: Cache the native library build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            tv/nvst/target
+          key: nvst-${{ runner.os }}-${{ hashFiles('tv/nvst/Cargo.lock', 'tv/nvst/**/*.rs', 'tv/nvst/**/Cargo.toml', 'tv/scripts/build_nvst.py') }}
+          restore-keys: nvst-${{ runner.os }}-
+
+      - name: Build the native streaming library
+        run: |
+          sdk="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
+          CMAKE="$sdk/cmake/3.22.1/bin/cmake" python3 scripts/build_nvst.py "$sdk/ndk/27.2.12479018" app/src/main/jniLibs
+          ls -l app/src/main/jniLibs/*/
+
       - name: Build APKs
         # Retried once: dependency servers sometimes rate-limit shared runners.
         run: |

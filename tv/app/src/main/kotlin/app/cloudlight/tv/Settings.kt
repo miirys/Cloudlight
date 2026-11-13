@@ -108,6 +108,28 @@ class Settings(context: Context) {
     var framePacing by mutableStateOf(load("framePacing", FramePacing.FASTEST))
         private set
 
+    /**
+     * Stream at 4K and 60 fps over NVIDIA's native protocol instead of WebRTC, which the
+     * service stops at 1440p. Off by default: it is a second, newer streaming engine.
+     */
+    var native4k by mutableStateOf(prefs.getBoolean("native4k", false))
+        private set
+
+    fun toggleNative4k() {
+        native4k = !native4k
+        prefs.edit().putBoolean("native4k", native4k).apply()
+    }
+
+    /** How the last few 4K attempts went, newest last, for the About page. */
+    var nativeLog by mutableStateOf(prefs.getString("nativeLog", "") ?: "")
+        private set
+
+    fun noteNative(text: String) {
+        val time = java.text.SimpleDateFormat("d MMM HH:mm", java.util.Locale.getDefault()).format(java.util.Date())
+        nativeLog = (nativeLog.lines().filter { it.isNotBlank() } + "$time  ${text.take(160)}").takeLast(6).joinToString("\n")
+        prefs.edit().putString("nativeLog", nativeLog).apply()
+    }
+
     fun cycleFramePacing(step: Int) {
         framePacing = cycle(framePacing, step)
         prefs.edit().putString("framePacing", framePacing.name).apply()
@@ -153,6 +175,7 @@ class Settings(context: Context) {
         val e = prefs.edit()
         val change = when {
             // The newest and least proven part goes first.
+            path == "native" -> { native4k = false; e.putBoolean("native4k", false); "the standard stream, with 4K switched off" }
             video && path != "direct" && decoderHints -> { decoderHints = false; e.putBoolean("decoderHints", false); "the decoder's default speed settings" }
             video && canCompat -> { directFailed = true; videoPath = VideoPath.AUTO; e.putBoolean("directFailed", true).putString("videoPath", VideoPath.AUTO.name); "the standard video output" }
             video && !safeCodec && codec == VideoCodec.AUTO -> { safeCodec = true; e.putBoolean("safeCodec", true); "the H.264 codec" }

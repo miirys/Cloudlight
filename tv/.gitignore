@@ -6,3 +6,5 @@ local.properties
 captures/
 .cxx/
 clips/
+# Built by scripts/build_nvst.py (CI does it before Gradle).
+app/src/main/jniLibs/

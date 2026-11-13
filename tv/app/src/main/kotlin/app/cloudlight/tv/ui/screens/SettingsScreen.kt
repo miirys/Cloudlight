@@ -166,7 +166,7 @@ fun SettingsScreen(hub: PadHub, app: AppState, settings: Settings) {
                     Page.GAME -> ListPage { GamePage(settings) }
                     Page.CONTROLLERS -> ControllerPage(hub)
                     Page.ACCOUNT -> ListPage { AccountPage(app) }
-                    Page.ABOUT -> AboutPage(app)
+                    Page.ABOUT -> AboutPage(app, settings)
                 }
             }
         }
@@ -224,6 +224,17 @@ private fun StreamPage(settings: Settings, app: AppState) {
         settings.mode.ordinal,
         { settings.cycleMode(it - settings.mode.ordinal) },
         hint = modeHint,
+    )
+    SwitchSetting(
+        "4K at 60 fps (experimental)",
+        settings.native4k,
+        settings::toggleNative4k,
+        hint = if (settings.native4k) {
+            settings.nativeLog.lines().lastOrNull { it.isNotBlank() }?.let { "Last time: $it" }
+                ?: "Streams over NVIDIA's native protocol in place of the resolution above. If it can't start, the normal stream is used."
+        } else {
+            "GeForce NOW only gives 4K to NVIDIA's native protocol. This streams with it. Needs Ultimate."
+        },
     )
     val regions = app.regions
     if (regions.isNotEmpty()) {
