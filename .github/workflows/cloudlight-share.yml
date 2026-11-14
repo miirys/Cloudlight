@@ -47,9 +47,23 @@ jobs:
       - name: Upload to temp.sh
         run: |
           version=$(sed -n 's/.*versionName = "\(.*\)".*/\1/p' tv/app/build.gradle.kts)
-          cp apk/*.apk "Cloudlight-$version.apk"
-          ls -l "Cloudlight-$version.apk"
-          sha256sum "Cloudlight-$version.apk"
-          link=$(curl -fsS --retry 3 --retry-delay 5 -F "file=@Cloudlight-$version.apk" https://temp.sh/upload)
+          apk="Cloudlight-$version.apk"
+          cp apk/*.apk "$apk"
+          ls -l "$apk"
+          sha256sum "$apk"
+          # temp.sh answers with the link as plain text. Anything else is shown, so a failure
+          # on its side can be told from one on ours.
+          upload() {
+            curl -sS --retry 2 --retry-delay 5 -m 300 -o reply.txt -w '%{http_code}' -F "file=@$1" https://temp.sh/upload || true
+          }
+          echo "probe" > probe.txt
+          echo "temp.sh, small test file: HTTP $(upload probe.txt)"; head -c 300 reply.txt; echo
+          code=$(upload "$apk")
+          echo "temp.sh, APK: HTTP $code"; head -c 300 reply.txt; echo
+          link=$(grep -Eo 'https?://temp\.sh/[^[:space:]"<]+' reply.txt | head -1 || true)
+          if [ "$code" != "200" ] || [ -z "$link" ]; then
+            echo "temp.sh did not take the file"
+            exit 1
+          fi
           echo "Download link: $link"
           echo "Download link: $link" >> "$GITHUB_STEP_SUMMARY"
