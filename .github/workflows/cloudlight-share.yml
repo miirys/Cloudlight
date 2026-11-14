@@ -52,18 +52,27 @@ jobs:
           ls -l "$apk"
           sha256sum "$apk"
           # temp.sh answers with the link as plain text. Anything else is shown, so a failure
-          # on its side can be told from one on ours.
+          # on its side can be told from one on ours. A small file went through while the
+          # 63 MB APK got a 500 from its web server, so try the plainer ways of sending it.
           upload() {
-            curl -sS --retry 2 --retry-delay 5 -m 300 -o reply.txt -w '%{http_code}' -F "file=@$1" https://temp.sh/upload || true
+            file=$1; shift
+            code=$(curl -sS -m 600 -o reply.txt -w '%{http_code}' "$@" -F "file=@$file" https://temp.sh/upload || true)
+            echo "temp.sh, $file ($*): HTTP $code"; head -c 200 reply.txt; echo
+            link=$(grep -Eo 'https?://temp\.sh/[^[:space:]"<]+' reply.txt | head -1 || true)
+            [ "$code" = "200" ] && [ -n "$link" ]
           }
-          echo "probe" > probe.txt
-          echo "temp.sh, small test file: HTTP $(upload probe.txt)"; head -c 300 reply.txt; echo
-          code=$(upload "$apk")
-          echo "temp.sh, APK: HTTP $code"; head -c 300 reply.txt; echo
-          link=$(grep -Eo 'https?://temp\.sh/[^[:space:]"<]+' reply.txt | head -1 || true)
-          if [ "$code" != "200" ] || [ -z "$link" ]; then
-            echo "temp.sh did not take the file"
-            exit 1
-          fi
+          zip -q -0 "Cloudlight-$version.zip" "$apk"
+          upload "$apk" --http1.1 ||
+            upload "$apk" --http1.1 -H 'Expect:' ||
+            upload "$apk" --http1.1 --limit-rate 4M ||
+            upload "Cloudlight-$version.zip" --http1.1 || {
+              # Nothing worked: find out whether it is the size that temp.sh refuses.
+              for mb in 20 40 60; do
+                head -c "${mb}M" /dev/urandom > "size-test-${mb}mb.bin"
+                upload "size-test-${mb}mb.bin" --http1.1 || true
+              done
+              echo "temp.sh did not take the file"
+              exit 1
+            }
           echo "Download link: $link"
           echo "Download link: $link" >> "$GITHUB_STEP_SUMMARY"
