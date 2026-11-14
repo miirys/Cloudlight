@@ -1,7 +1,7 @@
 name: Cloudlight TV (share a build)
 
-# Puts a finished build's APK on Litterbox and prints the link, for when the Actions artifact
-# page can't be used (it needs a GitHub login and hands out a zip). The link lasts three days.
+# Publishes a finished build's APK as a pre-release, for a direct link when the Actions
+# artifact page can't be used (it needs a GitHub login and hands out a zip).
 # To share another build, put its run number in .github/cloudlight-share-run and push.
 on:
   push:
@@ -15,7 +15,7 @@ on:
         required: false
 
 permissions:
-  contents: read
+  contents: write
   actions: read
 
 jobs:
@@ -44,22 +44,26 @@ jobs:
           run-id: ${{ steps.pick.outputs.run }}
           github-token: ${{ github.token }}
 
-      - name: Upload to Litterbox
-        # temp.sh was tried first and answers 500 to any file of 20 MB or more.
+      - name: Publish the pre-release
+        # temp.sh answers 500 to files of 20 MB or more, and Litterbox refuses uploads from
+        # GitHub's runners, so the APK goes on the repository's own Releases page.
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN: ${{ steps.pick.outputs.run }}
         run: |
           version=$(sed -n 's/.*versionName = "\(.*\)".*/\1/p' tv/app/build.gradle.kts)
           apk="Cloudlight-$version.apk"
           cp apk/*.apk "$apk"
           ls -l "$apk"
           sha256sum "$apk"
-          code=$(curl -sS --retry 2 --retry-delay 5 -m 600 -o reply.txt -w '%{http_code}' \
-            -F reqtype=fileupload -F time=72h -F "fileToUpload=@$apk" \
-            https://litterbox.catbox.moe/resources/internals/api.php || true)
-          echo "Litterbox: HTTP $code"; head -c 300 reply.txt; echo
-          link=$(grep -Eo 'https://[^[:space:]"<]+\.apk' reply.txt | head -1 || true)
-          if [ "$code" != "200" ] || [ -z "$link" ]; then
-            echo "Litterbox did not take the file"
-            exit 1
+          sha=$(gh run view "$RUN" --repo "$GITHUB_REPOSITORY" --json headSha --jq .headSha)
+          if gh release view "v$version" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            echo "v$version is already published; nothing to do"
+          else
+            gh release create "v$version" "$apk" \
+              --repo "$GITHUB_REPOSITORY" --target "$sha" --prerelease \
+              --title "Cloudlight $version (pre-release)" --notes-file tv/RELEASE_NOTES.md
           fi
+          link="https://github.com/$GITHUB_REPOSITORY/releases/download/v$version/$apk"
           echo "Download link: $link"
           echo "Download link: $link" >> "$GITHUB_STEP_SUMMARY"
