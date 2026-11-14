@@ -166,7 +166,7 @@ fun SettingsScreen(hub: PadHub, app: AppState, settings: Settings) {
                     Page.GAME -> ListPage { GamePage(settings) }
                     Page.CONTROLLERS -> ControllerPage(hub)
                     Page.ACCOUNT -> ListPage { AccountPage(app) }
-                    Page.ABOUT -> AboutPage(app)
+                    Page.ABOUT -> AboutPage(app, settings)
                 }
             }
         }
@@ -225,6 +225,17 @@ private fun StreamPage(settings: Settings, app: AppState) {
         { settings.cycleMode(it - settings.mode.ordinal) },
         hint = modeHint,
     )
+    SwitchSetting(
+        "4K at 60 fps (experimental)",
+        settings.native4k,
+        settings::toggleNative4k,
+        hint = if (settings.native4k) {
+            settings.nativeLog.lines().lastOrNull { it.isNotBlank() }?.let { "Last time: $it" }
+                ?: "Streams over NVIDIA's native protocol in place of the resolution above. If it can't start, the normal stream is used."
+        } else {
+            "GeForce NOW only gives 4K to NVIDIA's native protocol. This streams with it. Needs Ultimate."
+        },
+    )
     val regions = app.regions
     if (regions.isNotEmpty()) {
         val ri = regions.indexOfFirst { it.name == settings.region } + 1
@@ -257,7 +268,7 @@ private fun StreamPage(settings: Settings, app: AppState) {
         settings.videoPath.ordinal,
         { settings.cycleVideoPath(it - settings.videoPath.ordinal) },
         hint = when (settings.videoPath) {
-            VideoPath.AUTO -> "The standard decoder, which works on every TV."
+            VideoPath.AUTO -> "Picks the fastest output this box handles, and falls back if it fails."
             VideoPath.DIRECT -> "Lowest delay. Switch to Compatible if streams close the app."
             VideoPath.COMPATIBLE -> "Works on more TVs, with a little more delay."
         },
@@ -268,8 +279,8 @@ private fun StreamPage(settings: Settings, app: AppState) {
         settings.framePacing.ordinal,
         { settings.cycleFramePacing(it - settings.framePacing.ordinal) },
         hint = when (settings.framePacing) {
-            FramePacing.SMOOTH -> "Every frame gets its own screen refresh. The smoothest motion."
-            FramePacing.FASTEST -> "Always shows the newest frame. A little less delay, a little less even."
+            FramePacing.SMOOTH -> "Waits for the screen on every frame. Can cap 120 fps streams near 90."
+            FramePacing.FASTEST -> "Never waits for the screen, so every frame is decoded. Best for 120 fps."
         },
     )
     settings.fixes?.let { f ->

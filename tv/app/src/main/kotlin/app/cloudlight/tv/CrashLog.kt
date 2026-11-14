@@ -123,7 +123,9 @@ object CrashLog {
      */
     fun step(name: String) {
         val path = streamPath ?: return
-        if (lastStep == name) return
+        // Once the picture is up the stream has started; later steps are the decoder at work,
+        // not a start-up to blame a crash on.
+        if (lastStep == name || lastStep == "live") return
         lastStep = name
         val ctx = appContext ?: return
         runCatching { File(ctx.filesDir, STREAMING).writeText("$path|$name") }
@@ -198,6 +200,9 @@ object CrashLog {
         "start", "factory" -> "preparing the stream"
         "peer", "signaling", "offer", "answer" -> "connecting to the rig"
         "connected" -> "waiting for the first picture"
+        "native-load" -> "loading the 4K streaming engine"
+        "native-connect" -> "connecting to the rig for 4K"
+        "native-audio" -> "starting the sound"
         "audio" -> "starting the sound"
         "decoder-create", "decoder-init", "decoding" -> "starting the video decoder"
         "video" -> "showing the video"

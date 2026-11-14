@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import app.cloudlight.tv.BuildConfig
 import app.cloudlight.tv.CrashLog
 import app.cloudlight.tv.R
+import app.cloudlight.tv.Settings
 import app.cloudlight.tv.data.AppState
 import app.cloudlight.tv.stream.TvDecoderFactory
 import app.cloudlight.tv.ui.motion.reveal
@@ -51,7 +52,7 @@ private data class Spec(val label: String, val value: String, val detail: String
  * technical facts about this TV and this account that matter when streaming.
  */
 @Composable
-fun AboutPage(app: AppState) {
+fun AboutPage(app: AppState, settings: Settings) {
     val type = LocalType.current
     val context = LocalContext.current
     val display = LocalView.current.display
@@ -69,6 +70,7 @@ fun AboutPage(app: AppState) {
         app.region?.let { Spec("Region", it) },
         Spec("Session service", app.streamingBase.removePrefix("https://").trimEnd('/')),
         Spec("Library", "${app.library.size} games"),
+        settings.nativeLog.lines().lastOrNull { it.isNotBlank() }?.let { Spec("Last 4K try", it) },
     )
 
     Column(Modifier.fillMaxSize().padding(top = 6.dp)) {

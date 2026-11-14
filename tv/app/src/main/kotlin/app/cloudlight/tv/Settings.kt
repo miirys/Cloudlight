@@ -33,8 +33,8 @@ enum class VideoPath(val label: String) {
 
 /** How decoded pictures are handed to the screen. */
 enum class FramePacing(val label: String, val swapInterval: Int) {
-    SMOOTH("Smooth", 1),
-    FASTEST("Lowest delay", 0),
+    SMOOTH("Wait for the screen", 1),
+    FASTEST("Fastest", 0),
 }
 
 enum class StatsMode(val label: String) { OFF("Off"), COMPACT("Compact"), DETAILED("Detailed") }
@@ -101,8 +101,34 @@ class Settings(context: Context) {
     var directFailed by mutableStateOf(prefs.getBoolean("directFailed", false))
         private set
 
-    var framePacing by mutableStateOf(load("framePacing", FramePacing.SMOOTH))
+    /** Tell the decoder the stream's frame rate. Crash recovery turns it off first. */
+    var decoderHints by mutableStateOf(prefs.getBoolean("decoderHints", true))
         private set
+
+    var framePacing by mutableStateOf(load("framePacing", FramePacing.FASTEST))
+        private set
+
+    /**
+     * Stream at 4K and 60 fps over NVIDIA's native protocol instead of WebRTC, which the
+     * service stops at 1440p. Off by default: it is a second, newer streaming engine.
+     */
+    var native4k by mutableStateOf(prefs.getBoolean("native4k", false))
+        private set
+
+    fun toggleNative4k() {
+        native4k = !native4k
+        prefs.edit().putBoolean("native4k", native4k).apply()
+    }
+
+    /** How the last few 4K attempts went, newest last, for the About page. */
+    var nativeLog by mutableStateOf(prefs.getString("nativeLog", "") ?: "")
+        private set
+
+    fun noteNative(text: String) {
+        val time = java.text.SimpleDateFormat("d MMM HH:mm", java.util.Locale.getDefault()).format(java.util.Date())
+        nativeLog = (nativeLog.lines().filter { it.isNotBlank() } + "$time  ${text.take(160)}").takeLast(6).joinToString("\n")
+        prefs.edit().putString("nativeLog", nativeLog).apply()
+    }
 
     fun cycleFramePacing(step: Int) {
         framePacing = cycle(framePacing, step)
@@ -145,13 +171,16 @@ class Settings(context: Context) {
     fun recoverFrom(path: String, step: String): String? {
         val video = step.startsWith("decoder") || step == "decoding" || step == "video"
         // A crash on the direct path: go back to the standard (compatible) path.
-        val canCompat = path == "direct" && videoPath == VideoPath.DIRECT
+        val canCompat = path == "direct" && (videoPath == VideoPath.DIRECT || (videoPath == VideoPath.AUTO && !directFailed))
         val e = prefs.edit()
         val change = when {
-            video && canCompat -> { videoPath = VideoPath.AUTO; e.putString("videoPath", VideoPath.AUTO.name); "the standard video output" }
+            // The newest and least proven part goes first.
+            path == "native" -> { native4k = false; e.putBoolean("native4k", false); "the standard stream, with 4K switched off" }
+            video && path != "direct" && decoderHints -> { decoderHints = false; e.putBoolean("decoderHints", false); "the decoder's default speed settings" }
+            video && canCompat -> { directFailed = true; videoPath = VideoPath.AUTO; e.putBoolean("directFailed", true).putString("videoPath", VideoPath.AUTO.name); "the standard video output" }
             video && !safeCodec && codec == VideoCodec.AUTO -> { safeCodec = true; e.putBoolean("safeCodec", true); "the H.264 codec" }
             !video && !noAudio -> { noAudio = true; e.putBoolean("noAudio", true); "streaming without sound" }
-            canCompat -> { videoPath = VideoPath.AUTO; e.putString("videoPath", VideoPath.AUTO.name); "the standard video output" }
+            canCompat -> { directFailed = true; videoPath = VideoPath.AUTO; e.putBoolean("directFailed", true).putString("videoPath", VideoPath.AUTO.name); "the standard video output" }
             !safeCodec && codec == VideoCodec.AUTO -> { safeCodec = true; e.putBoolean("safeCodec", true); "the H.264 codec" }
             !noAudio -> { noAudio = true; e.putBoolean("noAudio", true); "streaming without sound" }
             tenBit -> { tenBit = false; e.putBoolean("tenBit", false).putBoolean("tenBitFix", true); "8-bit colour" }

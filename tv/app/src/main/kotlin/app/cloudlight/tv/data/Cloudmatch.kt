@@ -35,6 +35,10 @@ data class CloudSession(
     val height: Int?,
     val fps: Int?,
     val adsRequired: Boolean,
+    /** Control endpoints of NVIDIA's native streaming protocol, when the rig offers it. */
+    val rtsps: List<String> = emptyList(),
+    /** The rig's media endpoint for native streaming, when the service names one. */
+    val nativeMedia: Endpoint? = null,
 ) {
     val ready: Boolean get() = status == 2 || status == 3
 }
@@ -71,6 +75,15 @@ data class LaunchRequest(
      * for WebRTC, which is offered the TV resolution matrix including 4K.
      */
     val asBrowser: Boolean = true,
+    /**
+     * True asks for a rig that streams NVIDIA's native way instead of WebRTC, as the desktop
+     * app: the only kind of session the service gives 4K to. [codec] and [maxKbps] are part
+     * of that request, because the native handshake must agree with what was allocated.
+     */
+    val native: Boolean = false,
+    /** "H264", "H265" or "AV1". */
+    val codec: String = "H265",
+    val maxKbps: Int = 75_000,
 )
 
 /**
@@ -90,18 +103,22 @@ class Cloudmatch(private val token: suspend () -> String) {
      */
     @Volatile private var browser = true
 
+    /** The session was asked for as the desktop app with native streaming. */
+    @Volatile private var native = false
+
     private fun headers(b: Request.Builder, t: String, origin: Boolean): Request.Builder {
-        b.header("User-Agent", if (browser) BROWSER_UA else TV_UA)
+        val web = browser && !native
+        b.header("User-Agent", if (browser || native) BROWSER_UA else TV_UA)
             .header("Authorization", "GFNJWT $t")
             .header("Content-Type", "application/json")
             .header("nv-browser-type", "CHROME")
             .header("nv-client-id", clientId)
-            .header("nv-client-streamer", if (browser) "WEBRTC" else "NVIDIA-CLASSIC")
-            .header("nv-client-type", if (browser) "BROWSER" else "NATIVE")
+            .header("nv-client-streamer", if (web) "WEBRTC" else "NVIDIA-CLASSIC")
+            .header("nv-client-type", if (web) "BROWSER" else "NATIVE")
             .header("nv-client-version", VERSION)
             .header("nv-device-make", "UNKNOWN")
             .header("nv-device-model", "UNKNOWN")
-            .header("nv-device-os", if (browser) "WINDOWS" else "ANDROID")
+            .header("nv-device-os", if (browser || native) "WINDOWS" else "ANDROID")
             .header("nv-device-type", "DESKTOP")
             .header("x-device-id", deviceId)
         if (origin) {
@@ -113,6 +130,7 @@ class Cloudmatch(private val token: suspend () -> String) {
     suspend fun create(streamingBase: String, r: LaunchRequest): CloudSession = io {
         if (r.appId.toLongOrNull() == null) throw SessionException("This game can't be launched from here yet.")
         browser = r.asBrowser
+        native = r.native
         val base = streamingBase.trimEnd('/')
         val url = "$base/v2/session?keyboardLayout=${r.keyboard}&languageCode=${r.language}"
         val req = headers(Request.Builder().url(url), token(), origin = true)
@@ -139,6 +157,7 @@ class Cloudmatch(private val token: suspend () -> String) {
     /** Takes over a session running on another device (or left running here) and waits for its seat. */
     suspend fun claim(active: ActiveSession, r: LaunchRequest): CloudSession = io {
         browser = r.asBrowser
+        native = r.native
         val t = token()
         var host = active.serverHost ?: hostOf(active.streamingBase)
         // The listing names the region's load balancer; ask it for the rig itself first.
@@ -223,6 +242,44 @@ class Cloudmatch(private val token: suspend () -> String) {
             .put("hudStreamingMode", 0)
             .put("sdrColorSpace", 2)
             .put("hdrColorSpace", 0)
+            .apply {
+                if (r.native) {
+                    put("codec", when (r.codec.uppercase()) { "H264" -> 1; "AV1" -> 3; else -> 2 })
+                    put("maxBitrateKbps", r.maxKbps)
+                    put("vsync", false)
+                    put("audioChannelCount", 2)
+                    put("qosPolicy", 0)
+                    put("touchSupport", true)
+                    put("dynamicStreamingMode", 0)
+                }
+            }
+
+    /** The session's metadata; native sessions leave out the WebRTC streamer marker. */
+    private fun sessionMeta(r: LaunchRequest) = meta(
+        *listOfNotNull(
+            "SubSessionId" to UUID.randomUUID().toString(),
+            "wssignaling" to "1",
+            if (r.native) null else "GSStreamerType" to "WebRTC",
+            "networkType" to "Unknown",
+            "ClientImeSupport" to "0",
+            "clientPhysicalResolution" to JSONObject().put("horizontalPixels", r.width).put("verticalPixels", r.height).toString(),
+            "surroundAudioInfo" to "2",
+        ).toTypedArray(),
+    )
+
+    /** How the stream travels. The allocation must agree with the handshake that follows. */
+    private fun JSONObject.transport(r: LaunchRequest): JSONObject {
+        if (r.native) {
+            put("streamerVersion", "14").put("sdkVersion", "2.0").put("enhancedStreamMode", 0)
+            put("secureRTSPSupported", true).put("requestedAudioFormat", 0).put("transport", JSONObject.NULL)
+        } else {
+            put("streamerVersion", 1).put("sdkVersion", "1.0").put("enhancedStreamMode", 1)
+            put("secureRTSPSupported", false)
+        }
+        return this
+    }
+
+    private fun platform(r: LaunchRequest) = if (r.native) "windows" else if (r.asBrowser) "browser" else "android"
 
     private fun createBody(r: LaunchRequest): JSONObject {
         val monitor = monitor(r)
@@ -236,35 +293,21 @@ class Cloudmatch(private val token: suspend () -> String) {
             .put("clientIdentification", "GFN-PC")
             .put("deviceHashId", deviceId)
             .put("clientVersion", "30.0")
-            .put("sdkVersion", "1.0")
-            .put("streamerVersion", 1)
-            .put("clientPlatformName", if (r.asBrowser) "browser" else "android")
+            .transport(r)
+            .put("clientPlatformName", platform(r))
             .put("clientRequestMonitorSettings", JSONArray().put(monitor))
             .put("useOps", true)
             .put("audioMode", 2)
-            .put(
-                "metaData",
-                meta(
-                    "SubSessionId" to UUID.randomUUID().toString(),
-                    "wssignaling" to "1",
-                    "GSStreamerType" to "WebRTC",
-                    "networkType" to "Unknown",
-                    "ClientImeSupport" to "0",
-                    "clientPhysicalResolution" to JSONObject().put("horizontalPixels", r.width).put("verticalPixels", r.height).toString(),
-                    "surroundAudioInfo" to "2",
-                ),
-            )
+            .put("metaData", sessionMeta(r))
             .put("sdrHdrMode", 0)
             .put("clientDisplayHdrCapabilities", JSONObject.NULL)
             .put("surroundAudioInfo", 0)
             .put("remoteControllersBitmap", 0)
             .put("clientTimezoneOffset", timezoneMs())
-            .put("enhancedStreamMode", 1)
             .put("appLaunchMode", 1)
-            .put("secureRTSPSupported", false)
             .put("partnerCustomData", "")
             .put("accountLinked", r.accountLinked)
-            .put("enablePersistingInGameSettings", false)
+            .put("enablePersistingInGameSettings", r.native)
             .put("userAge", 26)
             .put("requestedStreamingFeatures", features)
         return JSONObject().put("sessionRequestData", data)
@@ -286,34 +329,20 @@ class Cloudmatch(private val token: suspend () -> String) {
             .put("clientVersion", "30.0")
             .put("deviceHashId", UUID.randomUUID().toString())
             .put("internalTitle", JSONObject.NULL)
-            .put("clientPlatformName", if (browser) "browser" else "android")
-            .put(
-                "metaData",
-                meta(
-                    "SubSessionId" to UUID.randomUUID().toString(),
-                    "wssignaling" to "1",
-                    "GSStreamerType" to "WebRTC",
-                    "networkType" to "Unknown",
-                    "ClientImeSupport" to "0",
-                    "clientPhysicalResolution" to JSONObject().put("horizontalPixels", r.width).put("verticalPixels", r.height).toString(),
-                    "surroundAudioInfo" to "2",
-                ),
-            )
+            .put("clientPlatformName", platform(r))
+            .put("metaData", sessionMeta(r))
             .put("surroundAudioInfo", 0)
             .put("clientTimezoneOffset", timezoneMs())
             .put("clientIdentification", "GFN-PC")
             .put("parentSessionId", JSONObject.NULL)
             .put("appId", appId.toLongOrNull() ?: 0L)
-            .put("streamerVersion", 1)
+            .transport(r)
             .put("appLaunchMode", 1)
-            .put("sdkVersion", "1.0")
-            .put("enhancedStreamMode", 1)
             .put("useOps", true)
             .put("clientDisplayHdrCapabilities", JSONObject.NULL)
             .put("accountLinked", true)
             .put("partnerCustomData", "")
-            .put("enablePersistingInGameSettings", false)
-            .put("secureRTSPSupported", false)
+            .put("enablePersistingInGameSettings", r.native)
             .put("userAge", 26)
             .put("requestedStreamingFeatures", features)
         return JSONObject().put("action", 2).put("data", "RESUME").put("sessionRequestData", data).put("metaData", JSONArray())
@@ -369,7 +398,54 @@ class Cloudmatch(private val token: suspend () -> String) {
             height = monitor?.optInt("heightInPixels")?.takeIf { it > 0 },
             fps = monitor?.optInt("framesPerSecond")?.takeIf { it > 0 },
             adsRequired = s.optBoolean("sessionAdsRequired", false) || s.optBoolean("isAdsRequired", false),
+            rtsps = rtspEndpoints(list),
+            nativeMedia = nativeMedia(list, serverIp),
         )
+    }
+
+    private fun isRtsp(c: JSONObject): Boolean {
+        val r = c.optString("resourcePath")
+        return r.startsWith("rtsps://") || r.startsWith("rtsp://") || c.optString("usage") == "16" ||
+            c.optString("appLevelProtocol") in listOf("1", "6")
+    }
+
+    /**
+     * The native protocol's control endpoints, in the service's order: usage 16, or usage 14
+     * carrying RTSP. Media entries are left out even when their address looks like a URL.
+     */
+    private fun rtspEndpoints(list: List<JSONObject>): List<String> = list.mapNotNull { c ->
+        val usage = c.optString("usage").toIntOrNull()
+        val protocol = c.optString("appLevelProtocol").toIntOrNull()
+        if (usage != null && usage != 16 && !(usage == 14 && protocol in listOf(1, 6))) return@mapNotNull null
+        if (usage == null && !isRtsp(c)) return@mapNotNull null
+        val address = ipOf(c)?.trim()?.takeIf { it.isNotEmpty() }
+            ?: c.optString("resourcePath").trim().takeIf { it.isNotEmpty() } ?: return@mapNotNull null
+        val scheme = if (protocol == 1) "rtsp" else "rtsps"
+        val uri = runCatching {
+            URI(if ("://" in address) address else {
+                val host = if (address.count { it == ':' } > 1 && !address.startsWith("[")) "[$address]" else address
+                "$scheme://$host"
+            })
+        }.getOrNull() ?: return@mapNotNull null
+        if (uri.scheme !in listOf("rtsp", "rtsps") || uri.rawUserInfo != null || uri.rawQuery != null || uri.rawFragment != null) return@mapNotNull null
+        val host = uri.host?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+        val port = c.optInt("port", 0).takeIf { it in 1..65535 } ?: uri.port.takeIf { it in 1..65535 } ?: 322
+        "${uri.scheme}://${if (':' in host && !host.startsWith("[")) "[$host]" else host}:$port"
+    }.distinct().take(20)
+
+    /** The media endpoint for native streaming. A control (RTSP) entry is never the media peer. */
+    private fun nativeMedia(list: List<JSONObject>, serverIp: String?): Endpoint? {
+        fun from(c: JSONObject, fallback: String?): Endpoint? {
+            val ip = ipOf(c) ?: c.optString("resourcePath").takeIf(String::isNotBlank)?.let(::hostOfUrl) ?: fallback ?: return null
+            val port = portOf(c)
+            return if (port > 0) Endpoint(ip, port) else null
+        }
+        list.firstOrNull { it.optInt("usage") == 2 }?.let { c -> from(c, null)?.let { return it } }
+        list.firstOrNull { it.optInt("usage") == 17 }?.let { c -> from(c, null)?.let { return it } }
+        for (c in list.filter { it.optString("usage") == "14" && !isRtsp(it) }.sortedByDescending { it.optInt("port") }) {
+            from(c, serverIp)?.let { return it }
+        }
+        return null
     }
 
     private fun queue(s: JSONObject): Int? {

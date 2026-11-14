@@ -124,6 +124,111 @@ class Streamer(
     /** Whether the running session was asked for with the TV identity (see [LaunchRequest.asBrowser]). */
     private var tvIdentityInUse = false
 
+    // ---------- 4K over NVIDIA's native protocol ----------
+
+    /** The session in hand was asked for over the native protocol, for 4K. */
+    private var nativeInUse = false
+
+    /** That session is brand new and has shown no picture yet, so it can be swapped for a standard one. */
+    private var nativeFresh = false
+
+    /** The native protocol failed for this game; use the standard stream until the stream screen closes. */
+    private var nativeSkip = false
+
+    /** Shown once the picture is up, to say why this isn't the 4K stream that was asked for. */
+    private var pendingNote: String? = null
+
+    private fun wantNative() = settings.native4k && !nativeSkip
+
+    /** [r] as a 4K, 60 fps request over the native protocol. */
+    private fun nativeAsk(r: LaunchRequest) = r.copy(
+        native = true,
+        asBrowser = true,
+        width = 3840,
+        height = 2160,
+        fps = 60,
+        codec = NativeTransport.nativeCodec(if (settings.safeCodec && settings.codec == VideoCodec.AUTO) "H264" else settings.codec.sdpName),
+        maxKbps = settings.bitrateMbps * 1000,
+    )
+
+    private fun noteNative(text: String) {
+        android.util.Log.w("Streamer", "4K: $text")
+        settings.noteNative(text)
+    }
+
+    /**
+     * Asks the nearby locations for a 4K rig that streams the native way. Null when none would
+     * give one, with the reason kept for the notice; the caller then asks for a standard stream.
+     */
+    private suspend fun startNative(cm: Cloudmatch, base: LaunchRequest): CloudSession? {
+        val ask = nativeAsk(base)
+        var why: String? = null
+        search@ for ((j, place) in places(chosenRegion()).withIndex()) {
+            val (name, url) = place
+            if (j > 0) phase = Phase.Starting("Trying ${name ?: "another server"} for 4K")
+            for (attempt in listOfNotNull(ask, if (ask.bitDepth == 10) ask.copy(bitDepth = 8) else null)) {
+                try {
+                    val s = cm.create(url, attempt)
+                    tvIdentityInUse = false
+                    nativeInUse = true
+                    nativeFresh = true
+                    noteNative("Got a rig from ${name ?: "the nearest server"}${s.width?.let { w -> ", ${w} × ${s.height} at ${s.fps} fps" }.orEmpty()}")
+                    return s
+                } catch (e: SessionException) {
+                    why = e.description ?: e.message
+                    Diagnostics.lastRefusal = "4K at 60 fps (native): $why"
+                    // Anything but a busy or failing server would be refused everywhere.
+                    if (!e.retryable) break@search
+                }
+            }
+        }
+        nativeSkip = true
+        noteNative("The service refused a 4K rig: ${why ?: "no reason given"}")
+        pendingNote = "GeForce NOW didn't give a 4K rig (${why ?: "no reason given"}), so this is the standard stream."
+        return null
+    }
+
+    /**
+     * The native protocol failed before any picture. A brand new session is swapped for a
+     * standard one; a session that was already running is taken over the standard way. A
+     * stream that was already playing is left for the user to retry.
+     */
+    private fun fallBackFromNative(message: String): Boolean {
+        if (!nativeInUse || liveSince != 0L) {
+            if (nativeInUse) noteNative("Stopped while playing: $message")
+            return false
+        }
+        val g = lastGame
+        val r = lastResume
+        val fresh = nativeFresh
+        if (r == null && !(fresh && g != null)) {
+            noteNative("Failed on reconnecting: $message")
+            return false
+        }
+        noteNative("Failed before the first picture: $message")
+        val s = session
+        val cm = cloud
+        stopEngine()
+        nativeInUse = false
+        nativeFresh = false
+        nativeSkip = true
+        val note = "${message.trimEnd('.')}. This is the standard stream instead."
+        if (r != null) {
+            resume(r, g)
+            pendingNote = note
+            return true
+        }
+        phase = Phase.Starting("Switching to the standard stream")
+        job?.cancel()
+        job = scope.launch {
+            if (s != null && cm != null) runCatching { cm.stop(s) }
+            delay(1500)
+            startFresh(g!!)
+            pendingNote = note
+        }
+        return true
+    }
+
     /** 4K is asked for with the TV identity first, unless it has already failed here. */
     // Asking as the Android TV client still got 1440p rigs: NVIDIA keeps 4K for its native
     // streaming protocol, not WebRTC. Kept switched off until that protocol is supported.
@@ -134,11 +239,13 @@ class Streamer(
         lastResume = null
         val v = g.variants.firstOrNull { it.selected } ?: g.variants.firstOrNull()
         val appId = v?.id ?: g.id
+        nativeInUse = false
+        nativeFresh = false
         begin(g) { cm ->
             phase = Phase.Starting("Requesting a rig")
             val (w, h, fps) = target()
             val ask = request().copy(appId = appId, title = g.title, accountLinked = v?.owned ?: true, width = w, height = h, fps = fps)
-            var s = start(cm, ask)
+            var s = (if (wantNative()) startNative(cm, ask) else null) ?: start(cm, ask)
             session = s
             s = waitForSeat(cm, s)
             s
@@ -169,18 +276,22 @@ class Streamer(
      * locations are asked for the same quality first. Only if none of them can is the quality
      * stepped down, one level at a time.
      */
-    private suspend fun start(cm: Cloudmatch, ask: LaunchRequest): CloudSession {
-        val chosen = settings.region.takeIf { it.isNotEmpty() }?.let { n -> app.regions.firstOrNull { it.name == n } }
+    private fun chosenRegion() = settings.region.takeIf { it.isNotEmpty() }?.let { n -> app.regions.firstOrNull { it.name == n } }
+
+    /** Where to ask for a rig, nearest first: the chosen location, or the default and its neighbours. */
+    private fun places(chosen: app.cloudlight.tv.data.Nvidia.Region?): List<Pair<String?, String>> {
+        if (chosen != null) return listOf(chosen.name to chosen.url)
         val nearest = app.regions.firstOrNull { it.pingMs != null }?.pingMs
-        val bases: List<Pair<String?, String>> = if (chosen != null) {
-            listOf(chosen.name to chosen.url)
-        } else {
-            val near = app.regions
-                .filter { r -> r.pingMs != null && nearest != null && r.pingMs <= nearest * 2 + 25 }
-                .take(3)
-                .map { it.name to it.url }
-            (listOf<Pair<String?, String>>(null to app.streamingBase) + near).distinctBy { it.second.trimEnd('/') }
-        }
+        val near = app.regions
+            .filter { r -> r.pingMs != null && nearest != null && r.pingMs <= nearest * 2 + 25 }
+            .take(3)
+            .map { it.name to it.url }
+        return (listOf<Pair<String?, String>>(null to app.streamingBase) + near).distinctBy { it.second.trimEnd('/') }
+    }
+
+    private suspend fun start(cm: Cloudmatch, ask: LaunchRequest): CloudSession {
+        val chosen = chosenRegion()
+        val bases = places(chosen)
         val ladder = buildList {
             add(ask)
             if (ask.bitDepth == 10) add(ask.copy(bitDepth = 8))
@@ -231,7 +342,10 @@ class Streamer(
             phase = Phase.Starting(if (a.status == 1) "Following your session" else "Taking over your session")
             val (w, h, fps) = target()
             tvIdentityInUse = false
-            val s = cm.claim(a, request().copy(appId = a.appId, width = w, height = h, fps = fps, asBrowser = !useTvIdentity(h)))
+            nativeInUse = wantNative()
+            nativeFresh = false
+            val ask = request().copy(appId = a.appId, width = w, height = h, fps = fps, asBrowser = !useTvIdentity(h))
+            val s = cm.claim(a, if (nativeInUse) nativeAsk(ask) else ask)
             session = s
             s
         }
@@ -275,17 +389,12 @@ class Streamer(
         menuOpen = false
         notice = null
         inputReady = false
+        nativeSizeSeen = false
         liveSince = 0
         // The controller keeps driving our screens until the picture is up.
         hub.captured = false
         // Chosen before the stream screen appears, since it decides what that screen draws into.
-        compatibleVideo = when (settings.videoPath) {
-            VideoPath.COMPATIBLE -> true
-            VideoPath.DIRECT -> false
-            // WebRTC's own decoder and renderer: the path OpenNOW streams with on these boxes.
-            // The direct path stays available as an explicit choice.
-            VideoPath.AUTO -> true
-        }
+        compatibleVideo = if (wantNative()) false else standardOutput()
         val cm = Cloudmatch({ app.serviceToken() }).also { cloud = it }
         job = scope.launch {
             try {
@@ -302,49 +411,83 @@ class Streamer(
         }
     }
 
+    /** Whether video goes through WebRTC's own decoder and renderer rather than the direct output. */
+    private fun standardOutput() = when (settings.videoPath) {
+            VideoPath.COMPATIBLE -> true
+            VideoPath.DIRECT -> false
+            // Amlogic boxes decode straight onto their hardware video layer, with no copy
+            // through the graphics chip: the only path there that keeps up with 120 fps.
+            // Everything else, and any box where that path has failed, uses WebRTC's own
+            // decoder and renderer.
+            VideoPath.AUTO -> !(TvDecoderFactory.amlogic && !settings.directFailed)
+    }
+
     private fun connect(s: CloudSession) {
         phase = Phase.Connecting("Connecting to the rig")
         val m = settings.mode
+        val native = nativeInUse
+        // The native protocol only draws through the direct output, whatever the setting says.
+        compatibleVideo = if (native) false else standardOutput()
+        if (native && s.rtsps.isEmpty()) {
+            end("4K streaming couldn't start: the rig didn't offer NVIDIA's native protocol", error = true)
+            return
+        }
         val e = StreamEngine(
             context,
             s,
             StreamEngine.Config(
-                width = s.width ?: m.width,
-                height = s.height ?: m.height,
-                fps = s.fps ?: m.fps,
+                // A native stream is announced at the size that was asked for.
+                width = if (native) 3840 else s.width ?: m.width,
+                height = if (native) 2160 else s.height ?: m.height,
+                fps = if (native) 60 else s.fps ?: m.fps,
                 maxKbps = settings.bitrateMbps * 1000,
                 codec = if (settings.safeCodec && settings.codec == VideoCodec.AUTO) "H264" else settings.codec.sdpName,
                 bitDepth = if (settings.tenBit) 10 else 8,
                 audio = !settings.noAudio,
+                native = native,
             ),
             listener,
         )
         engine = e
         VideoOutput.compatible = compatibleVideo
-        CrashLog.markStreaming(context, if (compatibleVideo) "compatible" else "direct")
+        CrashLog.markStreaming(context, if (native) "native" else if (compatibleVideo) "compatible" else "direct")
         input.engine = e
         // The game only hears about a controller when it reports, and a controller at rest
         // reports nothing, so tell it now about every one that is already connected.
         for ((id, state) in hub.snapshot()) input.report(id, state)
         VideoHooks.swapInterval = settings.framePacing.swapInterval
-        streamFps = s.fps ?: m.fps
+        VideoHooks.tuneDecoder = settings.decoderHints
+        streamFps = if (native) 60 else s.fps ?: m.fps
+        VideoOutput.fps = streamFps
         input.holdMs = settings.holdToOpenMs.toLong()
         input.mouseSpeed = settings.mouseSpeed
         e.volume = settings.volume / 100.0
         e.muted = muted
         e.start()
+        // The direct output is new on this kind of box. If the rig is sending but no picture
+        // comes out of it, go back to the standard output rather than leave a black screen.
+        if (!native && !compatibleVideo && settings.videoPath == VideoPath.AUTO) scope.launch {
+            delay(15_000)
+            if (engine === e && e.offered && phase !is Phase.Live && phase !is Phase.Ended) {
+                settings.markDirectFailed()
+                end("The direct video output showed no picture, so the standard one is switched on. Try again.", error = true)
+            }
+        }
         // If no picture arrives, say so instead of spinning forever.
         scope.launch {
-            delay(30_000)
+            delay(if (native) 25_000 else 30_000)
             if (engine === e && phase !is Phase.Live && phase !is Phase.Ended) {
                 end(
-                    if (e.offered) "The rig didn't send any video. Try again, or pick a different video codec in Settings."
+                    if (native) "4K streaming showed no picture${if (e.offered) " after connecting" else ""}"
+                    else if (e.offered) "The rig didn't send any video. Try again, or pick a different video codec in Settings."
                     else "The rig didn't start the stream. Try again in a moment.",
                     error = true,
                 )
             }
         }
     }
+
+    private var nativeSizeSeen = false
 
     private val listener = object : StreamEngine.Listener {
         override fun onProgress(step: String) = ui { if (phase !is Phase.Live && phase !is Phase.Ended) phase = Phase.Connecting(step) }
@@ -353,6 +496,10 @@ class Streamer(
             if (phase !is Phase.Ended) {
                 CrashLog.step("live")
                 phase = Phase.Live
+                nativeFresh = false
+                pendingNote?.let { notice = it }
+                pendingNote = null
+                if (nativeInUse) noteNative("Picture up")
                 if (settings.noAudio && notice == null) notice = NO_SOUND
                 if (notice == null) notice = slowScreenNotice()
                 if (liveSince == 0L) liveSince = SystemClock.elapsedRealtime()
@@ -364,7 +511,15 @@ class Streamer(
             inputReady = true
             input.enabled = !menuOpen && phase == Phase.Live
         }
-        override fun onStats(stats: StreamStats) = ui { this@Streamer.stats = stats }
+        override fun onStats(stats: StreamStats) = ui {
+            this@Streamer.stats = stats
+            // Say so once if the rig sends less than the 4K that was asked for.
+            if (nativeInUse && !nativeSizeSeen && stats.height > 0) {
+                nativeSizeSeen = true
+                noteNative("Playing at ${stats.width} × ${stats.height}")
+                if (stats.height < 2160 && notice == null) notice = "The rig is sending ${stats.height}p, not 4K. GeForce NOW chose that for this session."
+            }
+        }
         override fun onTimeWarning(code: Int, secondsLeft: Int?) = ui {
             val mins = secondsLeft?.let { (it + 59) / 60 }
             notice = when (code) {
@@ -531,7 +686,12 @@ class Streamer(
             s != null && s.ready -> {
                 // The rig is still ours: reconnect to it rather than queueing again.
                 val a = ActiveSession(s.id, "", 2, null, null, null, s.controlBase, s.serverIp, s.gpu)
-                begin(g) { cm -> cm.claim(a.copy(appId = r?.appId ?: appIdOf(g)), request().copy(appId = r?.appId ?: appIdOf(g))) }
+                nativeInUse = nativeInUse && wantNative()
+                nativeFresh = false
+                begin(g) { cm ->
+                    val ask = request().copy(appId = r?.appId ?: appIdOf(g))
+                    cm.claim(a.copy(appId = r?.appId ?: appIdOf(g)), if (nativeInUse) nativeAsk(ask) else ask)
+                }
             }
             r != null -> resume(r, g)
             g != null -> play(g)
@@ -551,6 +711,7 @@ class Streamer(
 
     private fun end(message: String, error: Boolean, canRetry: Boolean = true) {
         if (error && fallBackFromTvIdentity()) return
+        if (error && fallBackFromNative(message)) return
         stopEngine()
         menuOpen = false
         hub.captured = false
@@ -601,6 +762,10 @@ class Streamer(
         stats = StreamStats.Empty
         controllerMouse = false
         input.controllerMouse = false
+        nativeInUse = false
+        nativeFresh = false
+        nativeSkip = false
+        pendingNote = null
     }
 
     private companion object {

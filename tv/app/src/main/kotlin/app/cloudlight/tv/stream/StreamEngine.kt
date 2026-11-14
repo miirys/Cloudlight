@@ -93,6 +93,8 @@ class StreamEngine(
         val bitDepth: Int,
         /** False to leave the sound line idle (after sound took the app down here). */
         val audio: Boolean = true,
+        /** Stream over NVIDIA's native protocol ([NativeTransport]) instead of WebRTC. */
+        val native: Boolean = false,
     )
 
     interface Listener {
@@ -195,7 +197,51 @@ class StreamEngine(
         VideoOutput.height = 0
         VideoOutput.keyframeRequester = { requestKeyframe("decoder") }
         VideoOutput.onFirstFrame = { listener.onFirstFrame() }
-        post { open() }
+        post { if (config.native) openNative() else open() }
+    }
+
+    // ---------- NVIDIA's native protocol ----------
+
+    @Volatile private var native: NativeTransport? = null
+
+    /**
+     * Starts the stream over the native protocol. The library does the connecting; input goes
+     * through the same encoder as on WebRTC, and the picture through the direct decoder.
+     */
+    private fun openNative() {
+        try {
+            listener.onProgress("Connecting to the rig")
+            val t = NativeTransport(session, config, object : NativeTransport.Events {
+                override fun onEvent(kind: String, detail: String) = post {
+                    if (closed) return@post
+                    when (kind) {
+                        "connected" -> {
+                            offerSeen = true
+                            CrashLog.step("connected")
+                            listener.onConnected()
+                        }
+                        "input-ready" -> {
+                            encoder.version = detail.toIntOrNull() ?: 2
+                            if (!inputReady) {
+                                inputReady = true
+                                listener.onInputReady()
+                            }
+                        }
+                    }
+                }
+
+                override fun onStats(stats: StreamStats) = safe("native stats") { if (!closed) listener.onStats(stats) }
+
+                override fun onFailed(reason: String) = post { fail("4K streaming stopped: $reason") }
+            })
+            t.volume = volume
+            t.muted = muted
+            codec = NativeTransport.nativeCodec(config.codec)
+            native = t
+            t.start()
+        } catch (t: Throwable) {
+            fail("Couldn't set up the 4K stream: ${t.message ?: t.javaClass.simpleName}")
+        }
     }
 
     private fun open() {
@@ -508,12 +554,18 @@ class StreamEngine(
     }
 
     fun sendReliable(b: ByteArray) {
-        if (!closed) input?.sendBytes(b)
+        if (closed) return
+        val n = native
+        if (n != null) n.sendInput(b, partial = false) else input?.sendBytes(b)
     }
 
     /** Controller reports go on the partially reliable channel: a late report is useless. */
     fun sendGamepad(slot: Int, connected: Int, buttons: Int, lt: Int, rt: Int, lx: Int, ly: Int, rx: Int, ry: Int) {
         if (!inputReady || closed) return
+        native?.let {
+            it.sendInput(encoder.gamepad(slot, connected, buttons, lt, rt, lx, ly, rx, ry, partiallyReliable = true), partial = true)
+            return
+        }
         val p = partial
         if (p != null && p.state() == DataChannel.State.OPEN) {
             p.sendBytes(encoder.gamepad(slot, connected, buttons, lt, rt, lx, ly, rx, ry, partiallyReliable = true))
@@ -575,6 +627,10 @@ class StreamEngine(
         val now = SystemClock.uptimeMillis()
         if (now - lastKeyframeAt < 400) return
         lastKeyframeAt = now
+        native?.let {
+            it.requestKeyframe()
+            return
+        }
         post {
             val c = control
             if (c != null && c.state() == DataChannel.State.OPEN) {
@@ -601,6 +657,10 @@ class StreamEngine(
         }
 
     private fun applyVolume() {
+        native?.let {
+            it.volume = volume
+            it.muted = muted
+        }
         val a = audio ?: return
         runCatching {
             a.setEnabled(!muted)
@@ -622,6 +682,8 @@ class StreamEngine(
         closed = true
         VideoOutput.keyframeRequester = null
         VideoOutput.onFirstFrame = null
+        inputReady = false
+        runCatching { native?.stop() }
         try {
             worker.execute { shutdown() }
         } catch (_: RejectedExecutionException) {
