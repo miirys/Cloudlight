@@ -1,0 +1,55 @@
+name: Cloudlight TV (share a build)
+
+# Puts a finished build's APK on temp.sh and prints the link, for when the Actions artifact
+# page can't be used (it needs a GitHub login and hands out a zip). The link lasts three days.
+# To share another build, put its run number in .github/cloudlight-share-run and push.
+on:
+  push:
+    paths:
+      - '.github/cloudlight-share-run'
+      - '.github/workflows/cloudlight-share.yml'
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: 'Run of "Cloudlight TV (Android)" whose APK to share'
+        required: false
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  share:
+    name: Upload the APK
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Pick the build
+        id: pick
+        env:
+          ASKED: ${{ inputs.run_id }}
+        run: |
+          run=$(printf '%s' "${ASKED:-$(cat .github/cloudlight-share-run)}" | tr -dc '0-9')
+          test -n "$run"
+          echo "run=$run" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: cloudlight-tv-apk
+          path: apk
+          run-id: ${{ steps.pick.outputs.run }}
+          github-token: ${{ github.token }}
+
+      - name: Upload to temp.sh
+        run: |
+          version=$(sed -n 's/.*versionName = "\(.*\)".*/\1/p' tv/app/build.gradle.kts)
+          cp apk/*.apk "Cloudlight-$version.apk"
+          ls -l "Cloudlight-$version.apk"
+          sha256sum "Cloudlight-$version.apk"
+          link=$(curl -fsS --retry 3 --retry-delay 5 -F "file=@Cloudlight-$version.apk" https://temp.sh/upload)
+          echo "Download link: $link"
+          echo "Download link: $link" >> "$GITHUB_STEP_SUMMARY"
