@@ -1,6 +1,6 @@
 name: Cloudlight TV (share a build)
 
-# Puts a finished build's APK on temp.sh and prints the link, for when the Actions artifact
+# Puts a finished build's APK on Litterbox and prints the link, for when the Actions artifact
 # page can't be used (it needs a GitHub login and hands out a zip). The link lasts three days.
 # To share another build, put its run number in .github/cloudlight-share-run and push.
 on:
@@ -44,35 +44,22 @@ jobs:
           run-id: ${{ steps.pick.outputs.run }}
           github-token: ${{ github.token }}
 
-      - name: Upload to temp.sh
+      - name: Upload to Litterbox
+        # temp.sh was tried first and answers 500 to any file of 20 MB or more.
         run: |
           version=$(sed -n 's/.*versionName = "\(.*\)".*/\1/p' tv/app/build.gradle.kts)
           apk="Cloudlight-$version.apk"
           cp apk/*.apk "$apk"
           ls -l "$apk"
           sha256sum "$apk"
-          # temp.sh answers with the link as plain text. Anything else is shown, so a failure
-          # on its side can be told from one on ours. A small file went through while the
-          # 63 MB APK got a 500 from its web server, so try the plainer ways of sending it.
-          upload() {
-            file=$1; shift
-            code=$(curl -sS -m 600 -o reply.txt -w '%{http_code}' "$@" -F "file=@$file" https://temp.sh/upload || true)
-            echo "temp.sh, $file ($*): HTTP $code"; head -c 200 reply.txt; echo
-            link=$(grep -Eo 'https?://temp\.sh/[^[:space:]"<]+' reply.txt | head -1 || true)
-            [ "$code" = "200" ] && [ -n "$link" ]
-          }
-          zip -q -0 "Cloudlight-$version.zip" "$apk"
-          upload "$apk" --http1.1 ||
-            upload "$apk" --http1.1 -H 'Expect:' ||
-            upload "$apk" --http1.1 --limit-rate 4M ||
-            upload "Cloudlight-$version.zip" --http1.1 || {
-              # Nothing worked: find out whether it is the size that temp.sh refuses.
-              for mb in 20 40 60; do
-                head -c "${mb}M" /dev/urandom > "size-test-${mb}mb.bin"
-                upload "size-test-${mb}mb.bin" --http1.1 || true
-              done
-              echo "temp.sh did not take the file"
-              exit 1
-            }
+          code=$(curl -sS --retry 2 --retry-delay 5 -m 600 -o reply.txt -w '%{http_code}' \
+            -F reqtype=fileupload -F time=72h -F "fileToUpload=@$apk" \
+            https://litterbox.catbox.moe/resources/internals/api.php || true)
+          echo "Litterbox: HTTP $code"; head -c 300 reply.txt; echo
+          link=$(grep -Eo 'https://[^[:space:]"<]+\.apk' reply.txt | head -1 || true)
+          if [ "$code" != "200" ] || [ -z "$link" ]; then
+            echo "Litterbox did not take the file"
+            exit 1
+          fi
           echo "Download link: $link"
           echo "Download link: $link" >> "$GITHUB_STEP_SUMMARY"
